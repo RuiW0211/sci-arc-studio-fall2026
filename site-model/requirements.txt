@@ -1,0 +1,8 @@
+# Python 3.10+ for the Houdini pipeline scripts (site-model/houdini/tools/); Houdini itself uses its own Python
+numpy
+scipy
+scikit-learn
+shapely>=2.0
+pandas
+requests
+laspy[lazrs]

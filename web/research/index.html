@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Y-1 Research Database</title>
+<style>
+:root {
+    --bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --faint: #9a9a9a;
+    --line: #e6e6e6;
+    --hover: #f7f7f7;
+    --verified: #2e7d32;
+    --unverified: #b26a00;
+    --question: #6b6b6b;
+    --analysis: #3f51b5;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg: #161616;
+        --text: #ededed;
+        --muted: #a0a0a0;
+        --faint: #777777;
+        --line: #2c2c2c;
+        --hover: #1f1f1f;
+        --verified: #81c784;
+        --unverified: #ffb74d;
+        --question: #a0a0a0;
+        --analysis: #9fa8da;
+    }
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #161616;
+    --text: #ededed;
+    --muted: #a0a0a0;
+    --faint: #777777;
+    --line: #2c2c2c;
+    --hover: #1f1f1f;
+    --verified: #81c784;
+    --unverified: #ffb74d;
+    --question: #a0a0a0;
+    --analysis: #9fa8da;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 16px 64px;
+}
+
+/* Header, modeled on ruyf26.samlay.xyz */
+.header { padding-bottom: 32px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
+.home { color: inherit; text-decoration: none; }
+.home:hover { text-decoration: underline; }
+.eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 12px;
+}
+.header h1 { font-size: 2.4rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 12px; }
+.subtitle { color: var(--muted); max-width: 520px; }
+
+/* Search */
+.search-section { margin-bottom: 24px; }
+.search-input {
+    width: 100%;
+    padding: 12px 14px;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    margin-bottom: 12px;
+}
+.search-input:focus, .filter-select:focus, .btn:focus-visible, .finding-head:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filter-select, .btn {
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+.btn:hover, .filter-select:hover { border-color: var(--muted); }
+.btn-quiet { border-color: transparent; color: var(--muted); padding: 4px 6px; }
+.btn-quiet:hover { color: var(--text); border-color: transparent; }
+
+/* Stats */
+.stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+}
+.stats > div { display: flex; flex-direction: column; }
+.stat-number { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.stat-label { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+.s-verified { color: var(--verified); }
+.s-unverified { color: var(--unverified); }
+.s-question { color: var(--question); }
+.s-analysis { color: var(--analysis); }
+
+.list-controls { display: flex; justify-content: flex-end; gap: 4px; margin-bottom: 8px; }
+
+/* Topic groups */
+.topic-group { margin-top: 32px; }
+.topic-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+}
+.topic-count { font-weight: 400; margin-left: 6px; }
+
+/* Findings */
+.finding { border-bottom: 1px solid var(--line); }
+.finding-head { padding: 20px 0; cursor: pointer; }
+.finding-head:hover .finding-title { text-decoration: underline; text-underline-offset: 3px; }
+.finding-title-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 6px; }
+.finding-title { font-size: 1.15rem; line-height: 1.35; font-weight: 700; }
+.finding-summary { color: var(--muted); font-size: 0.95rem; }
+.finding-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 0.8rem; color: var(--faint); }
+.toggle-hint { margin-left: auto; color: var(--muted); }
+.toggle-hint::after { content: " +"; }
+.finding.open .toggle-hint::after { content: " \2212"; }
+
+.badge {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+}
+.badge-verified { color: var(--verified); }
+.badge-unverified { color: var(--unverified); }
+.badge-open-question { color: var(--question); }
+.badge-analysis { color: var(--analysis); }
+
+.finding-body { display: none; padding: 0 0 24px; font-size: 0.95rem; }
+.finding.open .finding-body { display: block; }
+.finding-body p { margin-bottom: 12px; }
+.detail-list { margin: 0 0 12px 20px; }
+.detail-list li { margin-bottom: 6px; }
+
+.finding-sources { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.finding-sources h4 {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 6px;
+}
+.finding-sources ul { list-style: none; }
+.finding-sources li { font-size: 0.85rem; margin-bottom: 4px; }
+.finding-sources a { color: var(--text); }
+.source-type { color: var(--faint); font-size: 0.75rem; }
+.source-file { margin-top: 10px; font-size: 0.75rem; color: var(--faint); }
+
+.no-results { padding: 48px 0; text-align: center; color: var(--muted); }
+
+.footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 0.8rem; color: var(--faint); }
+
+.theme-toggle {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .container { padding-top: 32px; }
+    .header h1 { font-size: 1.9rem; }
+    .stats { gap: 18px; }
+    .finding-title-row { flex-direction: column; gap: 6px; }
+}
+
+</style>
+</head>
+<body>
+<main class="container">
+        <header class="header">
+            <p class="eyebrow"><a href="../" class="home">Angels Knoll Studio</a> · Clark &amp; Rui</p>
+            <h1>Y-1 Research Database</h1>
+            <p class="subtitle">Bunker Hill Parcel Y-1. Every finding, where it came from, and how sure we are.</p>
+        </header>
+
+        <section class="search-section">
+            <input type="search" id="searchInput" class="search-input" placeholder="Search findings, e.g. litigation, 54234, Goldstein" aria-label="Search findings">
+            <div class="filters">
+                <select id="topicFilter" class="filter-select" aria-label="Topic"><option value="">All topics</option></select>
+                <select id="statusFilter" class="filter-select" aria-label="Status">
+                    <option value="">All statuses</option>
+                    <option value="verified">Verified</option>
+                    <option value="unverified">Unverified</option>
+                    <option value="open-question">Open question</option>
+                    <option value="analysis">Analysis</option>
+                </select>
+                <select id="sourceFilter" class="filter-select" aria-label="Source type"><option value="">All source types</option></select>
+                <select id="yearFilter" class="filter-select" aria-label="Year"><option value="">All years</option></select>
+                <button id="clearBtn" class="btn">Clear</button>
+            </div>
+        </section>
+
+        <section class="stats" aria-label="Counts">
+            <div><span class="stat-number" id="totalCount">0</span><span class="stat-label">Shown</span></div>
+            <div><span class="stat-number s-verified" id="verifiedCount">0</span><span class="stat-label">Verified</span></div>
+            <div><span class="stat-number s-unverified" id="unverifiedCount">0</span><span class="stat-label">Unverified</span></div>
+            <div><span class="stat-number s-question" id="questionCount">0</span><span class="stat-label">Open questions</span></div>
+            <div><span class="stat-number s-analysis" id="analysisCount">0</span><span class="stat-label">Analysis</span></div>
+        </section>
+
+        <div class="list-controls">
+            <button id="expandAll" class="btn btn-quiet">Expand all</button>
+            <button id="collapseAll" class="btn btn-quiet">Collapse all</button>
+        </div>
+
+        <div id="resultsContainer"></div>
+
+        <footer class="footer">
+            Y-1 Research Database - Syracuse Visiting Studio - Fall 2026. Add or correct findings by editing <code>web/research/data.json</code> in a pull request. Link to one finding with <code>research/#id</code>, e.g. <code>#lit-005</code>.
+        </footer>
+    </main>
+
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js"></script>
+<script>
+const TOPIC_ORDER = [
+    'Disposition & Notice',
+    'Litigation',
+    'Surplus Land Act',
+    'Zoning & Entitlements',
+    'MOCA',
+    '1980 Bargain & History',
+    'California Plaza',
+    'Site Conditions',
+    'Insights',
+    'Design Implications',
+    'Open Questions'
+];
+
+const STATUS_LABELS = {
+    'verified': 'Verified',
+    'unverified': 'Unverified',
+    'open-question': 'Open question',
+    'analysis': 'Analysis'
+};
+
+let allFindings = [];
+let lunrIdx = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    initTheme();
+    try {
+        const response = await fetch('data.json');
+        const data = await response.json();
+        allFindings = data.findings.sort(compareFindings);
+        initFilters();
+        buildIndex();
+        attachListeners();
+        applyFilters();
+        openFromHash();
+        window.addEventListener('hashchange', openFromHash);
+    } catch (error) {
+        console.error('Error loading data:', error);
+        document.getElementById('resultsContainer').innerHTML =
+            '<p class="no-results">Could not load data.json. Open the site through a local server (python3 web/serve.py).</p>';
+    }
+});
+
+function openFromHash() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id || !allFindings.some(f => f.id === id)) return;
+    if (!document.querySelector(`.finding[data-id="${CSS.escape(id)}"]`)) clearFilters();
+    const el = document.querySelector(`.finding[data-id="${CSS.escape(id)}"]`);
+    if (!el.classList.contains('open')) toggle(el);
+    el.scrollIntoView({ block: 'start' });
+}
+
+function topicRank(topic) {
+    const i = TOPIC_ORDER.indexOf(topic);
+    return i === -1 ? TOPIC_ORDER.length : i;
+}
+
+function compareFindings(a, b) {
+    const t = topicRank(a.topic) - topicRank(b.topic);
+    if (t !== 0) return t;
+    return (a.date || '9999').localeCompare(b.date || '9999');
+}
+
+function initFilters() {
+    const topics = [...new Set(allFindings.map(f => f.topic))].sort((a, b) => topicRank(a) - topicRank(b));
+    const topicSelect = document.getElementById('topicFilter');
+    topics.forEach(topic => topicSelect.add(new Option(topic, topic)));
+
+    const sourceTypes = [...new Set(allFindings.flatMap(f => (f.sources || []).map(s => s.type)).filter(Boolean))].sort();
+    const sourceSelect = document.getElementById('sourceFilter');
+    sourceTypes.forEach(type => sourceSelect.add(new Option(type, type)));
+
+    const years = allFindings.map(f => f.date && f.date.slice(0, 4)).filter(Boolean);
+    const yearSelect = document.getElementById('yearFilter');
+    [...new Set(years)].sort().forEach(y => yearSelect.add(new Option(y, y)));
+}
+
+function buildIndex() {
+    lunrIdx = lunr(function () {
+        this.ref('id');
+        this.field('title', { boost: 10 });
+        this.field('summary', { boost: 3 });
+        this.field('body');
+        this.field('topic');
+        this.field('sources');
+        allFindings.forEach(f => {
+            this.add({
+                id: f.id,
+                title: f.title,
+                summary: f.summary || '',
+                body: (f.details || []).join(' '),
+                topic: f.topic,
+                sources: (f.sources || []).map(s => s.title).join(' ')
+            });
+        });
+    });
+}
+
+function searchIds(query) {
+    try {
+        return new Set(lunrIdx.search(query).map(r => r.ref));
+    } catch (e) {
+        // Lunr throws on stray query syntax such as a trailing ":"; fall back to wildcard terms.
+        const terms = query.split(/\s+/).filter(Boolean).map(t => t.replace(/[^\w]/g, '') + '*').join(' ');
+        return new Set(terms ? lunrIdx.search(terms).map(r => r.ref) : []);
+    }
+}
+
+function attachListeners() {
+    let timer;
+    document.getElementById('searchInput').addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(applyFilters, 200);
+    });
+    ['topicFilter', 'statusFilter', 'sourceFilter', 'yearFilter'].forEach(id =>
+        document.getElementById(id).addEventListener('change', applyFilters));
+    document.getElementById('clearBtn').addEventListener('click', clearFilters);
+
+    document.getElementById('resultsContainer').addEventListener('click', e => {
+        if (e.target.closest('a')) return;
+        const head = e.target.closest('.finding-head');
+        if (head) toggle(head.closest('.finding'));
+    });
+    document.getElementById('resultsContainer').addEventListener('keydown', e => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('finding-head')) {
+            e.preventDefault();
+            toggle(e.target.closest('.finding'));
+        }
+    });
+    document.getElementById('expandAll').addEventListener('click', () => setAll(true));
+    document.getElementById('collapseAll').addEventListener('click', () => setAll(false));
+}
+
+function toggle(el) {
+    const open = el.classList.toggle('open');
+    el.querySelector('.finding-head').setAttribute('aria-expanded', open);
+}
+
+function setAll(open) {
+    document.querySelectorAll('.finding').forEach(el => {
+        el.classList.toggle('open', open);
+        el.querySelector('.finding-head').setAttribute('aria-expanded', open);
+    });
+}
+
+function applyFilters() {
+    const query = document.getElementById('searchInput').value.trim();
+    const topic = document.getElementById('topicFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const sourceType = document.getElementById('sourceFilter').value;
+    const year = document.getElementById('yearFilter').value;
+
+    let results = allFindings;
+    if (query) {
+        const ids = searchIds(query);
+        results = results.filter(f => ids.has(f.id));
+    }
+    if (topic) results = results.filter(f => f.topic === topic);
+    if (status) results = results.filter(f => f.status === status);
+    if (sourceType) results = results.filter(f => (f.sources || []).some(s => s.type === sourceType));
+    if (year) results = results.filter(f => f.date && f.date.startsWith(year));
+
+    render(results, Boolean(query || topic || status || sourceType || year));
+    updateStats(results);
+}
+
+function render(findings, filtered) {
+    const container = document.getElementById('resultsContainer');
+    if (findings.length === 0) {
+        container.innerHTML = '<p class="no-results">No findings match. Try other words or clear the filters.</p>';
+        return;
+    }
+
+    let html = '';
+    let currentTopic = null;
+    findings.forEach(f => {
+        if (f.topic !== currentTopic) {
+            if (currentTopic !== null) html += '</section>';
+            currentTopic = f.topic;
+            const count = findings.filter(x => x.topic === f.topic).length;
+            html += `<section class="topic-group"><h2 class="topic-title">${esc(f.topic)} <span class="topic-count">${count}</span></h2>`;
+        }
+        html += renderFinding(f);
+    });
+    html += '</section>';
+    container.innerHTML = html;
+
+    // A single search hit is most useful already open.
+    if (filtered && findings.length === 1) setAll(true);
+}
+
+function renderFinding(f) {
+    const details = renderDetails(f.details || []);
+    const sources = (f.sources || []).map(s => {
+        const label = esc(s.title);
+        const link = s.url && /^https?:\/\//.test(s.url)
+            ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${label}</a>`
+            : label;
+        return `<li>${link}${s.type ? ` <span class="source-type">${esc(s.type)}</span>` : ''}</li>`;
+    }).join('');
+
+    return `
+    <article class="finding" data-id="${esc(f.id)}">
+        <div class="finding-head" role="button" tabindex="0" aria-expanded="false">
+            <div class="finding-title-row">
+                <h3 class="finding-title">${esc(f.title)}</h3>
+                <span class="badge badge-${esc(f.status)}">${esc(STATUS_LABELS[f.status] || f.status)}</span>
+            </div>
+            <p class="finding-summary">${esc(f.summary || '')}</p>
+            <div class="finding-meta">
+                ${f.date ? `<span>${formatDate(f.date)}</span>` : ''}
+                ${f.confidence ? `<span>Confidence: ${esc(f.confidence)}</span>` : ''}
+                <span class="toggle-hint">Details</span>
+            </div>
+        </div>
+        <div class="finding-body">
+            ${details}
+            ${sources ? `<div class="finding-sources"><h4>Sources</h4><ul>${sources}</ul></div>` : ''}
+            ${f.sourceFile ? `<p class="source-file">From: ${esc(f.sourceFile)}</p>` : ''}
+        </div>
+    </article>`;
+}
+
+function renderDetails(lines) {
+    let html = '';
+    let inList = false;
+    lines.forEach(line => {
+        if (line.startsWith('- ')) {
+            if (!inList) { html += '<ul class="detail-list">'; inList = true; }
+            html += `<li>${esc(line.slice(2))}</li>`;
+        } else {
+            if (inList) { html += '</ul>'; inList = false; }
+            html += `<p>${esc(line)}</p>`;
+        }
+    });
+    if (inList) html += '</ul>';
+    return html;
+}
+
+function updateStats(findings) {
+    const count = s => findings.filter(f => f.status === s).length;
+    document.getElementById('totalCount').textContent = findings.length;
+    document.getElementById('verifiedCount').textContent = count('verified');
+    document.getElementById('unverifiedCount').textContent = count('unverified');
+    document.getElementById('questionCount').textContent = count('open-question');
+    document.getElementById('analysisCount').textContent = count('analysis');
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    ['topicFilter', 'statusFilter', 'sourceFilter', 'yearFilter'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    applyFilters();
+}
+
+function initTheme() {
+    // Not persisted: every visit opens in the system theme.
+    document.getElementById('themeToggle').addEventListener('click', () => {
+        const root = document.documentElement;
+        const dark = root.dataset.theme === 'dark' ||
+            (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+        root.dataset.theme = dark ? 'light' : 'dark';
+    });
+}
+
+function esc(text) {
+    return String(text ?? '').replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[m]));
+}
+
+function formatDate(d) {
+    const date = new Date(d + 'T00:00:00Z');
+    if (isNaN(date)) return esc(d);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+</script>
+
+</body></html>

@@ -1,0 +1,1920 @@
+{
+  "findings": [
+    {
+      "id": "disp-001",
+      "title": "CRA/LA declares Parcel Y-1 surplus land",
+      "summary": "On October 24, 2025, CRA/LA voted to declare Bunker Hill Parcel Y-1 (Angels Knoll site, 361 South Hill Street) surplus land after option agreements with the City of Los Angeles expired.",
+      "details": [
+        "CRA/LA, the successor to the Community Redevelopment Agency, voted to declare the property surplus under the Surplus Land Act.",
+        "- Property: Bunker Hill Parcel Y-1 (Angels Knoll site), 361 South Hill Street, Downtown Los Angeles",
+        "- Trigger: option agreements with the City of Los Angeles expired on September 30, 2025",
+        "- Reported by Commercial Observer (October 2025) and Bisnow"
+      ],
+      "topic": "Disposition & Notice",
+      "date": "2025-10-24",
+      "sources": [
+        {
+          "type": "news",
+          "title": "Commercial Observer: Two Major L.A. Developments Formally Nixed as State Prepares to Market Sites (October 2025)",
+          "url": "https://commercialobserver.com/2025/10/la-angels-landing-surplus-land-development/"
+        },
+        {
+          "type": "news",
+          "title": "Bisnow: Downtown's Former Angels Landing Site Could Be Headed To Auction",
+          "url": "https://www.bisnow.com/los-angeles/news/construction-development/downtowns-former-angels-landing-site-could-be-on-the-auction-block-soon-132018"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1"
+    },
+    {
+      "id": "disp-002",
+      "title": "City option agreements on Y-1 expired",
+      "summary": "The option agreements between CRA/LA and the City of Los Angeles for the site expired on September 30, 2025, which the file identifies as the trigger for the surplus declaration.",
+      "details": [
+        "The file lists the September 30, 2025 expiration of the City's option agreements as the event that led CRA/LA to take up the surplus declaration less than a month later.",
+        "- September 30, 2025: option agreements expired",
+        "- October 24, 2025: CRA/LA voted to declare Parcel Y-1 surplus"
+      ],
+      "topic": "Disposition & Notice",
+      "date": "2025-09-30",
+      "sources": [
+        {
+          "type": "news",
+          "title": "Commercial Observer (October 2025) and Bisnow reporting",
+          "url": "https://commercialobserver.com/2025/10/la-angels-landing-surplus-land-development/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1"
+    },
+    {
+      "id": "disp-003",
+      "title": "Notice of Availability not issued as of Sept 18, 2026",
+      "summary": "As of September 18, 2026, roughly 11 months after the surplus declaration, no Notice of Availability (NOA) for Parcel Y-1 had been issued.",
+      "details": [
+        "Under the standard process, the file expected the NOA to be issued around late October / early November 2025, with the 60-day response window running roughly November 2025 to January 2026. That did not happen.",
+        "- Status on September 18, 2026: NOA not yet issued",
+        "- Related litigation: still ongoing, with no indication of resolution",
+        "- The file attributes the delay to the litigation extension in Gov Code §54234(a)(2) (see disp-004; the statute's text does not support this reading)",
+        "Note: the file gives the delay as '11 months and 25 days (or 355 days)'. That figure does not match the dates given (October 24, 2025 to September 18, 2026 is about 11 months), so treat the day count as unreliable.",
+        "- Checked Sept 27, 2026: the HCD dataset (updated Sept 25, 2026) still lists no notice for Y-1."
+      ],
+      "topic": "Disposition & Notice",
+      "date": "2026-09-18",
+      "sources": [
+        {
+          "type": "official",
+          "title": "CRA/LA Surplus Land Notices Page",
+          "url": "https://www.lacda.org/public-notices/surplus-land"
+        },
+        {
+          "type": "official",
+          "title": "HCD Notices of Available Locally-Owned Surplus Land Map",
+          "url": "https://www.hcd.ca.gov/housing-open-data-tools/notices-available-surplus-land-map"
+        },
+        {
+          "type": "official",
+          "title": "HCD Surplus Land Act Notices of Availability dataset (updated Sept 25, 2026)",
+          "url": "https://data.ca.gov/dataset/surplus-land-act-notices-of-availability-received"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1"
+    },
+    {
+      "id": "disp-004",
+      "title": "Section 54234: real statute, but it doesn't clearly explain the NOA delay",
+      "summary": "The research files said Gov Code Section 54234(a)(2) freezes the Y-1 notice during the lawsuit. The statute's text extends completion deadlines for pre-2019 deals; it does not say a new notice must wait. Why CRA/LA is holding the notice is unconfirmed.",
+      "details": [
+        "The statute says the specified deadlines are extended when the disposition of the property, the agency's right or ability to dispose of it, or a development project proposed for it is the subject of a judicial challenge. The extension runs to six months after that litigation finally concludes.",
+        "- The file argues that the Angels Landing Partners case (24STCV32173) triggers the extension because it involves both the disposition and a development project proposed for the property",
+        "- Result: disposition deadlines, including NOA issuance, are extended until six months after the litigation concludes",
+        "- The file calls the delay legally defensible, but notes CRA/LA has not publicly explained it",
+        "- Checked Sept 27, 2026 against the official text: Section 54234 lets deals under an exclusive negotiating agreement signed before Sept 30, 2019 finish under the old law by Dec 31, 2027, and extends that completion deadline to six months after any litigation ends. It does not say a new Notice of Availability must wait. The extension language is not in paragraph (a)(2), which covers the Metro North Hollywood project.",
+        "- Angels Landing's exclusive negotiating agreement was signed March 28, 2018, so the grandfathered deal may be what the lawsuit keeps alive. That link is our inference."
+      ],
+      "topic": "Disposition & Notice",
+      "date": null,
+      "sources": [
+        {
+          "type": "legal",
+          "title": "California Government Code Section 54234",
+          "url": "https://codes.findlaw.com/ca/government-code/gov-sect-54234/"
+        },
+        {
+          "type": "legal",
+          "title": "Gov Code Section 54234 (official text)",
+          "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=54234"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "low",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1"
+    },
+    {
+      "id": "disp-005",
+      "title": "Remaining steps before Y-1 NOA can issue",
+      "summary": "According to the file, the Y-1 disposition can move forward only after the litigation reaches a final conclusion, a six-month period then passes, and the NOA is issued, which opens the 60-day window for letters of interest.",
+      "details": [
+        "- Step 1: the litigation reaches a final conclusion, by settlement or judgment",
+        "- Step 2: the six-month extension period under §54234 runs",
+        "- Step 3: the NOA is issued to all qualified recipients at the same time (HCD, local public entities, and registered affordable housing developers / housing sponsors)",
+        "- Step 4: the 60-day window for written letters of interest begins, and if any are received, at least 90 days of good-faith negotiation follow",
+        "The file gives no trial date or settlement timeline, so it cannot say when the NOA might issue.",
+        "- Caution: these steps assume Section 54234 blocks the notice. The statute's text does not say so (see disp-004)."
+      ],
+      "topic": "Disposition & Notice",
+      "date": null,
+      "sources": [
+        {
+          "type": "legal",
+          "title": "California Government Code Section 54234",
+          "url": "https://codes.findlaw.com/ca/government-code/gov-sect-54234/"
+        },
+        {
+          "type": "legal",
+          "title": "California Government Code Section 54222",
+          "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=54222"
+        },
+        {
+          "type": "legal",
+          "title": "Gov Code Section 54234 (official text)",
+          "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=54234"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1"
+    },
+    {
+      "id": "disp-006",
+      "title": "Open question: no public CRA/LA or HCD statement on the NOA delay",
+      "summary": "The file found no public CRA/LA statement, board minutes, or HCD correspondence or guidance about the delayed Y-1 notice.",
+      "details": [
+        "- No official CRA/LA statements about the delay were found in public records",
+        "- No board meeting minutes addressing the NOA delay were found",
+        "- No HCD correspondence or property-specific guidance on the §54234 extension was found; the HCD portal accepts notices but may not track delays",
+        "- No comparable litigation-related delays were found for other Los Angeles properties"
+      ],
+      "topic": "Disposition & Notice",
+      "date": null,
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 research report, Section 1 open questions"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1"
+    },
+    {
+      "id": "lit-001",
+      "title": "Angels Landing Partners v. City of Los Angeles (24STCV32173) filed",
+      "summary": "Angels Landing Partners LLC (Don Peebles and Victor MacFarlane) sued the City of Los Angeles in LA County Superior Court for breach of contract over the termination of the $1.6 billion Angels Landing project, seeking $20 million.",
+      "details": [
+        "- Case number: 24STCV32173, Los Angeles County Superior Court, Judge Richard L. Fruin Jr.",
+        "- Plaintiffs: Angels Landing Partners LLC, The Peebles Corporation, and MacFarlane Partners LLC",
+        "- Claims: mainly breach of contract, plus unjust enrichment and wrongful termination of development rights; the file also mentions alleged political interference and discriminatory treatment",
+        "- Damages sought: $20 million in out-of-pocket costs (planning and design, legal, architectural, and due-diligence/pre-development work)",
+        "Date discrepancy: the file gives the filing date as December 6, 2024 in two places, but its timeline table says 'January 2025'. The January date may reflect press coverage (TheRealDeal, January 17, 2025)."
+      ],
+      "topic": "Litigation",
+      "date": "2024-12-06",
+      "sources": [
+        {
+          "type": "court",
+          "title": "Case 24STCV32173 - Trellis Legal Intelligence",
+          "url": "https://trellis.law/case/24stcv32173/angels-landing-partners-llc-vs-city-los-angeles"
+        },
+        {
+          "type": "news",
+          "title": "TheRealDeal: City of Los Angeles Faces Lawsuit for Angels Landing Project (January 17, 2025)",
+          "url": "https://therealdeal.com/la/2025/01/17/city-of-los-angeles-faces-lawsuit-for-angels-landing-project/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1, §2"
+    },
+    {
+      "id": "lit-002",
+      "title": "City terminated the Angels Landing agreement in February 2024",
+      "summary": "In February 2024 the City of Los Angeles terminated its agreement with Angels Landing Partners, citing an unauthorized 'transfer of interest'. The developers call the termination retaliatory.",
+      "details": [
+        "Angels Landing Partners was chosen through a City RFQ in 2017 (April 2017 in the timeline table). In some places the file calls the terminated agreement a 'development agreement' and elsewhere an 'Exclusive Negotiating Agreement (ENA)'.",
+        "- City's position: the developers breached the agreement through an unauthorized transfer of interest without proper consent. The file also mentions alleged mismanagement.",
+        "- Developers' position: acquiring Claridge Properties' equity stake was a legitimate restructuring that complied with the contract, and the termination was retaliatory, politically influenced, and possibly discriminatory",
+        "- Planned project: about $1.6 billion (the file also gives $1.6–2.0 billion), with two towers, a hotel, retail and restaurants, and a charter school, originally due in 2028"
+      ],
+      "topic": "Litigation",
+      "date": null,
+      "sources": [
+        {
+          "type": "news",
+          "title": "Law Advocate Group - Angels Landing Lawsuit Overview",
+          "url": "https://lawadvocategroup.com/developers-sue-city-of-los-angeles-over-1-6-billion-angels-landing-project-termination/"
+        },
+        {
+          "type": "news",
+          "title": "TheRealDeal: City of Los Angeles Faces Lawsuit for Angels Landing Project",
+          "url": "https://therealdeal.com/la/2025/01/17/city-of-los-angeles-faces-lawsuit-for-angels-landing-project/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1, §2"
+    },
+    {
+      "id": "lit-003",
+      "title": "Judge Fruin partially overrules City's demurrer",
+      "summary": "On March 11, 2025, Judge Richard L. Fruin Jr. overruled the City's demurrer in part, including on breach of contract, and sustained it in part with leave to amend, so the case could proceed.",
+      "details": [
+        "- The demurrer was overruled on the breach of contract cause of action",
+        "- It was sustained with leave to amend on other claims",
+        "- The plaintiffs got past the initial dismissal stage, and the case moved on toward discovery or further motions",
+        "The file reads this ruling as confirmation that the litigation is ongoing, which it says keeps the Section 54234 extension in effect. See disp-004: the statute's text does not clearly support that."
+      ],
+      "topic": "Litigation",
+      "date": "2025-03-11",
+      "sources": [
+        {
+          "type": "court",
+          "title": "Judge Richard L. Fruin Tentative Ruling - March 11, 2025",
+          "url": "https://rulings.law/rulings/judge-richard-l-fruin/24stcv32173-2025-03-11.html"
+        },
+        {
+          "type": "court",
+          "title": "Case 24STCV32173 - Trellis Legal Intelligence",
+          "url": "https://trellis.law/case/24stcv32173/angels-landing-partners-llc-vs-city-los-angeles"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1, §2"
+    },
+    {
+      "id": "lit-004",
+      "title": "No public settlement as of September 18, 2026",
+      "summary": "As of September 18, 2026, no settlement between Angels Landing Partners and the City had been publicly announced, and the state case was still active.",
+      "details": [
+        "The file says the parties have disclosed no settlement and no resolution has been reported in public sources. Its procedural description is 'post-demurrer'.",
+        "- The file estimates the case could take 1–3+ years from filing to trial or resolution (and elsewhere 2–4+ years for typical LA County cases)",
+        "- The site remains vacant and undeveloped as of September 2026",
+        "- Update: the federal docket shows a settlement filing (Doc 38, Sept 10, 2026) and a stipulation and order (Doc 40, Sept 12, 2026) staying the case pending final approval. Settlement terms are still not public (see lit-005)."
+      ],
+      "topic": "Litigation",
+      "date": "2026-09-18",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 research report, Section 2 (based on absence of public reporting)"
+        },
+        {
+          "type": "court",
+          "title": "Angels Landing Partners v. City of Los Angeles, 2:26-cv-01524 (C.D. Cal.) - CourtListener docket",
+          "url": "https://www.courtlistener.com/docket/72274851/angels-landing-partners-llc-v-city-of-los-angeles/"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §2"
+    },
+    {
+      "id": "lit-005",
+      "title": "Federal case 2:26-cv-01524 stayed pending settlement approval",
+      "summary": "Angels Landing Partners v. City of Los Angeles, 2:26-cv-01524 (C.D. Cal.), was filed Feb 12, 2026. On Sept 10, 2026 the parties filed a joint stipulation to stay the case pending final approval of a settlement, and the court entered the stipulation and order on Sept 12, 2026.",
+      "details": [
+        "- Feb 12, 2026: complaint filed (Doc 1)",
+        "- Aug 18, 2026: amended complaint filed (Doc 34)",
+        "- Sept 10, 2026: settlement filing with a proposed order granting a joint stipulation to stay pending final approval (Doc 38)",
+        "- Sept 12, 2026: stipulation and order entered (Doc 40); this is the last known filing",
+        "- Settlement terms, and whether the state case 24STCV32173 is also stayed, are not public",
+        "- Checked on CourtListener Sept 27, 2026 (docket last updated there Sept 16, 2026; entries come from PACER and may lag)"
+      ],
+      "topic": "Litigation",
+      "date": "2026-09-12",
+      "sources": [
+        {
+          "type": "court",
+          "title": "Angels Landing Partners v. City of Los Angeles, 2:26-cv-01524 (C.D. Cal.) - CourtListener docket",
+          "url": "https://www.courtlistener.com/docket/72274851/angels-landing-partners-llc-v-city-of-los-angeles/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §2"
+    },
+    {
+      "id": "lit-006",
+      "title": "Open questions: discovery, settlement talks, trial timeline",
+      "summary": "The file leaves several litigation questions unanswered: whether discovery has started, whether settlement talks exist, when a trial might happen, and whether any ADR is under way.",
+      "details": [
+        "- Has discovery started in 24STCV32173? Unknown as of September 18, 2026",
+        "- Has any settlement negotiation begun? No public indication",
+        "- When is trial? No trial date was found; the file estimates 2–4+ years from filing for typical LA County cases",
+        "- Has the City filed responsive briefs after the demurrer ruling? Documents were not accessible",
+        "- Are there administrative appeals or ADR proceedings? No public indication",
+        "Why it matters: the Y-1 NOA timeline depends on when this litigation finally ends (see disp-004)."
+      ],
+      "topic": "Litigation",
+      "date": null,
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 research report, Sections 1-2 open questions"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1, §2"
+    },
+    {
+      "id": "sla-001",
+      "title": "SLA notice rule: all qualified entities notified at once",
+      "summary": "Under Gov Code §§54222/54223, the agency sends a written Notice of Availability to HCD, local public entities, and registered housing sponsors at the same time, and every qualified entity gets the same 60-day window to respond.",
+      "details": [
+        "- The NOA must go out at least 30 days before any disposition, by email or certified mail",
+        "- Recipients: HCD, local public entities with jurisdiction, and certified affordable housing developers ('housing sponsors') on HCD's registry",
+        "- Qualified entities have 60 calendar days to express interest in writing",
+        "- The notice is not sequential: no recipient gets an earlier or longer window",
+        "- If no letters of interest arrive, the file says the property can move to public auction"
+      ],
+      "topic": "Surplus Land Act",
+      "date": null,
+      "sources": [
+        {
+          "type": "legal",
+          "title": "California Government Code Section 54222",
+          "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=54222"
+        },
+        {
+          "type": "official",
+          "title": "HCD Final Updated Surplus Land Act Guidelines (August 1, 2024)",
+          "url": "https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/final-updated-surplus-land-act-guidelines-2024.pdf"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §1, §4"
+    },
+    {
+      "id": "sla-002",
+      "title": "Affordable housing gets priority among multiple respondents",
+      "summary": "If more than one qualified entity expresses interest, the agency must give first priority to affordable housing (Gov Code Section 54227(a)) (unless the property is designated for parks or recreation), and then negotiate in good faith for at least 90 days.",
+      "details": [
+        "There is no tiered order that gives cultural organizations or any other party first choice. When several qualified entities respond, affordable housing gets priority.",
+        "- Good-faith negotiation must last at least 90 days (Gov Code §54223)",
+        "- HCD's definition of good faith: serious effort, reasonable meeting times, prompt responses, and consideration of reasonable offers. Refusing to meet, ignoring offers, or demanding large departures from the NOA do not count.",
+        "- Example (Sacramento, 3625 Fong Ranch Road, declared March 2, 2021): two affordable housing entities responded, and the city chose Anton DevCo's proposal because it offered the most affordable units",
+        "- Corrected Sept 27, 2026: the research files cited Sections 54222/54223 for this rule. The priority rule is in Section 54227(a). Section 54223 covers the 90-day negotiation."
+      ],
+      "topic": "Surplus Land Act",
+      "date": null,
+      "sources": [
+        {
+          "type": "legal",
+          "title": "Gov Code Section 54227 (official text)",
+          "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=54227"
+        },
+        {
+          "type": "legal",
+          "title": "California Government Code Sections 54222, 54223",
+          "url": "https://leginfo.legislature.ca.gov"
+        },
+        {
+          "type": "official",
+          "title": "HCD Sacramento Disposition Case (December 2021)",
+          "url": "https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/HAU/Sacramento-Disposition-120821.pdf"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §4"
+    },
+    {
+      "id": "sla-003",
+      "title": "Affordability covenant: 15% or 25% of units, 55/45-year terms",
+      "summary": "When 10 or more residential units are built on surplus land, at least 15% must be affordable, or 25% if the receiving entity is dedicated to affordable housing. The covenant lasts 55 years for rentals and 45 years for ownership housing.",
+      "details": [
+        "- Tribal trust lands: 25% affordable for 50 years",
+        "- Income target: lower-income households, described as 70–80% of AMI depending on the provision (the file flags this as unresolved)",
+        "- Affordable cost is defined under Health & Safety Code §50052.5 (housing cost) and §50053 (rent). Lower-income is defined under §50079.5.",
+        "- The deed restriction must be recorded before the land use entitlement, runs with the land, and binds all successors",
+        "- It can be enforced by local public entities, HCD, housing developers, qualified entities, community land trusts, and California Indian Tribes"
+      ],
+      "topic": "Surplus Land Act",
+      "date": null,
+      "sources": [
+        {
+          "type": "legal",
+          "title": "California Government Code Section 54221",
+          "url": "https://leginfo.legislature.ca.gov"
+        },
+        {
+          "type": "official",
+          "title": "HCD Final Updated Surplus Land Act Guidelines (August 1, 2024)",
+          "url": "https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/final-updated-surplus-land-act-guidelines-2024.pdf"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §4"
+    },
+    {
+      "id": "sla-004",
+      "title": "SLA violation penalties: 30% first, 50% subsequent",
+      "summary": "Under Gov Code §54230, a first violation carries a penalty of 30% of the greater of the final sale price or fair market value, and later violations carry 50%. There is also a broad private right of action.",
+      "details": [
+        "- The penalty applies when an agency disposes of land in violation after HCD has notified it",
+        "- HCD issues a findings letter about 30 calendar days after a complete submission, and the agency then has at least 30 days to correct the problem or adopt an explanatory resolution",
+        "- Low-income individuals, certified affordable housing developers, advocacy groups, and other interested parties can sue for injunctive relief, penalties, and attorney fees",
+        "- Enforcement activity: HCD has issued 816+ letters since 2021, and the file credits the program with 28,419 housing units (16,772 affordable)"
+      ],
+      "topic": "Surplus Land Act",
+      "date": null,
+      "sources": [
+        {
+          "type": "legal",
+          "title": "California Government Code Section 54230",
+          "url": "https://leginfo.legislature.ca.gov"
+        },
+        {
+          "type": "legal",
+          "title": "AB 1486 (2019) Full Text",
+          "url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=201920200AB1486"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §4"
+    },
+    {
+      "id": "sla-005",
+      "title": "Successor agencies such as CRA/LA are subject to the SLA",
+      "summary": "Successor agencies to former redevelopment agencies fall within the SLA's definition of 'local agency'. There is no blanket successor-agency exemption, so the Y-1 disposition goes through SLA procedures unless a standard exemption applies.",
+      "details": [
+        "- Standard exemptions include agency-to-agency transfers for government use, transfers to California Indian Tribes or community land trusts, small parcels (<5,000 sq ft, or <10,000 sq ft under certain conditions), former rights-of-way, property with existing affordability restrictions, and certain park/recreation land",
+        "- Each disposition is reviewed separately for exemption eligibility",
+        "- Related precedent: Anderson v. City of San Jose (2019, Sixth District Court of Appeal) held that charter cities, including Los Angeles, are subject to the SLA"
+      ],
+      "topic": "Surplus Land Act",
+      "date": null,
+      "sources": [
+        {
+          "type": "legal",
+          "title": "California Government Code Sections 54221-54234",
+          "url": "https://leginfo.legislature.ca.gov"
+        },
+        {
+          "type": "court",
+          "title": "Anderson v. City of San Jose (2019) - Public Advocates press release",
+          "url": "https://publicadvocates.org/press-releases-and-statements/press-release-court-rules-that-ca-charter-cities-must-prioritize-surplus-public-land-for-affordable-housing-development/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §4"
+    },
+    {
+      "id": "sla-006",
+      "title": "AB 1734: LA-only charter city exemption through 2034",
+      "summary": "AB 1734 (Jones-Sawyer, signed in 2024) creates an SLA exemption for charter cities with more than 2.5 million people, a category only Los Angeles currently meets. It covers land used for navigation centers, supportive housing, youth transitional housing, and affordable housing, and sunsets January 1, 2034.",
+      "details": [
+        "- Conditions: a compliant housing element, an HCD 'pro-housing' designation, and specific development requirements",
+        "- Covered uses: low-barrier navigation centers, supportive housing, youth transitional housing, affordable housing",
+        "- Other 2024 bills: SB 747 and AB 480 clarified what 'participating in negotiations' means (RFP/RFQ issuance, lease negotiations, and ENAs are excluded) and added agency-use exemptions for ports, broadband/wireless sites, and waste-facility buffer sites",
+        "- The file does not say whether AB 1734 applies to Y-1, which CRA/LA, not the City, is disposing of"
+      ],
+      "topic": "Surplus Land Act",
+      "date": null,
+      "sources": [
+        {
+          "type": "legal",
+          "title": "AB 1734 (2024) Full Text",
+          "url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202320240AB1734"
+        },
+        {
+          "type": "legal",
+          "title": "SB 747 (2024) Full Text",
+          "url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202320240SB747"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §4"
+    },
+    {
+      "id": "sla-007",
+      "title": "HCD Final Updated SLA Guidelines released",
+      "summary": "On August 1, 2024, HCD released its Final Updated Surplus Land Act Guidelines, which incorporate the 2024 amendments, along with a Response to Public Comments.",
+      "details": [
+        "- Companion HCD documents: SLA Statement of Reasons, SLA Disposition Checklist, and the Draft Guidelines Presentation (March 6, 2024)",
+        "- HCD's Housing Accountability Unit provides technical assistance and findings letters on NOA submissions",
+        "- HCD keeps a registry of housing sponsors, and developers on it receive NOA notifications",
+        "- Earlier foundation: AB 1486 (Ting, 2019), effective January 1, 2020, broadened the definition of surplus land, narrowed exemptions, required a formal declaration at a public meeting, and set up the penalty structure"
+      ],
+      "topic": "Surplus Land Act",
+      "date": "2024-08-01",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Final Updated Surplus Land Act Guidelines (August 1, 2024 PDF)",
+          "url": "https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/final-updated-surplus-land-act-guidelines-2024.pdf"
+        },
+        {
+          "type": "official",
+          "title": "HCD Surplus Land Act Home Page",
+          "url": "https://www.hcd.ca.gov/planning-and-research/public-lands/surplus-land"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §4"
+    },
+    {
+      "id": "sla-008",
+      "title": "Open questions: SLA implementation gaps relevant to Y-1",
+      "summary": "The file lists unresolved SLA implementation issues. The ones most relevant to Y-1 are unclear HCD enforcement for CRA successor-agency dispositions, the 70% vs 80% AMI targeting question, and how long-term covenants get enforced.",
+      "details": [
+        "- Successor agency guidance: little published guidance exists, and HCD's enforcement approach to CRA-related dispositions is unclear",
+        "- Income targeting: provisions refer to 70% or 80% AMI, and HCD has not clarified which applies when",
+        "- Good-faith negotiation: the scope is still disputed case by case, and HCD's interpretation is evolving",
+        "- Covenant enforcement: it is hard to identify who is responsible for 45–55+ year covenants once the property changes hands",
+        "- Deadline pressure: many agencies face the December 31, 2027 extended disposition deadline, which could strain HCD's review capacity",
+        "- The file notes there are few published case studies of CRA successor-agency dispositions"
+      ],
+      "topic": "Surplus Land Act",
+      "date": null,
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 research report, Section 4 Part IX open questions"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §4"
+    },
+    {
+      "id": "hist-001",
+      "title": "Arthur Erickson wins 1980 California Plaza master plan competition",
+      "summary": "Arthur Erickson beat the 'All-Stars' consortium to win the Bunker Hill / California Plaza master plan competition in 1980; the City Council approved the California Plaza Project on January 19, 1982.",
+      "details": [
+        "The competition was announced in 1979. Erickson competed against an 'All-Stars' consortium that included Frank Gehry, Barton Myers, Charles Moore, Cesar Pelli and Lawrence Halprin. By summer 1980 the two were the final contenders, and Erickson was selected by mid-1980.",
+        "- 1980: first master plan completed; 1980-1981: second master plan developed",
+        "- September 1981: CRA/LA prepared the California Center Environmental Impact Report",
+        "- January 19, 1982: LA City Council approved the California Plaza Project for Bunker Hill; construction was slated to begin in fall 1982",
+        "- Project scope: 11.2 acres (four downtown blocks), roughly $1.2 billion over 10 years, developer Bunker Hill Associates, on public land obtained from the City"
+      ],
+      "topic": "1980 Bargain & History",
+      "date": "1980-01-01",
+      "sources": [
+        {
+          "type": "archival",
+          "title": "California Plaza Competition and Master Plan - Arthur Erickson fonds, CCA",
+          "url": "https://www.cca.qc.ca/en/archives/108951/arthur-erickson-fonds/397577/architectural-projects/413109/california-plaza-competition-and-master-plan"
+        },
+        {
+          "type": "archival",
+          "title": "PCAD - California Plaza Master Plan, Bunker Hill",
+          "url": "https://pcad.lib.washington.edu/building/6501/"
+        },
+        {
+          "type": "news",
+          "title": "California Plaza - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/California_Plaza"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §3"
+    },
+    {
+      "id": "hist-002",
+      "title": "CCA holds Erickson's original California Plaza master plan materials",
+      "summary": "The Canadian Centre for Architecture's Arthur Erickson fonds holds the 1979-1980 competition and master plan materials, including the first and second plans. Access is by appointment only.",
+      "details": [
+        "CCA acquired the fonds directly from Erickson in 1987 and added to it twelve times between 1989 and 2004. Archivists Alexandra Jokinen and Catherine Jacob reprocessed it in 2020-2021. The catalogue reference is AP022.S1.1979.PR07.",
+        "- Holdings: the California Plaza Competition and Master Plan (1979-1980) and the California Plaza Phase 2A documentation",
+        "- Design development and presentation drawings, slides, composite photographs, models",
+        "- Phase 2A includes a 54-storey office tower design plus retail and performance plaza specifications; 18 rolls of transmittal sheets (paving layouts, framing plans, structural steel)",
+        "- Inquiries: archives@cca.qc.ca. The drawings that might show how the museum was classified can only be seen in person."
+      ],
+      "topic": "1980 Bargain & History",
+      "date": null,
+      "sources": [
+        {
+          "type": "archival",
+          "title": "Arthur Erickson fonds | CCA",
+          "url": "https://www.cca.qc.ca/en/archives/108951/arthur-erickson-fonds"
+        },
+        {
+          "type": "archival",
+          "title": "California Plaza Phase 2A - Arthur Erickson fonds | CCA",
+          "url": "https://www.cca.qc.ca/en/archives/108951/fonds-arthur-erickson/397577/architectural-projects/417597/california-plaza-phase-2a"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §3"
+    },
+    {
+      "id": "hist-003",
+      "title": "USC and LA City Archives hold Bunker Hill redevelopment and CRA records",
+      "summary": "USC Special Collections holds the Bunker Hill Redevelopment Project records (1938-1997), including the 1983 MOCA Outline Specifications. The City of Los Angeles Archives holds CRA development agreements.",
+      "details": [
+        "The USC collection includes legal documents, reports, studies and design proposals. One key item is the Museum of Contemporary Art Outline Specifications (Arata Isozaki Assoc. and Gruen Assoc., 1983). The finding aid is OAC ark:/13030/kt6t1nf3kt.",
+        "The City of Los Angeles Archives holds CRA reports, publications and development agreements (reference 7037), including joint venture agreements and California Plaza approval documentation.",
+        "- These are candidate repositories for CRA board minutes (1979-1982) and for any document describing the museum mandate. The file does not say they have been searched yet."
+      ],
+      "topic": "1980 Bargain & History",
+      "date": null,
+      "sources": [
+        {
+          "type": "archival",
+          "title": "Finding Aid of the Bunker Hill Redevelopment Project records 0226 (OAC)",
+          "url": "https://oac.cdlib.org/findaid/ark:/13030/kt6t1nf3kt"
+        },
+        {
+          "type": "archival",
+          "title": "City of Los Angeles Archives - CRA records (reference 7037)"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §3"
+    },
+    {
+      "id": "hist-004",
+      "title": "Museum deal: developer builds 100,000-sf museum; MOCA raises $10M",
+      "summary": "According to the file, CRA/LA required the developer to build a 100,000-sq-ft museum at no cost to MOCA, and MOCA in turn had to raise a $10 million operations endowment. The file says the museum was funded through a 1.5% public-art allocation from Bunker Hill development budgets.",
+      "details": [
+        "The file calls the arrangement a CRA/LA-brokered deal tied to development financing, not a standalone requirement. The museum was MOCA (contemporary art), not a local history museum.",
+        "- Funding mechanism: 1.5% of Bunker Hill construction budgets went to public art. Section 3 calls this a 'California 1.5% public art requirement'; Sections 6 and 8 describe it as a Bunker Hill development requirement.",
+        "- Section 8 repeats the terms: 100,000 sq ft, $23M cost, built by Bunker Hill Associates at no cost to MOCA, MOCA to raise $10M for operations",
+        "- Caution: the file lists this as 'confirmed', but it gives no primary agreement text for it. The terms come from secondary sources such as the LA Conservancy and Wikipedia. The binding source document has not been located (see hist-006)."
+      ],
+      "topic": "1980 Bargain & History",
+      "date": null,
+      "sources": [
+        {
+          "type": "news",
+          "title": "Museum of Contemporary Art - LA Conservancy",
+          "url": "https://www.laconservancy.org/learn/historic-places/museum-of-contemporary-art/"
+        },
+        {
+          "type": "news",
+          "title": "Museum of Contemporary Art, Los Angeles - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Museum_of_Contemporary_Art,_Los_Angeles"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §3, §8"
+    },
+    {
+      "id": "hist-005",
+      "title": "MOCA building: Isozaki design, $23M, built 1983-1987",
+      "summary": "Arata Isozaki designed MOCA's sunken, red-sandstone-clad building at 250 S. Grand Ave. It cost $23 million and was built between 1983 and 1987.",
+      "details": [
+        "The design dates from the early 1980s. Its red sandstone was meant to contrast with the glass-and-steel towers around it.",
+        "- Section 3: building completed in 1986; MOCA opened its permanent quarters in 1987",
+        "- Section 6 says the building 'opened 1986'. The file's dates for completion and opening are inconsistent.",
+        "- Section 6 says MOCA anchors a cultural corridor with Walt Disney Concert Hall and The Broad"
+      ],
+      "topic": "1980 Bargain & History",
+      "date": "1986-01-01",
+      "sources": [
+        {
+          "type": "archival",
+          "title": "PCAD - Museum of Contemporary Art (MOCA), Downtown, Los Angeles",
+          "url": "https://pcad.lib.washington.edu/building/281/"
+        },
+        {
+          "type": "news",
+          "title": "MOCA: Museum of Contemporary Art in Los Angeles by Arata Isozaki - ArchEyes",
+          "url": "https://archeyes.com/moca-arata-isozaki/"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §3, §6"
+    },
+    {
+      "id": "hist-006",
+      "title": "The '1980 bargain' / museum clause document has not been located",
+      "summary": "No separate '1980 bargain' document with binding museum language has been found in public sources. Its existence, exact terms and binding force are all unknown.",
+      "details": [
+        "Section 3 lists the missing items: an explicit 'local history museum' reference, the 1980 bargain document with binding language, Erickson's original drawings showing how the museum was classified, the original competition requirements, and CRA board minutes describing the museum mandate.",
+        "- Section 3 concludes that the specific binding language of any 1980 bargain is unconfirmed ('likely exists but not digitized/publicly accessible')",
+        "- Section 8 asks whether the 'bargain' is actually the September 30, 1981 DDA or an earlier 1980 agreement",
+        "- Section 7 asks whether the MOCA provision was a formal condition of California Plaza development or was negotiated separately",
+        "- Likely repositories: CRA/LA archives, Bunker Hill Associates corporate records, LA City Planning archives, CCA, USC Special Collections"
+      ],
+      "topic": "1980 Bargain & History",
+      "date": null,
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 research compilation - open questions, Sections 3, 7, 8"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "low",
+      "sourceFile": "Y-1_V2_Complete_Research.md §3, §7, §8"
+    },
+    {
+      "id": "hist-007",
+      "title": "No evidence found of a 'local history museum' in the original program",
+      "summary": "Public records show MOCA as the only documented museum component. Nothing found shows a local history museum was ever programmed, or when a switch to contemporary art might have happened.",
+      "details": [
+        "The file suggests an early competition brief might have mentioned local history before MOCA was chosen, but there is no evidence for this.",
+        "- If any change happened, the second master plan (1980-1981) in the CCA archives might reflect it. This is unknown without access to the competition documents.",
+        "- Suggested next step: write directly to the CCA archives or USC Libraries"
+      ],
+      "topic": "1980 Bargain & History",
+      "date": null,
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 research compilation - Section 3 open questions"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "low",
+      "sourceFile": "Y-1_V2_Complete_Research.md §3"
+    },
+    {
+      "id": "hist-008",
+      "title": "Media archive search for the 1979-1985 era is incomplete",
+      "summary": "The media coverage section is mostly a framework. No 1979-1985 LA Times articles on the bargain or the MOCA provision have been pulled, and several sections are still marked 'awaiting research agent findings'.",
+      "details": [
+        "The only specific citations come from Wikipedia references:",
+        "- Brad Berton, LA Business Journal (April 26, 1993): the Los Angeles CRA's notice-of-default suit against Bunker Hill Associates",
+        "- Roger Vincent, LA Times (Feb 13, 2014): 'With sale of Two California Plaza, Bunker Hill is poised for comeback'; and (Oct 1, 2014) on a new Bunker Hill apartment high-rise",
+        "- Kathryn Maese, Downtown News (March 28, 2005), on a planning shift for housing",
+        "- Access barriers: LA Times 1980 articles are paywalled; KPCC, Curbed LA and the California Digital Library have access limits",
+        "- Open questions: what public statements framed MOCA as a trade-off for development, and did any outlet cover the displacement of low-income residents?"
+      ],
+      "topic": "1980 Bargain & History",
+      "date": null,
+      "sources": [
+        {
+          "type": "news",
+          "title": "Brad Berton, LA Business Journal, 26 Apr 1993 (via Wikipedia citation)"
+        },
+        {
+          "type": "news",
+          "title": "Roger Vincent, LA Times, 13 Feb 2014 (via Wikipedia citation)"
+        },
+        {
+          "type": "news",
+          "title": "Bunker Hill, Los Angeles - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Bunker_Hill,_Los_Angeles"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "low",
+      "sourceFile": "Y-1_V2_Complete_Research.md §7"
+    },
+    {
+      "id": "ent-001",
+      "title": "Angels Landing CEQA milestones: NOP 2019, Draft EIR 2021, Final EIR May 2021",
+      "summary": "The Angels Landing EIR (SCH #2019039164; LA case ENV-2018-3273-EIR) had its Notice of Preparation on March 29, 2019, its Draft EIR on January 14, 2021, and its Final EIR received on May 27, 2021.",
+      "details": [
+        "The lead agency is the City of Los Angeles Department of City Planning. The project address is 361 S. Hill Street.",
+        "- NOP filed: March 29, 2019",
+        "- Draft EIR received January 14, 2021; public review ran 1/14/2021 to 3/1/2021",
+        "- Final EIR received by the State Clearinghouse on May 27, 2021",
+        "- A Mitigation Monitoring Plan (235 KB PDF) is attached to the FEIR on CEQAnet, but the file's research did not access its contents"
+      ],
+      "topic": "Zoning & Entitlements",
+      "date": "2021-05-27",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Landing - CEQAnet Main Page",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3"
+        },
+        {
+          "type": "official",
+          "title": "Angels Landing FEIR - CEQAnet",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/4"
+        },
+        {
+          "type": "official",
+          "title": "Angels Landing Notice of Preparation",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/nop.pdf"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §5"
+    },
+    {
+      "id": "ent-002",
+      "title": "Formal CEQA certification date of the Angels Landing FEIR is unknown",
+      "summary": "CEQAnet shows no explicit certification date or adoption resolution for the FEIR. Certification is assumed to have happened around March 2022, alongside the entitlements, but this is unconfirmed.",
+      "details": [
+        "The file marks certification status as UNCERTAIN. Entitlements normally follow CEQA certification, so March 2022 is inferred rather than documented.",
+        "- Action: request the official certification resolution from City Planning (case manager for ENV-2018-3273-EIR)",
+        "- Related open question: will the Mitigation Monitoring Plan obligations bind a new buyer, and can they be changed if the project changes?"
+      ],
+      "topic": "Zoning & Entitlements",
+      "date": null,
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Landing FEIR - CEQAnet",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/4"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §5"
+    },
+    {
+      "id": "ent-003",
+      "title": "FEIR project: two mixed-use towers (condos, apartments, hotels, retail)",
+      "summary": "The Final EIR describes Angels Landing as a two-tower mixed-use project of about 1.27 million sq ft with residential, hotel and commercial uses. Its only significant unavoidable impacts are construction noise and vibration.",
+      "details": [
+        "- 180 for-sale condominium units and 252 apartments (market rate plus affordable)",
+        "- Two hotels with 515 rooms total, plus restaurants, ballrooms, meeting rooms and fitness/spa amenities",
+        "- 72,091 sq ft of retail/restaurant space; a three-level subterranean garage; public and private open space; the Metro Pershing Square Station portal is kept",
+        "- Significant unavoidable impacts: on-site construction noise and vibration, vibration effects on nearby structures, and cumulative noise/vibration",
+        "- Mitigated to less than significant: air quality, cultural resources, energy, geology/paleontology, GHG, land use, population/housing, public services, transportation, tribal cultural resources, utilities"
+      ],
+      "topic": "Zoning & Entitlements",
+      "date": "2021-05-27",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Landing FEIR - CEQAnet",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/4"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §5"
+    },
+    {
+      "id": "ent-004",
+      "title": "March 2022: Angels Landing wins entitlements, incl. VTT-82842-SL",
+      "summary": "City officials approved the $1.6B Angels Landing project in March 2022, including Vesting Tentative Tract Map VTT-82842-SL. The approvals went to The Peebles Corporation and MacFarlane Partners.",
+      "details": [
+        "The vesting map gives a vested right to develop under the ordinances and policies in effect at approval (March 2022).",
+        "- The file lists the other entitlements only as 'likely': CUPs, design review, a density bonus, Bunker Hill Specific Plan compliance or waiver, and Downtown Design Guidelines compliance",
+        "- No specific approval resolution or date was found in public sources"
+      ],
+      "topic": "Zoning & Entitlements",
+      "date": "2022-03-01",
+      "sources": [
+        {
+          "type": "news",
+          "title": "Downtown L.A.'s $1.6 billion Angels Landing development advances after winning key city approval - The Architect's Newspaper",
+          "url": "https://www.archpaper.com/2022/03/downtown-l-as-1-6-billion-angels-landing-development-advances-after-winning-key-city-approval/"
+        },
+        {
+          "type": "official",
+          "title": "Angels Landing Project Page - LA City Planning",
+          "url": "https://planning.lacity.gov/development-services/eir/angels-landing-project-2"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §5"
+    },
+    {
+      "id": "ent-005",
+      "title": "Transferability and expiration of the 2022 entitlements are unconfirmed",
+      "summary": "It is unknown whether the 2022 entitlements transfer to a new owner, depend on Peebles/MacFarlane performing, or have expired. The file estimates the vesting map lapses 3-4 years after approval, but the exact expiration date has not been found.",
+      "details": [
+        "The file notes that California law generally lets entitlements run with the land, but conditions and expiration dates may apply.",
+        "- Unknown: the exact expiration date of VTT-82842-SL (the file guesses it has expired or will expire around 2025-2027)",
+        "- Unknown: any conditions restricting transfer, or conditions tied to the original applicant",
+        "- Unknown: the effect of the 2025 contract termination and the Peebles lawsuit on vested rights",
+        "- Action: obtain the full CPC record number and approval resolution; consult a land use attorney"
+      ],
+      "topic": "Zoning & Entitlements",
+      "date": null,
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 research compilation - Section 5 open questions"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "low",
+      "sourceFile": "Y-1_V2_Complete_Research.md §5"
+    },
+    {
+      "id": "ent-006",
+      "title": "Peebles sues the City over Angels Landing (January 2025)",
+      "summary": "A Superior Court lawsuit against the City of Los Angeles over the Angels Landing project was filed in January 2025. How it affects the 2022 entitlements is an open question.",
+      "details": [
+        "The Real Deal reported the suit on January 17, 2025. The file treats the dispute between the City and Peebles as ongoing.",
+        "- Open: does the Peebles suit claim vested rights under the approved entitlements?",
+        "- Open: can a new buyer resolve the dispute with the City and go ahead?"
+      ],
+      "topic": "Zoning & Entitlements",
+      "date": "2025-01-01",
+      "sources": [
+        {
+          "type": "news",
+          "title": "City of Los Angeles Faces Lawsuit for Angels Landing Project - The Real Deal",
+          "url": "https://therealdeal.com/la/2025/01/17/city-of-los-angeles-faces-lawsuit-for-angels-landing-project/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §5"
+    },
+    {
+      "id": "ent-007",
+      "title": "Developer options expire Sept 30, 2025; Y-1 declared surplus land",
+      "summary": "The original developer option agreements expired on September 30, 2025. The property was then declared surplus land under the California Surplus Land Act, which opened a 60-day preferential period for affordable housing developers.",
+      "details": [
+        "The file places the 60-day preference window at roughly October to December 2025, with the property possibly going to the open market around January 2026 or later.",
+        "- The file suggests affordable housing buyers might get streamlined CEQA review under the 2025-2026 reforms (SB 131, AB 130). This is flagged as an open question for an attorney.",
+        "- Open: does an affordable housing designation restrict future commercial use?",
+        "- BisnowLA reported that the former Angels Landing site could be headed to auction"
+      ],
+      "topic": "Zoning & Entitlements",
+      "date": "2025-09-30",
+      "sources": [
+        {
+          "type": "news",
+          "title": "Two Major L.A. Developments Formally Nixed - Commercial Observer",
+          "url": "https://commercialobserver.com/2025/10/la-angels-landing-surplus-land-development/"
+        },
+        {
+          "type": "news",
+          "title": "Downtown's Former Angels Landing Site Could Be Headed To Auction - BisnowLA",
+          "url": "https://www.bisnow.com/los-angeles/news/construction-development/downtowns-former-angels-landing-site-could-be-on-the-auction-block-soon-132018/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §5"
+    },
+    {
+      "id": "ent-008",
+      "title": "New-buyer CEQA paths: Addendum vs. Subsequent EIR vs. new EIR",
+      "summary": "The file's own analysis sets out three CEQA paths for a new buyer depending on the entitlements' status and how far the project changes. Estimated time to construction-ready ranges from about 20 to 63 months.",
+      "details": [
+        "These estimates are the file's analysis, not official figures.",
+        "- Addendum (CEQA Guidelines §15164): minor changes, no new impacts, no public review; 6-12 months, $50-150K. Overall scenario: 20-30 months.",
+        "- Subsequent EIR (§15162): substantial changes or new impacts; 45-day minimum circulation; 12-18+ months, $150-400K. Overall scenario: 27-42 months.",
+        "- New EIR for a different use with opposition or litigation: 12-24 months, $200-500K. Overall scenario: 33-63 months.",
+        "- The file's bottom line: don't rely on the 2022 entitlements; plan for at least 24-42 months"
+      ],
+      "topic": "Zoning & Entitlements",
+      "date": null,
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 research compilation - Section 5 timeline estimates"
+        },
+        {
+          "type": "official",
+          "title": "CEQA 101 - Governor's Office of Land Use and Climate Innovation",
+          "url": "https://lci.ca.gov/ceqa/docs/20210809-CEQA_101.pdf"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "low",
+      "sourceFile": "Y-1_V2_Complete_Research.md §5"
+    },
+    {
+      "id": "ent-009",
+      "title": "Bunker Hill Specific Plan and Downtown Design Guidelines standards",
+      "summary": "The file lists development standards that affect the site: height by subarea (about 800 ft / 64 stories based on the approved design), FAR limits, setbacks, 15-25% open space and TFAR. Changing the approved design could trigger new design review or a Subsequent EIR.",
+      "details": [
+        "- Bunker Hill Specific Plan: height by subarea, FAR/density limits, street wall and tower stepbacks, public plaza/open space (15-25% of the lot), pedestrian improvements, transfer of floor area rights from donor sites",
+        "- Downtown Design Guidelines (2023-2025 update): street wall articulation, 100-ft minimum tower separation, sustainability standards, historic preservation near Angels Flight, retail frontage, reduced parking near transit",
+        "- The file says a different use 'may trigger inconsistency with original Bunker Hill Specific Plan assumptions'. It gives no specific code citation for this.",
+        "- Zoning designation unresolved: an earlier research pass cited C4 under the Bunker Hill Specific Plan (Ord. 182576); Y-1_Key_Findings_Summary.md cites the new downtown code [HB5-G1-5][CX3-FA][CPIO] (see site-005). Both say mixed use is permitted, so any museum-plus-housing conflict is practical, design or financial, not a zoning prohibition. Confirm the current designation on ZIMAS."
+      ],
+      "topic": "Zoning & Entitlements",
+      "date": null,
+      "sources": [
+        {
+          "type": "official",
+          "title": "Bunker Hill Specific Plan - LA City Planning",
+          "url": "https://planning.lacity.gov/plans-policies/overlays/bunker-hill"
+        },
+        {
+          "type": "official",
+          "title": "LA City Planning: Guidelines & Resources",
+          "url": "https://planning.lacity.gov/project-review/urban-design/guidelines-resources"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §5"
+    },
+    {
+      "id": "moca-001",
+      "title": "Johanna Burton leaves MOCA (July 2025) for ICA Philadelphia",
+      "summary": "Johanna Burton, MOCA director from 2021 to 2025, left in July 2025. ICA Philadelphia announced her as its director on July 24, 2025, starting November 2025.",
+      "details": [
+        "Gothamartnews reported that the outgoing director left early amid the leadership transition.",
+        "- Tenure: 2021-2025",
+        "- Next role: Director, Institute of Contemporary Art, Philadelphia (from November 2025)"
+      ],
+      "topic": "MOCA",
+      "date": "2025-07-24",
+      "sources": [
+        {
+          "type": "official",
+          "title": "ICA Philadelphia: Johanna Burton Appointed Director",
+          "url": "https://icaphila.org/wp-content/uploads/2025/07/ICA-Director-Announcement-2025.pdf"
+        },
+        {
+          "type": "news",
+          "title": "MOCA Outgoing Director Leaves Early Amid Leadership Transition - Gothamartnews",
+          "url": "https://gothamartnews.com/2025/07/31/moca-outgoing-director-leaves-early/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §6"
+    },
+    {
+      "id": "moca-002",
+      "title": "Ann Goldstein named Interim Director of MOCA (effective Aug 18, 2025)",
+      "summary": "MOCA's board appointed Ann Goldstein as Interim Maurice Marciano Director, effective August 18, 2025. At the same time it launched an international search for a permanent director with a global executive search firm.",
+      "details": [
+        "Goldstein worked at MOCA from 1983 to 2009 as curator and senior curator, then directed the Stedelijk Museum in Amsterdam. Before the interim role she was deputy director and curator at the Art Institute of Chicago.",
+        "- A dedicated MOCA Directorial Search Committee was formed",
+        "- As of September 18, 2026 she is still interim director, about 13 months into the interim period",
+        "- The director post is not vacant: MOCA has an interim director while it searches for a permanent one"
+      ],
+      "topic": "MOCA",
+      "date": "2025-08-18",
+      "sources": [
+        {
+          "type": "news",
+          "title": "MOCA appoints Ann Goldstein as interim director - Beverly Press",
+          "url": "https://beverlypress.com/2025/08/moca-appoints-ann-goldstein-as-interim-director/"
+        },
+        {
+          "type": "news",
+          "title": "MOCA Board Names Former Senior Curator Ann Goldstein as Interim Director - MyNewsLA",
+          "url": "https://mynewsla.com/arts-and-entertainment/2025/07/30/moca-names-former-senior-curator-as-interim-director-2/"
+        },
+        {
+          "type": "news",
+          "title": "MOCA Board Launches Search for Next Director, Appoints Ann Goldstein Interim - Creators Faire",
+          "url": "https://creatorsfaire.com/brand-news/moca-board-launches-search-for-next-director-appoints-ann-goldstein-interim/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §6"
+    },
+    {
+      "id": "moca-003",
+      "title": "Permanent MOCA director search: no finalists or timeline announced",
+      "summary": "As of September 18, 2026, no permanent director and no candidates have been publicly announced. It is unknown whether the search is active, paused or nearly done.",
+      "details": [
+        "- Open: the search's status and timeline",
+        "- Open: how strategic planning is proceeding without a permanent director",
+        "- Open: whether MOCA is considering splitting the director and executive director roles",
+        "- Open: what expanded responsibilities, if any, Deputy Director and CFO Michael Harrison has taken on during the interim period"
+      ],
+      "topic": "MOCA",
+      "date": null,
+      "sources": [
+        {
+          "type": "official",
+          "title": "MOCA Press Room",
+          "url": "https://www.moca.org/about/press-room"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §6"
+    },
+    {
+      "id": "moca-004",
+      "title": "No MOCA statement found on Bunker Hill expansion or on Y-1",
+      "summary": "No MOCA board or institutional statement about expanding downtown or on Bunker Hill was found for 2024-2026. MOCA has made no public statement about acquiring Y-1.",
+      "details": [
+        "The 2026 exhibition schedule focuses on the collection rather than on expanding the campus. The Geffen Contemporary (152 N Central Ave) has no announced expansion plans as of September 2026.",
+        "- 'Mapping Grand Avenue' (2023) was an educational panel on Bunker Hill's history and Isozaki's building, not an expansion announcement",
+        "- Carolyn Clark Powers' public statements focus on free admission",
+        "- Open: a LA Downtown News article titled \"MOCA's Quiet Expansion\" was found but could not be accessed, so it is unclear what expansion it refers to",
+        "- Open: why is there no communication about expansion? Is it not a strategic priority?"
+      ],
+      "topic": "MOCA",
+      "date": null,
+      "sources": [
+        {
+          "type": "official",
+          "title": "MOCA Press Room",
+          "url": "https://www.moca.org/about/press-room"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News - \"MOCA's Quiet Expansion\" (not accessed)"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §6"
+    },
+    {
+      "id": "moca-005",
+      "title": "MOCA board and operations: new chair structure, 158 acquisitions, FY2025 990",
+      "summary": "Since July 1, 2025, Carolyn Clark Powers has been board chair and Tim Disney president. MOCA continues normal operations: free admission, 158 acquisitions in FY2025, and a published Form 990 for FY ending June 30, 2025.",
+      "details": [
+        "- Board changes effective July 1, 2025: Powers (trustee since 2009, president 2018-2025) became chair; Tim Disney became president; Clifford J. Einstein and Maurice Marciano became chairs emeritus; Jeffrey Soros became president emeritus",
+        "- New trustees in 2025: Blake Johnson, Margaret Morgan, Steven Rice. The board has 24 voting trustees; Mayor Karen Bass and Council President Marqueece Harris-Dawson sit ex officio",
+        "- Powers' $10M gift in 2019 made general admission free; the file says the gift continued in 2025",
+        "- February 24, 2026: MOCA announced it had acquired Kara Walker's 'Unmanned Drone' and made 158 acquisitions in 2025",
+        "- Forms 990 for 2023, 2024 and 2025 are on moca.org/about/financials and on GuideStar and ProPublica"
+      ],
+      "topic": "MOCA",
+      "date": "2025-07-01",
+      "sources": [
+        {
+          "type": "official",
+          "title": "MOCA Board of Trustees",
+          "url": "https://www.moca.org/about/board"
+        },
+        {
+          "type": "official",
+          "title": "MOCA Financials",
+          "url": "https://www.moca.org/about/financials"
+        },
+        {
+          "type": "official",
+          "title": "GuideStar: Museum of Contemporary Art",
+          "url": "https://www.guidestar.org/profile/95-3433820"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §6"
+    },
+    {
+      "id": "plaza-001",
+      "title": "Sept 30, 1981 DDA with CRA/LA covered parcels R, S, T, U and Y-1",
+      "summary": "Bunker Hill Associates signed a Disposition & Development Agreement with CRA/LA on September 30, 1981. It covered five parcels (R, S, T, U, Y-1; 11.21 acres) and a program including offices, at least 750 housing units, a hotel, retail and MOCA.",
+      "details": [
+        "Scope of development under the DDA, as given in the file:",
+        "- 3 office towers (37-60 stories, 3.2 million sq ft)",
+        "- At least 750 residential units, 450 hotel rooms, 160,000 sq ft of retail",
+        "- Museum of Contemporary Art, a central performance plaza and landscaping",
+        "- Public amenities attributed to Bunker Hill Associates: MOCA, the Colburn School, a 1.5-acre water feature/plaza, the Omni Hotel (450 rooms)",
+        "- The file cites no DDA text directly. A related case, Bunker Hill Associates v. City of Los Angeles (1982), is listed among its sources."
+      ],
+      "topic": "California Plaza",
+      "date": "1981-09-30",
+      "sources": [
+        {
+          "type": "court",
+          "title": "Bunker Hill Associates v. City of Los Angeles (1982) - FindLaw",
+          "url": "https://caselaw.findlaw.com/court/ca-court-of-appeal/1839306.html"
+        },
+        {
+          "type": "archival",
+          "title": "Finding Aid: Bunker Hill Redevelopment Project records - OAC",
+          "url": "https://oac.cdlib.org/findaid/ark:/13030/kt6t1nf3kt/entire_text/"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §8"
+    },
+    {
+      "id": "plaza-002",
+      "title": "One California Plaza placed in receivership (Aug 2025); Trigild receiver",
+      "summary": "In August 2025 the Los Angeles County Superior Court put One California Plaza (300 S. Grand, 42 stories) into receivership after default on a $300M CMBS loan. The court appointed Trigild as receiver.",
+      "details": [
+        "Rising Realty Partners and DigitalBridge (formerly Colony NorthStar) bought the tower from Beacon Capital Partners on June 6, 2017 for $465M, financed with $300M of CMBS debt from Credit Suisse's Column Financial. Both partners defaulted in 2025.",
+        "- Receiver representative: Chris Neilson. The receiver cannot sell without a court order.",
+        "- Rising Realty stays on as property manager; JLL handles leasing",
+        "- 2025 valuation: $121M, down from the $465M purchase price",
+        "- Earlier owners: Metropolitan Structures West (1985 to about 2013), then Beacon Capital Partners (bought in 2013 for $144.5M)"
+      ],
+      "topic": "California Plaza",
+      "date": "2025-08-01",
+      "sources": [
+        {
+          "type": "news",
+          "title": "Rising Realty Partners' One California Plaza in Receivership - The Real Deal",
+          "url": "https://therealdeal.com/la/2025/08/26/rising-realty-partners-one-california-plaza-in-receivership/"
+        },
+        {
+          "type": "news",
+          "title": "Downtown L.A. Office Tower Placed in Receivership After Months of Distress - Commercial Observer",
+          "url": "https://commercialobserver.com/2025/08/la-office-receivership-distress-office-1-cal-plaza/"
+        },
+        {
+          "type": "news",
+          "title": "Colony NorthStar is Rising's partner on $465M One California Plaza deal - The Real Deal",
+          "url": "https://therealdeal.com/la/2017/05/25/colony-northstar-is-risings-partner-on-465m-one-california-plaza-deal-sources/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §8"
+    },
+    {
+      "id": "plaza-003",
+      "title": "CIM Group bought Two California Plaza in Feb 2014 for $297.7M",
+      "summary": "CIM Group bought Two California Plaza (350 S. Grand, 52 stories, 1.3M sq ft) in February 2014 for $297.7 million from CW Capital Asset Management, after MPG Office Trust's 2011 default. CIM still owns it.",
+      "details": [
+        "- Chain: Metropolitan Structures West, then Maguire Thomas Properties (about 2000-2011) and its successor REIT MPG Office Trust",
+        "- MPG defaulted in 2011 on a $470M loan; the property went into receivership in March 2012 (CW Capital Asset Management)",
+        "- CIM Group was founded in 1994 by Shaul Kuba, Richard Ressler and Avi Shemesh; based in LA, with $32B AUM as of May 2026",
+        "- The file notes that CIM is a separate entity from the original Bunker Hill Associates"
+      ],
+      "topic": "California Plaza",
+      "date": "2014-02-01",
+      "sources": [
+        {
+          "type": "news",
+          "title": "CIM Group Acquires Seven-Asset Portfolio Including Two California Plaza - Business Wire",
+          "url": "https://www.businesswire.com/news/home/20140212005394/en/CIM-Group-Acquires-Seven-Asset-Portfolio-Including-California"
+        },
+        {
+          "type": "news",
+          "title": "Veteran Developer CIM Group Buys Two Cal Plaza - LA Downtown News",
+          "url": "https://www.ladowntownnews.com/news/veteran-developer-cim-group-buys-two-cal-plaza/article_31c05ff8-941e-11e3-9f9e-001a4bcf887a.html"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_V2_Complete_Research.md §8"
+    },
+    {
+      "id": "plaza-004",
+      "title": "Dec 2016: former CRA/LA land under the towers sold for $103.43M",
+      "summary": "After CRA/LA was dissolved in 2012, the land under the California Plaza towers was sold in December 2016: to Beacon Capital Partners (under 1 Cal, $33.43M) and CIM Group (under 2 Cal, $70M), each with a 66-year ground lease.",
+      "details": [
+        "- CRA/LA was the original landowner and contracting agency. It was dismantled in 2012 and its assets were liquidated from 2015 on.",
+        "- The file gives ground lease payments of about $3.2M a year for each tower",
+        "- Beacon's position reportedly includes a right of first refusal to buy the land",
+        "- The file says CRA/LA's powers 'likely' passed to the City, the County or a successor agency. This is unconfirmed."
+      ],
+      "topic": "California Plaza",
+      "date": "2016-12-01",
+      "sources": [
+        {
+          "type": "news",
+          "title": "Downtown California Plaza Land Sells for $103 Million - LA Business Journal",
+          "url": "https://labusinessjournal.com/real-estate/downtown-california-plaza-land-sells-103-million/"
+        },
+        {
+          "type": "news",
+          "title": "Owners Land Ground Beneath Office Properties - LA Business Journal",
+          "url": "https://labusinessjournal.com/real-estate/owners-land-beneath-office-properties/"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §8"
+    },
+    {
+      "id": "plaza-005",
+      "title": "Who survives as a counterparty to the 1980 bargain is unknown",
+      "summary": "Bunker Hill Associates was the original DDA counterparty, but its partners, what happened to it later, and its relationship to Metropolitan Structures West are all unknown. It is also unknown whether any reversionary rights survived CRA/LA's 2012 dissolution.",
+      "details": [
+        "- Open: who were the individual partners of Bunker Hill Associates in 1981, and was the partnership dissolved, acquired, or turned into Metropolitan Structures West?",
+        "- Open: did CRA/LA keep reversionary rights, or impose conditions precedent, in case public amenities were not completed or maintained? What is their status after 2012?",
+        "- Metropolitan Structures West: no current public records found; it appears dissolved or acquired",
+        "- Current stakeholders with ongoing interests: CIM Group, Beacon Capital Partners, Rising Realty (manager), Trigild (receiver). DigitalBridge's equity is likely to be wiped out in foreclosure.",
+        "- Open: the scope of Trigild's mandate and the timeline for a sale order"
+      ],
+      "topic": "California Plaza",
+      "date": null,
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 research compilation - Section 8 open questions"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "low",
+      "sourceFile": "Y-1_V2_Complete_Research.md §8"
+    },
+    {
+      "id": "plaza-006",
+      "title": "Three California Plaza was planned but never built",
+      "summary": "The master plan called for three office towers, but only One (1985) and Two (1992) California Plaza were built. Three California Plaza was dropped in the 1990s for lack of financing and because of high downtown office vacancy.",
+      "details": [
+        "- One California Plaza: built 1983-1985, 1.05M sq ft, 42 stories; Arthur Erickson Architects with Gruen Associates and Kamnitzer Cotton Vreeland; built by The Beck Group; BOMA Building of the Year 1989",
+        "- Two California Plaza: built 1983-1992, 1.3M sq ft, 52 stories, same team",
+        "- Downtown office vacancy was 26% in 1999 (among the highest in the US) and fell to 16% by 2004",
+        "- Section 8 dates the $1.2B project to 1976-1986, while Section 3 gives completion dates through 1992. The file's dates are inconsistent."
+      ],
+      "topic": "California Plaza",
+      "date": null,
+      "sources": [
+        {
+          "type": "news",
+          "title": "1 Cal Plaza - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/1_Cal_Plaza"
+        },
+        {
+          "type": "news",
+          "title": "Two California Plaza - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/2_Cal"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_V2_Complete_Research.md §7, §8"
+    },
+    {
+      "id": "ins-001",
+      "title": "The parcel is a residue, not a surplus",
+      "summary": "Y-1's surplus status is read as evidence of an unfinished redevelopment promise rather than a development opportunity, which recasts affordability as institutional restitution.",
+      "details": [
+        "The Bunker Hill Redevelopment Plan expired and California dissolved redevelopment agencies in 2012 (AB x26), yet CRA/LA still holds residual assets, including Y-1, in 2026. The diagnostic argues the parcel is not planned-but-delayed capacity but a trace of institutional failure.",
+        "- Reframes affordability from a public-benefit add-on to restitution for the original residential clearance of Bunker Hill.",
+        "- Design implication stated in the file: the project is not completing a legacy but recovering from one.",
+        "- The companion reframing table sets 'Legacy Completion (honor 1980 bargain)' against 'Restitution Architecture (acknowledge historical debt)'; other pairs include MOCA-as-anchor vs. occupant unknown, and mixed-use-with-some-affordability vs. housing-first.",
+        "- The claim that CRA/LA still holds 168 assets is stated without a named source in the diagnostic (the Key Findings file refers to Y-1 as 'Asset 168'); the Validation Protocol lists it as a claim to verify via a CRA/LA asset list request."
+      ],
+      "topic": "Insights",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Seven Provocative Insights Diagnostic, Insight 1"
+        },
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Design Shift #1 and Strategic Reframing table"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Seven_Provocative_Insights_Diagnostic.md"
+    },
+    {
+      "id": "ins-002",
+      "title": "MOCA's institutional silence on Y-1 is itself data",
+      "summary": "No MOCA board action, Form 990 commitment, or leadership focus on Bunker Hill was found for 2017-2026, so the file concludes MOCA exists in the studio's pedagogy rather than on the site.",
+      "details": [
+        "The studio brief labels MOCA's stakeholder role a 'teaching premise'. The diagnostic treats the absence of any documented institutional interest as meaningful evidence in its own right.",
+        "- Key Findings reports MOCA financial capacity of $222.2M net assets, $29.6M annual revenue and 243 employees (from Form 990), but no capital campaign for Bunker Hill.",
+        "- Design implication stated in the file: the gap between a brief's pedagogical goals and actual site agency is absolute.",
+        "- MOCA's leadership is in transition, not vacant: Johanna Burton left in July 2025, Ann Goldstein has been interim director since Aug 18, 2025, and a permanent director search is ongoing.",
+        "- Corrected from source file: the Diagnostic says MOCA's 'director position has been vacant since August 25, 2025'; Key Findings says 'Director vacancy since Aug 25, 2025' and that Burton 'departed Aug 25, 2025' with Michael Harrison (Deputy Director & CFO) operating at senior level."
+      ],
+      "topic": "Insights",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Seven Provocative Insights Diagnostic, Insight 2"
+        },
+        {
+          "type": "official",
+          "title": "MOCA Form 990 (filed April 3, 2026), as cited in Y-1 Key Findings Summary"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Seven_Provocative_Insights_Diagnostic.md"
+    },
+    {
+      "id": "ins-003",
+      "title": "The 1980 'bargain' may be a phantom contract",
+      "summary": "No one has found the source document for the 'local history museum' provision said to bind Y-1, so a major design constraint may not exist.",
+      "details": [
+        "The California Plaza competition drawings exist at CCA and the 1983 COREA is recorded, but the terms reserving Y-1 for a particular use remain unexamined. If the document cannot be found, the file reasons that the obligation was never written, was superseded, or is unenforceable.",
+        "- The strategic brief turns this into 'Cultural Use as Design Option': treat cultural or community use as a choice, not a mandate.",
+        "- The obligations table lists the 'local history museum use' as UNVERIFIED (document not located), with the recommended action 'treat as design option, not mandate'.",
+        "- The diagnostic says archival research at CCA, the LA County Recorder and historical collections 'has failed to locate' the document, while the Validation Protocol treats those same archives as searches still to be done (see q-001)."
+      ],
+      "topic": "Insights",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Seven Provocative Insights Diagnostic, Insight 3"
+        },
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Design Shift #6 and #7"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Seven_Provocative_Insights_Diagnostic.md"
+    },
+    {
+      "id": "ins-004",
+      "title": "Affordability economics invert the project",
+      "summary": "Moving from Angels Landing's token affordable units to a Surplus Land Act covenant makes housing, not market-rate capture, the structural driver of financing, density and ground-floor programming.",
+      "details": [
+        "The diagnostic argues that a 25% affordable share under a 55-year covenant is not an add-on but a structural inversion of the pro forma.",
+        "- File figures: Angels Landing had 13 affordable units in a roughly 1.3M sq ft scheme ('~1%' in the Diagnostic, '~2%' in the Strategic Brief); '240+ housing units' on a 97,631 sq ft parcel; '215 units x 55 years = 11,825 unit-years'. None of these unit counts has a named source, and they are internally inconsistent (240+ vs. 215).",
+        "- The '25% minimum' is stated flatly in the Diagnostic. The WebSearch file gives it as 25% if a qualified housing entity pursues the site or 15% if not, and Key Findings gives 25-100% depending on disposition path.",
+        "- Design implication stated in the file: the pro forma changes completely when affordability becomes the primary driver."
+      ],
+      "topic": "Insights",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Seven Provocative Insights Diagnostic, Insight 4"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "low",
+      "sourceFile": "Y-1_Seven_Provocative_Insights_Diagnostic.md"
+    },
+    {
+      "id": "ins-005",
+      "title": "The litigation stall as a multi-year research runway",
+      "summary": "The file reads the delayed Notice of Availability as a statutory suspension (Gov Code §54234(a)(2)) rather than bureaucratic friction, and recommends using the resulting years for research rather than speed.",
+      "details": [
+        "The diagnostic says the parcel will not move until a court order closes the Angels Landing case and six more months pass, and that the pre-construction years should be spent on archival, legal, geotechnical and financial research.",
+        "- Timeline estimates are unverified and conflict with each other: the Diagnostic and WebSearch file give '2028-2030' for groundbreaking, the Strategic Brief shows construction starting Q1 2033 after a 7-year runway, and the WebSearch file estimates settlement approval in '2027-2028'. None has a named source.",
+        "- The Diagnostic describes the lawsuit as 'pending as of Sept 2026', but Key Findings and the WebSearch file record a joint settlement stipulation (Sept 10, 2026) and a stay order (Sept 12, 2026). The estimates predate or ignore the settlement.",
+        "- Design consequence in the Strategic Brief: early-stage design should be exploratory, not prescriptive, so that constraints come to light before construction.",
+        "- Checked Sept 27, 2026: Section 54234's text extends completion deadlines for pre-2019 deals and does not say the new notice must wait, so the 'statutory suspension' reading is an inference (see disp-004)."
+      ],
+      "topic": "Insights",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Seven Provocative Insights Diagnostic, Insight 5"
+        },
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Design Shift #3"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "low",
+      "sourceFile": "Y-1_Seven_Provocative_Insights_Diagnostic.md"
+    },
+    {
+      "id": "ins-006",
+      "title": "The 'clean slate' is a liability minefield",
+      "summary": "The lapsed Angels Landing entitlements do not clear the site. A new owner inherits easement, hazard, insurability and CEQA-baseline uncertainties that come before any program decision.",
+      "details": [
+        "The diagnostic lists what a new owner inherits:",
+        "- 1983 COREA easements with California Plaza (terms unexamined); the Angels Flight Railway right-of-way (recorded); non-insurable subsurface (Subdivision Map Act).",
+        "- Earthquake-induced landslide and liquefaction zones; a 70 ft elevation fall from Olive St to Hill St.",
+        "- No recorded Development Agreement to vest approvals; uncertain Final EIR status.",
+        "Design implication stated in the file: due diligence is a design activity, not a post-design requirement. The Strategic Brief's risk map rates COREA terms, the landslide zone and Final EIR status as HIGH severity."
+      ],
+      "topic": "Insights",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Seven Provocative Insights Diagnostic, Insight 6"
+        },
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Risk Mapping table"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Seven_Provocative_Insights_Diagnostic.md"
+    },
+    {
+      "id": "ins-007",
+      "title": "California Plaza's distress may void the reciprocal arrangement",
+      "summary": "The file argues that because the 1980 counterparties are defunct or distressed, Y-1 may be free of 1980-era conditions and answerable mainly to state affordability law.",
+      "details": [
+        "The 1980 'bargain' assumes a surviving California Plaza counterparty. The diagnostic argues that if the arrangement was mutual consideration between two parties and neither survives to enforce it, the conditions may lapse.",
+        "- Claims with no named source (unverified): 1 California Plaza 'in receivership since August 2025' after a debt default; value falling 'from $465M to $121M'; Bunker Hill Associates, L.P. 'untraceable in corporate records'. The WebSearch file also says 2 California Plaza is owned by CIM Group, again without a named source.",
+        "- Design implication stated in the file: Y-1 is accountable to state affordability law, not to private contracts with defunct counterparties.",
+        "- Enforceability is a legal conclusion the file itself marks for a written attorney opinion (see q-001)."
+      ],
+      "topic": "Insights",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Seven Provocative Insights Diagnostic, Insight 7"
+        },
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 WebSearch Research, Executive Summary item 3"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "low",
+      "sourceFile": "Y-1_Seven_Provocative_Insights_Diagnostic.md"
+    },
+    {
+      "id": "des-001",
+      "title": "Restitution-model program mix vs. Angels Landing model",
+      "summary": "The Strategic Brief proposes a housing-led program with a large affordable share, reduced retail, flexible community/cultural space and a small Bunker Hill history archive.",
+      "details": [
+        "Restitution Model (at a 25% affordability floor): 300 market-rate units; 215 affordable units; 50K sq ft retail; 20-30K sq ft flexible community/cultural space; 3-5K sq ft local history archive/exhibition (Angels Flight, Bunker Hill history).",
+        "- Ground floor shifts from a retail/cultural showcase to affordable-housing integration, community access and local history documentation; the tower is framed as a housing provider with civic responsibility.",
+        "- Financing: a cross-subsidy model (market-rate units subsidize affordable rents) plus an HCD/CalHFA permanent loan, tax-exempt bonds with LIHTC, a CRA/LA land value credit, and possibly an affordable-housing nonprofit partner.",
+        "- Caveat: the brief's 'Angels Landing Model' baseline (600 market-rate units, 13 affordable, 150K sq ft retail, 70K sq ft MOCA cultural space, and a '12-story tower' in Shift #4) has no named source and conflicts with Key Findings, which describes 854 ft and 494 ft towers with 180 condos, 252 rentals and 515 hotel rooms."
+      ],
+      "topic": "Design Implications",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Design Shift #1"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "low",
+      "sourceFile": "Y-1_Strategic_Brief_Design_Implications.md"
+    },
+    {
+      "id": "des-002",
+      "title": "Designing for an unknown or conditional cultural occupant",
+      "summary": "With no MOCA commitment, the brief offers three occupancy strategies and recommends a hybrid: flexible space with no MOCA-specific infrastructure, upgraded only if a partner commits.",
+      "details": [
+        "- Option A (unknown occupant): 20-30K sq ft ground-floor space divisible into 2,000-3,000 sq ft modules; no gallery-specific loading, security or climate systems; adaptable to a nonprofit, archive, artist studios, a local history museum, or vacancy.",
+        "- Option B (expressed occupant): requires a signed MOCA board letter and a financial commitment before gallery-optimized design; risk of underused space if MOCA withdraws.",
+        "- Option C (cultural/community partner): an LOI with the Angels Flight Railway Foundation, local history groups or an independent curator; 20K sq ft permanent history exhibition plus 10K sq ft rotating.",
+        "The brief argues this is intellectually stronger: the space answers to the neighborhood rather than to a downtown institution with no historical tie to the site.",
+        "- Corrected from source file: the brief's premise says MOCA's 'Director vacant (8/25/2025)'. In fact Ann Goldstein has been interim director since Aug 18, 2025 (Johanna Burton left July 2025), with a permanent search ongoing."
+      ],
+      "topic": "Design Implications",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Design Shift #2"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Strategic_Brief_Design_Implications.md"
+    },
+    {
+      "id": "des-003",
+      "title": "Entitlements start from zero: alternative program scenarios",
+      "summary": "With no recorded Development Agreement and a likely-lapsed tract map, the brief treats the new program as open and sketches three alternative mixes.",
+      "details": [
+        "The brief calls the absence of vested approvals 'liberation': a new buyer can propose a different height, use mix, phasing (affordable units first), parking and ground-floor strategy without justifying departures from Angels Landing.",
+        "- Housing-First Tower: 600 units (450 market, 150 affordable); 20-30K sq ft cultural/community; 30K sq ft neighborhood retail; underground parking plus a podium.",
+        "- Mixed-Use Affordable Focus: 400 residential units at 40% affordable (the file says '240 units affordable', which is inconsistent with 40% of 400); 15K sq ft office; 40K sq ft community cultural; food hall; possibly 8-10 stories.",
+        "- Hybrid Cultural + Housing: if the Angels Flight Foundation or a history organization commits, a 25K sq ft exhibition and restoration workshop, 10K sq ft temporary exhibition, 400 units in 200K sq ft, and 40 parking spaces.",
+        "- 'VTT-82842-SL likely expired (3-4 year validity)' is the brief's inference with no named source; unverified."
+      ],
+      "topic": "Design Implications",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Design Shift #4"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "low",
+      "sourceFile": "Y-1_Strategic_Brief_Design_Implications.md"
+    },
+    {
+      "id": "des-004",
+      "title": "Affordability pro forma scenarios and the 'affordability cliff'",
+      "summary": "The brief models 25%, 35% and 50% affordability and argues that 50% needs a nonprofit or public development partner, not a conventional market-rate firm.",
+      "details": [
+        "- 25%: 650 units (487 market / 163 affordable), FAR 7.5:1, about $1.2B cost, $400M HCD loan, $200M equity.",
+        "- 35%: 650 units (423 / 227), about $1.1B, $550M HCD loan, $150M equity.",
+        "- 50%: 500 units (250 / 250), FAR 5.8:1, about $800M, $700M HCD loan, $50M equity.",
+        "- Assumptions: $4,500/month market rent; $900/month affordable rent (60% AMI); $1.8M/unit development cost; HCD loan at 50-70% LTV, 1-2% interest; 9% LIHTC. All are the brief's own assumptions with no named source (unverified). The 60% AMI target differs from the WebSearch file's 70-80% AMI.",
+        "The 'cliff': at 50%, the project cannot support developer equity without $0 land cost, $200M+ in competitive 9% LIHTC allocations, or philanthropic/government capital. Suggested partners with affordable-housing expertise: LA Family Housing, BRIDGE Housing, Community Corp of Santa Monica, Related California. The brief also says the HCD loan process adds 6-12 months.",
+        "Ground-floor priority order: affordable-unit amenities and resident services first, community programming (meeting rooms, job training), then cultural/history use, then neighborhood retail."
+      ],
+      "topic": "Design Implications",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Design Shift #5"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "low",
+      "sourceFile": "Y-1_Strategic_Brief_Design_Implications.md"
+    },
+    {
+      "id": "des-005",
+      "title": "Ground floor as a permanent Bunker Hill history exhibition",
+      "summary": "The brief recommends a self-sustaining permanent local-history exhibition (Option 3), with flexible neutral space as the fallback, so the ground floor becomes an archive of neighborhood change.",
+      "details": [
+        "- Option 1 (flexibility): 20-30K sq ft of neutrally serviced space with a flexible structural grid; nothing is wasted if no occupant appears, but it is optimized for nothing.",
+        "- Option 2 (partner-led): a signed LOI covering use, operations and revenue sharing before design is finalized; authentic, but tied to that partner.",
+        "- Option 3 (permanent exhibition): 15-20K sq ft on Bunker Hill, Angels Flight and local history, plus 5-10K sq ft rotating; independently curated; funded by admissions, endowment and grants; the file estimates a modest endowment of about $500K (unverified, no source).",
+        "The argument: an archive of neighborhood change is more intellectually coherent and more locally accountable than a trophy space for an external institution. If MOCA or the Angels Flight Foundation commits later, programming can be enhanced."
+      ],
+      "topic": "Design Implications",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Design Shift #6"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Strategic_Brief_Design_Implications.md"
+    },
+    {
+      "id": "des-006",
+      "title": "Stakeholder map: verified vs. conditional stakeholders",
+      "summary": "The brief separates agencies with a definite role from parties whose role depends on commitments not yet made, and treats MOCA as conditional.",
+      "details": [
+        "- Verified stakeholders: CRA/LA (owner; SLA decision-maker), HCD (affordability enforcement and loan provider), LA City Planning (entitlements), LADBS (building permits).",
+        "- Conditional stakeholders: MOCA (only if its board commits in writing); Angels Flight Railway Foundation (if a partnership is pursued); Bunker Hill residents and the local community; an affordable-housing development partner (if 35%+ affordability is pursued); geotechnical and title consultants.",
+        "- Engagement sequence: Year 1 scoping with CRA/LA, HCD and Planning plus archival, title and geotech work; Year 2 HCD financing talks and partner outreach; Year 3 full community engagement and a cultural partner LOI; Years 4-5 formal entitlements and LADBS.",
+        "- The obligations table also sets out a 'verify before locking in program' principle: 'Research findings drive program, not the reverse.'"
+      ],
+      "topic": "Design Implications",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Stakeholder Engagement Strategy"
+        }
+      ],
+      "status": "analysis",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Strategic_Brief_Design_Implications.md"
+    },
+    {
+      "id": "site-001",
+      "title": "Y-1's three-dimensional legal identity and title encumbrances",
+      "summary": "Y-1 is a residual made of a buildable lot, appurtenant easement rights and a non-insurable subsurface strip, so every section through the site crosses a different legal regime.",
+      "details": [
+        "- Parcel 1 (buildable lot): Lot 5, Tract 30781. Three defensible, non-contradictory areas: 95,425 sq ft (LADBS, per title), 97,631 sq ft (2021 EIR), and about 104,947 sq ft including the vacated Olive Street right-of-way.",
+        "- Parcel 2 (easement rights): 1983 COREA with Bunker Hill Associates (see site-003).",
+        "- Parcel 3 (subsurface): vacated Olive Street ROW below 20 ft, noted as 'NOT an insurable parcel pursuant to Subdivision Map Act'.",
+        "- Mineral reservation: the title references the Bunker Hill Urban Renewal Project Area (Book M335 Page 106, recorded 1962).",
+        "- Early design question from the file: whether to design to the 95,425 sq ft lot or include the subsurface footprint, a difference the file puts at about 20,000-29,000 sq ft of FAR."
+      ],
+      "topic": "Site Conditions",
+      "date": "2026-09-17",
+      "sources": [
+        {
+          "type": "official",
+          "title": "LADBS parcel record / title, as cited in Y-1 Key Findings Summary"
+        },
+        {
+          "type": "official",
+          "title": "Angels Landing Draft EIR (2021), as cited in Y-1 Key Findings Summary"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "Y-1_Key_Findings_Summary.md"
+    },
+    {
+      "id": "site-002",
+      "title": "Angels Flight right-of-way and Olive Street airspace carve-outs",
+      "summary": "Two recorded carve-outs cut into the buildable envelope: the Angels Flight Railway right-of-way (recorded Dec 22, 2017) and the airspace above 17 ft on Olive Street held by 2 Cal Land (recorded Nov 29, 2016).",
+      "details": [
+        "Both carve-outs come from the title-based parcel description in Key Findings and are repeated in the WebSearch file.",
+        "- The Strategic Brief says to 'Preserve 30 ft right-of-way; no building zone' and to design with a '30 ft setback on Olive Street', while confirming there are no utility or foundation conflicts. The 30 ft dimension has no named source (unverified).",
+        "- The risk map rates the Angels Flight ROW as MEDIUM severity, to be resolved in Year 1.",
+        "- The Angels Flight history is also proposed as ground-floor exhibition content (see des-005)."
+      ],
+      "topic": "Site Conditions",
+      "date": "2017-12-22",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Recorded title documents, as cited in Y-1 Key Findings Summary"
+        }
+      ],
+      "status": "verified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Key_Findings_Summary.md"
+    },
+    {
+      "id": "site-003",
+      "title": "1983 COREA easements with California Plaza remain unexamined",
+      "summary": "The recorded 1983 Construction, Operation & Reciprocal Easement Agreement (Instr. 83-991992) and its 1993 and 1997 amendments may constrain Y-1's envelope, utilities and uses, but no one has reviewed the full terms.",
+      "details": [
+        "The COREA is described as the foundational document for California Plaza development and for Y-1's appurtenant easements. It is also a possible home for the unlocated 'local history museum' provision.",
+        "- Risk map: HIGH severity. Commission a title attorney to review the full COREA and identify impacts on the building envelope and utilities (Year 1).",
+        "- Open question in the WebSearch file: do California Plaza easements constrain Y-1 uses?",
+        "- Retrieval route: LA County Recorder, full text of Instr. 83-991992 and amendments; CRA/LA archives for copies and interpretations."
+      ],
+      "topic": "Site Conditions",
+      "date": null,
+      "sources": [
+        {
+          "type": "official",
+          "title": "LA County Recorder, Instr. 83-991992 (1983 COREA), as cited in Y-1 Key Findings Summary"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "high",
+      "sourceFile": "Y-1_Key_Findings_Summary.md"
+    },
+    {
+      "id": "site-004",
+      "title": "Geotechnical hazards and insurability: landslide, liquefaction, grade fall",
+      "summary": "The site lies in both landslide and liquefaction zones and has a 70 ft fall from Olive St to Hill St, so a geotechnical report and insurance underwriting must come before permits and should shape the program.",
+      "details": [
+        "- Risk map: landslide hazard zone rated HIGH (foundation strategy of piles vs. grade beams, seismic implications); liquefaction zone rated MEDIUM (needs structural engineer input on foundations and lateral bracing).",
+        "- The WebSearch file lists '70 ft excavation + site fall' among underwriting risks and asks about insurability and underwriting terms; insurance terms are unknown.",
+        "- The Validation Protocol calls for a preliminary geotech assessment: a review of USGS landslide and liquefaction maps, existing boring logs (for example from the Angels Landing EIR), foundation options, and liquefaction-induced settlement. It estimates 2-3 weeks and $3,000-5,000.",
+        "- It also calls for a preliminary title insurance commitment (First American, Chicago Title, Fidelity National, etc.) to identify non-insurable zones and whether earthquake, subsidence or liquefaction coverage is needed, at an estimated $0-500.",
+        "- The hazard-zone designations and the 70 ft figure appear without a specific named map or source (unverified)."
+      ],
+      "topic": "Site Conditions",
+      "date": null,
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Strategic Brief, Risk Mapping"
+        },
+        {
+          "type": "analysis",
+          "title": "Y-1 Validation Research Protocol, Research Line 3 (Geotechnical)"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Validation_Research_Protocol.md"
+    },
+    {
+      "id": "site-005",
+      "title": "Zoning envelope: FAR 9:1 base, 13:1 bonus, uncapped height",
+      "summary": "The files report current zoning as [HB5-G1-5] [CX3-FA] [CPIO], a mixed-use district that fully enables a project on the scale of Angels Landing without a zone change.",
+      "details": [
+        "- Form district High-Rise Broad (height uncapped, governed by FAR); General frontage (90% build-to on the primary street, 70% on the side); use district CX3 Commercial-Mixed Use; Downtown CPIO overlay.",
+        "- Base FAR 9.0:1 (about 859,000 sq ft as of right); bonus FAR 13.0:1 for affordable housing or public benefits (about 1,240,000 sq ft); minimum 10 stories; practical height about 850-900 ft.",
+        "- Mixed use (for example museum plus housing) is permitted. Any conflict between uses is practical, design or financial, not legal.",
+        "- Reconcile: the corrected research framework describes the parcel as C4 under the Bunker Hill Specific Plan (Ord. 182576), which permits mixed use. These files instead cite the new downtown code designation. Confirm which designation governs and when it took effect."
+      ],
+      "topic": "Site Conditions",
+      "date": "2026-09-17",
+      "sources": [
+        {
+          "type": "official",
+          "title": "LA zoning code / ZIMAS record, as cited in Y-1 Key Findings Summary"
+        }
+      ],
+      "status": "unverified",
+      "confidence": "medium",
+      "sourceFile": "Y-1_Key_Findings_Summary.md"
+    },
+    {
+      "id": "q-001",
+      "title": "Verify the 1980 'bargain' and whether it can be enforced",
+      "summary": "The protocol sets out archival and legal routes to find the 1980 master plan or confirm it is lost, and to get a written opinion on whether any Y-1 use restriction still binds.",
+      "details": [
+        "- CCA (Montreal): request a search of AP022.S1.1979.PR07 (Erickson/California Plaza fonds: about 150 drawings, 1,120 slides, 3 models) for the brief, program requirements and covenants mentioning Y-1, museum, contingent use or reversionary rights. archives@cca.qc.ca, +1-514-939-7000; 3-4 weeks.",
+        "- LA County Recorder (Norwalk): title search of 1980-1983 recordings on the Y-1 APN for covenants or deed restrictions; cross-check against the 1983 COREA. 1-2 weeks, $5-20 per document.",
+        "- CRA/LA archives (555 S. Flower St, Suite 750): the 1959 Plan and amendments, the 1980 master plan, legal opinions on 'reserved use', board minutes 1980-2012.",
+        "- Legal opinion: a California redevelopment-law attorney on whether a restriction exists, whether it survives defunct counterparties and the 2012 dissolution, and what title insurance reveals. Estimated $2,000-3,500 over 4-6 weeks. Also ask CRA/LA General Counsel for the agency's own position.",
+        "- Decision rule: if found and binding, include cultural programming; if questionable, design for flexibility; if not found after a thorough search, treat it as a teaching premise and cultural use as optional."
+      ],
+      "topic": "Open Questions",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "archival",
+          "title": "CCA AP022.S1.1979.PR07",
+          "url": "https://www.cca.qc.ca/"
+        },
+        {
+          "type": "official",
+          "title": "LA County Recorder",
+          "url": "https://recorder.lacounty.gov/"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "high",
+      "sourceFile": "Y-1_Validation_Research_Protocol.md"
+    },
+    {
+      "id": "q-002",
+      "title": "Verify California Plaza receivership and Bunker Hill Associates' status",
+      "summary": "The receivership claim and the 'untraceable' status of Bunker Hill Associates, L.P. both need primary-record confirmation before Insight 7 can be relied on.",
+      "details": [
+        "- Receivership: search the LA Superior Court docket for a 2025 filing on 1 California Plaza; get the receiver appointment order, asset inventory and resolution timeline (about 1 week).",
+        "- Bunker Hill Associates, L.P.: search the CA Secretary of State business database and Dun & Bradstreet for dissolution date, final filings and successors; check the LA County Assessor for properties still in its name (1-2 days).",
+        "- The WebSearch file adds further leads: successors to Metropolitan Structures West (Secretary of State search) and individual partners of Bunker Hill Associates (SEC filings, prospectuses, archives).",
+        "- The Strategic Brief also suggests a title insurance consultation on what the receivership means for Y-1."
+      ],
+      "topic": "Open Questions",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "court",
+          "title": "LA Superior Court records",
+          "url": "https://www.lacourt.org/"
+        },
+        {
+          "type": "official",
+          "title": "California Secretary of State Business Search",
+          "url": "https://businesssearch.sos.ca.gov/"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "high",
+      "sourceFile": "Y-1_Validation_Research_Protocol.md"
+    },
+    {
+      "id": "q-003",
+      "title": "Confirm Angels Landing Final EIR status and the CEQA path for a new project",
+      "summary": "Whether a Final EIR was issued and certified for ENV-2018-3273-EIR decides whether a new project can use an Addendum or Subsequent EIR or needs a new EIR; the files disagree on its status.",
+      "details": [
+        "- Conflict: Key Findings says 'Final EIR status unknown' with no certification found, while the WebSearch file says 'Final EIR: Received May 27, 2021 (likely certified; exact certification date unconfirmed)'.",
+        "- CEQAnet (State Clearinghouse): list NOP, Draft EIR (Jan 2021), Final EIR and NOD filings under Bunker Hill, Y-1 and Angels Landing. https://ceqanet.opr.ca.gov; 1-2 weeks.",
+        "- LA City Planning (200 N. Spring St): meet the case manager for ENV-2018-3273-EIR; request the NOD and the Mitigation Monitoring Plan if certified; ask whether a new proposal takes the Addendum or SEIR path.",
+        "- The WebSearch file estimates 12-24 months for a new EIR (unverified). The risk map rates this item HIGH for Year 1."
+      ],
+      "topic": "Open Questions",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "official",
+          "title": "CEQAnet State Clearinghouse",
+          "url": "https://ceqanet.opr.ca.gov"
+        },
+        {
+          "type": "official",
+          "title": "LA City Planning",
+          "url": "https://planning.lacity.gov/"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "high",
+      "sourceFile": "Y-1_Validation_Research_Protocol.md"
+    },
+    {
+      "id": "q-004",
+      "title": "Verify MOCA's institutional interest in Y-1",
+      "summary": "The protocol proposes a MOCA development-office interview and a Form 990 review (2017-2026) to confirm or refute any board-level interest in Bunker Hill, with design decisions branching on the result.",
+      "details": [
+        "- Interview: ask MOCA's Director of Development whether the board has considered or committed to Y-1, whether any capital campaign or downtown feasibility study exists, what would trigger downtown interest, and for board minutes from 2017-2026 (250 S. Grand Ave, +1-213-626-6222).",
+        "- Form 990 review via ProPublica Nonprofit Explorer: search for Bunker Hill, Y-1, Angels Knoll and downtown expansion; check Part VII for current leadership. (The file also lists GiveWell as a Form 990 source, which is questionable.)",
+        "- Outcomes: if MOCA commits (board approval plus capital campaign), optimize the ground floor for MOCA and treat it as a development partner, adding 3-4 months of coordination; if MOCA declines or stays silent, pursue the Angels Flight Foundation, a local history group, or an independent permanent exhibition.",
+        "- Corrected from source file: the protocol's premise and checklist state 'director position vacant' and 'MOCA director vacant since 8/25/2025'. In fact Johanna Burton left in July 2025 and Ann Goldstein has been interim director since Aug 18, 2025, with a permanent search ongoing. The checklist item should be restated as leadership in transition."
+      ],
+      "topic": "Open Questions",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "official",
+          "title": "ProPublica Nonprofit Explorer (MOCA Form 990s)",
+          "url": "https://projects.propublica.org/nonprofits/"
+        },
+        {
+          "type": "official",
+          "title": "MOCA",
+          "url": "https://www.moca.org/"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "high",
+      "sourceFile": "Y-1_Validation_Research_Protocol.md"
+    },
+    {
+      "id": "q-005",
+      "title": "Outstanding critical unknowns and the validation program",
+      "summary": "Several gating facts remain unknown across the files. The protocol budgets $15,000-25,000 and about 15 weeks of two-tier research to close them before the program is locked in.",
+      "details": [
+        "- Unknowns: whether and when CRA/LA issued the Notice of Availability and who responded; the Angels Landing settlement terms and approval timing (PACER, Case 2:26-cv-01524, Sept 10 and 12, 2026 entries); VTT-82842-SL expiry and transferability; HCD's enforcement posture toward CRA/LA; whether the settlement favors any particular use.",
+        "- Also open: whether any off-site affordability option survives from the Angels Landing structure (Key Findings), and the WebSearch file's unexplained '25% or 50% on-site + 65 off-site' scenario.",
+        "- Program: Tier 1 archival and title research (Q4 2026-Q2 2027), Tier 2 interviews and legal review (Q2-Q3 2027), synthesis in Q4 2027. Budget: attorney $5-8K, archival $3-5K, geotech $5-7K, CEQA $2-4K (all the file's own estimates, unverified).",
+        "- Pro forma decision: if 35%+ affordability proves feasible with an HCD loan, tax credits and a nonprofit developer, recommend it; if only 25% works, design to the SLA floor with conventional HCD financing.",
+        "- Success criteria include a verification matrix at least 90% complete and CRA/LA alignment before design proceeds."
+      ],
+      "topic": "Open Questions",
+      "date": "2026-09-21",
+      "sources": [
+        {
+          "type": "analysis",
+          "title": "Y-1 Validation Research Protocol"
+        },
+        {
+          "type": "analysis",
+          "title": "Y-1 Key Findings Summary, Research Gaps"
+        },
+        {
+          "type": "analysis",
+          "title": "Y-1 V2 WebSearch Research, Research Gaps"
+        }
+      ],
+      "status": "open-question",
+      "confidence": "high",
+      "sourceFile": "Y-1_Validation_Research_Protocol.md"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+# --- never public: copyrighted references and imagery-based checks ---
+site-model/references/
+site-model/checks/
+
+# --- large or regenerable ---
+# USGS LiDAR tiles (9 x ~70 MB): site-model/houdini/tools/fetch_lidar_tiles.py downloads them
+site-model/data/lidar/
+# Houdini scenes are local work (binary, unmergeable): the pipeline scene and everyone's design scenes
+*.hip
+*.hipnc
+*.hiplc
+# raw downloads, the ~7 GB chunk staging and intermediate outputs, all rebuilt by site-model/houdini/tools/
+site-model/houdini/in/
+site-model/houdini/work/
+site-model/houdini/out/
+site-model/houdini/tools/node_modules/
+site-model/houdini/annotations/*_backup.json
+
+# --- tooling ---
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+Thumbs.db
+desktop.ini

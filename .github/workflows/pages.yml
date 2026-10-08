@@ -1,0 +1,41 @@
+# Publish web/ to GitHub Pages on every push to main
+name: Deploy web to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      # Design files live only in site-model/exports/ and the building entities in site-model/houdini/annotations/
+      # (one location each); publish them under web/assets/ and web/data/
+      - name: Copy design files and entities into the site
+        run: |
+          mkdir -p web/assets
+          cp site-model/exports/*.glb web/assets/ 2>/dev/null || true
+          # the list of GLB files (design_<name>.glb), read by the viewer
+          python3 -c "import json, pathlib; print(json.dumps(sorted(p.name for p in pathlib.Path('web/assets').glob('*.glb'))))" > web/assets/models.json
+          cp site-model/houdini/annotations/entities.json web/data/entities.json
+          rm -f web/serve.py
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deployment
+        uses: actions/deploy-pages@v4

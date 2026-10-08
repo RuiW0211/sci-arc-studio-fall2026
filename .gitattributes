@@ -1,0 +1,10 @@
+# Text files are stored with LF and checked out natively; binaries are never touched
+* text=auto
+*.glb binary
+*.bin binary
+*.npy binary
+*.npz binary
+*.tif binary
+*.laz binary
+*.png binary
+*.jpg binary

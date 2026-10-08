@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Y-1 Site Viewer</title>
+<style>
+  :root { --bg: #f4f4f2; --fg: #111; --muted: #777; --panel: rgba(255,255,255,.9); --line: #ddd; --accent: #111; --bg3d: #eceae6; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0d0d0d; --fg: #eee; --muted: #999; --panel: rgba(20,20,20,.86); --line: #333; --accent: #eee; --bg3d: #121212; } }
+  :root[data-theme="dark"] { --bg: #0d0d0d; --fg: #eee; --muted: #999; --panel: rgba(20,20,20,.86); --line: #333; --accent: #eee; --bg3d: #121212; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--fg);
+    font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  canvas { display: block; touch-action: none; }
+  .panel { position: fixed; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(6px); }
+  #ui { top: 16px; left: 16px; padding: 12px 14px; width: 252px; max-height: calc(100% - 64px); overflow: auto; }
+  #ui.collapsed .body { display: none; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  h1 { font-size: 15px; margin: 0; font-weight: 650; }
+  .sub { color: var(--muted); margin: 2px 0 10px; }
+  .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; margin: 12px 0 4px; }
+  #modes { display: grid; gap: 4px; }
+  .seg { display: flex; border: 1px solid var(--line); }
+  .seg button { flex: 1; border: 0; border-right: 1px solid var(--line); }
+  .seg button:last-child { border-right: 0; }
+  .note { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .note[hidden], #layersBox[hidden] { display: none; }
+  /* layer rows: the dot is the toggle (filled = shown, ring = hidden); layer colours only when the cloud is coloured by layer */
+  i.sw { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); transition: background .2s, box-shadow .2s; }
+  body.linked i.sw { background: var(--c); }
+  label.layer input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  label.layer:has(input:not(:checked)) i.sw { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
+  label.layer:has(input:not(:checked)) .nm { opacity: .45; }
+  label.layer:has(input:focus-visible) i.sw { outline: 2px solid var(--tint); outline-offset: 2px; }
+  label.layer .nm { transition: opacity .2s; }
+  button { font: inherit; background: none; color: var(--fg); border: 1px solid var(--line); padding: 4px 8px; cursor: pointer; }
+  button.on { background: var(--accent); color: var(--bg); }
+  button:disabled { opacity: .4; cursor: default; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  label.layer { position: relative; display: flex; align-items: center; gap: 8px; padding: 3px 6px; margin: 0 -6px; border-radius: 8px; cursor: pointer; user-select: none; }
+  label.layer:hover { background: var(--chip); }
+  label.layer span.n { color: var(--muted); margin-left: auto; font-size: 11px; }
+  details.sec[hidden] { display: none; }
+  /* collapsible sections: the summary looks like a section label, with a chevron */
+  details.sec { margin-top: 12px; }
+  details.sec > summary { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;
+    cursor: pointer; list-style: none; display: flex; justify-content: space-between; user-select: none; }
+  details.sec > summary::-webkit-details-marker { display: none; }
+  details.sec > summary::after { content: "▸"; }
+  details.sec[open] > summary::after { content: "▾"; }
+  .set { margin: 6px 0; }
+  .set .top { display: flex; justify-content: space-between; }
+  .set .v { color: var(--muted); }
+  /* views: saved views carry a small "−" at the top right to delete them */
+  button.view { position: relative; }
+  button.view.saved { padding-right: 14px; }
+  button.view .del { position: absolute; top: -7px; right: -6px; width: 14px; height: 14px; line-height: 12px; font-size: 12px;
+    border-radius: 50%; background: var(--panel); border: 1px solid var(--line); color: var(--muted); text-align: center; }
+  button.view .del:hover { color: var(--fg); border-color: var(--fg); }
+  .saveview { display: flex; gap: 4px; width: 100%; }
+  .saveview input { flex: 1; min-width: 0; font: inherit; color: var(--fg); background: none; border: 1px solid var(--line); padding: 3px 6px; }
+  input[type=range] { width: 100%; }
+  #toggle { padding: 0 6px; border: 0; color: var(--muted); }
+  #info { right: 16px; bottom: 16px; padding: 10px 12px; width: 260px; display: none; }
+  #info h2 { font-size: 14px; margin: 0 0 4px; word-break: break-all; }
+  #info table { border-collapse: collapse; width: 100%; }
+  #info td { padding: 2px 0; vertical-align: top; }
+  #info td:first-child { color: var(--muted); padding-right: 10px; white-space: nowrap; }
+  #hint { position: fixed; left: 16px; bottom: 14px; color: var(--muted); font-size: 11px; }
+  #status { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--muted); }
+  @media (max-width: 560px) { #ui { width: auto; right: 16px; } #info { left: 16px; width: auto; } #hint { display: none; } }
+
+  /* ---------- "liquid glass" panels (on top of the plain styles above) ----------
+     translucent tint (19 % light / 22 % dark) + blur and saturation of what lies behind, a bright rim light on the top / left edges, soft
+     drop shadow, large radius; the mode switch is a segmented control with a raised glass thumb */
+  :root { --glass: rgba(255,255,255,.19); --glass-hi: rgba(255,255,255,.85); --glass-rim: rgba(255,255,255,.55);
+          --glass-lo: rgba(255,255,255,.12); --glass-shadow: 0 10px 34px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08);
+          --chip: rgba(120,120,128,.14); --thumb: rgba(255,255,255,.78); --thumb-fg: #111; --tint: #0a84ff;
+          --track: rgba(120,120,128,.20); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+          --glass: rgba(28,28,30,.22); --glass-hi: rgba(255,255,255,.30); --glass-rim: rgba(255,255,255,.16);
+          --glass-lo: rgba(255,255,255,.04); --glass-shadow: 0 12px 38px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
+          --chip: rgba(120,120,128,.22); --thumb: rgba(255,255,255,.30); --thumb-fg: #fff; --tint: #0a84ff;
+          --track: rgba(0,0,0,.32); } }
+  :root[data-theme="dark"] { --glass: rgba(28,28,30,.22); --glass-hi: rgba(255,255,255,.30); --glass-rim: rgba(255,255,255,.16);
+          --glass-lo: rgba(255,255,255,.04); --glass-shadow: 0 12px 38px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
+          --chip: rgba(120,120,128,.22); --thumb: rgba(255,255,255,.30); --thumb-fg: #fff; --tint: #0a84ff;
+          --track: rgba(0,0,0,.32); }
+  .panel { border-radius: 22px; border: 1px solid var(--glass-rim);
+    background: linear-gradient(150deg, var(--glass-lo), transparent 45%), var(--glass);
+    -webkit-backdrop-filter: blur(18px) saturate(185%); backdrop-filter: blur(18px) saturate(185%);
+    box-shadow: inset 0 1px 0 var(--glass-hi), inset 1px 0 0 var(--glass-lo), inset 0 -1px 0 rgba(0,0,0,.06), var(--glass-shadow); }
+  #ui { padding: 14px 16px; }
+  #info { border-radius: 18px; }
+  button { border-radius: 999px; border: 1px solid var(--glass-rim); background: var(--chip); padding: 4px 11px;
+    transition: background .18s, box-shadow .18s, color .18s; }
+  button:hover:not(:disabled):not(.on) { background: color-mix(in srgb, var(--thumb) 55%, transparent); }
+  button.on { background: var(--thumb); color: var(--thumb-fg); border-color: var(--glass-hi); font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08); }
+  .seg { border: 0; border-radius: 12px; padding: 2px; background: var(--track); gap: 2px; box-shadow: inset 0 1px 2px rgba(0,0,0,.18); }
+  .seg button, .seg button:last-child { border: 0; border-radius: 10px; background: none; padding: 5px 8px; }
+  /* the selected mode sits on a thumb that slides between the buttons (viewer.js moves it) */
+  .seg { position: relative; }
+  .seg .thumb { position: absolute; top: 2px; bottom: 2px; left: 0; width: 0; border-radius: 10px; background: var(--thumb);
+    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08);
+    transition: transform .42s cubic-bezier(.34, 1.25, .5, 1), width .42s cubic-bezier(.34, 1.25, .5, 1), background .35s; }
+  .seg .thumb.instant { transition: none; }
+  .seg button:disabled { opacity: 1; cursor: progress; }   /* no flash while a mode loads */
+  .seg button { position: relative; z-index: 1; }
+  .seg button.on, .seg button.on:hover { background: none; box-shadow: none; border-color: transparent; }
+  #toggle, #toggle:hover { border: 0; background: none; box-shadow: none; }
+  /* the collapse "–" sits on the same vertical line as the section chevrons: both are centred in a 14px box */
+  #toggle { width: 14px; padding: 0; text-align: center; color: var(--muted); }
+  /* the four colourings fit one row: buttons sized by their label */
+  .seg.c4 button { flex: 1 1 auto; padding: 5px 4px; }
+  input[type=checkbox] { accent-color: var(--tint); }
+  /* sliders, iOS-like: thin rounded track, filled part in the text colour at 55 % (--p = filled %, set by viewer.js),
+     13px white glass knob like the Mode thumb; grows a little on hover / drag */
+  input[type=range] { -webkit-appearance: none; appearance: none; height: 18px; margin: 2px 0 0; background: none; cursor: pointer; --p: 50%; }
+  input[type=range]:focus { outline: none; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px;
+    background: linear-gradient(to right, color-mix(in srgb, var(--fg) 55%, transparent) 0 var(--p), var(--track) var(--p) 100%); }
+  input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--track); }
+  input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--fg) 55%, transparent); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; margin-top: -4.5px; border-radius: 50%;
+    background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.28), 0 0 0 .5px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.9);
+    transition: transform .18s cubic-bezier(.34,1.4,.5,1); }
+  input[type=range]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: #fff; border: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,.28), 0 0 0 .5px rgba(0,0,0,.10); transition: transform .18s cubic-bezier(.34,1.4,.5,1); }
+  input[type=range]:hover::-webkit-slider-thumb, input[type=range]:active::-webkit-slider-thumb { transform: scale(1.18); }
+  input[type=range]:hover::-moz-range-thumb, input[type=range]:active::-moz-range-thumb { transform: scale(1.18); }
+  input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px color-mix(in srgb, var(--tint) 45%, transparent), 0 1px 4px rgba(0,0,0,.28); }
+  .set .v { font-variant-numeric: tabular-nums; }
+  .saveview input { border-radius: 999px; border: 1px solid var(--glass-rim); background: var(--chip); padding: 3px 10px; }
+  button.view .del { background: var(--glass); border-color: var(--glass-rim);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  /* adaptive glass, like Apple's: viewer.js measures how bright the picture right behind each panel is and puts it in light
+     glass with dark text (.on-light) or dark glass with light text (.on-dark), whatever the system theme; with hysteresis */
+  .on-light { --fg: #111; --muted: #4f4f55; --line: rgba(0,0,0,.14); --accent: #111;
+    --glass: rgba(255,255,255,.19); --glass-hi: rgba(255,255,255,.85); --glass-rim: rgba(255,255,255,.6); --glass-lo: rgba(255,255,255,.14);
+    --glass-shadow: 0 10px 34px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08);
+    --chip: rgba(120,120,128,.16); --thumb: rgba(255,255,255,.82); --thumb-fg: #111; --track: rgba(120,120,128,.22); }
+  .on-dark { --fg: #f2f2f2; --muted: #b4b4ba; --line: rgba(255,255,255,.16); --accent: #eee;
+    --glass: rgba(28,28,30,.22); --glass-hi: rgba(255,255,255,.30); --glass-rim: rgba(255,255,255,.16); --glass-lo: rgba(255,255,255,.04);
+    --glass-shadow: 0 12px 38px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
+    --chip: rgba(120,120,128,.22); --thumb: rgba(255,255,255,.30); --thumb-fg: #fff; --track: rgba(0,0,0,.32); }
+  .panel.on-light, .panel.on-dark { color: var(--fg); transition: background .35s, color .35s, box-shadow .35s; }
+  #hint.on-light, #hint.on-dark { color: var(--muted); transition: color .35s; }
+  /* hierarchy (user, 2026-10-07): section titles strongest (13px semibold, text colour, sentence case,
+     sections, no dividers - user removed them); options / labels middle; secondary buttons (.ghost: Default / Apply / + Save view), values, notes lightest */
+  details.sec { margin-top: 0; padding: 10px 0 2px; }
+  .sub + details.sec { margin-top: 2px; }
+  details.sec > summary { color: var(--fg); font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0;
+    margin-bottom: 6px; align-items: center; }
+  details.sec > summary::after { content: "›"; width: 14px; text-align: center; color: var(--muted); font-weight: 400; font-size: 15px; line-height: 1;
+    transition: transform .2s; }
+  details.sec[open] > summary::after { content: "›"; transform: rotate(90deg); }
+  details.sec:not([open]) { padding-bottom: 4px; }
+  details.sec:not([open]) > summary { margin-bottom: 0; }
+  button.ghost { font-size: 12px; border-color: transparent; background: color-mix(in srgb, var(--chip) 70%, transparent); color: var(--muted); padding: 3px 10px; }
+  button.ghost:hover:not(:disabled) { color: var(--fg); }
+  /* the taller panel scrolls above the hint line. The scrollbar's 3px (wheel scrolling, so just a hint) are always reserved (scrollbar-gutter) and taken
+     off the right padding, so the panel, the chevrons and the "–" / "+" stay put whether or not it scrolls or is folded.
+     WebKit: no arrow buttons, and the track stops short of the rounded corners. (Chrome ignores ::-webkit-scrollbar when
+     scrollbar-width / scrollbar-color are set, so those are for Firefox only.) */
+  #ui { box-sizing: border-box; width: 282px; max-height: calc(100% - 52px); scrollbar-gutter: stable; padding-right: 13px; }
+  #ui::-webkit-scrollbar { width: 3px; }
+  #ui::-webkit-scrollbar-button { display: none; height: 0; }
+  #ui::-webkit-scrollbar-track { background: transparent; margin: 20px 0; }
+  /* the thumb shows only while scrolling (viewer.js adds .scrolling) and fades out over about a second after it stops */
+  @property --sb { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+  #ui { --sb: 0%; transition: --sb 1s ease; }
+  #ui.scrolling { --sb: 45%; transition-duration: .12s; }
+  #ui::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--muted) var(--sb), transparent); border-radius: 2px; }
+  @supports not selector(::-webkit-scrollbar) {
+    #ui { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--muted) 45%, transparent) transparent; }
+  }
+  /* idle (user, 2026-10-08): no input for 5 s -> the panels and the hint fade out completely over 1.5 s; any input
+     fades them back in (0.5 s, quicker, so a reach for the panel is not kept waiting). viewer.js toggles body.idle */
+  #ui, #info, #hint { transition: opacity .5s ease; }
+  body.idle #ui, body.idle #info, body.idle #hint { opacity: 0; pointer-events: none; transition: opacity 1.5s ease; }
+  /* floating tags (viewer.js addTag): a label at the end of the leader line from the object's top; light text on a
+     soft dark fade, the category in the highlight colour; follows the camera; fades after 10 s without input */
+  .tag { position: fixed; left: 0; top: 0; z-index: 5; max-width: 270px; padding: 7px 26px 8px 12px; margin-left: -1px;
+    border-left: 1px solid var(--tag); color: #f4f4f6; pointer-events: auto;
+    background: linear-gradient(90deg, rgba(8, 8, 12, .62), rgba(8, 8, 12, .38) 70%, rgba(8, 8, 12, 0));
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+    transition: opacity .5s ease; font-weight: 300; }
+  .tag .k { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--tag); font-weight: 500; }
+  .tag .t { font-size: 17px; line-height: 1.2; margin: 2px 0 1px; letter-spacing: .01em; }
+  .tag .a { font-size: 11px; color: rgba(244, 244, 246, .72); }
+  .tag::after { content: ""; position: absolute; left: -3px; bottom: -3px; width: 5px; height: 5px; background: var(--tag); }
+  .tag .dd { margin-top: 5px; }
+  .tag .dd > summary { list-style: none; cursor: pointer; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(244, 244, 246, .55); display: flex; justify-content: space-between; width: 100%; user-select: none; }
+  .tag .dd > summary::-webkit-details-marker { display: none; }
+  /* the chevron and the close × share one 14 px column at the label's right edge (6 px in), so they line up */
+  .tag .dd > summary { width: calc(100% + 20px); }
+  .tag .dd > summary::after { content: "›"; width: 14px; text-align: center; font-size: 13px; line-height: 1; transition: transform .2s; letter-spacing: 0; }
+  .tag .dd[open] > summary::after { transform: rotate(90deg); }
+  .tag .dd > summary:hover { color: #fff; }
+  .tag dl { display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; margin: 5px 0 0; font-size: 10.5px; }
+  .tag dt { color: rgba(244, 244, 246, .5); text-transform: uppercase; letter-spacing: .06em; font-size: 9.5px; padding-top: 1px; }
+  .tag dd { margin: 0; color: rgba(244, 244, 246, .88); }
+  .tag .nt { margin: 6px 0 0; font-size: 10px; color: rgba(244, 244, 246, .55); max-width: 240px; }
+  .tag .x { position: absolute; right: 6px; top: 3px; width: 14px; text-align: center; font-style: normal; font-size: 14px; color: rgba(244, 244, 246, .5);
+    cursor: pointer; }
+  .tag .x:hover { color: #fff; }
+  :root { --tag: #FF3EA5; }
+  /* labels on the left of their object: the accent line, the corner dot and the close / chevron column swap sides */
+  .tag.left { border-left: 0; border-right: 1px solid var(--tag); margin-left: 1px; padding: 7px 12px 8px 26px;
+    background: linear-gradient(270deg, rgba(8, 8, 12, .62), rgba(8, 8, 12, .38) 70%, rgba(8, 8, 12, 0)); text-align: right; }
+  .tag.left::after { left: auto; right: -3px; }
+  .tag.left .x { right: auto; left: 6px; }
+  .tag.left .dd > summary { flex-direction: row-reverse; width: calc(100% + 20px); margin-left: -20px; }
+  .tag.left .dd > summary::after { content: "‹"; }
+  .tag.left .dd[open] > summary::after { transform: rotate(-90deg); }
+  .tag.left dl { text-align: left; }
+  #leads { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; transition: opacity .5s ease; }
+  #leads line { stroke: var(--tag); stroke-width: 1; }
+  body.idle-tags .tag, body.idle-tags #leads { opacity: 0; pointer-events: none; transition: opacity 1.5s ease; }
+  #info { display: none !important; }   /* replaced by the floating tags */
+</style>
+</head>
+<body>
+<div id="ui" class="panel">
+  <div class="head"><h1>Angels Knoll / Y-1</h1><button id="toggle" title="Collapse">–</button></div>
+  <div class="body">
+    <div class="sub">Site model · <a href="./" style="color:inherit">home</a></div>
+    <details class="sec" open hidden><summary>Mode</summary>
+    <!-- one mode for now (hidden): the 2023 LiDAR point cloud, coloured by layer / height / class / intensity -->
+    <div id="modes"><div class="seg"><span class="thumb" aria-hidden="true"></span>
+      <button data-mode="cloud" title="The 2023 USGS LiDAR point cloud, every point tied to a model object; layers and click apply">Point cloud</button>
+    </div></div>
+    </details>
+    <details class="sec" id="colorSec" open hidden><summary>Color</summary>
+      <div class="seg c4" id="lidarOpts"><span class="thumb" aria-hidden="true"></span>
+        <button data-c="layer" title="One colour per layer, as in the legend">Layer</button><button data-c="height">Height</button><button data-c="class" title="USGS class: ground vs everything else">Class</button><button data-c="intensity" title="Return strength: road markings and materials show">Intensity</button>
+      </div>
+    </details>
+    <details class="sec" id="layersBox" open><summary>Layers</summary>
+      <div id="layers"></div>
+    </details>
+    <details class="sec" open><summary>Views</summary>
+      <div class="row" id="views"></div>
+    </details>
+    <!-- display settings: units in both modes (every length the viewer shows; kept in this browser), then the point cloud
+         settings (filled by viewer.js) -->
+    <details class="sec" id="dispSec"><summary>Display settings</summary>
+      <div class="set"><div class="top"><span>Units</span></div>
+        <div class="seg" id="units"><span class="thumb" aria-hidden="true"></span>
+          <button data-u="ft" title="Feet (0.3048 m); the default">ft</button><button data-u="m" title="Metres">m</button>
+        </div>
+      </div>
+      <div id="disp"></div>
+    </details>
+  </div>
+</div>
+<div id="info" class="panel"></div>
+<div id="hint">Drag to orbit · right-drag to pan · scroll to zoom · click an object or a point for details</div>
+<div id="status">Loading model…</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+<script type="module" src="js/viewer.js"></script>
+</body>
+</html>
