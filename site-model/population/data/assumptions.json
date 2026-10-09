@@ -440,7 +440,7 @@
         "E": 1.0
       }
     },
-    "note": "ASSUMPTION (option B, 2026-10-09): a rail rider takes the line whose branch points toward home. Branch ends are the lines' outer stations (approximate positions, typed by hand from the Metro rail map); each pulls riders by a von Mises weight on the bearing difference, kappa 3 (about +/- 35 deg). Transfers (Union Station, C/K/L lines, Metrolink) are not modelled. Station lines: metroBoardings[*].lines. lineWeight is CALIBRATED, not observed: with equal weights the model gave B/D stations (Pershing Square, Civic Center) 30% of the five compared stations' boardings against Metro's 44% (6,619 of 14,965); B/D odds x (0.793 / 0.433) = 1.83. Because the line shares are fitted to Metro, only the split within each line group remains an independent check."
+    "note": "ASSUMPTION (option B, 2026-10-09): a rail rider takes the line whose branch points toward home. Branch ends are the lines' outer stations (approximate positions, typed by hand from the Metro rail map); each pulls riders by a von Mises weight on the bearing difference, kappa 3 (about +/- 35 deg). Transfers (Union Station, C/K/L lines, Metrolink) are not modelled. Station lines: metroBoardings[*].lines. lineWeight is CALIBRATED, not observed: with equal weights the model gave B/D stations (Pershing Square, Civic Center) 30% of the five compared stations' boardings against Metro's 44% (6,619 of 14,965); B/D odds x (0.793 / 0.433) = 1.83. Because the line shares are fitted to Metro, only the split within each line group remains an independent check. The station weights (stationWeight) are fitted on top of this line weight."
   },
   "officeSectors": {
     "value": [
@@ -589,5 +589,20 @@
       }
     },
     "note": "Audit 2026-10-09. Evening audiences at the Music Center's other houses, a typical day = annual / 365, same times as the Disney Hall concerts. LA Opera Form 990 FY2018: 38 performances, nearly 108,000 people; Center Theatre Group Form 990 FY2021-22: Ahmanson 200,504 over 157 performances, Mark Taper 60,115 over 148 (a post-COVID year, likely low). Music Center FY2022-23: nearly 800,000 at over 700 ticketed performances."
+  },
+  "stationWeight": {
+    "value": {
+      "Pershing Square": 1.902,
+      "Historic Broadway": 0.13,
+      "Grand Av Arts/Bunker Hill": 0.11,
+      "Civic Center/Grand Park": 0.68,
+      "Little Tokyo/Arts District": 1.0,
+      "7th St/Metro Center": 1.0
+    },
+    "note": "CALIBRATED (user 2026-10-09), not observed: each Metro station's pull on riders of its lines, multiplying the walking-distance choice; fitted by repeated runs so model boardings match metroBoardings (each iteration: weight x (Metro / model)^0.8). Little Tokyo/Arts District is held at 1: most of its riders live outside the site and are not in the model. 7th St/Metro Center (transfer hub) is not compared. With this, the Metro table is a fit, not a check; the LADOT walk counts stay independent."
+  },
+  "stationChoiceTemp": {
+    "value": 300,
+    "note": "CALIBRATED with stationWeight (user 2026-10-09): metres of extra walk at which a rider is e times less likely to use an entrance (softmin over walking distance). The first layer used 120 m, so nearly everyone took the nearest entrance and station weights had almost no effect (iteration 1); riders do walk past an entrance to reach a station that suits their trip (line, transfers), so 300 m."
   }
 }

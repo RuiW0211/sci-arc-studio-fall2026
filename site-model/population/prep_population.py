@@ -654,9 +654,16 @@ def pick_line(bearing=None):
     return branches[rng.choice(len(w), p=w / w.sum())][0]
 
 
+# stationWeight (calibrated, user 2026-10-09): how strongly each station draws riders of its lines, on top of the
+# walking distance (probability x weight). Fitted so each station's boardings match Metro's; Little Tokyo is held at
+# 1 (most of its riders live outside the site), 7th St/Metro Center is not compared (transfer hub).
+SW = AS["stationWeight"]
+
+
 def rail_for(door, line):
     c = [q for q in by_kind["rail"] if line in MB[station_of[id(q)]]["lines"]]
-    return softmin(c, lambda q: netdist(q["node"], door), 120)
+    T = AS["stationChoiceTemp"]
+    return softmin(c, lambda q: netdist(q["node"], door) - T * math.log(SW.get(station_of[id(q)], 1.0)), T)
 
 
 

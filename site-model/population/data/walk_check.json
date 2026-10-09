@@ -33,18 +33,18 @@
    ],
    "block_m": 58,
    "weekday": {
-    "model": 248,
+    "model": 160,
     "2023": 781,
     "2025": 618,
     "observed_mean": 700,
-    "ratio": 0.35
+    "ratio": 0.23
    },
    "weekend": {
-    "model": 131,
+    "model": 125,
     "2023": 133,
     "2025": 145,
     "observed_mean": 139,
-    "ratio": 0.95
+    "ratio": 0.9
    }
   },
   {
@@ -56,18 +56,18 @@
    ],
    "block_m": 62,
    "weekday": {
-    "model": 75,
+    "model": 73,
     "2023": 539,
     "2025": 562,
     "observed_mean": 550,
-    "ratio": 0.14
+    "ratio": 0.13
    },
    "weekend": {
-    "model": 57,
+    "model": 10,
     "2023": 126,
     "2025": 51,
     "observed_mean": 88,
-    "ratio": 0.65
+    "ratio": 0.11
    }
   },
   {
@@ -79,18 +79,18 @@
    ],
    "block_m": 209,
    "weekday": {
-    "model": 881,
+    "model": 3484,
     "2023": 1848,
     "2025": 2024,
     "observed_mean": 1936,
-    "ratio": 0.45
+    "ratio": 1.8
    },
    "weekend": {
-    "model": 71,
+    "model": 120,
     "2023": 1897,
     "2025": 2351,
     "observed_mean": 2124,
-    "ratio": 0.03
+    "ratio": 0.06
    }
   },
   {
@@ -102,11 +102,11 @@
    ],
    "block_m": 204,
    "weekday": {
-    "model": 0,
+    "model": 282,
     "2023": 317,
     "2025": 502,
     "observed_mean": 410,
-    "ratio": 0.0
+    "ratio": 0.69
    },
    "weekend": {
     "model": 1,
@@ -125,18 +125,18 @@
    ],
    "block_m": 131,
    "weekday": {
-    "model": 1065,
+    "model": 1441,
     "2023": 2042,
     "2025": 1585,
     "observed_mean": 1814,
-    "ratio": 0.59
+    "ratio": 0.79
    },
    "weekend": {
-    "model": 571,
+    "model": 472,
     "2023": 726,
     "2025": 608,
     "observed_mean": 667,
-    "ratio": 0.86
+    "ratio": 0.71
    }
   },
   {
@@ -148,18 +148,18 @@
    ],
    "block_m": 203,
    "weekday": {
-    "model": 397,
+    "model": 953,
     "2023": 2407,
     "2025": 2406,
     "observed_mean": 2406,
-    "ratio": 0.17
+    "ratio": 0.4
    },
    "weekend": {
-    "model": 50,
+    "model": 191,
     "2023": 35,
     "2025": 884,
     "observed_mean": 460,
-    "ratio": 0.11
+    "ratio": 0.42
    }
   },
   {
@@ -171,18 +171,18 @@
    ],
    "block_m": 124,
    "weekday": {
-    "model": 750,
+    "model": 565,
     "2023": 1660,
     "2025": 1501,
     "observed_mean": 1580,
-    "ratio": 0.47
+    "ratio": 0.36
    },
    "weekend": {
-    "model": 210,
+    "model": 139,
     "2023": 768,
     "2025": 661,
     "observed_mean": 714,
-    "ratio": 0.29
+    "ratio": 0.19
    }
   },
   {
@@ -194,18 +194,18 @@
    ],
    "block_m": 201,
    "weekday": {
-    "model": 1186,
+    "model": 1178,
     "2023": 2079,
     "2025": null,
     "observed_mean": 2079,
     "ratio": 0.57
    },
    "weekend": {
-    "model": 510,
+    "model": 576,
     "2023": 788,
     "2025": null,
     "observed_mean": 788,
-    "ratio": 0.65
+    "ratio": 0.73
    }
   },
   {
@@ -217,18 +217,18 @@
    ],
    "block_m": 200,
    "weekday": {
-    "model": 600,
+    "model": 302,
     "2023": 883,
     "2025": 878,
     "observed_mean": 880,
-    "ratio": 0.68
+    "ratio": 0.34
    },
    "weekend": {
-    "model": 242,
+    "model": 68,
     "2023": 374,
     "2025": 369,
     "observed_mean": 372,
-    "ratio": 0.65
+    "ratio": 0.18
    }
   }
  ]

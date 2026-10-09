@@ -519,13 +519,12 @@ function methodHtml(meta) {
     FY2026 average weekday boardings.</p>
     <table><tr><th>Station</th><th>Model</th><th>Metro</th><th>Ratio</th></tr>${rows}
     <tr><td>Five stations</td><td></td><td></td><td>${ratio}</td></tr></table>
-    <p>Riders take the line whose branch points toward home, then the nearest entrance on that line. The weight of B/D
-    against A/E (metroLines.lineWeight) is calibrated to these counts, so only the split within each line is an independent check.
-    7th St/Metro Center is a transfer hub and is not compared. The model has no transfers, no trips that only pass through,
-    and no riders from outside the site: Little Tokyo/Arts District comes out low because most of its riders live in
-    Little Tokyo and the Arts District, beyond the modelled area, while A/E riders who work on the site take the entrance
-    nearest their building, so Historic Broadway and Grand Av Arts come out about twice Metro's counts. Read street flows
-    near those three stations with care.</p>
+    <p>Riders take the line whose branch points toward home, then an entrance on that line, by walking distance and a
+    weight per station. The line weight (metroLines.lineWeight), the station weights (stationWeight) and how far riders
+    will walk past a nearer entrance (stationChoiceTemp) are fitted to these counts: <b>this table shows the fit, it is
+    not an independent check</b> (the LADOT walk counts are). Little Tokyo/Arts District is not fitted, because most of its
+    riders live beyond the modelled area. 7th St/Metro Center is a transfer hub and is not compared. The model has no
+    transfers and no trips that only pass through the site.</p>
     <p><b>Sources</b></p><ul>${src}</ul><p><b>Assumptions</b> (site-model/population/data/assumptions.json)</p><ul>${asm}</ul>
     <p><b>Known limits</b>: LODES counts jobs where employers report them; office floor area is from the Assessor, not
     listings; arrival-time bins are City of LA averages within each tract's periods; hotel rooms are estimated from
