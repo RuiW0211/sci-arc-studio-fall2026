@@ -32,6 +32,7 @@ Outputs (../../web/data/):
 """
 import json
 import math
+import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -66,7 +67,11 @@ SECTOR_LABELS = ["", "Agriculture", "Mining, oil & gas", "Utilities", "Construct
                  "Accommodation & food services", "Other services", "Public administration"]
 TYPES = ["resident", "worker", "hotel", "visitor"]
 MODES = ["stays", "walk", "bike", "bus", "rail", "drive", "taxi / other"]
-ELIGIBLE = set(AS["remoteEligible"])
+OFFICE = set(AS["officeSectors"])   # office schedule: hours, lunch out
+# weekday presence by sector (audit 2026-10-09): w x office attendance (Kastle) + (1 - w) x the in-person rate, with
+# w = officeAttendanceWeight (share of the sector's jobs that work like offices; 0 if absent)
+OAW, OTH = AS["officeAttendanceWeight"], AS["otherAttendance"]
+SECTOR_ATT = [OAW.get(s, 0) * AS["officeAttendance"] + (1 - OAW.get(s, 0)) * OTH.get(s, OTH["default"]) for s in SECTORS]
 load = lambda name: json.loads((POP / name).read_text())
 
 
@@ -359,7 +364,25 @@ AF_LOW, AF_UP = (fn[0], fn[-1]) if fn else (None, None)
 if fn:
     places.append({"name": "Angels Flight (upper station, California Plaza)", "kind": "culture", "node": AF_UP, "w": 1.0})
 gcm = next((p for p in places if "grand central market" in p["name"].lower()), None)
-moca = next((p for p in places if "contemporary" in p["name"].lower() or "moca" in p["name"].lower()), None)
+moca = next((p for p in places if p["name"] == "Museum of Contemporary Art"), None)
+
+
+def find_place(v, name):
+    """A visitor destination: the OSM place whose name matches v['match'], else a place at v['latlon']."""
+    if "match" in v:
+        f = next((p for p in places if re.search(v["match"], p["name"], re.I)), None)
+        if f:
+            return f
+    if "latlon" in v:
+        pt = Point(*ll2loc(*v["latlon"]))
+        if EXT.contains(pt):
+            places.append({"name": name, "kind": "culture", "node": nearest_node(pt), "w": 1.0})
+            return places[-1]
+    return None
+
+
+DEST = {name: find_place(v, name) for name, v in AS["visitors"].items() if "annual" in v}
+print("visitor destinations:", {k: (v["name"] if v else None) for k, v in DEST.items()})
 print(f"{len(places)} places, {len(portals)} portals ({Counter(p['kind'] for p in portals)}), GCM={bool(gcm)}, MOCA={bool(moca)}")
 
 # shortest paths from every anchor
@@ -584,7 +607,7 @@ def leg_seconds(person, a, b, fk, tk, speed):
             sx, sy, sz = spot_xyz(person, kind, n)
             nx, ny, nz = XYZ[n]
             dz = abs(sz - nz)
-            t += math.hypot(sx - nx, sy - ny) / speed + (dz / 2.5 + 40 if dz > 3 else dz / speed)
+            t += math.hypot(sx - nx, sy - ny) / speed + (dz / 2.5 + AS["elevatorWait"] if dz > 3 else dz / speed)
     return t
 
 
@@ -670,7 +693,7 @@ def food_near(door, kinds=("food",), radius=650, temp=220):
 def new_person(kind, **kw):
     p = {"type": TYPES.index(kind), "mode": 0, "sector": 0, "rank": int(rng.integers(256)), "home_bid": None,
          "work_bid": None, "home_spot": None, "work_spot": None, "dist_km": 0.0, "bearing": 0.0, "tract": "",
-         "speed": float(np.clip(rng.normal(SPEED_M, SPEED_SD), 0.8, 1.9)), "trips": {"weekday": [], "weekend": []}}
+         "speed": float(np.clip(rng.normal(SPEED_M, SPEED_SD), 0.6, 2.0)), "trips": {"weekday": [], "weekend": []}}
     p.update(kw)
     people.append(p)
     return p
@@ -897,12 +920,23 @@ mode_check = Counter(MODES[p["mode"]] for p, _ in commuters)
 print("workers", sum(p["type"] == 1 for p in people), f"(from within {AS['modeByDistance']['walkMaxKm']} km: {NEAR:.0%})",
       {k: f"{v / len(commuters):.0%}" for k, v in mode_check.most_common()})
 
-# hotel guests
+# hotel guests (audit 2026-10-09): visitor hotels with published room counts (hotelRooms, matched by address).
+# Other Assessor "hotel & motels" parcels in the site are mostly residential hotels (SROs in Skid Row and the Historic
+# Core): their people are Census residents already, so they get no guests.
+HR = AS["hotelRooms"]
+by_addr = {}
 for bid in BIDS:
-    sq = B[bid]["use_sqft"].get("hotel", 0)
-    if B[bid]["use"] != "hotel" or sq <= 0:
+    for a in B[bid]["addr"]:
+        by_addr.setdefault(a.split(",")[0].strip().upper(), bid)
+hotel_bids = {}
+for name, h in HR.items():
+    bid = next((by_addr[a.upper()] for a in h["addr"] if a.upper() in by_addr), None)
+    if bid is None:
+        print("hotel not found in the buildings:", name)
         continue
-    B[bid]["rooms"] = rooms = int(sq / AS["sqftPerHotelRoom"])
+    hotel_bids[bid] = hotel_bids.get(bid, 0) + h["rooms"]
+for bid, rooms in hotel_bids.items():
+    B[bid]["rooms"] = rooms
     n = int(rng.binomial(rooms, AS["hotelOccupancy"]) * AS["guestsPerRoom"])
     B[bid]["guests"] = n
     for _ in range(n):
@@ -940,7 +974,7 @@ def home_free(trips, t0, t1):
 def schedule_work(p, day, door, start, end, flags):
     """Commute in, optional lunch out, optional after-work stop, commute out.
     start / end: (node, spot kind, anchor index) where the commute begins and ends."""
-    office = SECTORS[p["sector"]] in ELIGIBLE
+    office = SECTORS[p["sector"]] in OFFICE
     mean, sd = work_hours["office" if office else "shift"]
     arrive = arrival[MODES[p["mode"]] == "drive"]()
     stay = float(np.clip(rng.normal(mean, sd), 4, 12)) * 3600
@@ -1073,15 +1107,25 @@ def visitor(day, place, t_arrive, dwell, flags=0, chain=None):
                  place_idx[id(last)], portal_idx[id(q2)])
 
 
+def per_day(v, day):
+    """Visitors on a typical day: an annual count spread over 261 weekdays and 104 weekend days, a weekend day
+    weekendFactor times a weekday (visitorWeekendFactor unless the destination says otherwise)."""
+    if "annual" not in v:
+        return v[day]
+    wf = v.get("weekendFactor", AS["visitorWeekendFactor"])
+    wd = v["annual"] / (261 + 104 * wf)
+    return wd * (wf if day == "weekend" else 1.0)
+
+
 for name, v in AS["visitors"].items():
     for day in ("weekday", "weekend"):
         lo, hi = v["window"]
         ts = meal_t[day] if v["profile"] == "meals" else (lambda lo=lo, hi=hi: rng.uniform(lo, hi) * 3600)
-        target = gcm if name == "Grand Central Market" else moca if name == "MOCA" else None
-        if name in ("Grand Central Market", "MOCA") and target is None:
-            print("skip visitors for", name, "(not found in OSM)")
+        target = DEST.get(name)
+        if "annual" in v and target is None:
+            print("skip visitors for", name, "(not found)")
             continue
-        for _ in range(int(v[day])):
+        for _ in range(int(round(per_day(v, day)))):
             t = ts()
             while not lo * 3600 <= t < hi * 3600:
                 t = ts()
@@ -1110,15 +1154,25 @@ north = [hall] if hall_inside else sorted(by_kind["edge"], key=lambda q: math.di
 if hall_inside:
     places.append({"name": AS["event"]["name"].replace("Concert at ", ""), "kind": "culture", "node": hall["node"], "w": 0.0})
     anchor_names.append(places[-1]["name"]); place_idx[id(hall)] = len(anchor_names) - 1
+# The Music Center's other houses (audit 2026-10-09): a typical day carries annual attendance / 365, at the same times.
+venues = [(north, {d: ev["seats"] * ev["occupancy"] * AS["eveningShare"][d] * (1.0 if hall_inside else ev["throughSite"])
+                   for d in ("weekday", "weekend")}, hall_inside)]
+for name, v in AS["theatres"].items():
+    f = next((p for p in places if re.search(v["match"], p["name"], re.I)), None)
+    if f is None:
+        print("theatre not found:", name)
+        continue
+    venues.append(([f], {d: v["annual"] / 365 for d in ("weekday", "weekend")}, True))
 for day in ("weekday", "weekend"):
-    n_ev = int(round(ev["seats"] * ev["occupancy"] * AS["eveningShare"][day] * (1.0 if hall_inside else ev["throughSite"])))
-    for _ in range(n_ev):
+  for targets, n_day, inside in venues:
+    for _ in range(int(round(n_day[day]))):
         m = "drive" if rng.random() < 0.6 else "rail"
         p = new_person("visitor", mode=MODES.index(m))
-        q = by_kind["parking" if m == "drive" else "rail"][rng.integers(len(by_kind["parking" if m == "drive" else "rail"]))]
-        e = north[rng.integers(len(north))]
+        e = targets[rng.integers(len(targets))]
+        q = (softmin(by_kind["parking"], lambda x: netdist(x["node"], e["node"]), 150) if m == "drive"
+             else rail_for(e["node"], pick_line()))
         t = rng.uniform(*ev["arrive"]) * 3600
-        ea = place_idx[id(e)] if hall_inside else portal_idx[id(e)]
+        ea = place_idx[id(e)] if inside else portal_idx[id(e)]
         add_trip(p, day, t, q["node"], e["node"], SPOT_HIDDEN, SPOT_HIDDEN, "event", 0,
                  portal_idx[id(q)], ea, backwards=True)
         add_trip(p, day, rng.uniform(*ev["leave"]) * 3600, e["node"], q["node"], SPOT_HIDDEN, SPOT_HIDDEN,
@@ -1135,8 +1189,7 @@ print(f"people {len(people)}  paths {len(paths)}  trips weekday {sum(len(p['trip
 def present(p, day, attendance):
     if p["type"] != 1 and p["type"] != 0:
         return True
-    thr = attendance if SECTORS[p["sector"]] in ELIGIBLE else AS["otherAttendance"]
-    return p["rank"] < thr * 256 or day == "weekend"
+    return p["rank"] < SECTOR_ATT[p["sector"]] * 256 or day == "weekend"
 
 
 def default_spot(p):
@@ -1310,7 +1363,7 @@ meta = {
     "flags": {"from": "bits 0-1", "to": "bits 2-3 (0 off site, 1 home, 2 work, 3 place)", "reverse": 16,
               "attendance": 32, "event": 64},
     "types": TYPES, "modes": MODES, "sectors": SECTORS, "sectorLabels": SECTOR_LABELS,
-    "remoteEligible": sorted(ELIGIBLE), "otherAttendance": AS["otherAttendance"],
+    "remoteEligible": sorted(OFFICE), "sectorAttendance": [round(x, 4) for x in SECTOR_ATT],
     "officeAttendance": AS["officeAttendance"], "purposes": PURPOSES,
     "anchors": anchor_names, "tracts": tracts,
     "buildings": [{"id": b, "name": B[b]["name"], "use": B[b]["use"], "addr": B[b]["addr"], "area_m2": round(B[b]["area_m2"]),

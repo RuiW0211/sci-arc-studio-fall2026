@@ -49,7 +49,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   }
   const lateral = new Float32Array(A);
   for (let i = 0; i < A; i++) lateral[i] = (hash(i, 7) - 0.5) * 3.6;  // spread across the sidewalk, m
-  const eligible = new Set(meta.remoteEligible.map((s) => meta.sectors.indexOf(s)));
+  const eligible = new Set((meta.remoteEligible ?? []).map((s) => meta.sectors.indexOf(s)));
 
   // ---------- state ----------
   const st = { day: "weekday", t: (pc.start ?? 8.5) * 3600, speed: pc.speed ?? 300, playing: false,
@@ -57,7 +57,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const present = new Uint8Array(A);
   function updatePresence() {
     for (let i = 0; i < A; i++) {
-      const thr = eligible.has(sector[i]) ? st.attendance : meta.otherAttendance;
+      const thr = meta.sectorAttendance ? meta.sectorAttendance[sector[i]] : eligible.has(sector[i]) ? st.attendance : meta.otherAttendance;
       present[i] = rank[i] < thr * 256 ? 1 : 0;
     }
   }

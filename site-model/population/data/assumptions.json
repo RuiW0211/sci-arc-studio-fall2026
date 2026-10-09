@@ -6,31 +6,24 @@
     "note": "Weekday share of office-type jobs (sectors in remoteEligible) whose holder is in the building today: Kastle Back to Work Barometer, Los Angeles weekly average 47.5% for the week to Wednesday 23 September 2026 (unique badge entries relative to the pre-COVID baseline, Kastle's partner buildings), typed by hand. Fixed, no longer a viewer slider (user, 2026-10-08)."
   },
   "otherAttendance": {
-    "value": 0.93,
-    "note": "Weekday presence for jobs that cannot be done remotely (retail, food, hotel, health, construction...): sick days, vacation, part-time days."
-  },
-  "remoteEligible": {
-    "value": [
-      "CNS09",
-      "CNS10",
-      "CNS11",
-      "CNS12",
-      "CNS13",
-      "CNS14",
-      "CNS20"
-    ],
-    "note": "LODES NAICS sectors treated as office work that the attendance slider applies to: information, finance, real estate, professional, management, administrative, public administration."
+    "value": {
+      "default": 0.8,
+      "CNS07": 0.7,
+      "CNS17": 0.7,
+      "CNS18": 0.7
+    },
+    "note": "Audit 2026-10-09. Weekday presence for in-person jobs: BLS American Time Use Survey 2025, Table 4: 80.5% of the employed worked on an average weekday (sick days, leave, part-time days netted out); Table 5: service occupations 69.2%, used for retail, arts & entertainment, accommodation & food."
   },
   "weekendWorkShare": {
     "value": {
-      "CNS07": 0.7,
-      "CNS18": 0.8,
-      "CNS17": 0.6,
-      "CNS16": 0.4,
-      "CNS14": 0.3,
+      "CNS07": 0.45,
+      "CNS18": 0.45,
+      "CNS17": 0.45,
+      "CNS16": 0.3,
+      "CNS14": 0.25,
       "default": 0.06
     },
-    "note": "Share of a sector's jobs also worked on a typical weekend day."
+    "note": "Audit 2026-10-09. Share of a sector's jobs worked on a typical weekend day. BLS ATUS 2025, Table 5, by occupation (no industry table): service 37.2%, office & administrative support 23.7%; BLS TED 2017: sales 47.5%. Mapped to sectors by hand. default 0.06 = office sectors at the workplace (ATUS weekend work in offices is mostly at home); unsourced."
   },
   "workHours": {
     "value": {
@@ -39,19 +32,19 @@
         0.75
       ],
       "shift": [
-        7.75,
-        1.0
+        7.5,
+        1.5
       ]
     },
-    "note": "Time at work including lunch, mean and SD in hours. 'shift' applies to sectors outside remoteEligible."
+    "note": "Audit 2026-10-09. Time at work including lunch, mean and SD (h). Office: BLS ATUS 2025, full-time 8.45 h worked on days worked + about 0.5 h lunch. Shift (outside officeSectors): service occupations 7.44 h, many part-timers, so a wider spread."
   },
   "lunchOutShare": {
-    "value": 0.45,
-    "note": "Share of present office workers who leave their building for lunch; the rest eat in the building. Lunch start and dwell come from NHTS work-to-meal trips."
+    "value": 0.33,
+    "note": "Audit 2026-10-09. Share of present office workers who leave their building for lunch. ezCater 2024 Lunch Report (via Fortune, 2024-10-16): 38% take a lunch break away from their desk every day, an upper bound for leaving the building; no Downtown survey. Lunch times from NHTS work-to-meal trips."
   },
   "afterWorkOutShare": {
     "value": 0.1,
-    "note": "Share of present workers who stop at a restaurant or bar on site before commuting home."
+    "note": "Audit 2026-10-09. ASSUMPTION, no source: share of present workers who stop at an on-site restaurant or bar before going home. FHWA (1995 NPTS) gives about 30% of evening work trips chained to some stop; meals are a minority and only some fall inside the site."
   },
   "floorHeight": {
     "value": {
@@ -59,21 +52,21 @@
       "residential": 3.2,
       "default": 4.0
     },
-    "note": "Metres per storey, used to stack people on floors inside the LiDAR building volumes."
+    "note": "Audit 2026-10-09. ASSUMPTION (common values): metres per storey, used to stack people on floors inside the LiDAR volumes. A typical office floor is about 13 ft (4 m); older Historic Core floors are taller. Block job totals are fixed by LODES, so this only moves people between floors and buildings."
   },
   "jobWeightByUse": {
     "value": {
       "office": 1.0,
-      "government": 1.0,
-      "institutional": 0.8,
+      "government": 0.9,
+      "institutional": 0.6,
       "retail": 0.6,
-      "hotel": 0.5,
-      "recreational": 0.3,
+      "hotel": 0.17,
+      "recreational": 0.22,
       "residential": 0.03,
       "parking": 0.01,
       "unknown": 0.5
     },
-    "note": "Relative floor-area weight when a Census block's jobs are split among its buildings."
+    "note": "Audit 2026-10-09. Relative weight per floor area when a block's jobs are split among its buildings: 507 / square feet per worker (EIA CBECS 2018, Table B15: office 507, government 558, health 604, courthouse 690, education 1,314, hotel 3,076, entertainment/culture 2,401, recreation 2,240, mercantile 1,214, food service 480). residential, parking, unknown: assumptions."
   },
   "sectorUseAffinity": {
     "value": {
@@ -100,23 +93,19 @@
         "institutional": 2
       }
     },
-    "note": "Multiplies the weight of a building use for jobs of a sector, so restaurant jobs land in retail space and county jobs in government buildings."
-  },
-  "sqftPerHotelRoom": {
-    "value": 800,
-    "note": "Gross building area per hotel room when the room count is not known."
+    "note": "Audit 2026-10-09. ASSUMPTION (structure kept): multiplies the weight of a building use for a sector's jobs, so restaurant jobs land in retail space and county jobs in government buildings."
   },
   "hotelOccupancy": {
-    "value": 0.78,
-    "note": "Occupied share of rooms."
+    "value": 0.69,
+    "note": "Audit 2026-10-09. DTLA Alliance Q1 2026 Market Report (CoStar): 12-month occupancy 68.8% (69.6% a year earlier), about 10% below pre-pandemic."
   },
   "guestsPerRoom": {
     "value": 1.5,
-    "note": "Guests per occupied room."
+    "note": "Audit 2026-10-09. ASSUMPTION, no source found: guests per occupied room (plausible 1.3-1.7; Downtown's business and convention mix points to the low end)."
   },
   "ownGarageMinArea": {
     "value": 9000,
-    "note": "Buildings over this modeled floor area (m2) are assumed to have their own garage: drivers appear at the building door."
+    "note": "Audit 2026-10-09. ASSUMPTION: buildings over this modeled floor area (m2) have their own garage: drivers appear at the building door. No source; pre-1930 Historic Core buildings mostly have none (to refine with year built)."
   },
   "modeByDistance": {
     "value": {
@@ -131,7 +120,7 @@
       "weekend": 1.4,
       "onSiteShare": 0.55
     },
-    "note": "Non-work outings per resident per day; share that stay on site (food, shops). Timing from NHTS home-based trips."
+    "note": "Audit 2026-10-09. Non-work outings (home-based tours) per resident per day, NHTS 2017 rates kept on purpose: the 2022 NHTS (recall-only reporting, ~7,500 households) gives about 0.85 / 0.95 for non-workers / weekends, but under-reports short trips (City Observatory estimate ~20%), and remote work is already in officeAttendance. onSiteShare: ASSUMPTION, no Downtown survey."
   },
   "hotelGuests": {
     "value": {
@@ -139,13 +128,13 @@
       "onSiteFirstStop": 0.3,
       "dinnerNearby": 0.25
     },
-    "note": "Hotel guest day pattern."
+    "note": "Audit 2026-10-09. ASSUMPTION, no public survey found: share of guests out for the day, whose first stop is on site, who dine near the hotel."
   },
   "visitors": {
     "value": {
       "Grand Central Market": {
-        "weekday": 5000,
-        "weekend": 9000,
+        "annual": 2000000,
+        "match": "^Grand Central Market$",
         "dwell": [
           45,
           20
@@ -157,8 +146,8 @@
         "profile": "meals"
       },
       "MOCA": {
-        "weekday": 500,
-        "weekend": 900,
+        "annual": 162000,
+        "match": "^Museum of Contemporary Art$",
         "dwell": [
           90,
           30
@@ -181,9 +170,81 @@
           23
         ],
         "profile": "meals"
+      },
+      "MOCA Geffen Contemporary": {
+        "annual": 108000,
+        "match": "Geffen Contemporary",
+        "dwell": [
+          75,
+          30
+        ],
+        "window": [
+          11,
+          17
+        ],
+        "profile": "flat",
+        "weekendFactor": 4.0
+      },
+      "The Broad": {
+        "annual": 846500,
+        "match": "^The Broad Museum$",
+        "dwell": [
+          90,
+          30
+        ],
+        "window": [
+          10,
+          18
+        ],
+        "profile": "flat"
+      },
+      "Olvera Street / El Pueblo": {
+        "annual": 1500000,
+        "match": "Olvera Street Mexican Marketplace",
+        "dwell": [
+          60,
+          30
+        ],
+        "window": [
+          10,
+          20
+        ],
+        "profile": "flat"
+      },
+      "Grand Park": {
+        "annual": 1000000,
+        "latlon": [
+          34.056,
+          -118.2445
+        ],
+        "dwell": [
+          40,
+          25
+        ],
+        "window": [
+          8,
+          21
+        ],
+        "profile": "flat"
+      },
+      "Cathedral of Our Lady of the Angels": {
+        "annual": 500000,
+        "latlon": [
+          34.0577,
+          -118.2456
+        ],
+        "dwell": [
+          40,
+          20
+        ],
+        "window": [
+          8,
+          18
+        ],
+        "profile": "flat"
       }
     },
-    "note": "Daily visitors who are not workers, residents or hotel guests. Order-of-magnitude placeholders: replace with published counts when available. 'meals' profile = NHTS start times of trips to buy meals."
+    "note": "Audit 2026-10-09. Daily visitors who are not workers, residents or hotel guests. 'annual' = yearly visitors, spread by visitorWeekendFactor. Grand Central Market 2 million (AP 2017, repeated since); MOCA about 270,000 for both sites (The Art Newspaper 2018 survey; split 60/40 here, the Geffen opens Thu-Sun only), The Broad 846,500 (2024, most-visited US museums list; 896,000 in 2023, The Art Newspaper); Olvera Street / El Pueblo 1-2 million (Wikipedia, Time Out 2017, estimates; 1.5 million used); Grand Park over 1 million (Music Center Form 990 FY2022-23; many come for events); Cathedral over 500,000 (Angelus News). Grand Park and the Cathedral are placed at hand-typed positions (not in the OSM extract). JANM is closed until January 2027. Evening dining: ASSUMPTION (placeholder). 'meals' profile = NHTS start times of trips to buy meals."
   },
   "visitorArrival": {
     "value": {
@@ -192,11 +253,11 @@
       "parking": 0.4,
       "walk": 0.2
     },
-    "note": "How visitors reach the site."
+    "note": "Audit 2026-10-09. ASSUMPTION, no visitor mode survey found: how visitors reach the site."
   },
   "angelsFlightShare": {
-    "value": 0.25,
-    "note": "Share of Grand Central Market visitors who then ride Angels Flight up to Bunker Hill (California Plaza / MOCA) before leaving."
+    "value": 0.1,
+    "note": "Audit 2026-10-09. Share of Grand Central Market visitors who then ride Angels Flight up to Bunker Hill. Derived: Angels Flight carried 1,200-1,500 trips a day when last reported (2010-13); about half go up, most from the Market side: 0.07-0.15 of ~5,500 daily Market visitors. 0.25 would need ~2,750 trips a day."
   },
   "event": {
     "value": {
@@ -217,14 +278,14 @@
         22.5
       ]
     },
-    "note": "Walt Disney Concert Hall evening concerts. Seat count as published by the venue; occupancy is an assumption; the hall lies inside the site, so throughSite applies only if it did not."
+    "note": "Audit 2026-10-09. Walt Disney Concert Hall evening concerts. Seats 2,265 (venue); occupancy 0.85 ASSUMPTION (no LA Phil figure); 8 pm concerts. Audiences park at the garage nearest the hall (60%) or take the Metro (40%, ASSUMPTION)."
   },
   "walkSpeed": {
     "value": [
-      1.3,
-      0.2
+      1.34,
+      0.26
     ],
-    "note": "Walking speed, mean and SD (m/s). Vertical travel inside buildings (elevator) counts at 2.5 m/s plus 40 s waiting."
+    "note": "Audit 2026-10-09. Walking speed, mean and SD (m/s), clipped to 0.6-2.0: Weidmann 1993 review (mean 1.34 m/s, SD 0.26). Slopes are not modelled (FHWA-RD-98-107: no correction below 10% grade)."
   },
   "officeVacancy": {
     "value": 0.344,
@@ -380,5 +441,153 @@
       }
     },
     "note": "ASSUMPTION (option B, 2026-10-09): a rail rider takes the line whose branch points toward home. Branch ends are the lines' outer stations (approximate positions, typed by hand from the Metro rail map); each pulls riders by a von Mises weight on the bearing difference, kappa 3 (about +/- 35 deg). Transfers (Union Station, C/K/L lines, Metrolink) are not modelled. Station lines: metroBoardings[*].lines. lineWeight is CALIBRATED, not observed: with equal weights the model gave B/D stations (Pershing Square, Civic Center) 30% of the five compared stations' boardings against Metro's 44% (6,619 of 14,965); B/D odds x (0.793 / 0.433) = 1.83. Because the line shares are fitted to Metro, only the split within each line group remains an independent check."
+  },
+  "officeSectors": {
+    "value": [
+      "CNS09",
+      "CNS10",
+      "CNS11",
+      "CNS12",
+      "CNS13",
+      "CNS20"
+    ],
+    "note": "Audit 2026-10-09. Sectors on an office schedule (workHours.office, lunch out): information, finance, real estate, professional, management, public administration. Administrative & support (CNS14: janitorial, security, staffing) works shifts."
+  },
+  "officeAttendanceWeight": {
+    "value": {
+      "CNS09": 1.0,
+      "CNS10": 1.0,
+      "CNS11": 0.42,
+      "CNS12": 1.0,
+      "CNS13": 1.0,
+      "CNS14": 0.19,
+      "CNS20": 0.22
+    },
+    "note": "Audit 2026-10-09. Share of a sector's jobs that follow office attendance (Kastle); the rest follow otherAttendance. 1.0 for the core office sectors; real estate 0.42 = teleworkable share (Dingel & Neiman 2020, NAICS 53); administrative & support 0.19 and public administration 0.22 = share who actually telework (BLS CPS 2025, Table 60). The government jobs of the Civic Center are mostly in person."
+  },
+  "hotelRooms": {
+    "value": {
+      "The Westin Bonaventure": {
+        "addr": [
+          "404 S Figueroa St"
+        ],
+        "rooms": 1358
+      },
+      "InterContinental Los Angeles Downtown (Wilshire Grand)": {
+        "addr": [
+          "900 Wilshire Blvd"
+        ],
+        "rooms": 889
+      },
+      "Millennium Biltmore": {
+        "addr": [
+          "515 S Olive St",
+          "506 S Grand Ave"
+        ],
+        "rooms": 683
+      },
+      "Sheraton Grand Los Angeles (The Bloc)": {
+        "addr": [
+          "711 S Hope St",
+          "700 S Flower St"
+        ],
+        "rooms": 496
+      },
+      "The L.A. Grand Hotel Downtown": {
+        "addr": [
+          "333 S Figueroa St",
+          "331 S Figueroa St"
+        ],
+        "rooms": 469
+      },
+      "Omni Los Angeles at California Plaza": {
+        "addr": [
+          "251 S Olive St"
+        ],
+        "rooms": 453
+      },
+      "DoubleTree by Hilton Los Angeles Downtown": {
+        "addr": [
+          "120 S Los Angeles St"
+        ],
+        "rooms": 434
+      },
+      "citizenM Los Angeles Downtown": {
+        "addr": [
+          "361 S Spring St"
+        ],
+        "rooms": 315
+      },
+      "Conrad Los Angeles (The Grand LA)": {
+        "addr": [
+          "100 S Grand Ave"
+        ],
+        "rooms": 305
+      },
+      "Hotel Per La": {
+        "addr": [
+          "649 S Olive St"
+        ],
+        "rooms": 241
+      },
+      "Freehand Los Angeles": {
+        "addr": [
+          "416 W 8th St"
+        ],
+        "rooms": 226
+      },
+      "Hilton Checkers": {
+        "addr": [
+          "535 S Grand Ave",
+          "533 S Grand Ave"
+        ],
+        "rooms": 193
+      },
+      "Ace Hotel Downtown Los Angeles": {
+        "addr": [
+          "929 S Broadway",
+          "927 S Broadway"
+        ],
+        "rooms": 182
+      },
+      "Miyako Hotel Little Tokyo": {
+        "addr": [
+          "328 E 1st St"
+        ],
+        "rooms": 174
+      },
+      "Kawada Hotel": {
+        "addr": [
+          "200 S Hill St"
+        ],
+        "rooms": 116
+      }
+    },
+    "note": "Audit 2026-10-09. Visitor hotels in the site with published room counts (venue listings, Discover Los Angeles, Wikipedia; matched to buildings by address). DTLA Alliance Q1 2026 Market Report (CoStar): 10,751 rooms in all of Downtown, incl. South Park and LA Live outside the site. Hotel Clark (426 S Hill St, 347 rooms) is left out: its reopening was not confirmed. Other Assessor 'hotel & motels' parcels are taken as residential hotels (SROs): no guests."
+  },
+  "elevatorWait": {
+    "value": 27,
+    "note": "Audit 2026-10-09. Seconds of waiting per elevator ride (car speed 2.5 m/s, an assumption): NRC Canada Building Digest CBD-190, office waiting interval 25-30 s."
+  },
+  "visitorWeekendFactor": {
+    "value": 2.0,
+    "note": "Audit 2026-10-09. ASSUMPTION: a weekend day brings this many times a weekday's visitors; annual counts are spread over 261 weekdays and 104 weekend days. No source gives day-of-week shares."
+  },
+  "theatres": {
+    "value": {
+      "Dorothy Chandler Pavilion (LA Opera)": {
+        "match": "Dorothy Chandler",
+        "annual": 108000
+      },
+      "Ahmanson Theatre (CTG)": {
+        "match": "Ahmanson",
+        "annual": 200500
+      },
+      "Mark Taper Forum (CTG)": {
+        "match": "Mark Taper",
+        "annual": 60100
+      }
+    },
+    "note": "Audit 2026-10-09. Evening audiences at the Music Center's other houses, a typical day = annual / 365, same times as the Disney Hall concerts. LA Opera Form 990 FY2018: 38 performances, nearly 108,000 people; Center Theatre Group Form 990 FY2021-22: Ahmanson 200,504 over 157 performances, Mark Taper 60,115 over 148 (a post-COVID year, likely low). Music Center FY2022-23: nearly 800,000 at over 700 ticketed performances."
   }
 }
