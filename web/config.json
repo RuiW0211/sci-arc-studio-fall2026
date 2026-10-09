@@ -1,6 +1,7 @@
 {
   "_comment": "Viewer settings. Layers come from the point cloud (data/lidar_points.json, written by site-model/houdini/tools/pack_wide.py) and from the design files; this file only gives display names, order, default visibility and colours. Unknown layers still appear under their own name (grey). Design files site-model/exports/design_<name>.glb load on top of the point cloud (listed in assets/models.json); their layers default to the Design style, visible. Camera values are three.js coordinates: x = east, y = up (m, NAVD88), z = -north, from the site origin E 384580 / N 3768520.",
   "designs": "assets/models.json",
+  "facades": { "meta": "data/facades_estimated.json" },
   "entities": "data/entities.json",
   "lidar": { "meta": "data/lidar_points.json", "size": 0.25 },
   "linked": { "_comment": "Point cloud, Color = Layer: points coloured by the layer colours below, from the Coolors trending palette F0EAD2 · DDE5B6 · ADC178 · A98467 · 6C584C (Other darkened from Terrain). The clicked object turns the highlight colour unless its layer has \"highlight\": false (Terrain: too large to light up).", "highlight": "#FF3EA5" },
@@ -17,10 +18,12 @@
     "Street_furniture":     { "label": "Street furniture (LiDAR only)",  "order": 5.8, "visible": true, "color": "#8C7A6B" },
     "Buildings_LiDAR_only": { "label": "Structures (not in LARIAC)",     "order": 2.5, "visible": true, "color": "#D9CFB0" },
     "Design":    { "label": "Design",             "order": 6, "visible": false, "color": "#DDE5B6" },
+    "Facades_estimated": { "label": "Facades (estimated)", "order": 2.2, "visible": true, "overlay": true, "color": "#F0EAD2", "opacity": 0.6, "_note": "not measured: wall points added where the LiDAR saw none (site-model/houdini/tools/synth_facades.py)" },
     "_other":    { "label": "Other (LiDAR only)", "order": 9, "visible": true, "color": "#3A302A" }
   },
   "views": [
     { "name": "Default",            "position": [260, 260, 300],      "target": [0, 100, 0] },
     { "name": "Top",                "position": [0, 650, 0.01],       "target": [0, 95, 0] }
-  ]
+  ],
+  "population": {"_comment": "Modeled day/night population (site-model/population/prep_population.py): one point per person, size in metres. start = clock at load (hours), speed = simulated seconds per real second. routeColor / neon / neonStrength: the selected person's light trail (neonStrength scales its opacity).", "meta": "data/population.json", "size": 0.7, "start": 8.5, "speed": 300, "routeColor": "#00E5FF", "neon": true, "neonStrength": 1, "colors": {"resident": "#3A86FF", "worker": "#FB8500", "hotel": "#8338EC", "visitor": "#06A77D"}}
 }

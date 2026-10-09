@@ -1,0 +1,296 @@
+{
+  "_comment": "Every number in this file is an ASSUMPTION, not data. prep_population.py reads it and the viewer lists it under Method. Change a value, rerun prep_population.py, reload. Data inputs (LODES, ACS, NHTS, Assessor, OSM) are in the other files of this folder.",
+  "seed": 2026,
+  "officeAttendance": {
+    "value": 0.475,
+    "note": "Weekday share of office-type jobs (sectors in remoteEligible) whose holder is in the building today: Kastle Back to Work Barometer, Los Angeles weekly average 47.5% for the week to Wednesday 23 September 2026 (unique badge entries relative to the pre-COVID baseline, Kastle's partner buildings), typed by hand. Fixed, no longer a viewer slider (user, 2026-10-08)."
+  },
+  "otherAttendance": {
+    "value": 0.93,
+    "note": "Weekday presence for jobs that cannot be done remotely (retail, food, hotel, health, construction...): sick days, vacation, part-time days."
+  },
+  "remoteEligible": {
+    "value": [
+      "CNS09",
+      "CNS10",
+      "CNS11",
+      "CNS12",
+      "CNS13",
+      "CNS14",
+      "CNS20"
+    ],
+    "note": "LODES NAICS sectors treated as office work that the attendance slider applies to: information, finance, real estate, professional, management, administrative, public administration."
+  },
+  "weekendWorkShare": {
+    "value": {
+      "CNS07": 0.7,
+      "CNS18": 0.8,
+      "CNS17": 0.6,
+      "CNS16": 0.4,
+      "CNS14": 0.3,
+      "default": 0.06
+    },
+    "note": "Share of a sector's jobs also worked on a typical weekend day."
+  },
+  "workHours": {
+    "value": {
+      "office": [
+        8.75,
+        0.75
+      ],
+      "shift": [
+        7.75,
+        1.0
+      ]
+    },
+    "note": "Time at work including lunch, mean and SD in hours. 'shift' applies to sectors outside remoteEligible."
+  },
+  "lunchOutShare": {
+    "value": 0.45,
+    "note": "Share of present office workers who leave their building for lunch; the rest eat in the building. Lunch start and dwell come from NHTS work-to-meal trips."
+  },
+  "afterWorkOutShare": {
+    "value": 0.1,
+    "note": "Share of present workers who stop at a restaurant or bar on site before commuting home."
+  },
+  "floorHeight": {
+    "value": {
+      "office": 4.0,
+      "residential": 3.2,
+      "default": 4.0
+    },
+    "note": "Metres per storey, used to stack people on floors inside the LiDAR building volumes."
+  },
+  "jobWeightByUse": {
+    "value": {
+      "office": 1.0,
+      "government": 1.0,
+      "institutional": 0.8,
+      "retail": 0.6,
+      "hotel": 0.5,
+      "recreational": 0.3,
+      "residential": 0.03,
+      "parking": 0.01,
+      "unknown": 0.5
+    },
+    "note": "Relative floor-area weight when a Census block's jobs are split among its buildings."
+  },
+  "sectorUseAffinity": {
+    "value": {
+      "CNS07": {
+        "retail": 4,
+        "office": 0.3
+      },
+      "CNS18": {
+        "hotel": 6,
+        "retail": 3,
+        "office": 0.3
+      },
+      "CNS20": {
+        "government": 6
+      },
+      "CNS15": {
+        "institutional": 6
+      },
+      "CNS17": {
+        "recreational": 6,
+        "institutional": 4
+      },
+      "CNS16": {
+        "institutional": 2
+      }
+    },
+    "note": "Multiplies the weight of a building use for jobs of a sector, so restaurant jobs land in retail space and county jobs in government buildings."
+  },
+  "sqftPerHotelRoom": {
+    "value": 800,
+    "note": "Gross building area per hotel room when the room count is not known."
+  },
+  "hotelOccupancy": {
+    "value": 0.78,
+    "note": "Occupied share of rooms."
+  },
+  "guestsPerRoom": {
+    "value": 1.5,
+    "note": "Guests per occupied room."
+  },
+  "ownGarageMinArea": {
+    "value": 9000,
+    "note": "Buildings over this modeled floor area (m2) are assumed to have their own garage: drivers appear at the building door."
+  },
+  "modeByDistance": {
+    "value": {
+      "walkMaxKm": 3.0
+    },
+    "note": "Workers walk or cycle only from homes within this distance (LODES home tract). The overall walk and bike shares, and the drive share by industry, come from CTPP 2017-2021 for the site's tracts (data/ctpp.json), no longer from assumptions."
+  },
+  "residentOutings": {
+    "value": {
+      "weekdayWorker": 0.6,
+      "weekdayNonWorker": 1.2,
+      "weekend": 1.4,
+      "onSiteShare": 0.55
+    },
+    "note": "Non-work outings per resident per day; share that stay on site (food, shops). Timing from NHTS home-based trips."
+  },
+  "hotelGuests": {
+    "value": {
+      "dayOutShare": 0.85,
+      "onSiteFirstStop": 0.3,
+      "dinnerNearby": 0.25
+    },
+    "note": "Hotel guest day pattern."
+  },
+  "visitors": {
+    "value": {
+      "Grand Central Market": {
+        "weekday": 5000,
+        "weekend": 9000,
+        "dwell": [
+          45,
+          20
+        ],
+        "window": [
+          8,
+          21
+        ],
+        "profile": "meals"
+      },
+      "MOCA": {
+        "weekday": 500,
+        "weekend": 900,
+        "dwell": [
+          90,
+          30
+        ],
+        "window": [
+          11,
+          17
+        ],
+        "profile": "flat"
+      },
+      "Evening dining": {
+        "weekday": 1500,
+        "weekend": 2500,
+        "dwell": [
+          75,
+          30
+        ],
+        "window": [
+          17,
+          23
+        ],
+        "profile": "meals"
+      }
+    },
+    "note": "Daily visitors who are not workers, residents or hotel guests. Order-of-magnitude placeholders: replace with published counts when available. 'meals' profile = NHTS start times of trips to buy meals."
+  },
+  "visitorArrival": {
+    "value": {
+      "subway": 0.3,
+      "bus": 0.1,
+      "parking": 0.4,
+      "walk": 0.2
+    },
+    "note": "How visitors reach the site."
+  },
+  "angelsFlightShare": {
+    "value": 0.25,
+    "note": "Share of Grand Central Market visitors who then ride Angels Flight up to Bunker Hill (California Plaza / MOCA) before leaving."
+  },
+  "event": {
+    "value": {
+      "name": "Concert at Walt Disney Concert Hall",
+      "latlon": [
+        34.0553,
+        -118.2498
+      ],
+      "seats": 2265,
+      "occupancy": 0.85,
+      "throughSite": 0.3,
+      "arrive": [
+        18.75,
+        19.85
+      ],
+      "leave": [
+        21.75,
+        22.5
+      ]
+    },
+    "note": "Walt Disney Concert Hall evening concerts. Seat count as published by the venue; occupancy is an assumption; the hall lies inside the site, so throughSite applies only if it did not."
+  },
+  "walkSpeed": {
+    "value": [
+      1.3,
+      0.2
+    ],
+    "note": "Walking speed, mean and SD (m/s). Vertical travel inside buildings (elevator) counts at 2.5 m/s plus 40 s waiting."
+  },
+  "officeVacancy": {
+    "value": 0.344,
+    "note": "Downtown LA office vacancy, CBRE DTLA Office Figures Q4 2025 (overall vacancy 34.4%), typed by hand. Job counts come from LODES (jobs that exist), so vacancy does not remove anyone; it is used to check the density of occupied office space per job (a typical office has roughly 15-25 m2 per worker)."
+  },
+  "residentialOccupancy": {
+    "value": 0.91,
+    "note": "Occupied share of Downtown LA housing units: about 91%, DTLA Alliance 2025 market report (as summarised by BOMA Greater LA), typed by hand. Residents = housing units (2020 Census, exact) x this x persons per household (ACS B25010, by tract)."
+  },
+  "groupQuartersMinPop": {
+    "value": 50,
+    "note": "A block with residents but no housing units holds group quarters (dormitories, care homes, shelters) only if the 2020 Census counts at least this many there; smaller counts in such blocks are taken as the Census disclosure-avoidance noise."
+  },
+  "eveningShare": {
+    "value": {
+      "weekday": 0.25,
+      "weekend": 0.33
+    },
+    "note": "Share of evenings with a concert at Walt Disney Concert Hall: the LA Phil calendar (laphil.com, viewed 2026-10-09) lists 157 performances at the hall from 9 Oct 2026 to 30 May 2027, 99 of them starting after 5 pm, on 65 weekday and 34 weekend evenings; over a year (261 weekdays, 104 weekend days) 25% and 33%. Events by other presenters are not counted. The typical day carries this expected audience; no toggle."
+  },
+  "metroBoardings": {
+    "value": {
+      "Pershing Square": {
+        "boardings": 4469,
+        "latlon": [
+          34.0494,
+          -118.2511
+        ]
+      },
+      "Historic Broadway": {
+        "boardings": 1899,
+        "latlon": [
+          34.05222,
+          -118.24639
+        ]
+      },
+      "Grand Av Arts/Bunker Hill": {
+        "boardings": 1885,
+        "latlon": [
+          34.054997,
+          -118.251996
+        ]
+      },
+      "Civic Center/Grand Park": {
+        "boardings": 2150,
+        "latlon": [
+          34.0543,
+          -118.2467
+        ]
+      },
+      "Little Tokyo/Arts District": {
+        "boardings": 4562,
+        "latlon": [
+          34.0487,
+          -118.2387
+        ]
+      },
+      "7th St/Metro Center": {
+        "boardings": null,
+        "latlon": [
+          34.0487,
+          -118.2587
+        ],
+        "transfer": true
+      }
+    },
+    "note": "DATA for calibration, not an assumption: LA Metro FY2026 average weekday boardings, rail only, per station, obtained by a public records request ('FY2026 Metro Ridership by Station', misken67 via Los Angeles Metro Public Records, August 2026, as cited on the stations' Wikipedia pages, viewed 2026-10-09), typed by hand. Station positions from the same pages (Pershing Square: its 4th-5th & Hill entrances). 7th St/Metro Center is a transfer hub: its entrances are assigned but it is not compared. Used only to check the model."
+  }
+}

@@ -52,6 +52,23 @@ const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/thr
 const model = new THREE.Group();   // everything drawn as geometry over the point cloud
 scene.add(model);
 
+// estimated facade points (site-model/houdini/tools/synth_facades.py): walls the airborne LiDAR barely saw, filled
+// only where no return is near. NOT measured: their own layer and colour, drawn over the cloud, never picked.
+let facadePts = null;
+try {
+  const fm = await (await fetch(cfg.facades.meta)).json();
+  const buf = await (await fetch(cfg.facades.meta.replace(/[^/]*$/, "") + fm.file)).arrayBuffer();
+  const fc = cfg.layers.Facades_estimated || {};
+  const fpos = new Float32Array(buf);
+  const fg = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(fpos, 3))
+    .setAttribute("color", new THREE.BufferAttribute(new Float32Array(fpos.length), 3));   // set by paintCloud
+  const fpts = new THREE.Points(fg, new THREE.PointsMaterial({ vertexColors: true, size: cfg.lidar.size ?? 0.25,
+    sizeAttenuation: true, transparent: true, opacity: fc.opacity ?? 0.55, depthWrite: false }));
+  facadePts = fpts;
+  fpts.userData.layer = "Facades_estimated"; fpts.userData.noPick = true; fpts.name = "Estimated facade points";
+  model.add(fpts);
+} catch (e) { /* no estimated facades */ }
+
 // design files: every site-model/exports/design_<name>.glb (listed in assets/models.json by the Pages workflow and by
 // web/serve.py), one per person, so nobody overwrites anyone else's file. Nodes without extras.layer go into the
 // layer "Design_<name>". Design layers also show over the point cloud.
@@ -334,6 +351,18 @@ function paintCloud(how = lidar.how) {
     }
   }
   for (const p of lidarGroup.children) p.geometry.attributes.color.needsUpdate = true;
+  // estimated facade points follow the colouring like building returns; they have no measured intensity: neutral grey
+  if (facadePts) {
+    const P = facadePts.geometry.attributes.position.array, C = facadePts.geometry.attributes.color;
+    const lc = new THREE.Color(cfg.layers.Facades_estimated?.color || "#F0EAD2"), base = [lc.r, lc.g, lc.b];
+    for (let i = 0; i < P.length / 3; i++) {
+      const y = P[3 * i + 1];
+      const c = how === "height" ? ramp((y - 78) / 60) : how === "class" ? (y > 140 ? [0.55, 0.58, 0.62] : [0.3, 0.52, 0.36])
+        : how === "intensity" ? [0.42, 0.42, 0.42] : base;
+      C.array.set(c, 3 * i);
+    }
+    C.needsUpdate = true;
+  }
   const first = !$("#lidarOpts button.on");
   document.querySelectorAll("#lidarOpts button").forEach((b) => b.classList.toggle("on", b.dataset.c === how));
   moveThumb(first, "#lidarOpts");
@@ -501,6 +530,66 @@ function renderViews() {
 }
 renderViews();
 
+// ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------
+let pop = null;
+const PICK_PX = 6;   // a click or hover this close to a person (screen px) means the person
+// hover with Alt held: the person an Alt + click would select is drawn bigger and the cursor turns into a pointer
+let hoverAt = null;
+renderer.domElement.addEventListener("pointermove", (e) => {
+  if (!pop?.visible || e.buttons) return;
+  if (!hoverAt) requestAnimationFrame(() => {
+    const i = hoverAt.alt ? pop.nearest(hoverAt.x, hoverAt.y, PICK_PX) : -1;
+    pop.hover(i);
+    renderer.domElement.style.cursor = i >= 0 ? "pointer" : "";
+    hoverAt = null; invalidate();
+  });
+  hoverAt = { x: e.clientX, y: e.clientY, alt: e.altKey };
+});
+// pressing / releasing Alt with the mouse still: show / hide the marker at once
+for (const ev of ["keydown", "keyup"]) addEventListener(ev, (e) => {
+  if (e.key !== "Alt" || !pop?.visible || !lastHover) return;
+  e.preventDefault();
+  const i = ev === "keydown" ? pop.nearest(lastHover.x, lastHover.y, PICK_PX) : -1;
+  pop.hover(i); renderer.domElement.style.cursor = i >= 0 ? "pointer" : ""; invalidate();
+});
+let lastHover = null;
+renderer.domElement.addEventListener("pointermove", (e) => { lastHover = { x: e.clientX, y: e.clientY }; });
+renderer.domElement.addEventListener("pointerleave", () => { pop?.hover(-1); renderer.domElement.style.cursor = ""; invalidate(); });
+$("#popOn").onchange = async (e) => {
+  const on = e.target.checked;
+  if (on && !pop) {
+    e.target.disabled = true;
+    status("Loading population…");
+    const { createPopulation } = await import("./population.js");
+    pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag });
+    status("");
+    e.target.disabled = false;
+  }
+  $("#popBox").hidden = !on;
+  pop?.setVisible(on);
+  if (!on) for (const s of [...selection]) if (s.key.startsWith("pop:")) deselect(s.key);
+  invalidate();
+};
+// its own controls (time, play, day, attendance ...) change the picture: draw again
+for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
+// a clicked person's modeled day (population.js story()) as a floating tag that follows them
+let popSelecting = false;
+function personTag(html, pos) {
+  const d = document.createElement("div"); d.innerHTML = html;
+  const h2 = d.querySelector("h2"), num = h2?.querySelector("span")?.textContent || "";
+  const title = (h2?.firstChild?.textContent || "Person").trim();
+  const rows = [...d.querySelectorAll("tr")].map((tr) => [...tr.children].map((c) => c.textContent));
+  const day = d.querySelector(".label")?.textContent || "";
+  for (const t of (d.querySelector(".trips")?.innerHTML || "").split("<br>").filter(Boolean)) {
+    const x = document.createElement("div"); x.innerHTML = t;
+    const [time, ...rest] = x.textContent.split(" "); rows.push([time, rest.join(" ")]);
+  }
+  const note = d.querySelector(".note")?.textContent || "";
+  popSelecting = true;
+  select(`pop:${num}`, { centre: pos, topY: pos.y, height: 0 }, () => tagHTML(`Modeled person ${num}`, title, day, rows, note), [], false);
+  popSelecting = false;
+}
+
 // ---------- click for details: a design mesh, else the LiDAR point under the cursor ----------
 const ray = new THREE.Raycaster();
 const SKIP_KEYS = new Set(["layer", "name", "scatter5"]);
@@ -509,6 +598,8 @@ renderer.domElement.addEventListener("pointerdown", (e) => (down = [e.clientX, e
 renderer.domElement.addEventListener("pointerup", (e) => {
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
   ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
+  // Alt + click picks the person within PICK_PX on screen (user, 2026-10-09: a plain click is for buildings / points)
+  if (pop?.visible && e.altKey) { if (pop.pickIndex(pop.nearest(e.clientX, e.clientY, PICK_PX))) return; }
   const visible = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
   const add = e.shiftKey;     // shift + click: add to / take out of the selection
   const layerOf = (o) => { for (; o; o = o.parent) if (o.userData.layer) return o.userData.layer; };
@@ -606,11 +697,12 @@ function select(key, a, build, objs, add) {
 function deselect(key) {
   const i = selection.findIndex((s) => s.key === key); if (i < 0) return;
   const [s] = selection.splice(i, 1); s.el.remove(); s.line.remove();
+  if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection();
   if (lidar && mode === "cloud") paintCloud();
   invalidate();
 }
 function clearSelection() {
-  for (const s of selection.splice(0)) { s.el.remove(); s.line.remove(); }
+  for (const s of selection.splice(0)) { s.el.remove(); s.line.remove(); if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection(); }
   if (lidar && mode === "cloud") paintCloud();
   invalidate();
 }
@@ -785,6 +877,7 @@ setUnits(units, true);
 const IDLE_MS = 5000;
 let idleTimer = 0;
 const overPanel = () => document.querySelector("#ui:hover, #info:hover") !== null;
+addEventListener("keydown", (e) => { if (e.key === "Escape" && !typing()) clearSelection(); });
 const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") && document.activeElement.type !== "range";
 function wake(ms = IDLE_MS) {
   if (typeof ms !== "number") ms = IDLE_MS;    // called as an event listener
@@ -824,7 +917,8 @@ const glassEls = ["#ui", "#info", "#hint"].map((q) => $(q));
 let glassBuf = new Uint8Array(0);
 function adaptGlass(now) {
   // reading pixels back stalls the GPU pipeline (100+ ms frames during a view change), so only when the camera is still
-  if (tween || now - lastMove < GLASS_SETTLE || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
+  // ... and not while the population plays (the picture changes every frame; checked again once it stops)
+  if (tween || pop?.state.playing || now - lastMove < GLASS_SETTLE || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
   glassAt = now; glassPending = false;
   const gl = renderer.getContext(), cv = renderer.domElement, sx = cv.width / cv.clientWidth, sy = cv.height / cv.clientHeight;
   for (const el of glassEls) {
@@ -854,6 +948,8 @@ renderer.setAnimationLoop((now) => {
   if (controls.update()) { dirty = true; lastMove = now; }   // damping keeps moving the camera after the drag ends
   // LiDAR level of detail: recomputed whenever the view changed or a chunk is still easing to its target
   if (lidar && mode === "cloud" && (dirty || lodEasing)) { lodEasing = updateLod(); if (lodEasing) dirty = true; }
+  // the population plays on its own clock: draw while it plays or after one of its settings changed
+  if (pop?.visible) { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing) dirty = true; }
   if (!dirty) return;
   dirty = false;
   renderer.render(scene, camera);
@@ -861,7 +957,7 @@ renderer.setAnimationLoop((now) => {
   adaptGlass(now);
 });
 window.__viewer = {
-  layers, get mode() { return mode; }, setMode, get lidar() { return lidar; },
+  layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
   camera, controls, renderer, lidarGroup, invalidate,   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
