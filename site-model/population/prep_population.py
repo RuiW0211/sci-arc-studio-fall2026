@@ -610,11 +610,37 @@ by_kind = defaultdict(list)
 for p in portals:
     by_kind[p["kind"]].append(p)
 
+# Metro lines (user, 2026-10-09: option B). A rider can only use the stations of the line they ride: B/D (Civic
+# Center, Pershing Square) or A/E (Little Tokyo, Historic Broadway, Grand Av Arts); 7th St/Metro Center serves all
+# four. Each entrance belongs to its nearest station. The line is chosen by the direction of home: each line branch
+# (metroLines) pulls riders whose home bearing from Y-1 is close to its own, with a von Mises weight exp(kappa (cos d - 1)).
+# People with no known home direction (residents going out, hotel guests, visitors) get a random bearing.
+# lineWeight (calibrated, user 2026-10-09) scales B/D against A/E so the two groups' shares of the five compared
+# stations match Metro's counts; the per-station split is then left to the model.
+MB, ML = AS["metroBoardings"], AS["metroLines"]
+st_xy = {k: ll2loc(*v["latlon"]) for k, v in MB.items()}
+station_of = {id(q): min(st_xy, key=lambda k: math.dist(XYZ[q["node"]][:2], st_xy[k])) for q in by_kind["rail"]}
+branches = [(b["line"], math.degrees(math.atan2(*ll2loc(*b["latlon"]))) % 360) for b in ML["branches"]]
 
-def portal_for(mode, door, bearing=None, bid=None):
+
+def pick_line(bearing=None):
+    if bearing is None:
+        bearing = rng.uniform(0, 360)
+    w = np.array([ML["lineWeight"].get(l, 1.0) * math.exp(ML["kappa"] * (math.cos(math.radians(bearing - b)) - 1))
+                  for l, b in branches])
+    return branches[rng.choice(len(w), p=w / w.sum())][0]
+
+
+def rail_for(door, line):
+    c = [q for q in by_kind["rail"] if line in MB[station_of[id(q)]]["lines"]]
+    return softmin(c, lambda q: netdist(q["node"], door), 120)
+
+
+
+def portal_for(mode, door, bearing=None, bid=None, line=None):
     """Where a person of this mode enters/leaves the site, for a building door."""
     if mode == "rail":
-        p = softmin(by_kind["rail"], lambda q: netdist(q["node"], door), 120)
+        p = rail_for(door, line or pick_line(bearing))
     elif mode == "bus":
         p = softmin(by_kind["bus"], lambda q: netdist(q["node"], door), 90)
     elif mode in ("drive", "taxi / other"):
@@ -1027,7 +1053,8 @@ def visitor(day, place, t_arrive, dwell, flags=0, chain=None):
     m = pick(VA)
     m = {"subway": "rail", "parking": "drive", "walk": "walk", "bus": "bus"}[m]
     p = new_person("visitor", mode=MODES.index(m))
-    q = portal_for(m if m != "drive" else "drive", place["node"])
+    line = pick_line() if m == "rail" else None
+    q = portal_for(m if m != "drive" else "drive", place["node"], line=line)
     if q is None:
         q = softmin(by_kind["parking"], lambda x: netdist(x["node"], place["node"]), 120)
     di = portal_idx[id(q)]
@@ -1040,7 +1067,7 @@ def visitor(day, place, t_arrive, dwell, flags=0, chain=None):
                      "ride Angels Flight" if chain["node"] == AF_UP else "visit", flags, pi, place_idx[id(chain)])
         t += rng.uniform(10, 40) * 60
         last = chain
-    q2 = softmin(by_kind[q["kind"]], lambda x: netdist(x["node"], last["node"]), 150)
+    q2 = rail_for(last["node"], line) if line else softmin(by_kind[q["kind"]], lambda x: netdist(x["node"], last["node"]), 150)
     if t < DAY - 1800:
         add_trip(p, day, t, last["node"], q2["node"], SPOT_PLACE, SPOT_HIDDEN, "leave the site", flags,
                  place_idx[id(last)], portal_idx[id(q2)])

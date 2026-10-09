@@ -498,13 +498,36 @@ function methodHtml(meta) {
   const t = meta.totals;
   const src = Object.entries(meta.sources).map(([k, v]) => `<li><b>${esc(k)}</b>: ${esc(v)}</li>`).join("");
   const asm = Object.entries(meta.assumptions).map(([k, v]) => `<li><b>${esc(k)}</b>: ${esc(JSON.stringify(v.value))}. ${esc(v.note)}</li>`).join("");
-  return `<p><b>A modeled typical day, not real-time or observed data.</b> One point per person:
-    ${t.by_type.worker.toLocaleString()} jobs placed in buildings (LODES ${t.lodes_jobs_in_blocks.toLocaleString()} jobs in the blocks touching the site,
-    scaled by each block's share inside the 800 m square), ${t.by_type.resident.toLocaleString()} residents (2020 Census),
-    ${t.by_type.hotel.toLocaleString()} hotel guests and ${t.by_type.visitor.toLocaleString()} visitors across both day types.
-    Schedules are sampled from ACS commute times and NHTS trip times; routes follow OpenStreetMap paths.</p>
-    <p><b>Sources</b></p><ul>${src}</ul><p><b>Assumptions</b> (site-model/data/population/assumptions.json)</p><ul>${asm}</ul>
+  const fmt = (n) => Math.round(n).toLocaleString();
+  const notPlaced = t.residents_by_rule?.["not placed"] ?? 0;
+  const metro = meta.calibration?.metro ?? {};
+  const rows = Object.entries(metro).filter(([, v]) => !v.transfer_hub)
+    .map(([k, v]) => `<tr><td>${esc(k)}</td><td>${fmt(v.model_boardings)}</td><td>${fmt(v.metro_boardings)}</td><td>${v.ratio}</td></tr>`).join("");
+  const mSum = Object.values(metro).filter((v) => !v.transfer_hub);
+  const ratio = (mSum.reduce((s, v) => s + v.model_boardings, 0) / mSum.reduce((s, v) => s + v.metro_boardings, 0)).toFixed(2);
+  return `<p><b>A modeled typical day, not real-time or observed data.</b> Across both day types:
+    ${fmt(t.by_type.worker)} jobs placed in buildings (LODES ${fmt(t.lodes_jobs_in_blocks)} jobs in the blocks touching the site,
+    scaled by each block's share inside the 2.5 km square around Y-1), ${fmt(t.by_type.resident)} residents (2020 Census),
+    ${fmt(t.by_type.hotel)} hotel guests and ${fmt(t.by_type.visitor)} visitors. Far from Y-1 only a share of people is drawn,
+    thinned like the point cloud; each drawn person counts for the people it stands for, so the totals and the chart include everyone.
+    Commute modes and arrival times come from CTPP (by tract where it is published), other trip times from NHTS;
+    routes follow OpenStreetMap paths.</p>
+    <p><b>Residents not placed</b>: ${fmt(notPlaced)} of the Census residents live in blocks near the edge whose buildings
+    are not modelled (thinned out of the point cloud or missing from the building entities). They are left out rather than
+    moved into other blocks' buildings.</p>
+    <p><b>Metro check</b> (weekday): model rail trips leaving the site through each station's entrances, against Metro's
+    FY2026 average weekday boardings.</p>
+    <table><tr><th>Station</th><th>Model</th><th>Metro</th><th>Ratio</th></tr>${rows}
+    <tr><td>Five stations</td><td></td><td></td><td>${ratio}</td></tr></table>
+    <p>Riders take the line whose branch points toward home, then the nearest entrance on that line. The weight of B/D
+    against A/E (metroLines.lineWeight) is calibrated to these counts, so only the split within each line is an independent check.
+    7th St/Metro Center is a transfer hub and is not compared. The model has no transfers, no trips that only pass through,
+    and no riders from outside the site: Little Tokyo/Arts District comes out low because most of its riders live in
+    Little Tokyo and the Arts District, beyond the modelled area, while A/E riders who work on the site take the entrance
+    nearest their building, so Historic Broadway and Grand Av Arts come out about twice Metro's counts. Read street flows
+    near those three stations with care.</p>
+    <p><b>Sources</b></p><ul>${src}</ul><p><b>Assumptions</b> (site-model/population/data/assumptions.json)</p><ul>${asm}</ul>
     <p><b>Known limits</b>: LODES counts jobs where employers report them; office floor area is from the Assessor, not
-    listings; commute modes and arrival times are City of LA averages, not Downtown-specific (CTPP needs an interactive download);
-    hotel rooms are estimated from floor area (historic hotels with ballrooms come out high).</p>`;
+    listings; arrival-time bins are City of LA averages within each tract's periods; hotel rooms are estimated from
+    floor area (historic hotels with ballrooms come out high).</p>`;
 }

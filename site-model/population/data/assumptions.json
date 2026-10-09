@@ -252,6 +252,10 @@
         "latlon": [
           34.0494,
           -118.2511
+        ],
+        "lines": [
+          "B",
+          "D"
         ]
       },
       "Historic Broadway": {
@@ -259,6 +263,10 @@
         "latlon": [
           34.05222,
           -118.24639
+        ],
+        "lines": [
+          "A",
+          "E"
         ]
       },
       "Grand Av Arts/Bunker Hill": {
@@ -266,6 +274,10 @@
         "latlon": [
           34.054997,
           -118.251996
+        ],
+        "lines": [
+          "A",
+          "E"
         ]
       },
       "Civic Center/Grand Park": {
@@ -273,6 +285,10 @@
         "latlon": [
           34.0543,
           -118.2467
+        ],
+        "lines": [
+          "B",
+          "D"
         ]
       },
       "Little Tokyo/Arts District": {
@@ -280,6 +296,10 @@
         "latlon": [
           34.0487,
           -118.2387
+        ],
+        "lines": [
+          "A",
+          "E"
         ]
       },
       "7th St/Metro Center": {
@@ -288,9 +308,77 @@
           34.0487,
           -118.2587
         ],
-        "transfer": true
+        "transfer": true,
+        "lines": [
+          "A",
+          "B",
+          "D",
+          "E"
+        ]
       }
     },
     "note": "DATA for calibration, not an assumption: LA Metro FY2026 average weekday boardings, rail only, per station, obtained by a public records request ('FY2026 Metro Ridership by Station', misken67 via Los Angeles Metro Public Records, August 2026, as cited on the stations' Wikipedia pages, viewed 2026-10-09), typed by hand. Station positions from the same pages (Pershing Square: its 4th-5th & Hill entrances). 7th St/Metro Center is a transfer hub: its entrances are assigned but it is not compared. Used only to check the model."
+  },
+  "metroLines": {
+    "value": {
+      "kappa": 3.0,
+      "branches": [
+        {
+          "line": "B",
+          "to": "North Hollywood",
+          "latlon": [
+            34.1686,
+            -118.3767
+          ]
+        },
+        {
+          "line": "D",
+          "to": "Wilshire/Western",
+          "latlon": [
+            34.062,
+            -118.309
+          ]
+        },
+        {
+          "line": "A",
+          "to": "Pasadena (Lake)",
+          "latlon": [
+            34.1519,
+            -118.1314
+          ]
+        },
+        {
+          "line": "A",
+          "to": "Downtown Long Beach",
+          "latlon": [
+            33.768,
+            -118.1929
+          ]
+        },
+        {
+          "line": "E",
+          "to": "East LA (Atlantic)",
+          "latlon": [
+            34.0334,
+            -118.1544
+          ]
+        },
+        {
+          "line": "E",
+          "to": "Downtown Santa Monica",
+          "latlon": [
+            34.0141,
+            -118.4915
+          ]
+        }
+      ],
+      "lineWeight": {
+        "B": 1.83,
+        "D": 1.83,
+        "A": 1.0,
+        "E": 1.0
+      }
+    },
+    "note": "ASSUMPTION (option B, 2026-10-09): a rail rider takes the line whose branch points toward home. Branch ends are the lines' outer stations (approximate positions, typed by hand from the Metro rail map); each pulls riders by a von Mises weight on the bearing difference, kappa 3 (about +/- 35 deg). Transfers (Union Station, C/K/L lines, Metrolink) are not modelled. Station lines: metroBoardings[*].lines. lineWeight is CALIBRATED, not observed: with equal weights the model gave B/D stations (Pershing Square, Civic Center) 30% of the five compared stations' boardings against Metro's 44% (6,619 of 14,965); B/D odds x (0.793 / 0.433) = 1.83. Because the line shares are fitted to Metro, only the split within each line group remains an independent check."
   }
 }
