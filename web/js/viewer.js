@@ -936,7 +936,10 @@ function tagHTML(kicker, title, sub, rows, note) {
       + (note ? `<p class="nt">${esc(note)}</p>` : "") + "</details>" : "");
 }
 function fillTag(s) {
+  // refilled in place (units switch): an open Details stays open (user, 2026-10-10)
+  const wasOpen = s.el.querySelector(".dd")?.open;
   s.el.innerHTML = s.build(s.a);
+  if (wasOpen) s.el.querySelector(".dd")?.setAttribute("open", "");
   s.el.querySelector(".x").onclick = (ev) => { ev.stopPropagation(); deselect(s.key); };
   const dd = s.el.querySelector(".dd");
   if (dd) dd.ontoggle = () => {
