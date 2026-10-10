@@ -148,6 +148,7 @@
   3. **LiDAR · Raw**：2023 年 USGS 实测点云，**保持未经处理的原始参照**。只有高度、分类、强度三种着色，没有 Layers 面板，点击也不识别物体；
   4. **LiDAR · Linked**：同一批 LiDAR 点贴上 Blender 物体标签，按图层统一着色，图层开关生效，点击识别物体并高亮。配色（2026-10-05 由 Rui 选定）来自 Coolors 的流行配色 `F0EAD2 · DDE5B6 · ADC178 · A98467 · 6C584C`：地形深褐 `#6C584C`、建筑奶油 `#F0EAD2`、树橄榄绿 `#ADC178`、Landmarks 浅褐 `#A98467`、Design 浅绿 `#DDE5B6`。其他 `#3A302A` 是从地形色调暗得来的，不在原配色里。高亮改为品红 `#FF3EA5`（Rui 选定）。之前的黄色 `#F0E442` 和橄榄绿的树同属黄绿色系；试过亮青蓝 `#3FC8FF` 和珊瑚红 `#FF6B4A` 后，选了品红。点地形只显示信息、不高亮（`"highlight": false`）。颜色在 `web/config.json` 里改。
   - 已知取舍：Landmarks 的浅褐不如之前的朱红醒目，这套配色也没有专门做色盲验证。之前用过的 Okabe-Ito（色盲友好）色值留作备选：地形 `#8F8A80`、建筑 `#56B4E9`、树 `#009E73`、Landmarks `#D55E00`、Design `#CC79A7`、其他 `#3F3F3F`。
+  - 2026-10-10 换成"实体模型"配色（Rui 选定），取代上面的 Coolors 配色：地面水泥灰 `#878682`、建筑暖白 `#F0EEE9`、树绿 `#9ABA81`、车辆卡其黄 `#B8AB78`、Landmarks 灰紫 `#9484A8`。原则：场地底色统一低饱和（OKLCH 色度约 0.07：车辆 0.07，树 0.085 且稍亮，免得发灰；地标灰紫 0.055，色相避开人口层的粉紫），人口层和高亮保持鲜艳；各层明度错开，去掉颜色也能分。路人同时改为 `#EDEDED`，避免和灰色街道混在一起。图层也重新分组为 5 层（Ground & streets / Buildings / Landmarks / Trees & planting / Vehicles），规则见 Methods 2.6 和 `web/config.json`。
   - 以后“按物体替换”的功能都做在 Linked 里，Raw 始终保持原样。代码里的模式 ID 仍然是 `mesh / points / lidar / linked`。
 - **2026-10-06 改为两种模式**（Rui 决定，分支 `rui/houdini-lidar-laz`）：`[ Mesh ] [ Point cloud ]`。
   - Model · Points 删除。
@@ -211,12 +212,30 @@
 ## 11. Houdini（2026-10-05 起）
 
 - [ ] ⭐⭐⭐ **未归类的点**：Y-1 周边 250 m 内还有约 2.5 万个 `_other` 点（原来 6.7 万），多是立面、低矮杂物和树下的点。
-- [ ] ⭐⭐⭐ **人流图层在 Houdini 数据上重做**（Rui）：Clark 的版本在旧项目（PR #9）。新数据已经准备好：`site-model/houdini/handoff/`（建筑体块带名称、地址、用途，加地形）。
+- [x] ~~⭐⭐⭐ **人流图层在 Houdini 数据上重做**（Rui）：Clark 的版本在旧项目（PR #9）。~~ （2026-10-10 完成，分支 `rui/population-houdini`；未完成的见第 12 节）
 - [ ] ⭐⭐ **自动实体的名字**：部分自动生成的名字有重复字，例如 “Building on Government Parcel parcel”（`tools/auto_entities.py`）。
-- [ ] ⭐⭐ **核心区以外的地标正式名称**：现在 83 个手工确认的实体都在 250 m 内（含 35 个地标名），之外的 1,051 个是按县里地块自动生成的。
+- [ ] ⭐⭐ **核心区以外的实体名称**：手工确认的实体之外，其余是按县里地块自动生成的。1 km 内的地标已经按规则取了正式名称（`web/config.json` 的 `landmarks`，2026-10-10）；其他自动实体仍以地址命名。
 - [ ] ⭐⭐ **Mac 上走一遍安装教程**：`docs/SETUP.md` 第 6–7 节（Houdini、Houdini MCP）还没有在 Mac 上实际跑过。
 - [ ] ⭐⭐ **点的“势场”模式**（第 0 节）：每个点带研究属性，随设计变化，例如 φ = Σ wᵢfᵢ，加一个回到原位的弹簧。放在新的模式里，Point cloud 保持不变。
 - [ ] ⭐ 浮动标签：眉题太长时会压到右上角的 ×；多个标签有时互相重叠。
+
+## 12. 人流图层与查看器图层：未完成（2026-10-10 记，分支 `rui/population-houdini`）
+
+**人流模型**（`site-model/population/`）
+- [ ] ⭐⭐⭐ **重跑 hand-off**：Angels Flight 上站（`BLD_485752841247`）已在 `annotations/entities.json` 里从 Two California Plaza 移到 Angels Flight，但 `houdini/handoff/` 没重新生成。下次重跑人口模型时一起做：`export_handoff.py` → `synth_facades.py` → `prep_population.py` → `check_walk_counts.py`。影响很小（Two California Plaza 多约几百 m² 楼面）。
+- [ ] ⭐⭐ **Grand Ave 步行量偏低**：模型 / LADOT 约 0.44，加了住户、商铺、坡度后原因仍未找到（Methods 3.6 已注明）。
+- [ ] ⭐ **Little Tokyo 地铁站没有拟合**：乘客多住在模型范围外。
+- [ ] ⭐ 查看器还没接入网站共享的明暗主题设置（没定要不要接）。
+
+**查看器图层**（`web/config.json` 的 `splitLayers` / `plazas` / `claims` / `landmarks`，规则见 Methods 2.6）
+- [ ] ⭐⭐ **广场规则只核对了 Two California Plaza**：40 m 以上高楼里顶部离地不到 10 m 的格子都按地面画，可能误伤矮的裙楼屋顶。逐栋高楼看一遍。
+- [ ] ⭐⭐ **桥和平台的形状规则**：171 个无地块结构里仍有 33 个按建筑画（20–50 m 高，看起来是真的楼，但没逐个核对）；带高顶棚的步行桥可能还被当成建筑。
+- [ ] ⭐ **远处的广场没做点密度补偿**：从高楼里移回地面的广场点，在 250 m 以外仍按楼的抽稀比例，可能和旁边路面疏密不同。
+- [ ] ⭐ **广场上的绿篱、花坛归到了地面**：点云没有颜色，分不出绿篱和矮墙。需要的话按实体表手工标成树。
+- [ ] ⭐ **地标认领 1 m**：紧贴地标的普通建筑会有约 1 m 的边被画成地标色。
+- [ ] ⭐ **地标资料缺口**：最初用途没找到：Gans Brothers、Westinghouse Electric；来源较弱：Edwards-Wildey、Great Republic Life、Fine Arts；建成年份没找到：M.J. Connell 1, 2, 3 & 7、Gans Brothers。信息卡上的 "Now" 来自县估价员登记的用途，可能过时。
+- [ ] ⭐ **Music Center** 在实体表里仍叫 "Dorothy Chandler Pavilion (Music Center)"，查看器里按地标清单改了显示名；要不要改实体表本身，待定。
+- [ ] ⭐ Methods 页还空着的节（1 项目、2.2 点的标注、2.5 地形、4 设计、5 参考文献）等 Rui 补。
 
 ---
 

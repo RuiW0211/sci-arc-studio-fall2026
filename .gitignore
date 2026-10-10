@@ -23,3 +23,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# population: raw downloads (LODES, ACS, Gazetteer, Overpass), re-fetched by site-model/population/fetch_population.py
+site-model/population/data/raw/

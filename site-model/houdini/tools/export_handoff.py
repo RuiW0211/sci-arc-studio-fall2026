@@ -10,7 +10,7 @@ project), so a script written for those only has to change where it reads from:
   terrain.npy     ground heights, float32 rows x cols, row 0 = north (same layout as site-model/data/terrain.npy).
 
 Frame: EPSG:26911 metres, NAVD88 heights, local origin E 384580 / N 3768520; x = east, y = north (NOT three.js).
-Extent: the ±400 m box around Y-1 (as the earlier scene.json).
+Extent: +-HALF around Y-1, the whole point cloud (2026-10-08; the earlier scene.json had +-400 m).
 
 Sources: the staged, labelled points of work/stage/ at full density, named as tools/pack_wide.py pack names them
 (USGS 3DEP 2023 points with the Houdini labels; ground = z - hag, i.e. Houdini's own ground model) and annotations/entities.json. Run after pack_wide.py pack and auto_entities.py:
@@ -34,7 +34,7 @@ import pack_wide as pw                                 # noqa: E402  (the staged
 ENT = HERE / "annotations/entities.json"
 OUT = HERE / "handoff"
 
-HALF = 400.0          # extent, metres from the origin
+HALF = 1250.0         # extent, metres from the origin: the whole point cloud (it fades out by ~1.23 km; was 400)
 TSTEP = 2.0           # terrain grid step (as the earlier scene.json)
 CELL = 1.0            # roof grid for the prisms
 GAP = 2.0             # roof heights more than this apart start a new tier
@@ -45,9 +45,17 @@ MIN_PATCH = 25.0      # m2: smaller connected groups of roof cells are dropped (
 SIMPLIFY = 0.5        # m: outline simplification
 
 
-def load_points():
-    """Every return inside the extent (+20 m) at full density, with the final object names of pack_wide.pack
-    (joins, splits, renames, point relabels). The web LAZ is thinned beyond 250 m, so it is not used here."""
+KEEP = ("BLD_", "PC_", "MOCA", "AF_", "Metro_")   # objects whose points are kept (buildings, structures, landmarks)
+N_T = int(2 * HALF / TSTEP)
+_gsum = np.zeros(N_T * N_T)
+_gcnt = np.zeros(N_T * N_T)
+
+
+def load_points(keep=KEEP):
+    """The returns of building / structure / landmark objects inside the extent (+20 m) at full density, with the
+    final object names of pack_wide.pack (joins, splits, renames, point relabels); every return also adds its ground
+    height (z - hag) to the terrain grid on the way, chunk by chunk, so the whole site fits in memory. The web LAZ is
+    thinned beyond 250 m, so it is not used here."""
     alias, final = pw.plan(verbose=False)
     xs, ys, zs, hs, os_ = [], [], [], [], []
     names_out, index = [], {}
@@ -84,26 +92,28 @@ def load_points():
                         if ids[-1] == len(names_out):
                             names_out.append(out)
                     o[mk] = np.array(ids)[part]
-        xs.append(x[m]); ys.append(y[m]); zs.append(z["Z"][m] * 0.01); hs.append(z["hag"][m] * 0.1); os_.append(o[m])
-    cat = lambda v: np.concatenate(v)
-    return cat(xs), cat(ys), cat(zs), cat(os_), cat(hs).astype(np.float64), names_out
+        zz, hh = z["Z"] * 0.01, z["hag"] * 0.1
+        c = np.floor((x + HALF) / TSTEP).astype(np.int64)
+        r = np.floor((HALF - y) / TSTEP).astype(np.int64)
+        ok = (c >= 0) & (c < N_T) & (r >= 0) & (r < N_T)
+        cell = r[ok] * N_T + c[ok]
+        _gsum[:] += np.bincount(cell, weights=(zz - hh)[ok], minlength=N_T * N_T)
+        _gcnt[:] += np.bincount(cell, minlength=N_T * N_T)
+        wanted = np.array([s.startswith(keep) for s in names_out], dtype=bool) if keep else None
+        mk = m & wanted[o] if keep else m
+        xs.append(x[mk].astype(np.float32)); ys.append(y[mk].astype(np.float32)); zs.append(zz[mk].astype(np.float32))
+        hs.append(hh[mk].astype(np.float32)); os_.append(o[mk].astype(np.int32))
+        print(f"  {nm}: {mk.sum():,} of {len(x):,} points kept", flush=True)
+    cat = lambda v: np.concatenate(v).astype(np.float64)
+    return cat(xs), cat(ys), cat(zs), np.concatenate(os_).astype(np.int64), cat(hs), names_out
 
 
-def terrain(x, y, z, hag):
-    """Ground = z - hag of every point (Houdini's ground model, also under buildings), median per 2 m cell."""
-    n = int(2 * HALF / TSTEP)
+def terrain():
+    """Ground = z - hag of every return (Houdini's ground model, also under buildings), mean per 2 m cell
+    (collected by load_points)."""
+    n = N_T
     x0, y0 = -HALF + TSTEP / 2, HALF - TSTEP / 2          # centre of the NW cell
-    c = np.floor((x + HALF) / TSTEP).astype(int)
-    r = np.floor((HALF - y) / TSTEP).astype(int)
-    ok = (c >= 0) & (c < n) & (r >= 0) & (r < n)
-    g = (z - hag)[ok]
-    idx = (r[ok] * n + c[ok])
-    order = np.argsort(idx, kind="stable")
-    idx, g = idx[order], g[order]
-    starts = np.r_[0, np.flatnonzero(np.diff(idx)) + 1]
-    grid = np.full(n * n, np.nan, np.float64)
-    grid[idx[starts]] = [np.median(s) for s in np.split(g, starts[1:])]
-    grid = grid.reshape(n, n)
+    grid = np.where(_gcnt > 0, _gsum / np.maximum(_gcnt, 1), np.nan).reshape(n, n)
     holes = np.isnan(grid)
     if holes.any():                                        # nearest measured cell
         _, (ri, ci) = ndimage.distance_transform_edt(holes, return_indices=True)
@@ -167,7 +177,7 @@ def tiers_of(px, py, pz, pg):
 
 def main():
     x, y, z, obj, hag, names = load_points()
-    grid, tinfo = terrain(x, y, z, hag)
+    grid, tinfo = terrain()
     OUT.mkdir(exist_ok=True)
     np.save(OUT / "terrain.npy", grid)
 

@@ -1,26 +1,1163 @@
 {
   "_comment": "Viewer settings. Layers come from the point cloud (data/lidar_points.json, written by site-model/houdini/tools/pack_wide.py) and from the design files; this file only gives display names, order, default visibility and colours. Unknown layers still appear under their own name (grey). Design files site-model/exports/design_<name>.glb load on top of the point cloud (listed in assets/models.json); their layers default to the Design style, visible. Camera values are three.js coordinates: x = east, y = up (m, NAVD88), z = -north, from the site origin E 384580 / N 3768520.",
   "designs": "assets/models.json",
+  "facades": {
+    "meta": "data/facades_estimated.json",
+    "_comment": "Estimated wall points (site-model/houdini/tools/synth_facades.py), merged into the Buildings points when the LiDAR loads (user, 2026-10-10)."
+  },
   "entities": "data/entities.json",
-  "lidar": { "meta": "data/lidar_points.json", "size": 0.25 },
-  "linked": { "_comment": "Point cloud, Color = Layer: points coloured by the layer colours below, from the Coolors trending palette F0EAD2 · DDE5B6 · ADC178 · A98467 · 6C584C (Other darkened from Terrain). The clicked object turns the highlight colour unless its layer has \"highlight\": false (Terrain: too large to light up).", "highlight": "#FF3EA5" },
+  "lidar": {
+    "meta": "data/lidar_points.json",
+    "size": 0.25
+  },
+  "linked": {
+    "_comment": "Point cloud, Color = Layer: points coloured by the layer colours below (user, 2026-10-10): a physical-model look, concrete-grey ground, white buildings, and the coloured layers at one muted saturation (OKLCH chroma about 0.07: vehicles 0.07, trees 0.085 and a little lighter so the planting does not look grey, landmarks a grey violet at 0.055) so the people and the highlight, kept saturated, stand out. Lightness steps apart (ground 0.62, landmarks 0.64, trees 0.75, vehicles 0.74, buildings 0.95), so the layers part in grey too. The clicked object turns the highlight colour unless its layer has \"highlight\": false (Terrain: too large to light up).",
+    "highlight": "#FF3EA5"
+  },
   "_cloudColor": "the first colouring: layer / height / class / intensity",
   "cloudColor": "layer",
   "layers": {
-    "Terrain":   { "label": "Terrain",            "order": 1, "visible": true, "color": "#6C584C", "highlight": false },
-    "Buildings": { "label": "Buildings",          "order": 2, "visible": true, "color": "#F0EAD2" },
-    "Landmarks": { "label": "Landmarks",          "order": 4, "visible": true, "color": "#A98467" },
-    "Trees":     { "label": "Trees",              "order": 5, "visible": true, "color": "#ADC178" },
-    "Low_vegetation":       { "label": "Shrubs (LiDAR only)",            "order": 5.2, "visible": true, "color": "#7E9A55" },
-    "Vehicles":             { "label": "Vehicles (LiDAR only)",          "order": 5.4, "visible": true, "color": "#C9A27E" },
-    "Low_structures":       { "label": "Walls & fences (LiDAR only)",    "order": 5.6, "visible": true, "color": "#B8AE96" },
-    "Street_furniture":     { "label": "Street furniture (LiDAR only)",  "order": 5.8, "visible": true, "color": "#8C7A6B" },
-    "Buildings_LiDAR_only": { "label": "Structures (not in LARIAC)",     "order": 2.5, "visible": true, "color": "#D9CFB0" },
-    "Design":    { "label": "Design",             "order": 6, "visible": false, "color": "#DDE5B6" },
-    "_other":    { "label": "Other (LiDAR only)", "order": 9, "visible": true, "color": "#3A302A" }
+    "Terrain": {
+      "label": "Ground & streets",
+      "order": 1,
+      "visible": true,
+      "color": "#878682",
+      "highlight": false
+    },
+    "Buildings": {
+      "label": "Buildings",
+      "order": 2,
+      "visible": true,
+      "color": "#F0EEE9"
+    },
+    "Landmarks": {
+      "label": "Landmarks",
+      "order": 4,
+      "visible": true,
+      "color": "#9484A8"
+    },
+    "Trees": {
+      "label": "Trees & planting",
+      "order": 5,
+      "visible": true,
+      "color": "#9ABA81"
+    },
+    "Vehicles": {
+      "label": "Vehicles",
+      "order": 5.4,
+      "visible": true,
+      "color": "#B8AB78"
+    },
+    "Design": {
+      "label": "Design",
+      "order": 6,
+      "visible": false,
+      "color": "#DDE5B6"
+    }
   },
   "views": [
-    { "name": "Default",            "position": [260, 260, 300],      "target": [0, 100, 0] },
-    { "name": "Top",                "position": [0, 650, 0.01],       "target": [0, 95, 0] }
-  ]
+    {
+      "name": "Default",
+      "position": [
+        260,
+        260,
+        300
+      ],
+      "target": [
+        0,
+        100,
+        0
+      ]
+    },
+    {
+      "name": "Top",
+      "position": [
+        0,
+        650,
+        0.01
+      ],
+      "target": [
+        0,
+        95,
+        0
+      ]
+    }
+  ],
+  "population": {
+    "_comment": "Modeled day/night population (site-model/population/prep_population.py): one point per person, size in metres. start = clock at load (hours), speed = simulated seconds per real second. routeColor / neon / neonStrength: the selected person's light trail (neonStrength scales its opacity). whiteCloud: the 'Highlight people' option - grey level (1 = white) and opacity the point cloud fades to (0.5 s). highlightSize: people's size (m) under 'Highlight people'. colors: Okabe-Ito (colour-blind safe), workers #FFD166 and visitors #06D6A0 from Coolors 'Watermelon Sorbet' (user, 2026-10-09); passers-by #EDEDED, light enough to show on the concrete-grey streets (user, 2026-10-10).",
+    "meta": "data/population.json",
+    "size": 0.7,
+    "start": 8.5,
+    "speed": 300,
+    "routeColor": "#00E5FF",
+    "neon": true,
+    "neonStrength": 1.6,
+    "colors": {
+      "resident": "#56B4E9",
+      "worker": "#FFD166",
+      "hotel": "#8338EC",
+      "visitor": "#06D6A0",
+      "unsheltered": "#CC79A7",
+      "passerby": "#EDEDED"
+    },
+    "whiteCloud": {
+      "white": 0.3,
+      "opacity": 0.35
+    },
+    "highlightSize": 1.0
+  },
+  "mergeLayers": {
+    "Street_furniture": "Terrain",
+    "_other": "Terrain",
+    "Low_structures": "Terrain",
+    "Low_vegetation": "Trees",
+    "Buildings_LiDAR_only": "Buildings"
+  },
+  "_mergeLayers": "LiDAR layers drawn as another layer in the viewer (user, 2026-10-10): street furniture, walls & fences and the unassigned points join the ground (Terrain, shown as Ground & streets); shrubs join Trees; the LiDAR-only structures join Buildings, except the thin raised ones (splitLayers).",
+  "splitLayers": {
+    "Buildings_LiDAR_only": {
+      "to": "Terrain",
+      "maxThickM": 4,
+      "minHagM": 2,
+      "maxHagM": 15,
+      "uses": "street structure|bridge|walkway|deck|canopy",
+      "matchDensity": {
+        "maxSize": 2.5
+      }
+    }
+  },
+  "_splitLayers": "Objects of a layer sent to another (user, 2026-10-10): LiDAR-only structures whose entity's checked use matches 'uses', or that are thin (less than maxThickM between the 5th and 95th percentile of their heights) and sit on average minHagM-maxHagM above the ground: bridges, raised walkways, street and plaza decks, canopies, drawn with the ground and streets. matchDensity: the moved objects are drawn as densely as the ground around them (points dropped, or drawn larger up to maxSize times).",
+  "plazas": {
+    "layer": "Buildings",
+    "minBuildingM": 40,
+    "maxHagM": 10,
+    "cellM": 4,
+    "grow": 3,
+    "edgeM": 3
+  },
+  "_plazas": "Open ground inside a tower's building outline (plazas, steps, street-level terraces) drawn as ground (user, 2026-10-10, after Two California Plaza / Watercourt): in a building at least minBuildingM tall, every cellM plan cell whose highest return is under maxHagM above the ground. grow / edgeM: cells next to the plaza whose top is no more than edgeM above it (walls and steps down to a lower street) join it, grow cells out.",
+  "claims": [
+    {
+      "layer": "Landmarks",
+      "from": [
+        "Buildings",
+        "Buildings_LiDAR_only"
+      ],
+      "marginM": 1
+    }
+  ],
+  "_claims": "A landmark takes the points of building objects within marginM of its own points (user, 2026-10-10: the Angels Flight upper station inside the Two California Plaza outline).",
+  "landmarkRule": "A building within 1 km of Y-1 is a landmark when (1) it is a City of Los Angeles Historic-Cultural Monument or individually listed on the National Register of Historic Places (the City's own monument outlines, NavigateLA layer \"Historic-Cultural Monuments\", downloaded 2026-10-10; historic districts, statues, trees and pending cases left out), or (2) it is a public cultural building (museum, concert hall, theatre, library, place of worship) named as a landmark in the Wikipedia articles \"Bunker Hill, Los Angeles\" and \"Grand Avenue (Los Angeles)\". Private office towers, hotels and schools named in those articles (One and Two California Plaza, Wells Fargo Center, the Westin Bonaventure, Gas Company Tower, Colburn School) are not landmarks unless designated.",
+  "landmarks": [
+    {
+      "parts": [
+        "BLD_486079842670"
+      ],
+      "name": "Walt Disney Concert Hall",
+      "rename": false,
+      "basis": "Public cultural building named in Wikipedia: Bunker Hill, Los Angeles; Grand Avenue (Los Angeles)",
+      "built": "2003",
+      "builtSource": "Wikipedia",
+      "builtAs": "concert hall"
+    },
+    {
+      "parts": [
+        "BLD_2014092930370000"
+      ],
+      "name": "The Music Center (Dorothy Chandler Pavilion, Ahmanson Theatre, Mark Taper Forum)",
+      "rename": true,
+      "basis": "Public cultural building named in Wikipedia: Grand Avenue (Los Angeles)",
+      "built": "1964",
+      "builtSource": "Wikipedia (Dorothy Chandler Pavilion; Ahmanson and Taper 1967)",
+      "builtAs": "performing arts center"
+    },
+    {
+      "parts": [
+        "MOCA"
+      ],
+      "name": "The Museum of Contemporary Art (MOCA Grand Avenue)",
+      "rename": false,
+      "basis": "Public cultural building named in Wikipedia: Bunker Hill, Los Angeles; Grand Avenue (Los Angeles)",
+      "built": "1986",
+      "builtSource": "Wikipedia / Ocula",
+      "builtAs": "art museum"
+    },
+    {
+      "parts": [
+        "BLD_201700196586"
+      ],
+      "name": "The Broad",
+      "rename": false,
+      "basis": "Public cultural building named in Wikipedia: Bunker Hill, Los Angeles; Grand Avenue (Los Angeles)",
+      "built": "2015",
+      "builtSource": "Wikipedia; The Broad press release",
+      "builtAs": "art museum"
+    },
+    {
+      "parts": [
+        "BLD_487281843809"
+      ],
+      "name": "Cathedral of Our Lady of the Angels",
+      "rename": false,
+      "basis": "Public cultural building named in Wikipedia: Grand Avenue (Los Angeles)",
+      "built": "2002",
+      "builtSource": "Wikipedia",
+      "builtAs": "cathedral"
+    },
+    {
+      "parts": [
+        "AF_Track_Deck"
+      ],
+      "name": "Angels Flight",
+      "rename": false,
+      "basis": "LA Historic-Cultural Monument #4; National Register",
+      "built": "1901",
+      "builtSource": "Wikipedia (moved to its present site 1996)",
+      "builtAs": "funicular railway"
+    },
+    {
+      "parts": [
+        "BLD_485597840707"
+      ],
+      "name": "Subway Terminal Building",
+      "basis": "LA Historic-Cultural Monument #177; National Register",
+      "built": "1925",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "rail terminal and office tower",
+      "builtAsSource": "LA Conservancy; Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_486339840977"
+      ],
+      "name": "Grand Central Market",
+      "basis": "LA Historic-Cultural Monument #1183",
+      "built": "1896",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "public market"
+    },
+    {
+      "parts": [
+        "BLD_486434841045"
+      ],
+      "name": "Million Dollar Theatre",
+      "basis": "LA Historic-Cultural Monument #1184; National Register",
+      "built": "1917",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "theatre and offices"
+    },
+    {
+      "parts": [
+        "BLD_202000039628"
+      ],
+      "name": "Irvine-Byrne Building",
+      "basis": "LA Historic-Cultural Monument #544",
+      "rename": true,
+      "built": "1895",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_202000039462"
+      ],
+      "name": "Title Guarantee and Trust Company Building",
+      "basis": "LA Historic-Cultural Monument #278; National Register",
+      "built": "1930",
+      "builtSource": "Wikipedia",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_486600840894"
+      ],
+      "name": "Bradbury Building",
+      "basis": "LA Historic-Cultural Monument #6; National Register",
+      "built": "1893",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia; LA Conservancy"
+    },
+    {
+      "parts": [
+        "BLD_486020840234"
+      ],
+      "name": "Judson Rives Building",
+      "basis": "LA Historic-Cultural Monument #881",
+      "built": "1906",
+      "builtSource": "Wikipedia; National Register nomination",
+      "builtAs": "offices and shops",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_485627840160"
+      ],
+      "name": "Metropolitan Building",
+      "basis": "LA Historic-Cultural Monument #1019",
+      "built": "1913",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "shops and offices",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_486840840870"
+      ],
+      "name": "Douglas Building",
+      "basis": "LA Historic-Cultural Monument #966",
+      "built": "1898",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "PCAD"
+    },
+    {
+      "parts": [
+        "BLD_484755840982"
+      ],
+      "name": "One Bunker Hill Building",
+      "basis": "LA Historic-Cultural Monument #347",
+      "built": "1930–1934",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "utility company offices (Southern California Edison)",
+      "builtAsSource": "HCM list"
+    },
+    {
+      "parts": [
+        "BLD_2014092932510000"
+      ],
+      "name": "Title Insurance & Trust Company Building and Annex",
+      "basis": "LA Historic-Cultural Monument #385",
+      "built": "1928",
+      "builtSource": "Calisphere (LA Public Library photo record)",
+      "builtAs": "title company headquarters",
+      "builtAsSource": "PCAD; Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_486458840143"
+      ],
+      "name": "Continental Building",
+      "basis": "LA Historic-Cultural Monument #730",
+      "built": "1904",
+      "builtSource": "LA Conservancy (Wikipedia gives 1903)",
+      "builtAs": "office building",
+      "builtAsSource": "LA Conservancy"
+    },
+    {
+      "parts": [
+        "BLD_484830840428"
+      ],
+      "name": "Biltmore Hotel",
+      "basis": "LA Historic-Cultural Monument #60",
+      "built": "1923",
+      "builtSource": "Wikipedia",
+      "builtAs": "hotel"
+    },
+    {
+      "parts": [
+        "BLD_486445840031"
+      ],
+      "name": "Hotel Stowell",
+      "basis": "LA Historic-Cultural Monument #1029",
+      "built": "1913",
+      "builtSource": "Wikipedia (Spring Street Financial District)",
+      "builtAs": "hotel"
+    },
+    {
+      "parts": [
+        "BLD_485671839805"
+      ],
+      "name": "Forve-Pettebone Building",
+      "basis": "LA Historic-Cultural Monument #1125",
+      "built": "1905",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia; HCM list"
+    },
+    {
+      "parts": [
+        "BLD_485671839805",
+        "BLD_485634839741"
+      ],
+      "name": "Roxie Theater",
+      "basis": "LA Historic-Cultural Monument #526",
+      "built": "1931",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "theatre"
+    },
+    {
+      "parts": [
+        "BLD_486455840078",
+        "BLD_486604839965"
+      ],
+      "name": "Hellman Building",
+      "basis": "LA Historic-Cultural Monument #729",
+      "built": "1904",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_202000039419"
+      ],
+      "name": "Barclay Hotel",
+      "basis": "LA Historic-Cultural Monument #288",
+      "built": "1896",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "hotel"
+    },
+    {
+      "parts": [
+        "BLD_485828839817",
+        "BLD_485890839707",
+        "BLD_485864839658"
+      ],
+      "name": "Alexandria Hotel",
+      "basis": "LA Historic-Cultural Monument #80",
+      "built": "1906",
+      "builtSource": "Wikipedia (addition with the Palm Court 1911)",
+      "builtAs": "hotel"
+    },
+    {
+      "parts": [
+        "BLD_486668839999"
+      ],
+      "name": "Farmers and Merchants Bank Building",
+      "basis": "LA Historic-Cultural Monument #271",
+      "built": "1904",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "bank"
+    },
+    {
+      "parts": [
+        "BLD_202000039335"
+      ],
+      "name": "Title Insurance Building",
+      "basis": "LA Historic-Cultural Monument #772",
+      "built": "1911–1912",
+      "builtSource": "PCAD",
+      "builtAs": "title company offices",
+      "builtAsSource": "PCAD"
+    },
+    {
+      "parts": [
+        "BLD_485600839687"
+      ],
+      "name": "Cameo Theatre (formerly Clune's Broadway)",
+      "basis": "LA Historic-Cultural Monument #524",
+      "built": "1910",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "theatre"
+    },
+    {
+      "parts": [
+        "BLD_2014092850630000"
+      ],
+      "name": "F. and W. Grand Silver Store Building",
+      "basis": "LA Historic-Cultural Monument #1155",
+      "built": "1931",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "variety store"
+    },
+    {
+      "parts": [
+        "BLD_484322840870"
+      ],
+      "name": "Los Angeles Central Library",
+      "basis": "LA Historic-Cultural Monument #46; National Register",
+      "built": "1926",
+      "builtSource": "Wikipedia (Goodhue building)",
+      "now": "public library",
+      "builtAs": "public library"
+    },
+    {
+      "parts": [
+        "BLD_484429840516"
+      ],
+      "name": "Mayflower Hotel",
+      "basis": "LA Historic-Cultural Monument #286",
+      "built": "1927",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "hotel"
+    },
+    {
+      "parts": [
+        "BLD_484539840236"
+      ],
+      "name": "Pacific Mutual Building",
+      "basis": "LA Historic-Cultural Monument #398",
+      "built": "1908",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "insurance company headquarters",
+      "builtAsSource": "LA Conservancy"
+    },
+    {
+      "parts": [
+        "BLD_485542839633"
+      ],
+      "name": "Arcade Theatre (originally Pantages Theatre)",
+      "basis": "LA Historic-Cultural Monument #525",
+      "built": "1910",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "theatre"
+    },
+    {
+      "parts": [
+        "BLD_486102839500"
+      ],
+      "name": "Security Building",
+      "basis": "LA Historic-Cultural Monument #741",
+      "built": "1906",
+      "builtSource": "Wikipedia",
+      "builtAs": "bank and office building",
+      "builtAsSource": "Wikipedia; PCAD"
+    },
+    {
+      "parts": [
+        "BLD_486195839506"
+      ],
+      "name": "Hotel Rosslyn Annex",
+      "basis": "National Register",
+      "built": "1923",
+      "builtSource": "Wikipedia; National Register record (the annex)",
+      "builtAs": "hotel"
+    },
+    {
+      "parts": [
+        "BLD_486815839826"
+      ],
+      "name": "San Fernando Building",
+      "basis": "LA Historic-Cultural Monument #728; National Register",
+      "built": "1906",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_487165841709",
+        "BLD_487256841416",
+        "BLD_487280841751",
+        "BLD_487402841679",
+        "BLD_487349841805"
+      ],
+      "name": "Times Mirror Square",
+      "basis": "LA Historic-Cultural Monument #1174",
+      "built": "1935",
+      "builtSource": "HCM list (later wings to 1973)",
+      "builtAs": "newspaper headquarters",
+      "builtAsSource": "LA Conservancy"
+    },
+    {
+      "parts": [
+        "BLD_485501839393"
+      ],
+      "name": "Finney's Cafeteria",
+      "basis": "LA Historic-Cultural Monument #137",
+      "built": "1898",
+      "builtSource": "Wikipedia (gives 1898 or 1904)",
+      "builtAs": "cafeteria"
+    },
+    {
+      "parts": [
+        "BLD_487458841053"
+      ],
+      "name": "Higgins Building",
+      "basis": "LA Historic-Cultural Monument #873",
+      "built": "1909",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_484492839833"
+      ],
+      "name": "James Oviatt Building",
+      "basis": "LA Historic-Cultural Monument #195; National Register",
+      "built": "1928",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "men's clothing store and offices",
+      "builtAsSource": "LA Conservancy"
+    },
+    {
+      "parts": [
+        "BLD_202000039262"
+      ],
+      "name": "Los Angeles Theater",
+      "basis": "LA Historic-Cultural Monument #225",
+      "built": "1931",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "theatre"
+    },
+    {
+      "parts": [
+        "BLD_484197840161"
+      ],
+      "name": "Edwards-Wildey Building",
+      "basis": "LA Historic-Cultural Monument #786",
+      "built": "1925",
+      "builtSource": "Calisphere (California State Library)",
+      "builtAs": "office building",
+      "builtAsSource": "Calisphere photo caption (weak)"
+    },
+    {
+      "parts": [
+        "BLD_483949840832"
+      ],
+      "name": "California Club Building",
+      "basis": "LA Historic-Cultural Monument #43; National Register",
+      "built": "1930",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "private club"
+    },
+    {
+      "parts": [
+        "BLD_485330839179"
+      ],
+      "name": "Desmond's Department Store",
+      "basis": "LA Historic-Cultural Monument #1207",
+      "built": "1924",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "department store"
+    },
+    {
+      "parts": [
+        "BLD_486594839375"
+      ],
+      "name": "King Edward Hotel",
+      "basis": "LA Historic-Cultural Monument #1214; National Register",
+      "built": "1906",
+      "builtSource": "press coverage of the 2020 designation",
+      "builtAs": "hotel"
+    },
+    {
+      "parts": [
+        "BLD_484712839477"
+      ],
+      "name": "Sun Realty Company Building",
+      "basis": "LA Historic-Cultural Monument #985",
+      "built": "1930",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "company offices (Sun Drug Co.)",
+      "builtAsSource": "LA City Planning HCM report"
+    },
+    {
+      "parts": [
+        "BLD_201700195452"
+      ],
+      "name": "Saint Vibiana's Cathedral",
+      "basis": "LA Historic-Cultural Monument #17",
+      "built": "1876",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "cathedral"
+    },
+    {
+      "parts": [
+        "BLD_487188842314"
+      ],
+      "name": "Los Angeles County Law Library",
+      "basis": "National Register",
+      "built": "1953",
+      "builtSource": "LA Conservancy",
+      "builtAs": "law library"
+    },
+    {
+      "parts": [
+        "BLD_483832840763"
+      ],
+      "name": "Superior Oil Company Building",
+      "basis": "LA Historic-Cultural Monument #686; National Register",
+      "built": "1955–1956",
+      "builtSource": "Wikipedia; National Register record",
+      "builtAs": "oil company headquarters"
+    },
+    {
+      "parts": [
+        "BLD_485189839200"
+      ],
+      "name": "Palace Theater",
+      "basis": "LA Historic-Cultural Monument #449",
+      "built": "1911",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "theatre"
+    },
+    {
+      "parts": [
+        "BLD_485603839026",
+        "BLD_485652838944"
+      ],
+      "name": "Los Angeles Stock Exchange Building",
+      "basis": "LA Historic-Cultural Monument #205",
+      "built": "1931",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "stock exchange"
+    },
+    {
+      "parts": [
+        "BLD_484435839452"
+      ],
+      "name": "Los Angeles Athletic Club Building",
+      "basis": "LA Historic-Cultural Monument #69",
+      "built": "1912",
+      "builtSource": "PCAD; LAAC (opened 1912)",
+      "builtAs": "athletic club"
+    },
+    {
+      "parts": [
+        "BLD_484298839590"
+      ],
+      "name": "Bank of Italy (Giannini) Building",
+      "basis": "LA Historic-Cultural Monument #354; National Register",
+      "built": "1922",
+      "builtSource": "Wikipedia (dedicated 1923)",
+      "builtAs": "bank"
+    },
+    {
+      "parts": [
+        "BLD_484211839663"
+      ],
+      "name": "Clifton's (Brock Jewelers)",
+      "basis": "LA Historic-Cultural Monument #358",
+      "built": "1922",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "jewelry store",
+      "builtAsSource": "PCAD; HCM list"
+    },
+    {
+      "parts": [
+        "BLD_2014092933610000"
+      ],
+      "name": "Union Bank Plaza",
+      "basis": "LA Historic-Cultural Monument #1206",
+      "built": "1968",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office tower"
+    },
+    {
+      "parts": [
+        "BLD_483670840509"
+      ],
+      "name": "General Petroleum Building",
+      "basis": "LA Historic-Cultural Monument #766; National Register",
+      "built": "1949",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "oil company headquarters"
+    },
+    {
+      "parts": [
+        "BLD_485327838931"
+      ],
+      "name": "Barclay's Bank",
+      "basis": "LA Historic-Cultural Monument #671",
+      "built": "1919",
+      "builtSource": "Wikipedia (Spring Street Financial District)",
+      "builtAs": "bank"
+    },
+    {
+      "parts": [
+        "BLD_202000039062"
+      ],
+      "name": "Kerckhoff Building and Annex",
+      "basis": "LA Historic-Cultural Monument #806; National Register",
+      "built": "1908",
+      "builtSource": "National Register record (annex 1916)",
+      "builtAs": "office building",
+      "builtAsSource": "PCAD"
+    },
+    {
+      "parts": [
+        "BLD_485464838893"
+      ],
+      "name": "Banks-Huntley Building",
+      "basis": "LA Historic-Cultural Monument #631",
+      "built": "1930",
+      "builtSource": "HCM plaque; Wikipedia (PCAD 1929)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_486927839108"
+      ],
+      "name": "Fire Station No. 23",
+      "basis": "LA Historic-Cultural Monument #37; National Register",
+      "built": "1910",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "fire station"
+    },
+    {
+      "parts": [
+        "BLD_485139838861"
+      ],
+      "name": "Bartlett Building",
+      "basis": "LA Historic-Cultural Monument #1089",
+      "built": "1911",
+      "builtSource": "Wikipedia (Spring Street Financial District)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_484397839159"
+      ],
+      "name": "Foreman and Clark Building",
+      "basis": "LA Historic-Cultural Monument #953",
+      "built": "1929",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "clothing store and offices",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_202000039035"
+      ],
+      "name": "Pacific Electric Building",
+      "basis": "LA Historic-Cultural Monument #104; National Register",
+      "built": "1903",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "railway depot and headquarters",
+      "builtAsSource": "Wikipedia; LA Conservancy"
+    },
+    {
+      "parts": [
+        "BLD_202000039280"
+      ],
+      "name": "Brockman Building",
+      "basis": "National Register",
+      "built": "1912",
+      "builtSource": "Wikipedia; National Register record (annex 1917)",
+      "builtAs": "shops and offices",
+      "builtAsSource": "Wikipedia; LA Conservancy"
+    },
+    {
+      "parts": [
+        "BLD_484572838939"
+      ],
+      "name": "Spreckels Building",
+      "basis": "LA Historic-Cultural Monument #984",
+      "built": "1922",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "commercial loft building",
+      "builtAsSource": "historian4hire"
+    },
+    {
+      "parts": [
+        "BLD_485466838631"
+      ],
+      "name": "Board of Trade Building",
+      "basis": "National Register",
+      "built": "1929",
+      "builtSource": "Wikipedia; National Register record",
+      "builtAs": "office building"
+    },
+    {
+      "parts": [
+        "BLD_484773838886",
+        "BLD_484626838878"
+      ],
+      "name": "State Theater Building",
+      "basis": "LA Historic-Cultural Monument #522",
+      "built": "1921",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "theatre and offices"
+    },
+    {
+      "parts": [
+        "BLD_483480840182"
+      ],
+      "name": "Roosevelt Building",
+      "basis": "LA Historic-Cultural Monument #355; National Register",
+      "built": "1923",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_202000039849"
+      ],
+      "name": "Los Angeles City Hall",
+      "basis": "LA Historic-Cultural Monument #150; National Register",
+      "built": "1928",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "city hall"
+    },
+    {
+      "parts": [
+        "BLD_485063838700"
+      ],
+      "name": "Van Nuys Building",
+      "basis": "LA Historic-Cultural Monument #898",
+      "built": "1911",
+      "builtSource": "Wikipedia (Spring Street Financial District)",
+      "builtAs": "offices and shops",
+      "builtAsSource": "PCAD"
+    },
+    {
+      "parts": [
+        "BLD_483693839668"
+      ],
+      "name": "J.W. Robinson's (Boston Store)",
+      "basis": "LA Historic-Cultural Monument #357",
+      "built": "1915",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "department store"
+    },
+    {
+      "parts": [
+        "BLD_202000038969"
+      ],
+      "name": "Hotel Cecil",
+      "basis": "LA Historic-Cultural Monument #1140",
+      "built": "1924",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "hotel"
+    },
+    {
+      "parts": [
+        "BLD_202000040224"
+      ],
+      "name": "John Ferraro Building (LADWP General Office)",
+      "basis": "LA Historic-Cultural Monument #1022",
+      "built": "1965",
+      "builtSource": "Wikipedia",
+      "builtAs": "utility headquarters",
+      "builtAsSource": "Wikipedia; LA Conservancy"
+    },
+    {
+      "parts": [
+        "BLD_202000039464"
+      ],
+      "name": "Fine Arts Building",
+      "basis": "LA Historic-Cultural Monument #125",
+      "built": "1925",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "artists' studios and shops",
+      "builtAsSource": "web search results (weak)"
+    },
+    {
+      "parts": [
+        "BLD_483229840500"
+      ],
+      "name": "Fire Station No. 28",
+      "basis": "LA Historic-Cultural Monument #348; National Register",
+      "built": "1912",
+      "builtSource": "Wikipedia (opened 1913)",
+      "builtAs": "fire station"
+    },
+    {
+      "parts": [
+        "BLD_484325838613"
+      ],
+      "name": "Union Bank and Trust Company Building",
+      "basis": "LA Historic-Cultural Monument #1030",
+      "built": "1922",
+      "builtSource": "Wikipedia; LMU digital collections",
+      "builtAs": "bank"
+    },
+    {
+      "parts": [
+        "BLD_484120838802"
+      ],
+      "name": "Garfield Building",
+      "basis": "LA Historic-Cultural Monument #121; National Register",
+      "built": "1928",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_484627838402"
+      ],
+      "name": "Charles C. Chapman Building",
+      "basis": "LA Historic-Cultural Monument #899",
+      "built": "1911–1913",
+      "builtSource": "Wikipedia",
+      "builtAs": "office building",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_202000039452"
+      ],
+      "name": "Barker Brothers Building",
+      "basis": "LA Historic-Cultural Monument #356",
+      "built": "1925",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "furniture store",
+      "builtAsSource": "HCM list; Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_483968838745"
+      ],
+      "name": "Commercial Exchange Building",
+      "basis": "LA Historic-Cultural Monument #1145; National Register",
+      "built": "1924",
+      "builtSource": "Wikipedia; National Register record",
+      "builtAs": "office building",
+      "builtAsSource": "LA City Planning HCM report"
+    },
+    {
+      "parts": [
+        "BLD_2014092852440000"
+      ],
+      "name": "Tower Theater",
+      "basis": "LA Historic-Cultural Monument #450",
+      "built": "1927",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "theatre"
+    },
+    {
+      "parts": [
+        "BLD_487814838765"
+      ],
+      "name": "Catalina Swimwear Building",
+      "basis": "LA Historic-Cultural Monument #1139",
+      "built": "1923",
+      "builtSource": "Wikipedia; LA City Planning HCM report",
+      "builtAs": "swimwear factory",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_484951838153"
+      ],
+      "name": "Great Republic Life Building",
+      "basis": "LA Historic-Cultural Monument #957",
+      "built": "1923",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "office building",
+      "builtAsSource": "Homestead Museum blog (weak)"
+    },
+    {
+      "parts": [
+        "BLD_484237838390",
+        "BLD_484127838309"
+      ],
+      "name": "Hamburger's Department Store",
+      "basis": "LA Historic-Cultural Monument #459",
+      "built": "1907",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "department store"
+    },
+    {
+      "parts": [
+        "BLD_484498838262",
+        "BLD_484503838216"
+      ],
+      "name": "Rialto Theater Building",
+      "basis": "LA Historic-Cultural Monument #472",
+      "built": "1917",
+      "builtSource": "Wikipedia; Cinema Treasures",
+      "builtAs": "theatre"
+    },
+    {
+      "parts": [
+        "BLD_485777838102"
+      ],
+      "name": "M.J. Connell Buildings 1, 2, 3 & 7",
+      "basis": "LA Historic-Cultural Monument #710",
+      "builtAs": "garment factory buildings",
+      "builtAsSource": "LA City Planning report (general)"
+    },
+    {
+      "parts": [
+        "BLD_488517842500"
+      ],
+      "name": "United States Court House",
+      "basis": "National Register",
+      "built": "1940",
+      "builtSource": "Wikipedia; National Register record",
+      "builtAs": "federal courthouse and post office"
+    },
+    {
+      "parts": [
+        "BLD_483472838933"
+      ],
+      "name": "South Park Loft Building",
+      "basis": "LA Historic-Cultural Monument #748; National Register",
+      "built": "1924",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "parking garage",
+      "builtAsSource": "Wikipedia; HCM list"
+    },
+    {
+      "parts": [
+        "BLD_488876840887"
+      ],
+      "name": "San Pedro Firm Building",
+      "basis": "LA Historic-Cultural Monument #615",
+      "built": "1925",
+      "builtSource": "HCM list (Wikipedia)",
+      "builtAs": "apartments over shops",
+      "builtAsSource": "HCM list"
+    },
+    {
+      "parts": [
+        "BLD_484879838057"
+      ],
+      "name": "810 South Spring Street Building",
+      "basis": "LA Historic-Cultural Monument #871",
+      "built": "1924",
+      "builtSource": "Propmodo (Calisphere gives 1923)",
+      "builtAs": "bank headquarters (National City Bank)",
+      "builtAsSource": "Wikipedia"
+    },
+    {
+      "parts": [
+        "BLD_485596837889"
+      ],
+      "name": "Grether & Grether Building",
+      "basis": "LA Historic-Cultural Monument #1067; National Register",
+      "built": "1924–1925",
+      "builtSource": "PCAD; National Register record",
+      "builtAs": "wholesale offices and warehouse",
+      "builtAsSource": "PCAD"
+    },
+    {
+      "parts": [
+        "BLD_489015840889"
+      ],
+      "name": "Japanese Union Church of Los Angeles",
+      "basis": "LA Historic-Cultural Monument #312",
+      "built": "1923",
+      "builtSource": "Rafu Shimpo (dedicated 1923)",
+      "builtAs": "church"
+    },
+    {
+      "parts": [
+        "BLD_484781837986"
+      ],
+      "name": "Gans Brothers Building",
+      "basis": "LA Historic-Cultural Monument #737"
+    },
+    {
+      "parts": [
+        "BLD_485468837838"
+      ],
+      "name": "M.J. Connell Building 4, 5, & 6",
+      "basis": "LA Historic-Cultural Monument #711",
+      "built": "1913",
+      "builtSource": "Historic marker (Building No. 4)",
+      "builtAs": "garment factory buildings",
+      "builtAsSource": "LA City Planning report (general)"
+    },
+    {
+      "parts": [
+        "BLD_488149838830"
+      ],
+      "name": "Westinghouse Electric Building",
+      "basis": "LA Historic-Cultural Monument #937",
+      "built": "1922",
+      "builtSource": "HCM list (Wikipedia)"
+    }
+  ],
+  "_landmarks": "The Landmarks layer by landmarkRule (user, 2026-10-10, option A, 1 km). One entry per monument; parts: one object name of each entity it covers (a monument outline that covers at least half of an entity's footprint takes that entity), which does not change when auto_entities.py renumbers the automatic entities. name is shown for automatic entities (named by their address) and where rename is set. built / builtSource: the building's own year, looked up 2026-10-10 (the assessor's year built is often a later remodel: Bradbury 1922 for 1893); a landmark without one shows no year. use replaces a wrong assessor use (Central Library: a parking-lot parcel). Every other entity draws as Buildings, also the Pershing Square Metro canopy (a hand-modelled part, not a landmark)."
 }

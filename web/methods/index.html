@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methods · Angels Knoll</title>
+<link rel="stylesheet" href="../site.css">
+<script src="../theme.js"></script>
+<style>
+  /* Methods only; the header, colours and type scale come from site.css (as on Research) */
+  nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.85rem; margin-bottom: 8px; }
+  nav.toc a { color: var(--muted); text-decoration: none; }
+  nav.toc a:hover { color: var(--text); }
+  section { margin-top: 40px; font-size: 0.95rem; }   /* running text: the size of a Research finding's body */
+  section > h2 { margin-bottom: 4px; }            /* .label: small uppercase, hairline, like Research's topics */
+  h2 .n { margin-right: 8px; }
+  h3 { margin: 22px 0 6px; }                      /* .entry-title size, like a Research finding */
+  .todo { color: var(--faint); font-style: italic; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.85rem; margin: 6px 0 12px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  td.r, th.r { text-align: right; }
+  .tag { display: inline-block; border: 1px solid currentColor; border-radius: 2px; padding: 0 6px; font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); vertical-align: 1px; }
+  .tag.fit { color: var(--tint); }
+  dl.asm { font-size: 0.85rem; }
+  dl.asm dt { font-weight: 700; margin-top: 12px; }
+  dl.asm dt code { font-weight: 400; color: var(--muted); }
+  dl.asm dd { margin-top: 2px; color: var(--muted); }
+  ul.src { padding-left: 18px; font-size: 0.85rem; margin-bottom: 12px; }
+  ul.src li { margin-bottom: 4px; word-break: break-word; }
+  .wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<main class="container">
+  <header class="header">
+    <p class="eyebrow"><a href="../" class="home">Angels Knoll</a> · Clark &amp; Rui</p>
+    <h1>Methods</h1>
+    <p class="subtitle">How each part of the project is made: data, steps, assumptions, checks and references.</p>
+  </header>
+  <nav class="toc">
+    <a href="#project">1 Project</a><a href="#site">2 Site model</a><a href="#people">3 People</a>
+    <a href="#design">4 Design</a><a href="#refs">5 References</a>
+  </nav>
+
+  <section id="project">
+    <h2 class="label"><span class="n">1</span>Project</h2>
+    <p class="todo">To be written.</p>
+  </section>
+
+  <section id="site">
+    <h2 class="label"><span class="n">2</span>Site model</h2>
+    <h3 class="entry-title">2.1 LiDAR point cloud</h3>
+    <p id="lidar">Loading…</p>
+    <h3 class="entry-title">2.2 Labelling the points</h3>
+    <p class="todo">To be written.</p>
+    <h3 class="entry-title">2.3 Buildings</h3>
+    <p id="ents">Loading…</p>
+    <h3 class="entry-title">2.4 Estimated facades</h3>
+    <p>Airborne LiDAR sees roofs well and walls badly: glass curtain walls reflect the laser away and the near-vertical
+      view grazes the walls. Points are added on the walls of each building's stepped volume, only where no measured
+      return is near, mostly on the storey lines read from the building's own wall returns, and not in the lowest metres
+      above the ground (arcades, entrances and plazas stay open). They thin with distance like the measured cloud.
+      <b>They are estimates, not measurements</b>; the viewer draws them with the measured points of their building.
+      <span class="note">(site-model/houdini/tools/synth_facades.py)</span></p>
+    <h3 class="entry-title">2.5 Terrain</h3>
+    <p class="todo">To be written.</p>
+    <h3 class="entry-title">2.6 Layers in the viewer</h3>
+    <div id="layers"><p>Loading…</p></div>
+  </section>
+
+  <section id="people">
+    <h2 class="label"><span class="n">3</span>People: a modeled typical day</h2>
+    <div id="pop"><p>Loading…</p></div>
+  </section>
+
+  <section id="design">
+    <h2 class="label"><span class="n">4</span>Design</h2>
+    <p class="todo">To be written.</p>
+  </section>
+
+  <section id="refs">
+    <h2 class="label"><span class="n">5</span>References</h2>
+    <p class="note">The data behind each part is listed with it above (2.1, 2.3, 3.3); the published figures used in the
+      population model are cited in its assumptions (3.4).</p>
+    <p class="todo">Further references to be added.</p>
+  </section>
+
+  <footer class="footer">Data: USGS 3DEP (public domain) · LA County GIS · US Census · LADOT · LA Metro · LAHSA · © OpenStreetMap contributors (ODbL).
+    <span id="stamp"></span></footer>
+</main>
+<button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
+<script>
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const fmt = (n) => Math.round(n).toLocaleString("en-US");
+const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+
+(async () => {
+  const [lidar, ents, pop, walk, cfg] = await Promise.all([get("../data/lidar_points.json"), get("../data/entities.json"),
+    get("../data/population.json"), get("../data/walk_check.json"), get("../config.json")]);
+
+  // 2.1 LiDAR
+  if (lidar) {
+    const th = lidar.thinning || {};
+    document.getElementById("lidar").innerHTML = `${esc(lidar.source)}. The viewer draws ${fmt(lidar.count)} points.
+      Every return within ${fmt(th.full_density_radius_m)} m of Y-1 is kept; farther out each object keeps a share of
+      about (${fmt(th.full_density_radius_m)} m / distance)<sup>${th.falloff_power}</sup>, objects whose share falls below
+      ${(100 * th.keep_min).toFixed(1)} % are left out, and the cloud fades out by ${fmt(th.edge_end_m ?? th.mist_end_m)} m.
+      <span class="note">(site-model/houdini/thinning.json)</span>`;
+  }
+
+  // 2.3 buildings
+  if (ents) {
+    const E = Array.isArray(ents) ? ents : Object.values(ents.entities || ents);
+    const n = E.length, checked = E.filter((e) => e.status === "confirmed").length;
+    document.getElementById("ents").innerHTML = `${fmt(n)} building and landmark entities, each a set of LiDAR objects.
+      ${fmt(checked)} were checked by hand against Google Earth and Google Maps (name, address, use, typed by hand);
+      the other ${fmt(n - checked)} take their name, address and use from the LA County Assessor parcel they stand on,
+      automatically and not checked. <span class="note">(site-model/houdini/annotations/entities.json)</span>`;
+  }
+
+  // 2.6 layers (config.json: mergeLayers, splitLayers, plazas, claims, landmarks)
+  if (cfg) {
+    const lab = (k) => cfg.layers?.[k]?.label ?? k;
+    const sp = Object.values(cfg.splitLayers || {})[0], pz = cfg.plazas, cl = (cfg.claims || [])[0];
+    const lm = (cfg.landmarks || []).map((l) => `<tr><td>${esc(l.name)}</td><td class="note">${esc(l.builtAs ?? "")}</td><td class="r">${esc(l.built ?? "")}</td><td class="note">${esc(l.basis)}</td></tr>`).join("");
+    document.getElementById("layers").innerHTML = `
+      <p>The labelled LiDAR objects are drawn in five layers: ${["Terrain", "Buildings", "Landmarks", "Trees", "Vehicles"].map(lab).join(", ")}.
+        Street furniture, low walls and fences and the unassigned points are drawn with the ground; shrubs with the trees.</p>
+      ${sp ? `<p><b>Bridges and decks.</b> Structures the LiDAR sees but the LARIAC building outlines do not are building parts,
+        except the thin ones held above the ground (less than ${sp.maxThickM} m between the 5th and 95th percentile of their
+        heights, on average ${sp.minHagM}–${sp.maxHagM} m up) and those whose checked use is a street structure: bridges, raised
+        walkways, street and plaza decks, canopies. These are drawn with the ground, and as densely as the ground around them
+        (the LiDAR returns fewer points from a deck than from the street; only the drawing is changed).</p>` : ""}
+      ${pz ? `<p><b>Plazas.</b> A LARIAC outline can take in a tower's plaza (Two California Plaza and its Watercourt). In a
+        building at least ${pz.minBuildingM} m tall, every ${pz.cellM} m plan cell whose highest return is under ${pz.maxHagM} m
+        above the ground, and the walls and steps next to it that rise no more than ${pz.edgeM} m above it, are drawn as ground.</p>` : ""}
+      ${cl ? `<p><b>Landmark parts.</b> Building points within ${cl.marginM} m of a landmark's own points belong to the landmark
+        (the Angels Flight upper station inside the Two California Plaza outline).</p>` : ""}
+      ${cfg.landmarkRule ? `<p><b>Landmarks.</b> ${esc(cfg.landmarkRule)} The year built and what it was built as are the building's
+        own, looked up for each (the assessor's year is often that of a later remodel); the viewer adds what it is now.</p>
+        <div class="wrap"><table><tr><th>Landmark</th><th>Built as</th><th class="r">Built</th><th>Why</th></tr>${lm}</table></div>` : ""}
+      <p class="note">(web/config.json; drawing only, the point cloud is unchanged)</p>`;
+  }
+
+  // 3 people
+  if (!pop) { document.getElementById("pop").innerHTML = '<p class="todo">population.json not found.</p>'; return; }
+  const t = pop.totals, bt = t.by_type, rules = t.residents_by_rule || {};
+  const label = { resident: "Residents", worker: "Workers", hotel: "Hotel guests", visitor: "Visitors",
+    unsheltered: "People without shelter", passerby: "Passers-by" };
+  const from = { resident: "2020 Census blocks: housing units × occupancy × household size",
+    worker: "LEHD LODES 2022 jobs by block and sector, placed in buildings by floor area",
+    hotel: "published room counts of 15 visitor hotels × occupancy",
+    visitor: "published annual visitors of destinations, Music Center and Disney Hall audiences, Little Tokyo (fitted)",
+    unsheltered: "LAHSA 2025 street count by census tract",
+    passerby: "fitted to the LADOT walk counts" };
+  const groups = Object.keys(label).filter((k) => bt[k] != null)
+    .map((k) => `<tr><td>${label[k]}</td><td class="r">${fmt(bt[k])}</td><td class="note">${from[k]}</td></tr>`).join("");
+  const offModel = rules["building not modelled"] || 0;
+
+  const src = Object.entries(pop.sources || {}).map(([k, v]) => `<li><b>${esc(k)}</b>: ${esc(v)}</li>`).join("");
+  const asm = Object.entries(pop.assumptions || {}).map(([k, v]) => {
+    const fitted = /CALIBRATED|Fitted|fitted/.test(v.note || "");
+    const assumed = /ASSUMPTION/.test(v.note || "");
+    const tag = fitted ? '<span class="tag fit">fitted</span>' : assumed ? '<span class="tag">assumption</span>' : "";
+    return `<dt>${esc(k)} ${tag} <code>${esc(JSON.stringify(v.value)).slice(0, 160)}${JSON.stringify(v.value).length > 160 ? "…" : ""}</code></dt><dd>${esc(v.note)}</dd>`;
+  }).join("");
+
+  const metro = pop.calibration?.metro || {};
+  const mrows = Object.entries(metro).filter(([, v]) => !v.transfer_hub)
+    .map(([k, v]) => `<tr><td>${esc(k)}</td><td class="r">${fmt(v.model_boardings)}</td><td class="r">${fmt(v.metro_boardings)}</td><td class="r">${v.ratio}</td></tr>`).join("");
+  const ms = Object.values(metro).filter((v) => !v.transfer_hub);
+  const mtot = ms.reduce((s, v) => s + v.model_boardings, 0) / ms.reduce((s, v) => s + v.metro_boardings, 0);
+
+  let wtable = '<p class="todo">walk_check.json not found (run site-model/population/check_walk_counts.py).</p>', af = "";
+  if (walk) {
+    const r = (x) => (x == null ? "–" : x.toFixed(2));
+    const wrows = walk.blocks.map((b) => `<tr><td>${esc(b.name)}${b.held_out ? ' <span class="tag">held out</span>' : ""}</td>
+      <td class="r">${fmt(b.weekday.model)}</td><td class="r">${b.weekday.observed_mean != null ? fmt(b.weekday.observed_mean) : "–"}</td><td class="r">${r(b.weekday.ratio)}</td>
+      <td class="r">${fmt(b.weekend.model)}</td><td class="r">${b.weekend.observed_mean != null ? fmt(b.weekend.observed_mean) : "–"}</td><td class="r">${r(b.weekend.ratio)}</td></tr>`).join("");
+    const sum = (d, sel) => { const B = walk.blocks.filter((b) => b[d].observed_mean && sel(b));
+      return B.reduce((s, b) => s + b[d].model, 0) / B.reduce((s, b) => s + b[d].observed_mean, 0); };
+    const line = (lab, sel) => `<tr><td><b>${lab}</b></td><td></td><td></td><td class="r"><b>${sum("weekday", sel).toFixed(2)}</b></td><td></td><td></td><td class="r"><b>${sum("weekend", sel).toFixed(2)}</b></td></tr>`;
+    wtable = `<div class="wrap"><table><tr><th>Counted block</th><th class="r">Weekday model</th><th class="r">LADOT</th><th class="r">Ratio</th>
+      <th class="r">Weekend model</th><th class="r">LADOT</th><th class="r">Ratio</th></tr>${wrows}
+      ${line("All blocks", () => true)}${line("Held-out blocks", (b) => b.held_out)}</table></div>`;
+    if (walk.angels_flight) af = `about ${fmt(walk.angels_flight.weekday)} trips on a weekday and ${fmt(walk.angels_flight.weekend)} on a weekend day,
+      against ${esc(walk.angels_flight.published)}`;
+  }
+
+  document.getElementById("pop").innerHTML = `
+    <p><b>A modeled typical weekday and weekend day, not live or observed data.</b> Every person is drawn from public
+      counts and given a schedule sampled from public surveys; what no data covers is an assumption, written down below
+      (3.4). The model covers the 2.5 km square around Y-1. In the viewer, people far from Y-1 are drawn sparser, like the
+      point cloud; each drawn person counts for the people it stands for, so the counts and the chart include everyone.
+      <span class="note">(site-model/population/prep_population.py)</span></p>
+
+    <h3 class="entry-title">3.1 Who is in the model</h3>
+    <div class="wrap"><table><tr><th>Group</th><th class="r">People</th><th>From</th></tr>${groups}</table></div>
+    <p class="note">Residents, workers, hotel guests and people without shelter are the same people on both day types;
+      visitors and passers-by are counted once for the weekday and once for the weekend day.</p>
+    <p class="note">${fmt(offModel)} residents live in blocks whose buildings are not in the model (thinned out of the point
+      cloud, most of South Park): they are not drawn at home and start their walks from the street by their block.</p>
+
+    <h3 class="entry-title">3.2 How they move</h3>
+    <p>Commute modes and arrival times come from CTPP 2017-2021 for the tracts where people work; other trip times
+      from the 2022 NHTS. Everyone walks on the OpenStreetMap network, including steps, escalators, elevators, bridges
+      and Angels Flight. Route choice counts steep streets as longer (Tobler's hiking function at half strength).
+      Angels Knoll's own paths are closed (the park is fenced). Metro riders choose a line by the direction of home and
+      an entrance on it by distance and a weight per station. Shops are Assessor retail parcels, with the buildings
+      checked by hand deciding first.</p>
+
+    <h3 class="entry-title">3.3 Data sources</h3>
+    <ul class="src">${src}
+      <li><b>walk counts</b>: LADOT Walk &amp; Bike Count 2023 and 2025, data.lacity.org</li>
+      <li><b>people without shelter</b>: LAHSA 2025 Greater Los Angeles Homeless Count, street count by census tract (via the Economic Roundtable data library)</li></ul>
+
+    <h3 class="entry-title">3.4 Assumptions</h3>
+    <p class="note">Every number the model uses that is not read from a data file, with its source or why it is assumed
+      (site-model/population/data/assumptions.json). <span class="tag fit">fitted</span> = adjusted so the model matches a
+      count; <span class="tag">assumption</span> = no source found.</p>
+    <dl class="asm">${asm}</dl>
+
+    <h3 class="entry-title">3.5 Checks</h3>
+    <p><b>Street counts</b> (the independent check). People crossing each counted block, both sidewalks and directions,
+      in LADOT's count hours (weekdays 7-10 am and 3-6 pm, weekends 11 am-1 pm), against the mean of the 2023 and 2025
+      counts. Little Tokyo visitors and passers-by are fitted on the blocks not held out; the held-out blocks are not.</p>
+    ${wtable}
+    <p><b>Metro</b> (weekday): rail trips through each station's entrances against Metro's FY2026 average weekday boardings.
+      <span class="tag fit">fitted</span> The line and station weights are fitted to these counts, so this table shows
+      the fit, not a check. Little Tokyo/Arts District is not fitted (most of its riders live beyond the model);
+      7th St/Metro Center is a transfer hub and is not compared.</p>
+    <div class="wrap"><table><tr><th>Station</th><th class="r">Model</th><th class="r">Metro</th><th class="r">Ratio</th></tr>${mrows}
+      <tr><td><b>Five stations</b></td><td></td><td></td><td class="r"><b>${mtot.toFixed(2)}</b></td></tr></table></div>
+    ${af ? `<p><b>Angels Flight</b>: trips whose route runs along the funicular, ${af}. Its hours and fare are not modelled.</p>` : ""}
+
+    <h3 class="entry-title">3.6 Known limits</h3>
+    <ul class="src">
+      <li>The model has no Metro transfers and no trips that only pass through a station.</li>
+      <li>Blocks at the site edge get too many passers-by, because they all enter and leave there.</li>
+      <li>1st St in Little Tokyo comes out high on weekdays (riders from the Little Tokyo station).</li>
+      <li>Grand Ave between 7th and 8th St comes out at about 0.4 of the count, for reasons not found.</li>
+      <li>LODES counts jobs where employers report them; office floor area is from the Assessor, not listings.</li>
+      <li>Arrival-time bins are City of Los Angeles averages within each tract's periods.</li>
+      <li>The daily walks of people without shelter are assumed; raw tract tallies do not add up to LAHSA's published estimates.</li>
+    </ul>`;
+  document.getElementById("stamp").textContent = "";
+})();
+</script>
+</body>
+</html>

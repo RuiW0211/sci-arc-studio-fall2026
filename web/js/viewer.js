@@ -52,6 +52,73 @@ const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/thr
 const model = new THREE.Group();   // everything drawn as geometry over the point cloud
 scene.add(model);
 
+// ---------- "white point cloud" (user, 2026-10-09): an option of the population layer; the point cloud fades to white,
+// a little transparent, so the people stand out. One shared uniform, eased over --t-out.
+// the site's shared durations (CSS --t-feedback / --t-in / --t-out / --t-idle in viewer.html), in ms, for JS animations
+const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) * 1000 || 0;
+// a change of colour mode cross-fades: the shader mixes the previous colours (color0)
+// into the new ones as uColorMix goes 0 -> 1 over --t-out
+const COLOR_MIX = { value: 1 };
+let mixAnim = 0;
+function crossFade() {
+  const t0 = performance.now(), dur = tms("--t-out");
+  COLOR_MIX.value = 0;
+  cancelAnimationFrame(mixAnim);
+  const step = (now) => {
+    const k = dur ? Math.min((now - t0) / dur, 1) : 1;
+    COLOR_MIX.value = k * k * (3 - 2 * k);
+    invalidate();
+    if (k < 1) mixAnim = requestAnimationFrame(step);
+  };
+  mixAnim = requestAnimationFrame(step);
+}
+// the selection is separate from the colours (aSel, paintSelection): a 1-byte mark per point, so selecting does not copy
+// or re-upload the colours, and Highlight people leaves the selected object in its highlight colour
+const SEL_K = { value: 1 };   // 0 -> 1 over --t-out after each change of selection
+let selAnim = 0;
+const FOCUS = { value: 0 };
+const FOCUS_GREY = { value: cfg.population?.whiteCloud?.white ?? 0.8 }, FOCUS_ALPHA = { value: cfg.population?.whiteCloud?.opacity ?? 0.5 };
+const focusMats = [];
+function withFocus(shader) {
+  shader.uniforms.uFocus = FOCUS; shader.uniforms.uFocusGrey = FOCUS_GREY; shader.uniforms.uFocusAlpha = FOCUS_ALPHA;
+  // vSel (from pointMaterial's vertex shader): a selected object keeps its highlight under Highlight people
+  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha;\nvarying float vSel;\n" + shader.fragmentShader.replace("#include <color_fragment>",
+    `#include <color_fragment>
+  float fk = uFocus * (1.0 - vSel);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(uFocusGrey), fk);
+  diffuseColor.a *= mix(1.0, uFocusAlpha, fk);`);
+}
+let focusAnim = 0;
+function setWhiteCloud(on) {
+  const from = FOCUS.value, to = on ? 1 : 0, t0 = performance.now();
+  $("#colorSec").classList.toggle("overridden", on);
+  if (on) for (const m of focusMats) if (!m.userData.alwaysTransparent && !m.transparent) { m.transparent = true; m.needsUpdate = true; }
+  cancelAnimationFrame(focusAnim);
+  const step = (now) => {
+    const dur = tms("--t-out"), k = dur ? Math.min((now - t0) / dur, 1) : 1, e = k * k * (3 - 2 * k);
+    FOCUS.value = from + (to - from) * e;
+    pop?.highlight(FOCUS.value);   // people grow with it
+    invalidate();
+    if (k < 1) focusAnim = requestAnimationFrame(step);
+    else if (!on) for (const m of focusMats) if (!m.userData.alwaysTransparent) { m.transparent = false; m.needsUpdate = true; }
+  };
+  focusAnim = requestAnimationFrame(step);
+}
+
+// estimated facade points (site-model/houdini/tools/synth_facades.py): walls the airborne LiDAR barely saw, filled
+// only where no return is near. NOT measured: their own layer and colour, drawn over the cloud, never picked.
+// (user, 2026-10-10) they are merged into the building points when the LiDAR loads (loadLidar): same layer, colour,
+// opacity, picking and highlight; each point carries the object of the nearest measured return and its height above
+// the ground. Here only the file is read.
+let facadeData = null;
+try {
+  const fm = await (await fetch(cfg.facades.meta)).json();
+  const buf = await (await fetch(cfg.facades.meta.replace(/[^/]*$/, "") + fm.file)).arrayBuffer();
+  const m = fm.count;
+  facadeData = { n: m, names: fm.objects || [], pos: new Float32Array(buf, 0, 3 * m),
+                 obj: fm.objects ? new Uint16Array(buf, 12 * m, m) : null, hag: fm.objects ? new Int16Array(buf, 14 * m, m) : null };
+} catch (e) { /* no estimated facades */ }
+
 // design files: every site-model/exports/design_<name>.glb (listed in assets/models.json by the Pages workflow and by
 // web/serve.py), one per person, so nobody overwrites anyone else's file. Nodes without extras.layer go into the
 // layer "Design_<name>". Design layers also show over the point cloud.
@@ -100,7 +167,8 @@ function cloudTip() {
     + "share of its points, fewer with distance.");
 }
 cloudTip();
-for (const name of new Set(lidarMeta.attributes?.object?.layers ?? [])) {
+for (const raw of new Set(lidarMeta.attributes?.object?.layers ?? [])) {
+  const name = cfg.mergeLayers?.[raw] ?? raw;   // merged layers (config.json mergeLayers) get no row of their own
   if (!layers.has(name)) {
     const c = cfg.layers[name] || {};
     layers.set(name, { name, cfg: c, objects: [], meshes: [], visible: c.visible ?? true });
@@ -113,6 +181,7 @@ let glassAt = -1e9;   // last adaptive-glass check (see adaptGlass); declared ea
 const lidarGroup = new THREE.Group();
 scene.add(lidarGroup);
 let lidar = null;
+let lidarDensityMatch = null, lidarPlazaPoints = 0;   // object -> ground / own density, for the moved structures (loadLidar)
 
 function applyVisibility() {
   for (const L of ordered) {
@@ -147,9 +216,19 @@ for (const L of ordered) {
 // ---------- point material: size in metres (perspective), never smaller than 1 px ----------
 function pointMaterial(sizeMetres) {
   const mat = new THREE.PointsMaterial({ size: sizeMetres, vertexColors: true, sizeAttenuation: true });
+  focusMats.push(mat);
   mat.onBeforeCompile = (shader) => {
+    withFocus(shader);
+    shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
+    // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
+    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nuniform float uColorMix, uSelK;\nuniform vec3 uHi;\nvarying float vSel;\n" +
+      shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
+  vColor.rgb = mix(color0, vColor.rgb, uColorMix);
+  float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
+  vColor.rgb = mix(vColor.rgb, uHi, sw);
+  vSel = sw;`);
     shader.vertexShader = shader.vertexShader.replace(
-      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize, 1.0);\n#include <fog_vertex>");
+      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n#include <fog_vertex>");
     // round points instead of squares
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <clipping_planes_fragment>",
@@ -182,9 +261,189 @@ async function loadLidar() {
   const meta = lidarMeta;
   const base = cfg.lidar.meta.replace(/[^/]*$/, "");
   const objAttr = meta.attributes?.object;
-  const { n, pos: P, cls: C, inten: I, obj, hag: HG } = await decodeLaz(base + meta.file, meta);
+  let { n, pos: P, cls: C, inten: I, obj, hag: HG } = await decodeLaz(base + meta.file, meta);
   status("Preparing LiDAR…");
-  const objNames = objAttr?.names ?? ["_other"], objLayers = objAttr?.layers ?? ["_other"];
+  // config.json mergeLayers folds LiDAR layers into others in the viewer (user, 2026-10-10: street furniture and the
+  // unassigned points draw as Terrain); the objects keep their own names
+  const MERGE = cfg.mergeLayers || {};
+  const objNames = objAttr?.names ?? ["_other"], objLayers = (objAttr?.layers ?? ["_other"]).map((l) => MERGE[l] ?? l);
+  // config.json landmarks (user, 2026-10-10): the listed entities draw as Landmarks, all their parts (one thing, one
+  // colour: also the LARIAC part of Angels Flight); every other object of the Landmarks layer draws as Buildings
+  if (cfg.landmarks) {
+    const lm = new Set();
+    for (const L of cfg.landmarks) {
+      // one entry per designated monument; it can span several entities (Times Mirror Square: a block of five), and an
+      // entity can carry two (Forve-Pettebone and the Roxie share a lot): the first names it, the reasons add up
+      for (const part of L.parts ?? [L.part]) {
+        const e = entityOfName.get(part); if (!e) continue;
+        const first = !lm.has(e); lm.add(e);
+        if (first && L.name && (e.status === "auto" || L.rename)) {   // automatic entities are named by their address
+          if (!e.address && /^\d/.test(e.name)) e.address = e.name;
+          e.name = L.name;
+        }
+        e.landmark = e.landmark && !first ? `${e.landmark}; ${L.basis}` : L.basis;
+        if (first && L.built) e.built = [L.built, L.builtSource];
+        if (L.builtAs) { e.builtAs = L.builtAs; e.builtAsSource = L.builtAsSource; }
+        if (L.now) e.nowFixed = L.now;
+      }
+    }
+    objNames.forEach((nm, k) => {
+      if (lm.has(entityOfName.get(nm))) objLayers[k] = "Landmarks";
+      else if (objLayers[k] === "Landmarks") objLayers[k] = "Buildings";
+    });
+  }
+  // estimated facade points join the measured ones as ordinary building points: the object of their nearest return,
+  // that object's mean intensity, class "building"; after this nothing tells them apart
+  if (facadeData?.obj) {
+    const nameIdx = new Map(objNames.map((nm, k) => [nm, k]));
+    const map = facadeData.names.map((nm) => nameIdx.get(nm) ?? -1);
+    const sum = new Float64Array(objNames.length), cnt = new Uint32Array(objNames.length);
+    for (let i = 0; i < n; i++) { sum[obj[i]] += I[i]; cnt[obj[i]]++; }
+    const keep = [];
+    for (let j = 0; j < facadeData.n; j++) if (map[facadeData.obj[j]] >= 0) keep.push(j);
+    const m = keep.length, N2 = n + m;
+    const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2);
+    const H2 = HG ? new HG.constructor(N2) : null;
+    P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
+    keep.forEach((j, k) => {
+      const i = n + k, o = map[facadeData.obj[j]];
+      P2[3 * i] = facadeData.pos[3 * j]; P2[3 * i + 1] = facadeData.pos[3 * j + 1]; P2[3 * i + 2] = facadeData.pos[3 * j + 2];
+      C2[i] = 6; O2[i] = o; I2[i] = cnt[o] ? Math.round(sum[o] / cnt[o]) : 128;
+      if (H2) H2[i] = facadeData.hag[j];
+    });
+    P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
+    facadeData = null;   // memory
+  }
+  // config.json claims: a landmark takes the points of other objects right next to its own (user, 2026-10-10: part of
+  // the Angels Flight upper station lies inside the Two California Plaza outline and was drawn as the tower). A point of
+  // a `from` layer within marginM of a point of a `layer` object joins that object.
+  for (const CL of cfg.claims || []) {
+    const lay = objAttr?.layers ?? [], g = CL.marginM, own = new Map();
+    const key = (x, y, z) => ((Math.floor(x / g) + 4096) * 8192 + Math.floor(y / g) + 4096) * 8192 + Math.floor(z / g) + 4096;
+    for (let i = 0; i < n; i++) if (lay[obj[i]] === CL.layer) own.set(key(P[3 * i], P[3 * i + 1], P[3 * i + 2]), obj[i]);
+    if (!own.size) continue;
+    const from = new Set(CL.from);
+    for (let i = 0; i < n; i++) {
+      if (!from.has(lay[obj[i]])) continue;
+      const x = Math.floor(P[3 * i] / g), y = Math.floor(P[3 * i + 1] / g), z = Math.floor(P[3 * i + 2] / g);
+      search: for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+        const o = own.get(((x + dx + 4096) * 8192 + y + dy + 4096) * 8192 + z + dz + 4096);
+        if (o !== undefined) { obj[i] = o; break search; }
+      }
+    }
+  }
+  // config.json plazas: the open ground around a tower that the building outline takes in (user, 2026-10-10, after Two
+  // California Plaza: LARIAC draws the tower and its Watercourt plaza as one outline) goes back to the ground. In an
+  // object of the layer at least minBuildingM tall, a cellM plan cell whose highest return is under maxHagM above the
+  // ground has no building over it: a plaza, steps, a terrace at street level. Its points become ground points (object
+  // Terrain), so they are coloured, picked and counted as the ground.
+  const PZ = cfg.plazas, terrainObj = objNames.indexOf("Terrain");
+  if (PZ && HG && terrainObj >= 0) {
+    const top = new Float32Array(objNames.length).fill(-1e9), lay = objAttr?.layers ?? [];
+    for (let i = 0; i < n; i++) { const o = obj[i]; if (lay[o] === PZ.layer && HG[i] / 10 > top[o]) top[o] = HG[i] / 10; }
+    const cm = PZ.cellM, keyOf = (o, i) => o * 4294967296 + (Math.floor(P[3 * i] / cm) + 32768) * 65536 + Math.floor(P[3 * i + 2] / cm) + 32768;
+    const tall = (o) => lay[o] === PZ.layer && top[o] >= PZ.minBuildingM;
+    const col = new Map();   // (object, cell) -> [highest return above the ground, its height, plaza?]
+    for (let i = 0; i < n; i++) {
+      const o = obj[i]; if (!tall(o)) continue;
+      const k = keyOf(o, i), h = HG[i] / 10, c = col.get(k);
+      if (!c) col.set(k, [h, P[3 * i + 1], false]); else if (h > c[0]) { c[0] = h; c[1] = P[3 * i + 1]; }
+    }
+    for (const c of col.values()) c[2] = c[0] < PZ.maxHagM;
+    // the plaza's edges: a cell next to the plaza whose top is no higher than the plaza (within PZ.edgeM) - the walls
+    // and steps down to a lower street, where the ground below makes them look tall - joins it, PZ.grow cells out
+    for (let g = 0; g < (PZ.grow ?? 0); g++) {
+      const add = [];
+      for (const [k, c] of col) {
+        if (c[2]) continue;
+        for (let dx = -1; dx <= 1 && !c[2]; dx++) for (let dz = -1; dz <= 1; dz++) {
+          const nb = col.get(k + dx * 65536 + dz);
+          if (nb && nb[2] && c[1] <= nb[1] + PZ.edgeM) { add.push(c); break; }
+        }
+      }
+      for (const c of add) c[2] = true;
+    }
+    let moved = 0;
+    for (let i = 0; i < n; i++) {
+      const o = obj[i]; if (!tall(o)) continue;
+      if (col.get(keyOf(o, i))[2]) { obj[i] = terrainObj; moved++; }
+    }
+    lidarPlazaPoints = moved;   // for checks (__viewer)
+  }
+  // config.json splitLayers sends some objects of a layer elsewhere (user, 2026-10-10: of the LiDAR-only structures,
+  // the bridges, raised walkways, street and plaza decks and canopies draw with the ground and streets; the rest are
+  // building parts and join Buildings through mergeLayers). An object goes when its entity's checked use names it
+  // (s.uses, e.g. the Grand Avenue deck), or by shape: thin (s.maxThickM between the 5th and 95th percentile of its
+  // heights, so a railing or lamp post does not make a deck "thick") and held s.minHagM-s.maxHagM above the ground.
+  const rawLayers = objAttr?.layers ?? ["_other"], moved = new Map();   // moved: object -> its split rule
+  for (const [raw, s] of Object.entries(cfg.splitLayers || {})) {
+    if (!HG || raw.startsWith("_")) continue;
+    const ys = new Map(), hs = new Float64Array(objNames.length);
+    for (let i = 0; i < n; i++) {
+      const o = obj[i]; if (rawLayers[o] !== raw) continue;
+      (ys.get(o) ?? ys.set(o, []).get(o)).push(P[3 * i + 1]);
+      hs[o] += HG[i] / 10;
+    }
+    const byUse = s.uses ? new RegExp(s.uses, "i") : null;
+    for (const [o, y] of ys) {
+      if (objLayers[o] === "Landmarks") continue;   // a landmark keeps all its parts
+      y.sort((p, q) => p - q);
+      const at = (f) => y[Math.round(f * (y.length - 1))], h = hs[o] / y.length;
+      const use = entityOfName.get(objNames[o])?.use ?? "";
+      if ((byUse && byUse.test(use)) || (at(0.95) - at(0.05) < s.maxThickM && h >= s.minHagM && h <= s.maxHagM)) {
+        objLayers[o] = s.to; if (s.matchDensity) moved.set(o, s);
+      }
+    }
+  }
+  // the moved objects are drawn as densely as the ground around them (user, 2026-10-10, option A): the LiDAR has about
+  // half the returns on a deck that it has on the street, and far from Y-1 each object keeps its own random share of
+  // points while the ground thins smoothly, so a deck looked darker or brighter than the street in the same colour.
+  // Per object: f = mean ground returns per 2 m cell around it (its box + 20 m, cells it covers left out) / its own
+  // mean per cell (over cells with returns); f < 1 drops points at random down to the ground's density, f > 1 draws its points sqrt(f) times
+  // larger (at most matchDensity.maxSize) so they cover the same share of the screen. Only the drawing changes.
+  const sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
+  if (moved.size) {
+    const CM = 2, PAD = 10, cellOf = (x, z) => (Math.floor(x / CM) + 32768) * 65536 + Math.floor(z / CM) + 32768;
+    const own = new Map(), box = new Map();
+    for (let i = 0; i < n; i++) {
+      const o = obj[i]; if (!moved.has(o)) continue;
+      const x = P[3 * i], z = P[3 * i + 2], c = cellOf(x, z);
+      let m = own.get(o); if (!m) own.set(o, (m = new Map()));
+      m.set(c, (m.get(c) || 0) + 1);
+      let b = box.get(o); if (!b) box.set(o, (b = [x, z, x, z]));
+      if (x < b[0]) b[0] = x; if (z < b[1]) b[1] = z; if (x > b[2]) b[2] = x; if (z > b[3]) b[3] = z;
+    }
+    const ground = new Map();    // cells around the moved objects -> ground returns
+    for (const [o, b] of box) {
+      const m = own.get(o);
+      for (let x = Math.floor(b[0] / CM) - PAD; x <= Math.floor(b[2] / CM) + PAD; x++)
+        for (let z = Math.floor(b[1] / CM) - PAD; z <= Math.floor(b[3] / CM) + PAD; z++) {
+          const c = (x + 32768) * 65536 + z + 32768; if (!m.has(c)) ground.set(c, 0);
+        }
+    }
+    const groundRaw = new Set([...moved.values()].map((s) => s.to));
+    for (let i = 0; i < n; i++) {
+      if (!groundRaw.has(rawLayers[obj[i]])) continue;
+      const c = cellOf(P[3 * i], P[3 * i + 2]), v = ground.get(c);
+      if (v !== undefined) ground.set(c, v + 1);
+    }
+    const mean = (a) => a.reduce((p, q) => p + q, 0) / a.length;
+    const f = new Map(), seed = (i) => { let h = (i * 2654435761) >>> 0; h ^= h >>> 15; return (h % 10007) / 10007; };
+    for (const [o, b] of box) {
+      const m = own.get(o), g = [];
+      for (let x = Math.floor(b[0] / CM) - PAD; x <= Math.floor(b[2] / CM) + PAD; x++)
+        for (let z = Math.floor(b[1] / CM) - PAD; z <= Math.floor(b[3] / CM) + PAD; z++) {
+          const v = ground.get((x + 32768) * 65536 + z + 32768); if (v) g.push(v);
+        }
+      if (g.length >= 10 && m.size >= 3) f.set(o, mean(g) / mean([...m.values()]));
+    }
+    for (let i = 0; i < n; i++) {
+      const k = f.get(obj[i]); if (k === undefined) continue;
+      if (k < 1) drop[i] = seed(i) > k ? 1 : 0;
+      else sizeK[i] = Math.round(64 * Math.min(Math.sqrt(k), moved.get(obj[i]).matchDensity.maxSize ?? 2.5));
+    }
+    lidarDensityMatch = f;   // for checks (__viewer)
+  }
   const material = pointMaterial(cfg.lidar.size ?? 0.3);
   // local density of each point's layer (returns per m2 of plan, from a 10 m grid, bilinear so it varies smoothly) and a
   // draw priority q = random * density^(1 - LOD_KEEP): the LOD draws the points with q below a target, so dense ground is
@@ -209,6 +468,7 @@ async function loadLidar() {
   // bucket point indices by layer and LOD chunk
   const buckets = new Map();
   for (let i = 0; i < n; i++) {
+    if (drop[i]) continue;
     const c = lodCell(P[3 * i], P[3 * i + 2]);
     const key = `${objLayers[obj[i]]}|${c}|${Math.floor(P[3 * i] / c)}|${Math.floor(P[3 * i + 2] / c)}`;
     let b = buckets.get(key); if (!b) buckets.set(key, (b = []));
@@ -220,8 +480,10 @@ async function loadLidar() {
     idx.sort((a, b) => q[a] - q[b]);   // by draw priority: the first k points are the ones to keep when thinning
     const pos = new Float32Array(m * 3), zs = new Float32Array(m), cls = new Uint8Array(m), inten = new Uint8Array(m), ob = new Uint16Array(m);
     const qs = new Float32Array(m), hag = HG ? new Int16Array(m) : null;   // height above ground, 0.1 m (Houdini LAZ)
+    const sz = new Uint8Array(m);
     for (let j = 0; j < m; j++) {
       const i = idx[j];
+      sz[j] = sizeK[i];
       pos[3 * j] = P[3 * i]; pos[3 * j + 1] = P[3 * i + 1]; pos[3 * j + 2] = P[3 * i + 2];
       zs[j] = P[3 * i + 1]; cls[j] = C[i]; inten[j] = I[i]; ob[j] = obj[i]; qs[j] = q[i];
       if (hag) hag[j] = HG[i];
@@ -230,6 +492,9 @@ async function loadLidar() {
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     const col = new Float32Array(m * 3);
     g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    g.setAttribute("color0", new THREE.BufferAttribute(new Uint8Array(m * 3), 3, true));   // the colours before a change
+    g.setAttribute("aSel", new THREE.BufferAttribute(new Uint8Array(m), 1));               // selection mark (paintSelection)
+    g.setAttribute("aSize", new THREE.BufferAttribute(sz, 1));                             // point size x 64 (density match)
     g.computeBoundingSphere();
     const pts = new THREE.Points(g, material);
     pts.frustumCulled = true;
@@ -315,17 +580,19 @@ function objColor(k) {
   return (objCols[k] = [c.r, c.g, c.b]);
 }
 function paintCloud(how = lidar.how) {
+  // the colours on screen become the start of a cross-fade (the first painting has none: no fade)
+  const fade = lidar.painted;
+  if (fade) for (const pts of lidarGroup.children) {
+    const c = pts.geometry.attributes.color.array, c0 = pts.geometry.attributes.color0;
+    for (let k = 0; k < c.length; k++) c0.array[k] = c[k] * 255;
+    c0.needsUpdate = true;
+  }
   lidar.how = how;
-  const hi = [HILITE.r, HILITE.g, HILITE.b], mask = lidar.selMask;
-  // the selection lights the clicked object, or all objects of its entity (a whole building)
-  mask.fill(0);
-  for (const s of selection) for (const k of s.objs) mask[k] = 1;   // all selected objects (shift + click adds)
   for (const part of lidar.parts) {
     const { zs, cls, inten, ob, col, n } = part, b = layerColor(part.name), base = [b.r, b.g, b.b];
     for (let i = 0; i < n; i++) {
       let c;
-      if (mask[ob[i]]) c = hi;
-      else if (how === "layer") c = base;
+      if (how === "layer") c = base;
       else if (how === "height") c = ramp((zs[i] - 78) / 60);
       else if (how === "object") c = objColor(ob[i]);
       else if (how === "class") c = cls[i] === 2 ? [0.72, 0.6, 0.42] : zs[i] > 140 ? [0.55, 0.58, 0.62] : [0.3, 0.52, 0.36];
@@ -334,6 +601,8 @@ function paintCloud(how = lidar.how) {
     }
   }
   for (const p of lidarGroup.children) p.geometry.attributes.color.needsUpdate = true;
+  if (fade) crossFade(); else COLOR_MIX.value = 1;
+  lidar.painted = true;
   const first = !$("#lidarOpts button.on");
   document.querySelectorAll("#lidarOpts button").forEach((b) => b.classList.toggle("on", b.dataset.c === how));
   moveThumb(first, "#lidarOpts");
@@ -341,6 +610,33 @@ function paintCloud(how = lidar.how) {
   invalidate();
 }
 document.querySelectorAll("#lidarOpts button").forEach((b) => (b.onclick = () => paintCloud(b.dataset.c)));
+// the selection lights the clicked object, or all objects of its entity (a whole building); shift + click adds.
+// Only the marks of points whose state changes are written; the highlight eases in / out over --t-out.
+function paintSelection() {
+  if (!lidar) return;
+  const mask = lidar.selMask;
+  mask.fill(0);
+  for (const s of selection) for (const k of s.objs) mask[k] = 1;
+  for (const pts of lidarGroup.children) {
+    const part = pts.userData.part, a = pts.geometry.attributes.aSel, v = a.array, ob = part.ob;
+    let changed = false;
+    for (let i = 0; i < part.n; i++) {
+      const was = v[i] >= 2, is = mask[ob[i]] === 1, nv = is ? (was ? 3 : 2) : was ? 1 : 0;
+      if (nv !== v[i]) { v[i] = nv; changed = true; }
+    }
+    if (changed) a.needsUpdate = true;
+  }
+  const t0 = performance.now(), dur = tms("--t-out");
+  SEL_K.value = 0;
+  cancelAnimationFrame(selAnim);
+  const step = (now) => {
+    const k = dur ? Math.min((now - t0) / dur, 1) : 1;
+    SEL_K.value = k * k * (3 - 2 * k);
+    invalidate();
+    if (k < 1) selAnim = requestAnimationFrame(step);
+  };
+  selAnim = requestAnimationFrame(step);
+}
 
 // ---------- modes ----------
 let busy = false;
@@ -501,6 +797,68 @@ function renderViews() {
 }
 renderViews();
 
+// ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------
+let pop = null;
+const PICK_PX = 6;   // a click or hover this close to a person (screen px) means the person
+// hover with Alt held: the person an Alt + click would select is drawn bigger and the cursor turns into a pointer
+let hoverAt = null;
+renderer.domElement.addEventListener("pointermove", (e) => {
+  if (!pop?.visible || e.buttons) return;
+  if (!hoverAt) requestAnimationFrame(() => {
+    const i = hoverAt.alt ? pop.nearest(hoverAt.x, hoverAt.y, PICK_PX) : -1;
+    pop.hover(i);
+    renderer.domElement.style.cursor = i >= 0 ? "pointer" : "";
+    hoverAt = null; invalidate();
+  });
+  hoverAt = { x: e.clientX, y: e.clientY, alt: e.altKey };
+});
+// pressing / releasing Alt with the mouse still: show / hide the marker at once
+for (const ev of ["keydown", "keyup"]) addEventListener(ev, (e) => {
+  if (e.key !== "Alt" || !pop?.visible || !lastHover) return;
+  e.preventDefault();
+  const i = ev === "keydown" ? pop.nearest(lastHover.x, lastHover.y, PICK_PX) : -1;
+  pop.hover(i); renderer.domElement.style.cursor = i >= 0 ? "pointer" : ""; invalidate();
+});
+let lastHover = null;
+renderer.domElement.addEventListener("pointermove", (e) => { lastHover = { x: e.clientX, y: e.clientY }; });
+renderer.domElement.addEventListener("pointerleave", () => { pop?.hover(-1); renderer.domElement.style.cursor = ""; invalidate(); });
+$("#popOn").onchange = async (e) => {
+  const on = e.target.checked;
+  if (on && !pop) {
+    e.target.disabled = true;
+    status("Loading population…");
+    const { createPopulation } = await import("./population.js");
+    pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag });
+    status("");
+    e.target.disabled = false;
+  }
+  $("#popBox").hidden = !on;
+  pop?.setVisible(on);
+  setWhiteCloud(on && $("#popWhite").checked);
+  if (!on) for (const s of [...selection]) if (s.key.startsWith("pop:")) deselect(s.key);
+  invalidate();
+};
+$("#popWhite").onchange = (e) => setWhiteCloud(e.target.checked && $("#popOn").checked);
+// its own controls (time, play, day, attendance ...) change the picture: draw again
+for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
+// a clicked person's modeled day (population.js story()) as a floating tag that follows them
+let popSelecting = false;
+function personTag(html, pos) {
+  const d = document.createElement("div"); d.innerHTML = html;
+  const h2 = d.querySelector("h2"), num = h2?.querySelector("span")?.textContent || "";
+  const title = (h2?.firstChild?.textContent || "Person").trim();
+  const rows = [...d.querySelectorAll("tr")].map((tr) => [...tr.children].map((c) => c.textContent));
+  const day = d.querySelector(".label")?.textContent || "";
+  for (const t of (d.querySelector(".trips")?.innerHTML || "").split("<br>").filter(Boolean)) {
+    const x = document.createElement("div"); x.innerHTML = t;
+    const [time, ...rest] = x.textContent.split(" "); rows.push([time, rest.join(" ")]);
+  }
+  const note = d.querySelector(".note")?.textContent || "";
+  popSelecting = true;
+  select(`pop:${num}`, { centre: pos, topY: pos.y, height: 0 }, () => tagHTML(`Modeled person ${num}`, title, day, rows, note), [], false);
+  popSelecting = false;
+}
+
 // ---------- click for details: a design mesh, else the LiDAR point under the cursor ----------
 const ray = new THREE.Raycaster();
 const SKIP_KEYS = new Set(["layer", "name", "scatter5"]);
@@ -509,6 +867,8 @@ renderer.domElement.addEventListener("pointerdown", (e) => (down = [e.clientX, e
 renderer.domElement.addEventListener("pointerup", (e) => {
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
   ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
+  // Alt + click picks the person within PICK_PX on screen (user, 2026-10-09: a plain click is for buildings / points)
+  if (pop?.visible && e.altKey) { if (pop.pickIndex(pop.nearest(e.clientX, e.clientY, PICK_PX))) return; }
   const visible = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
   const add = e.shiftKey;     // shift + click: add to / take out of the selection
   const layerOf = (o) => { for (; o; o = o.parent) if (o.userData.layer) return o.userData.layer; };
@@ -593,25 +953,34 @@ function fillTag(s) {
   };
 }
 function select(key, a, build, objs, add) {
-  if (!add) clearSelection();
+  if (!add) clearSelection(false);   // painted once below: the old object fades out while the new one fades in
   const old = selection.find((s) => s.key === key);
   if (old) { if (add) deselect(key); return; }            // shift + click on a selected object: take it out
   const el = document.createElement("div"); el.className = "tag"; document.body.append(el);
   const line = document.createElementNS(svgNS, "line"); leadSvg.append(line);
+  // fade in over --t-in (the label's CSS transition); the line follows
+  el.style.opacity = "0"; line.style.opacity = "0"; line.style.transition = "opacity var(--t-in) ease";
+  requestAnimationFrame(() => requestAnimationFrame(() => { el.style.opacity = ""; line.style.opacity = ""; }));
   const s = { key, a, build, objs, el, line };
   fillTag(s); selection.push(s);
-  if (lidar && mode === "cloud") paintCloud();
+  if (lidar && mode === "cloud") paintSelection();
   invalidate(); wake();
+}
+// a tag and its line fade out over --t-out, then go (user, 2026-10-10: Esc should not make them vanish at once)
+function fadeAway(s) {
+  for (const n of [s.el, s.line]) { n.style.transition = "opacity var(--t-out) ease"; n.style.opacity = "0"; n.style.pointerEvents = "none"; }
+  setTimeout(() => { s.el.remove(); s.line.remove(); }, tms("--t-out"));
 }
 function deselect(key) {
   const i = selection.findIndex((s) => s.key === key); if (i < 0) return;
-  const [s] = selection.splice(i, 1); s.el.remove(); s.line.remove();
-  if (lidar && mode === "cloud") paintCloud();
+  const [s] = selection.splice(i, 1); fadeAway(s);
+  if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection();
+  if (lidar && mode === "cloud") paintSelection();
   invalidate();
 }
-function clearSelection() {
-  for (const s of selection.splice(0)) { s.el.remove(); s.line.remove(); }
-  if (lidar && mode === "cloud") paintCloud();
+function clearSelection(paint = true) {
+  for (const s of selection.splice(0)) { fadeAway(s); if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection(); }
+  if (paint && lidar && mode === "cloud") paintSelection();
   invalidate();
 }
 function refreshTags() { for (const s of selection) fillTag(s); invalidate(); }
@@ -672,12 +1041,27 @@ function objectTag(node, point, objSet) {
 }
 // an entity (a whole building / landmark). Use = our own description (typed by hand after checking Google Earth / Maps);
 // for automatic entities the assessor's class. "Land use (assessor)" only when it says more than Use.
+// the assessor's use codes in plain words (the "Now" row of a landmark)
+const ASSESSOR_USE = { "single": "condominiums", "five or more apartments": "apartments", "store combination": "shops with offices or apartments",
+  "office buildings": "offices", "hotel & motels": "hotel", "department stores": "department store", "stores": "shops",
+  "restaurants, cocktail lounges": "restaurant", "parking lots (commercial use properties)": "parking", "government parcel": "government",
+  "churches": "church", "professional buildings": "offices", "theaters": "theatre" };
 function entityTag(e) {
   return (a) => {
     const pc = e.parcel;
-    const use = e.status === "auto" ? (pc?.use || e.use) : e.use;
-    const kicker = [use, pc?.year_built].filter(Boolean).join(" · ");
+    const now = e.status === "auto" ? (pc?.use || e.use) : e.use;
+    // a landmark shows what it was built as (config.json landmarks), and what it is now below
+    const use = e.builtAs || now;
+    // a landmark's year built from config.json (the assessor's is often a later remodel), else the assessor's
+    const kicker = [use, e.built?.[0] ?? (e.landmark ? null : pc?.year_built)].filter(Boolean).join(" · ");   // a landmark without a looked-up year shows none
     const rows = [["Height", len(a.height)], ["Roof elevation", len(a.topY)]];
+    if (e.landmark) rows.push(["Landmark", e.landmark]);   // config.json landmarks: why it is one
+    if (e.built) rows.push(["Built", `${e.built[0]} · ${e.built[1]}`]);
+    if (e.builtAsSource) rows.push(["Built as", `${e.builtAs} · ${e.builtAsSource}`]);
+    if (e.builtAs) {
+      const n = e.nowFixed || (e.status === "auto" ? ASSESSOR_USE[String(now).toLowerCase()] ?? `${now} (assessor)` : now);
+      if (n && n.toLowerCase() !== e.builtAs.toLowerCase()) rows.push(["Now", n]);
+    }
     if (pc?.units) rows.push(["Units", pc.units]);
     if (pc?.use && e.status !== "auto" && pc.use.toLowerCase() !== String(use).toLowerCase()) rows.push(["Land use (assessor)", pc.use]);
     rows.push(["Source", e.status === "auto" ? "LA County Assessor parcel (automatic, not checked by hand)"
@@ -751,9 +1135,9 @@ function layerCounts() {
   if (mode === "cloud" && lidar) {
     const seen = new Map();
     lidar.objNames.forEach((nm, k) => {
-      if (NOT_OBJECTS.has(nm) || !lidar.objCount[k]) return;
       const lay = lidar.objLayers[k], ent = lidar.objEntity[k];
-      const key = ent >= 0 && /^Buildings/.test(lay) ? `e${ent}` : `o${k}`;
+      if (NOT_OBJECTS.has(nm) || !lidar.objCount[k] || cfg.layers[lay]?.highlight === false) return;   // ground: no number
+      const key = ent >= 0 ? `e${ent}` : `o${k}`;   // an entity of several parts counts once
       if (!seen.has(lay)) seen.set(lay, new Set());
       seen.get(lay).add(key);
     });
@@ -780,11 +1164,12 @@ $("#dispSec").addEventListener("toggle", () => moveThumb(true, "#units"));
 addEventListener("resize", () => moveThumb(true, "#units"));
 setUnits(units, true);
 
-// ---------- idle: after 5 s without input the panels and the hint fade out (CSS body.idle), any input brings them back.
+// ---------- idle: after 10 s without input the panels and the hint fade out (CSS body.idle), any input brings them back.
 // Not while the pointer is over a panel or a text field has the focus (user, 2026-10-08) ----------
-const IDLE_MS = 5000;
+const IDLE_MS = 10000;   // 10 s (user, 2026-10-09; was 5 s)
 let idleTimer = 0;
 const overPanel = () => document.querySelector("#ui:hover, #info:hover") !== null;
+addEventListener("keydown", (e) => { if (e.key === "Escape" && !typing()) clearSelection(); });
 const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") && document.activeElement.type !== "range";
 function wake(ms = IDLE_MS) {
   if (typeof ms !== "number") ms = IDLE_MS;    // called as an event listener
@@ -797,7 +1182,7 @@ function wake(ms = IDLE_MS) {
   }, ms);
 }
 for (const ev of ["pointermove", "pointerdown", "wheel", "keydown", "touchstart", "focusin"]) addEventListener(ev, wake, { passive: true });
-// the floating tags fade after 10 s without input (user, 2026-10-08), the panels after 5 s
+// the floating tags fade after 10 s without input (user, 2026-10-08), like the panels
 let tagTimer = 0;
 function wakeTags() {
   document.body.classList.remove("idle-tags"); clearTimeout(tagTimer);
@@ -824,7 +1209,8 @@ const glassEls = ["#ui", "#info", "#hint"].map((q) => $(q));
 let glassBuf = new Uint8Array(0);
 function adaptGlass(now) {
   // reading pixels back stalls the GPU pipeline (100+ ms frames during a view change), so only when the camera is still
-  if (tween || now - lastMove < GLASS_SETTLE || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
+  // ... and not while the population plays (the picture changes every frame; checked again once it stops)
+  if (tween || pop?.state.playing || now - lastMove < GLASS_SETTLE || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
   glassAt = now; glassPending = false;
   const gl = renderer.getContext(), cv = renderer.domElement, sx = cv.width / cv.clientWidth, sy = cv.height / cv.clientHeight;
   for (const el of glassEls) {
@@ -854,6 +1240,8 @@ renderer.setAnimationLoop((now) => {
   if (controls.update()) { dirty = true; lastMove = now; }   // damping keeps moving the camera after the drag ends
   // LiDAR level of detail: recomputed whenever the view changed or a chunk is still easing to its target
   if (lidar && mode === "cloud" && (dirty || lodEasing)) { lodEasing = updateLod(); if (lodEasing) dirty = true; }
+  // the population plays on its own clock: draw while it plays or after one of its settings changed
+  if (pop && (pop.visible || pop.state.fading)) { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing || pop.state.fading) dirty = true; }
   if (!dirty) return;
   dirty = false;
   renderer.render(scene, camera);
@@ -861,8 +1249,8 @@ renderer.setAnimationLoop((now) => {
   adaptGlass(now);
 });
 window.__viewer = {
-  layers, get mode() { return mode; }, setMode, get lidar() { return lidar; },
-  camera, controls, renderer, lidarGroup, invalidate,   // debugging / performance checks
+  layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
