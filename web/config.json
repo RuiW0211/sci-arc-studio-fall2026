@@ -60,12 +60,6 @@
       "visible": true,
       "color": "#B8AE96"
     },
-    "Street_furniture": {
-      "label": "Street furniture (LiDAR only)",
-      "order": 5.8,
-      "visible": true,
-      "color": "#8C7A6B"
-    },
     "Buildings_LiDAR_only": {
       "label": "Structures (not in LARIAC)",
       "order": 2.5,
@@ -77,12 +71,6 @@
       "order": 6,
       "visible": false,
       "color": "#DDE5B6"
-    },
-    "_other": {
-      "label": "Other (LiDAR only)",
-      "order": 9,
-      "visible": true,
-      "color": "#3A302A"
     }
   },
   "views": [
@@ -135,5 +123,10 @@
       "opacity": 0.35
     },
     "highlightSize": 1.0
-  }
+  },
+  "mergeLayers": {
+    "Street_furniture": "Terrain",
+    "_other": "Terrain"
+  },
+  "_mergeLayers": "LiDAR layers drawn as another layer in the viewer (user, 2026-10-10): street furniture and the unassigned points join Terrain."
 }

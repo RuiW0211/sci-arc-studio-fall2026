@@ -143,7 +143,8 @@ function cloudTip() {
     + "share of its points, fewer with distance.");
 }
 cloudTip();
-for (const name of new Set(lidarMeta.attributes?.object?.layers ?? [])) {
+for (const raw of new Set(lidarMeta.attributes?.object?.layers ?? [])) {
+  const name = cfg.mergeLayers?.[raw] ?? raw;   // merged layers (config.json mergeLayers) get no row of their own
   if (!layers.has(name)) {
     const c = cfg.layers[name] || {};
     layers.set(name, { name, cfg: c, objects: [], meshes: [], visible: c.visible ?? true });
@@ -229,7 +230,10 @@ async function loadLidar() {
   const objAttr = meta.attributes?.object;
   let { n, pos: P, cls: C, inten: I, obj, hag: HG } = await decodeLaz(base + meta.file, meta);
   status("Preparing LiDAR…");
-  const objNames = objAttr?.names ?? ["_other"], objLayers = objAttr?.layers ?? ["_other"];
+  // config.json mergeLayers folds LiDAR layers into others in the viewer (user, 2026-10-10: street furniture and the
+  // unassigned points draw as Terrain); the objects keep their own names
+  const MERGE = cfg.mergeLayers || {};
+  const objNames = objAttr?.names ?? ["_other"], objLayers = (objAttr?.layers ?? ["_other"]).map((l) => MERGE[l] ?? l);
   // estimated facade points join the measured ones as ordinary building points: the object of their nearest return,
   // that object's mean intensity, class "building"; after this nothing tells them apart
   if (facadeData?.obj) {
