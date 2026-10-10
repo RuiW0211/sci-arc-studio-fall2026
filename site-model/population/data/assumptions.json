@@ -623,7 +623,7 @@
   },
   "littleTokyo": {
     "value": {
-      "annual": 3156000,
+      "annual": 3448000,
       "latlon": [
         34.0493,
         -118.24
@@ -637,14 +637,32 @@
         21
       ]
     },
-    "note": "Little Tokyo visitors, one destination at Japanese Village Plaza (hand-typed position). No published visitor count exists (the Little Tokyo Business Association only estimated an extra 1.5 million in 2024): the annual number is CALIBRATED to the LADOT count on 1st St (Central Ave - San Pedro St) and spread like the other visitors (visitorWeekendFactor). Fitted 2026-10-09 on everyone before thinning: 3,156,000 a year."
+    "note": "Little Tokyo visitors, one destination at Japanese Village Plaza (hand-typed position). No published visitor count exists (the Little Tokyo Business Association only estimated an extra 1.5 million in 2024): the annual number is CALIBRATED to the LADOT count on 1st St (Central Ave - San Pedro St) and spread like the other visitors (visitorWeekendFactor). Fitted 2026-10-09 on everyone before thinning."
   },
   "passersBy": {
     "value": {
-      "weekday": 24800,
-      "weekend": 24600,
+      "weekday": 20800,
+      "weekend": 25000,
       "minCrossM": 800
     },
-    "note": "People who walk through the site from one edge to another (minCrossM apart): between Union Station, the Arts District, Chinatown, South Park and the rest of Downtown. No source counts them: the daily numbers are CALIBRATED to the LADOT walk counts on the blocks not held out (5th St, Grand Ave and Los Angeles St are kept as a check). Start times follow all NHTS trips of the day. Fitted 2026-10-09 on everyone before thinning (data/raw/population_full.npz): weekday 24,800, weekend 24,600."
+    "note": "People who walk through the site from one edge to another (minCrossM apart): between Union Station, the Arts District, Chinatown, South Park and the rest of Downtown. No source counts them: the daily numbers are CALIBRATED to the LADOT walk counts on the blocks not held out (5th St, Grand Ave and Los Angeles St are kept as a check). Start times follow all NHTS trips of the day. Fitted 2026-10-09 on everyone before thinning (data/raw/population_full.npz)."
+  },
+  "shops": {
+    "value": {
+      "uses": [
+        "Stores",
+        "Store Combination",
+        "Department Stores",
+        "Wholesale & Manufacturing Outlets"
+      ],
+      "sqftPerWeight": 10000,
+      "maxWeight": 8,
+      "wholeBuilding": [
+        "Department Stores",
+        "Wholesale & Manufacturing Outlets"
+      ],
+      "checkedShopWords": "\\bshop|\\bstore|retail|\\bmall\\b|shopping"
+    },
+    "note": "Shops as destinations (user, 2026-10-09). OpenStreetMap maps almost no shops here. Buildings checked by hand in Google Earth / Maps (entities.json, status confirmed) decide first: a checked use naming shops makes a shop (also where the Assessor files the parcel otherwise, e.g. The Bloc), any other checked use (housing, offices, bar ...) rules the parcel out. Elsewhere Assessor parcels with these uses stand in. Weight = shop floor area / sqftPerWeight, capped (ASSUMPTION; a restaurant weighs 1.5): the ground floor (footprint) for mixed buildings, the whole floor area only for wholeBuilding uses. Residents' on-site outings, after-work stops and hotel guests' first stops can go to shops; trips name them 'Shop · ...'."
   }
 }

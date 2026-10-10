@@ -64,7 +64,8 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   updatePresence();
   const active = (D, i, k) => { const f = D.flags[k]; return !((f & F_ATTEND) && !present[i]) && !((f & F_EVENT) && !st.event); };
   const T_UNSH = meta.types.indexOf("unsheltered");
-  const defaultSpot = (i) => (type[i] === 0 || type[i] === 2 || type[i] === T_UNSH ? HOME : HIDDEN);
+  // residents of buildings the model does not have (homeBld -1) are not drawn at home
+  const defaultSpot = (i) => ((type[i] === 0 && homeBld[i] >= 0) || type[i] === 2 || type[i] === T_UNSH ? HOME : HIDDEN);
 
   // where person i is at time T (seconds): {k: trip index or -1, moving, spot}
   function locate(D, i, T) {
@@ -378,6 +379,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     if (sl) rows.push(["Industry", sl]);
     if (homeBld[i] >= 0) rows.push([t === "hotel" ? "Staying at" : "Lives at", `${bname(homeBld[i])}, floor ${floorOf(homeBld[i], homeSpot, i)}`]);
     else if (t === "worker") rows.push(["Lives", `about ${(distKm[i] / 100).toFixed(1)} km ${compass((bearing[i] / 255) * 360)} (tract ${meta.tracts[tract[i]].slice(5)})`]);
+    else if (t === "resident") rows.push(["Lives", `in a building the model does not have (tract ${meta.tracts[tract[i]].slice(5)}); not drawn at home`]);
     else if (t === "unsheltered") rows.push(["Stays", "on the street in this tract (LAHSA 2025 street count, modeled spot)"]);
     else if (t === "passerby") rows.push(["Walks", "through the site, from one edge to another"]);
     if (mode[i]) rows.push(["Gets here by", meta.modes[mode[i]]]);
@@ -525,7 +527,9 @@ function methodHtml(meta) {
     through the site from edge to edge. Nobody publishes counts of the last two: their daily numbers are fitted to the
     LADOT Walk &amp; Bike Counts (2023, 2025) on six blocks; three blocks (5th St, Grand Ave, Los Angeles St) are held
     out as a check (site-model/population/data/walk_check.json). Blocks at the site edge get too many passers-by,
-    because they all enter and leave there.</p>
+    because they all enter and leave there. Residents of blocks whose buildings are not modelled (most of South Park)
+    are not drawn at home but walk from the street by their block; shops are Assessor retail parcels (OpenStreetMap maps
+    almost none here). Grand Ave between 7th and 8th St still comes out at about 0.4 of the count, for reasons not found.</p>
     <p><b>Metro check</b> (weekday): model rail trips leaving the site through each station's entrances, against Metro's
     FY2026 average weekday boardings.</p>
     <table><tr><th>Station</th><th>Model</th><th>Metro</th><th>Ratio</th></tr>${rows}

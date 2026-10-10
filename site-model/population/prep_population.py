@@ -340,6 +340,42 @@ for e in osm["elements"]:
         portals.append({"name": f"Bus stop · {name}" if name else "Bus stop", "kind": "bus", "node": nearest_node(p)})
     elif am == "parking":
         portals.append({"name": name or "Parking", "kind": "parking", "node": nearest_node(p)})
+# shops (user, 2026-10-09: checking Grand Ave): OSM maps almost none here. Buildings checked by hand (Google Earth /
+# Maps, entities.json) decide first: a checked building whose use names shops is a shop, one whose use says something
+# else (housing, offices, bar...) is not. Otherwise Assessor retail parcels stand in (shops.uses). Weight = shop floor
+# area / sqftPerWeight, capped: the ground floor (the building's footprint) for mixed buildings, where shops line the
+# street under flats or offices; the whole floor area only where the use is all retail (shops.wholeBuilding).
+SH = AS["shops"]
+SHOP_USE, WHOLE = set(SH["uses"]), set(SH["wholeBuilding"])
+SHOP_WORD = re.compile(SH["checkedShopWords"], re.I)
+checked = {b: ENT[b]["use"] for b in BIDS if ENT[b].get("status") == "confirmed" and ENT[b].get("use")}
+checked_known = {b: u for b, u in checked.items() if u.strip().lower() != "unknown"}
+shop_w = {}       # building or parcel key -> (name, point, weight, why)
+for f in load("parcels.geojson")["features"]:
+    pr = f["properties"]
+    if pr.get("UseDescription") not in SHOP_USE:
+        continue
+    try:
+        pg = local(shape(f["geometry"])).buffer(0)
+    except Exception:
+        continue
+    pt = pg.representative_point()
+    if not EXT.contains(pt):
+        continue
+    over = [BIDS[k] for k in foot_tree.query(pg) if FOOT[BIDS[k]].intersection(pg).area > 0.3 * pg.area]
+    if any(b in checked_known and not SHOP_WORD.search(checked_known[b]) for b in over):
+        continue                      # checked by hand: not a shop (housing, offices, bar ...)
+    sq = sum(pr.get(f"SQFTmain{i}") or 0 for i in range(1, 6))
+    area = sq if pr["UseDescription"] in WHOLE else min(sq or 1e9, pg.area * 10.764)
+    name = (pr.get("SitusFullAddress") or "").split(" LOS ANGELES")[0].title() or "Shop"
+    shop_w[pr.get("APN") or name] = (name, pt, area, "assessor")
+for b, u in checked.items():          # checked shops the Assessor files under another use (The Bloc ...)
+    if SHOP_WORD.search(u) and not any(v[3] == "assessor" and FOOT[b].contains(v[1]) for v in shop_w.values()):
+        shop_w["E:" + b] = (ENT[b].get("name") or b, FOOT[b].representative_point(), FOOT[b].area * 10.764, "checked")
+for name, pt, area, why in shop_w.values():
+    places.append({"name": f"Shop · {name}", "kind": "shop", "node": nearest_node(pt),
+                   "w": min(max(area, 1000) / SH["sqftPerWeight"], SH["maxWeight"])})
+print("shops:", len(shop_w), dict(Counter(v[3] for v in shop_w.values())))
 # the Regional Connector portal from the site model (Grand Av Arts / Bunker Hill), if OSM lacks it
 mp = hand["landmarks"]["Metro_Canopy_Glass"]["center"]   # the 4th & Hill portal canopy, from the point cloud
 mpn = nearest_node(Point(*mp))
@@ -776,7 +812,11 @@ print("jobs placed", sum(len(j) for j in jobs_by_block.values()), "dropped", sum
 #      or converted buildings, dormitories), by the floor area of its residential buildings, else of all its buildings
 #      (blocks with residents but no housing units are group quarters: dormitories, care homes, shelters);
 #   3. a block whose buildings are all missing from the hand-off keeps its residents in the nearest hand-off building
-#      within NEAR_M (the same building, slightly misaligned); anything else is reported, not placed.
+#      within NEAR_M (the same building, slightly misaligned);
+#   4. otherwise (the block's buildings are not modelled: far from Y-1, thinned out of the point cloud; most of South
+#      Park) its residents live "off model": at home they are not drawn, and their trips start and end at the street
+#      by the largest LARIAC footprint of the block inside the site (user, 2026-10-09: they were left out before, and
+#      the walk counts on Grand Ave in South Park came out at a third).
 NEAR_M = 30.0
 LARIAC = HERE.parent / "houdini" / "in" / "lariac_3km.geojson"     # git-ignored input of the Houdini pipeline
 lar = []
@@ -808,6 +848,7 @@ def block_buildings(g):
 
 
 res_by_block = defaultdict(list)
+off_model_gap = []   # metres from an off-model block's footprint to the anchor its residents use
 res_log = {}     # block -> {"residents", "share", "rule", "buildings"}
 hh_size = {g[-11:]: v["B25010_E001"] for g, v in acs["B25010_household_size"].items() if v.get("B25010_E001")}
 HH_DEFAULT = float(np.median([v for k, v in hh_size.items() if len(k) == 11 and k.startswith("06037")]))
@@ -834,8 +875,17 @@ for g, b in blocks.items():
         if near and FOOT[near[0]].distance(b["geom"]) <= NEAR_M:
             cand, rule = near, "nearest building"
         else:
-            dropped["residents " + g] += n
-            res_log[g] = {"residents": n, "share": round(share, 2), "rule": "not placed", "buildings": []}
+            fp = [lar[i].intersection(b["geom"]).intersection(EXT) for i in lar_tree.query(b["geom"])]
+            fp = max(fp, key=lambda x: x.area) if fp else None
+            pt = fp.representative_point() if fp is not None and fp.area > 1 else b["geom"].intersection(EXT).representative_point()
+            # trips need an anchor of the path search: the nearest one (a door, stop, garage or place on the street)
+            door = min(arow, key=lambda k: math.dist(XYZ[k][:2], (pt.x, pt.y)))
+            off_model_gap.append(math.dist(XYZ[door][:2], (pt.x, pt.y)))
+            res_log[g] = {"residents": n, "share": round(share, 2), "rule": "building not modelled", "buildings": []}
+            for _ in range(n):
+                p = new_person("resident", tract=g[:11])
+                p["home_kind"], p["home_door"] = SPOT_HIDDEN, door
+                res_by_block[g].append(p)
             continue
     w = np.array([B[x]["units"] * FOOT[x].intersection(b["geom"]).area / FOOT[x].area for x in cand], float)
     if w.sum() <= 0:
@@ -853,6 +903,8 @@ for g, b in blocks.items():
 print("residents", sum(len(v) for v in res_by_block.values()), f"(Census count on site {res_census}, of which {res_noise} "
       f"in blocks without housing taken as noise)", "| by rule:",
       dict(Counter(v["rule"] for v in res_log.values() for _ in range(v["residents"]))))
+if off_model_gap:
+    print(f"  off-model blocks: {len(off_model_gap)}, distance to their street anchor: median {np.median(off_model_gap):.0f} m, max {max(off_model_gap):.0f} m")
 for g, v in sorted(res_log.items(), key=lambda kv: -kv[1]["residents"]):
     if v["rule"] != "units":
         print(f"  block {g[-4:]}: {v['residents']} residents ({v['share']:.0%} on site) -> {v['rule']}: {v['buildings']}")
@@ -973,10 +1025,10 @@ def state_at(trips, t, default):
     return max(trips, key=lambda x: x[1])[5] if trips else default
 
 
-def home_free(trips, t0, t1):
+def home_free(trips, t0, t1, home=SPOT_HOME):
     """True if the person is at home from t0 to t1 with no trip in between."""
     return (all(t1 + 120 < x[0] or t0 - 120 > x[1] for x in trips)
-            and state_at(trips, t0, SPOT_HOME) == SPOT_HOME)
+            and state_at(trips, t0, home) == home)
 
 
 def schedule_work(p, day, door, start, end, flags):
@@ -996,7 +1048,7 @@ def schedule_work(p, day, door, start, end, flags):
             add_trip(p, day, back + lunch_dw[day](), f["node"], door, SPOT_PLACE, SPOT_WORK, "back from lunch", flags, place_idx[id(f)], -1)
     going = "back home" if end[1] == SPOT_HOME else "leave the site"
     if 16 * 3600 < t_out < 20 * 3600 and rng.random() < AS["afterWorkOutShare"]:
-        f = food_near(door, ("food", "bar"))
+        f = food_near(door, ("food", "bar", "shop"))
         t = add_trip(p, day, t_out, door, f["node"], SPOT_WORK, SPOT_PLACE, "after-work stop", flags, -1, place_idx[id(f)])
         add_trip(p, day, t + rng.uniform(45, 100) * 60, f["node"], end[0], SPOT_PLACE, end[1], going, flags, place_idx[id(f)], end[2])
     else:
@@ -1021,11 +1073,12 @@ def outings(p, day, n, door):
             _, q = offsite_portal(p, door)
             dest, dk = (q["node"], SPOT_HIDDEN) if q else (door, SPOT_HIDDEN)
             di = oi = portal_idx[id(q)] if q else -1
-        go = leg_seconds(p, door, dest, SPOT_HOME, dk, p["speed"])
-        if t + 2 * go + dw > DAY - 60 or not home_free(p["trips"][day], t, t + 2 * go + dw):
+        hk = p.get("home_kind", SPOT_HOME)
+        go = leg_seconds(p, door, dest, hk, dk, p["speed"])
+        if t + 2 * go + dw > DAY - 60 or not home_free(p["trips"][day], t, t + 2 * go + dw, hk):
             continue
-        t1 = add_trip(p, day, t, door, dest, SPOT_HOME, dk, "outing", 0, -1, di)
-        add_trip(p, day, t1 + dw, dest, door, dk, SPOT_HOME, "back home", 0, oi, -1)
+        t1 = add_trip(p, day, t, door, dest, hk, dk, "outing", 0, -1, di)
+        add_trip(p, day, t1 + dw, dest, door, dk, hk, "back home", 0, oi, -1)
 
 
 for p in [q for q in people if q["type"] in (0, 1)]:
@@ -1041,20 +1094,21 @@ for p in [q for q in people if q["type"] in (0, 1)]:
             schedule_work(p, day, door, ends, ends, F_ATTEND if day == "weekday" else 0)
             continue
         # residents
-        hdoor = B[p["home_bid"]]["door"]
+        hdoor = p["home_door"] if p.get("home_door") is not None else B[p["home_bid"]]["door"]
+        hk = p.get("home_kind", SPOT_HOME)
         flags = F_ATTEND if day == "weekday" else 0
         if p.get("worker") and works:
             if p["work_bid"] is not None:  # works on site: walks from home
-                schedule_work(p, day, B[p["work_bid"]]["door"], (hdoor, SPOT_HOME, -1), (hdoor, SPOT_HOME, -1), flags)
+                schedule_work(p, day, B[p["work_bid"]]["door"], (hdoor, hk, -1), (hdoor, hk, -1), flags)
             else:
                 m, q = offsite_portal(p, hdoor)
                 p["mode"] = MODES.index(m)
                 dep = departure_by_tract.get(p["tract"], arrival[False])()
                 node, di = (q["node"], portal_idx[id(q)]) if q else (hdoor, -1)
-                t1 = add_trip(p, day, dep, hdoor, node, SPOT_HOME, SPOT_HIDDEN, "head out", flags, -1, di)
+                t1 = add_trip(p, day, dep, hdoor, node, hk, SPOT_HIDDEN, "head out", flags, -1, di)
                 back = t1 + float(np.clip(rng.normal(9.5, 1.0), 5, 13)) * 3600
                 if back < DAY - 1800:
-                    add_trip(p, day, back, node, hdoor, SPOT_HIDDEN, SPOT_HOME, "come home", flags, di, -1)
+                    add_trip(p, day, back, node, hdoor, SPOT_HIDDEN, hk, "come home", flags, di, -1)
             n = rng.poisson(AS["residentOutings"]["weekdayWorker" if day == "weekday" else "weekend"])
         else:
             n = rng.poisson(AS["residentOutings"]["weekdayNonWorker" if day == "weekday" else "weekend"])
@@ -1074,7 +1128,7 @@ for p in [q for q in people if q["type"] == 2]:
         q = portal_for(m, door)
         node, di = (q["node"], portal_idx[id(q)]) if q else (door, -1)
         if rng.random() < HG["onSiteFirstStop"]:
-            f = softmin([x for x in places if x["kind"] in ("culture", "food")], lambda x: netdist(x["node"], door) / x["w"], 300)
+            f = softmin([x for x in places if x["kind"] in ("culture", "food", "shop")], lambda x: netdist(x["node"], door) / x["w"], 300)
             t = add_trip(p, day, t, door, f["node"], SPOT_HOME, SPOT_PLACE, "outing", 0, -1, place_idx[id(f)])
             t = add_trip(p, day, t + rng.uniform(40, 90) * 60, f["node"], node, SPOT_PLACE, SPOT_HIDDEN, "leave the site", 0, place_idx[id(f)], di)
         else:
@@ -1277,7 +1331,7 @@ def present(p, day, attendance):
 
 
 def default_spot(p):
-    return SPOT_HOME if p["type"] in (0, 2, 4) else SPOT_HIDDEN
+    return p.get("home_kind", SPOT_HOME) if p["type"] in (0, 2, 4) else SPOT_HIDDEN
 
 
 def onsite_curve(day, attendance, event=False):
@@ -1371,6 +1425,8 @@ def anchor_xy(p):
         idx, _ = path_between(*p["trips"]["weekday" if p["trips"]["weekday"] else "weekend"][0][2:4])
         return min((tuple(XYZ[n][:2]) for n in paths[idx]), key=lambda xy: math.hypot(*xy))
     s = p["work_spot"] if p["type"] == 1 else p["home_spot"]
+    if p.get("home_door") is not None and p["type"] == 0:
+        return tuple(XYZ[p["home_door"]][:2])
     if s:
         return s[0], s[1]
     for day in ("weekday", "weekend"):
