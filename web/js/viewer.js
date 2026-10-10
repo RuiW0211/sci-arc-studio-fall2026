@@ -56,7 +56,7 @@ scene.add(model);
 // a little transparent, so the people stand out. One shared uniform, eased over --t-out.
 // the site's shared durations (CSS --t-feedback / --t-in / --t-out / --t-idle in viewer.html), in ms, for JS animations
 const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) * 1000 || 0;
-// colour changes of the point cloud (colour mode, selection) cross-fade: the shader mixes the previous colours (color0)
+// a change of colour mode cross-fades: the shader mixes the previous colours (color0)
 // into the new ones as uColorMix goes 0 -> 1 over --t-out
 const COLOR_MIX = { value: 1 };
 let mixAnim = 0;
@@ -72,15 +72,21 @@ function crossFade() {
   };
   mixAnim = requestAnimationFrame(step);
 }
+// the selection is separate from the colours (aSel, paintSelection): a 1-byte mark per point, so selecting does not copy
+// or re-upload the colours, and Highlight people leaves the selected object in its highlight colour
+const SEL_K = { value: 1 };   // 0 -> 1 over --t-out after each change of selection
+let selAnim = 0;
 const FOCUS = { value: 0 };
 const FOCUS_GREY = { value: cfg.population?.whiteCloud?.white ?? 0.8 }, FOCUS_ALPHA = { value: cfg.population?.whiteCloud?.opacity ?? 0.5 };
 const focusMats = [];
 function withFocus(shader) {
   shader.uniforms.uFocus = FOCUS; shader.uniforms.uFocusGrey = FOCUS_GREY; shader.uniforms.uFocusAlpha = FOCUS_ALPHA;
-  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha;\n" + shader.fragmentShader.replace("#include <color_fragment>",
+  // vSel (from pointMaterial's vertex shader): a selected object keeps its highlight under Highlight people
+  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha;\nvarying float vSel;\n" + shader.fragmentShader.replace("#include <color_fragment>",
     `#include <color_fragment>
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(uFocusGrey), uFocus);
-  diffuseColor.a *= mix(1.0, uFocusAlpha, uFocus);`);
+  float fk = uFocus * (1.0 - vSel);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(uFocusGrey), fk);
+  diffuseColor.a *= mix(1.0, uFocusAlpha, fk);`);
 }
 let focusAnim = 0;
 function setWhiteCloud(on) {
@@ -212,9 +218,14 @@ function pointMaterial(sizeMetres) {
   focusMats.push(mat);
   mat.onBeforeCompile = (shader) => {
     withFocus(shader);
-    shader.uniforms.uColorMix = COLOR_MIX;
-    shader.vertexShader = "attribute vec3 color0;\nuniform float uColorMix;\n" + shader.vertexShader.replace(
-      "#include <color_vertex>", "#include <color_vertex>\n  vColor.rgb = mix(color0, vColor.rgb, uColorMix);");
+    shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
+    // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
+    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nuniform float uColorMix, uSelK;\nuniform vec3 uHi;\nvarying float vSel;\n" +
+      shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
+  vColor.rgb = mix(color0, vColor.rgb, uColorMix);
+  float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
+  vColor.rgb = mix(vColor.rgb, uHi, sw);
+  vSel = sw;`);
     shader.vertexShader = shader.vertexShader.replace(
       "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize, 1.0);\n#include <fog_vertex>");
     // round points instead of squares
@@ -323,6 +334,7 @@ async function loadLidar() {
     const col = new Float32Array(m * 3);
     g.setAttribute("color", new THREE.BufferAttribute(col, 3));
     g.setAttribute("color0", new THREE.BufferAttribute(new Uint8Array(m * 3), 3, true));   // the colours before a change
+    g.setAttribute("aSel", new THREE.BufferAttribute(new Uint8Array(m), 1));               // selection mark (paintSelection)
     g.computeBoundingSphere();
     const pts = new THREE.Points(g, material);
     pts.frustumCulled = true;
@@ -416,16 +428,11 @@ function paintCloud(how = lidar.how) {
     c0.needsUpdate = true;
   }
   lidar.how = how;
-  const hi = [HILITE.r, HILITE.g, HILITE.b], mask = lidar.selMask;
-  // the selection lights the clicked object, or all objects of its entity (a whole building)
-  mask.fill(0);
-  for (const s of selection) for (const k of s.objs) mask[k] = 1;   // all selected objects (shift + click adds)
   for (const part of lidar.parts) {
     const { zs, cls, inten, ob, col, n } = part, b = layerColor(part.name), base = [b.r, b.g, b.b];
     for (let i = 0; i < n; i++) {
       let c;
-      if (mask[ob[i]]) c = hi;
-      else if (how === "layer") c = base;
+      if (how === "layer") c = base;
       else if (how === "height") c = ramp((zs[i] - 78) / 60);
       else if (how === "object") c = objColor(ob[i]);
       else if (how === "class") c = cls[i] === 2 ? [0.72, 0.6, 0.42] : zs[i] > 140 ? [0.55, 0.58, 0.62] : [0.3, 0.52, 0.36];
@@ -443,6 +450,33 @@ function paintCloud(how = lidar.how) {
   invalidate();
 }
 document.querySelectorAll("#lidarOpts button").forEach((b) => (b.onclick = () => paintCloud(b.dataset.c)));
+// the selection lights the clicked object, or all objects of its entity (a whole building); shift + click adds.
+// Only the marks of points whose state changes are written; the highlight eases in / out over --t-out.
+function paintSelection() {
+  if (!lidar) return;
+  const mask = lidar.selMask;
+  mask.fill(0);
+  for (const s of selection) for (const k of s.objs) mask[k] = 1;
+  for (const pts of lidarGroup.children) {
+    const part = pts.userData.part, a = pts.geometry.attributes.aSel, v = a.array, ob = part.ob;
+    let changed = false;
+    for (let i = 0; i < part.n; i++) {
+      const was = v[i] >= 2, is = mask[ob[i]] === 1, nv = is ? (was ? 3 : 2) : was ? 1 : 0;
+      if (nv !== v[i]) { v[i] = nv; changed = true; }
+    }
+    if (changed) a.needsUpdate = true;
+  }
+  const t0 = performance.now(), dur = tms("--t-out");
+  SEL_K.value = 0;
+  cancelAnimationFrame(selAnim);
+  const step = (now) => {
+    const k = dur ? Math.min((now - t0) / dur, 1) : 1;
+    SEL_K.value = k * k * (3 - 2 * k);
+    invalidate();
+    if (k < 1) selAnim = requestAnimationFrame(step);
+  };
+  selAnim = requestAnimationFrame(step);
+}
 
 // ---------- modes ----------
 let busy = false;
@@ -759,7 +793,7 @@ function fillTag(s) {
   };
 }
 function select(key, a, build, objs, add) {
-  if (!add) clearSelection();
+  if (!add) clearSelection(false);   // painted once below: the old object fades out while the new one fades in
   const old = selection.find((s) => s.key === key);
   if (old) { if (add) deselect(key); return; }            // shift + click on a selected object: take it out
   const el = document.createElement("div"); el.className = "tag"; document.body.append(el);
@@ -769,7 +803,7 @@ function select(key, a, build, objs, add) {
   requestAnimationFrame(() => requestAnimationFrame(() => { el.style.opacity = ""; line.style.opacity = ""; }));
   const s = { key, a, build, objs, el, line };
   fillTag(s); selection.push(s);
-  if (lidar && mode === "cloud") paintCloud();
+  if (lidar && mode === "cloud") paintSelection();
   invalidate(); wake();
 }
 // a tag and its line fade out over --t-out, then go (user, 2026-10-10: Esc should not make them vanish at once)
@@ -781,12 +815,12 @@ function deselect(key) {
   const i = selection.findIndex((s) => s.key === key); if (i < 0) return;
   const [s] = selection.splice(i, 1); fadeAway(s);
   if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection();
-  if (lidar && mode === "cloud") paintCloud();
+  if (lidar && mode === "cloud") paintSelection();
   invalidate();
 }
-function clearSelection() {
+function clearSelection(paint = true) {
   for (const s of selection.splice(0)) { fadeAway(s); if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection(); }
-  if (lidar && mode === "cloud") paintCloud();
+  if (paint && lidar && mode === "cloud") paintSelection();
   invalidate();
 }
 function refreshTags() { for (const s of selection) fillTag(s); invalidate(); }
