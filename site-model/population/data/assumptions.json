@@ -664,5 +664,12 @@
       "checkedShopWords": "\\bshop|\\bstore|retail|\\bmall\\b|shopping"
     },
     "note": "Shops as destinations (user, 2026-10-09). OpenStreetMap maps almost no shops here. Buildings checked by hand in Google Earth / Maps (entities.json, status confirmed) decide first: a checked use naming shops makes a shop (also where the Assessor files the parcel otherwise, e.g. The Bloc), any other checked use (housing, offices, bar ...) rules the parcel out. Elsewhere Assessor parcels with these uses stand in. Weight = shop floor area / sqftPerWeight, capped (ASSUMPTION; a restaurant weighs 1.5): the ground floor (footprint) for mixed buildings, the whole floor area only for wholeBuilding uses. Residents' on-site outings, after-work stops and hotel guests' first stops can go to shops; trips name them 'Shop · ...'."
+  },
+  "network": {
+    "value": {
+      "snapM": 3.0,
+      "slopeWeight": 0.5
+    },
+    "note": "Walking network (user, 2026-10-09: Bunker Hill). snapM: a way ending within this distance of another way's node, at about the same height (< 2 m), is joined to it (gaps in the OSM drawing). slopeWeight: route choice counts steep streets as longer, by Tobler's hiking function (W = 6 exp(-3.5 |S + 0.05|)) at this fraction of its strength, averaged over both directions: about +10% at a 10% grade, +36% at 20%; steps, escalators, elevators and Angels Flight keep their own factors (ASSUMPTION; FHWA-RD-98-107 finds little speed change below 10%). Walking times are not changed."
   }
 }

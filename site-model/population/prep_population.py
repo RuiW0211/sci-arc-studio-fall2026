@@ -242,11 +242,13 @@ for e in osm["elements"]:
     t = e.get("tags", {})
     hw = t.get("highway")
     fun = t.get("railway") == "funicular"
-    if not fun and (hw not in WALK or t.get("access") in ("no", "private") or t.get("foot") == "no"):
-        continue
+    open_foot = t.get("foot") in ("yes", "designated", "permissive")
+    if not fun and (hw not in WALK or (t.get("access") in ("no", "private") and not open_foot) or t.get("foot") == "no"):
+        continue      # (user, 2026-10-09: foot=yes wins over access=private, as in OSM, e.g. the Angels Flight lower stairs)
     if t.get("tunnel") in ("yes", "building_passage") and hw not in ("footway", "pedestrian", "corridor"):
         continue  # the 2nd and 3rd Street tunnels: not for walking
     factor = 0.6 if fun else WALK[hw]
+    graded = not fun and hw not in ("steps", "elevator") and t.get("tunnel") is None and not t.get("conveying")
     pts = [ll2loc(g["lat"], g["lon"]) for g in e["geometry"]]
     inside = [abs(x) <= HALF and abs(y) <= HALF for x, y in pts]
     ids = [node(n, x, y) if ins else None for n, (x, y), ins in zip(e["nodes"], pts, inside)]
@@ -273,14 +275,42 @@ for e in osm["elements"]:
             L = math.dist(NXY[i][:2], NXY[j][:2])
             key = (min(i, j), max(i, j))
             if key not in edges or edges[key][1] > L * factor:
-                edges[key] = (L, L * factor)
+                edges[key] = (L, L * factor, graded)
 for p in NXY:
     if p[2] is None:
         p[2] = ground(p[0], p[1])
 
+# gaps in the OSM drawing (user, 2026-10-09: Bunker Hill): a way that ends within SNAP_M of another way's node, at
+# about the same height, is joined to it (California Plaza's Watercourt and other plazas were cut off by a few metres)
+from scipy.spatial import cKDTree
+deg = Counter()
+for i, j in edges:
+    deg[i] += 1; deg[j] += 1
+P2 = np.array([p[:2] for p in NXY]); kd = cKDTree(P2)
+snapped = 0
+for i in [n for n, d in deg.items() if d == 1]:
+    for j in kd.query_ball_point(P2[i], AS["network"]["snapM"]):
+        if j != i and (min(i, j), max(i, j)) not in edges and abs(NXY[i][2] - NXY[j][2]) < 2.0:
+            L = max(math.dist(P2[i], P2[j]), 0.1)
+            edges[(min(i, j), max(i, j))] = (L, L, False); snapped += 1
+            break
+print("network gaps joined:", snapped)
+
+# slope (user, 2026-10-09): steep streets cost more than flat ones when people choose a route. Tobler's hiking
+# function, half strength (it was fitted on trails), averaged over both directions (the graph is undirected); steps,
+# escalators, elevators and Angels Flight keep their own factors. Walking times are unchanged.
+SL = AS["network"]["slopeWeight"]
+def tobler_ratio(g):
+    return math.exp(-3.5 * (abs(g + 0.05) - 0.05))
+for key, (L, c, graded) in list(edges.items()):
+    if graded and L > 1:
+        g = abs(NXY[key[1]][2] - NXY[key[0]][2]) / L
+        m = 0.5 * (1 / tobler_ratio(g) + 1 / tobler_ratio(-g))
+        edges[key] = (L, c * (1 + SL * (m - 1)), graded)
+
 n0 = len(NXY)
 ei = np.array(list(edges), dtype=np.int64)
-ew = np.array([c for _, c in edges.values()])
+ew = np.array([c for _, c, _ in edges.values()])
 G = csr_matrix((np.r_[ew, ew], (np.r_[ei[:, 0], ei[:, 1]], np.r_[ei[:, 1], ei[:, 0]])), shape=(n0, n0))
 ncomp, lab = connected_components(G, directed=False)
 big = np.bincount(lab).argmax()
@@ -289,7 +319,7 @@ remap = -np.ones(n0, dtype=np.int64)
 remap[keep] = np.arange(len(keep))
 XYZ = np.array([NXY[i] for i in keep])  # x east, y north, z up (scene-local)
 N = len(XYZ)
-E = [(remap[i], remap[j], L, c) for (i, j), (L, c) in edges.items() if remap[i] >= 0 and remap[j] >= 0]
+E = [(remap[i], remap[j], L, c) for (i, j), (L, c, _) in edges.items() if remap[i] >= 0 and remap[j] >= 0]
 ea = np.array([[a, b] for a, b, _, _ in E])
 ec = np.array([c for *_, c in E])
 G = csr_matrix((np.r_[ec, ec], (np.r_[ea[:, 0], ea[:, 1]], np.r_[ea[:, 1], ea[:, 0]])), shape=(N, N))
@@ -399,6 +429,7 @@ fn = sorted({int(remap[i]) for i in funicular_nodes if remap[i] >= 0}, key=lambd
 AF_LOW, AF_UP = (fn[0], fn[-1]) if fn else (None, None)
 if fn:
     places.append({"name": "Angels Flight (upper station, California Plaza)", "kind": "culture", "node": AF_UP, "w": 1.0})
+af_place = places[-1] if fn else None
 gcm = next((p for p in places if "grand central market" in p["name"].lower()), None)
 moca = next((p for p in places if p["name"] == "Museum of Contemporary Art"), None)
 
@@ -1199,7 +1230,7 @@ for name, v in AS["visitors"].items():
                 pl = target
             chain = None
             if pl is gcm and AF_UP is not None and rng.random() < AS["angelsFlightShare"]:
-                chain = places[-1] if places[-1]["node"] == AF_UP else None
+                chain = af_place   # (was places[-1]: broken once more places were added after it)
                 if moca and rng.random() < 0.5:
                     chain = moca
             visitor(day, pl, t, float(np.clip(rng.normal(*v["dwell"]), 10, 240)) * 60, 0, chain)
