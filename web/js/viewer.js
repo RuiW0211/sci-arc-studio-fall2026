@@ -52,6 +52,35 @@ const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/thr
 const model = new THREE.Group();   // everything drawn as geometry over the point cloud
 scene.add(model);
 
+// ---------- "white point cloud" (user, 2026-10-09): an option of the population layer; the point cloud fades to white,
+// a little transparent, so the people stand out. One shared uniform, eased over 0.5 s.
+const FOCUS = { value: 0 };
+const FOCUS_GREY = { value: cfg.population?.whiteCloud?.white ?? 0.8 }, FOCUS_ALPHA = { value: cfg.population?.whiteCloud?.opacity ?? 0.5 };
+const focusMats = [];
+function withFocus(shader) {
+  shader.uniforms.uFocus = FOCUS; shader.uniforms.uFocusGrey = FOCUS_GREY; shader.uniforms.uFocusAlpha = FOCUS_ALPHA;
+  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha;\n" + shader.fragmentShader.replace("#include <color_fragment>",
+    `#include <color_fragment>
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(uFocusGrey), uFocus);
+  diffuseColor.a *= mix(1.0, uFocusAlpha, uFocus);`);
+}
+let focusAnim = 0;
+function setWhiteCloud(on) {
+  const from = FOCUS.value, to = on ? 1 : 0, t0 = performance.now();
+  $("#colorSec").classList.toggle("overridden", on);
+  if (on) for (const m of focusMats) if (!m.userData.alwaysTransparent && !m.transparent) { m.transparent = true; m.needsUpdate = true; }
+  cancelAnimationFrame(focusAnim);
+  const step = (now) => {
+    const k = Math.min((now - t0) / 500, 1), e = k * k * (3 - 2 * k);
+    FOCUS.value = from + (to - from) * e;
+    pop?.highlight(FOCUS.value);   // people grow with it
+    invalidate();
+    if (k < 1) focusAnim = requestAnimationFrame(step);
+    else if (!on) for (const m of focusMats) if (!m.userData.alwaysTransparent) { m.transparent = false; m.needsUpdate = true; }
+  };
+  focusAnim = requestAnimationFrame(step);
+}
+
 // estimated facade points (site-model/houdini/tools/synth_facades.py): walls the airborne LiDAR barely saw, filled
 // only where no return is near. NOT measured: their own layer and colour, drawn over the cloud, never picked.
 let facadePts = null;
@@ -62,8 +91,10 @@ try {
   const fpos = new Float32Array(buf);
   const fg = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(fpos, 3))
     .setAttribute("color", new THREE.BufferAttribute(new Float32Array(fpos.length), 3));   // set by paintCloud
-  const fpts = new THREE.Points(fg, new THREE.PointsMaterial({ vertexColors: true, size: cfg.lidar.size ?? 0.25,
-    sizeAttenuation: true, transparent: true, opacity: fc.opacity ?? 0.55, depthWrite: false }));
+  const fmat = new THREE.PointsMaterial({ vertexColors: true, size: cfg.lidar.size ?? 0.25,
+    sizeAttenuation: true, transparent: true, opacity: fc.opacity ?? 0.55, depthWrite: false });
+  fmat.userData.alwaysTransparent = true; fmat.onBeforeCompile = withFocus; focusMats.push(fmat);
+  const fpts = new THREE.Points(fg, fmat);
   facadePts = fpts;
   fpts.userData.layer = "Facades_estimated"; fpts.userData.noPick = true; fpts.name = "Estimated facade points";
   model.add(fpts);
@@ -164,7 +195,9 @@ for (const L of ordered) {
 // ---------- point material: size in metres (perspective), never smaller than 1 px ----------
 function pointMaterial(sizeMetres) {
   const mat = new THREE.PointsMaterial({ size: sizeMetres, vertexColors: true, sizeAttenuation: true });
+  focusMats.push(mat);
   mat.onBeforeCompile = (shader) => {
+    withFocus(shader);
     shader.vertexShader = shader.vertexShader.replace(
       "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize, 1.0);\n#include <fog_vertex>");
     // round points instead of squares
@@ -567,9 +600,11 @@ $("#popOn").onchange = async (e) => {
   }
   $("#popBox").hidden = !on;
   pop?.setVisible(on);
+  setWhiteCloud(on && $("#popWhite").checked);
   if (!on) for (const s of [...selection]) if (s.key.startsWith("pop:")) deselect(s.key);
   invalidate();
 };
+$("#popWhite").onchange = (e) => setWhiteCloud(e.target.checked && $("#popOn").checked);
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
 // a clicked person's modeled day (population.js story()) as a floating tag that follows them
@@ -872,9 +907,9 @@ $("#dispSec").addEventListener("toggle", () => moveThumb(true, "#units"));
 addEventListener("resize", () => moveThumb(true, "#units"));
 setUnits(units, true);
 
-// ---------- idle: after 5 s without input the panels and the hint fade out (CSS body.idle), any input brings them back.
+// ---------- idle: after 10 s without input the panels and the hint fade out (CSS body.idle), any input brings them back.
 // Not while the pointer is over a panel or a text field has the focus (user, 2026-10-08) ----------
-const IDLE_MS = 5000;
+const IDLE_MS = 10000;   // 10 s (user, 2026-10-09; was 5 s)
 let idleTimer = 0;
 const overPanel = () => document.querySelector("#ui:hover, #info:hover") !== null;
 addEventListener("keydown", (e) => { if (e.key === "Escape" && !typing()) clearSelection(); });
@@ -890,7 +925,7 @@ function wake(ms = IDLE_MS) {
   }, ms);
 }
 for (const ev of ["pointermove", "pointerdown", "wheel", "keydown", "touchstart", "focusin"]) addEventListener(ev, wake, { passive: true });
-// the floating tags fade after 10 s without input (user, 2026-10-08), the panels after 5 s
+// the floating tags fade after 10 s without input (user, 2026-10-08), like the panels
 let tagTimer = 0;
 function wakeTags() {
   document.body.classList.remove("idle-tags"); clearTimeout(tagTimer);

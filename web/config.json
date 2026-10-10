@@ -122,21 +122,26 @@
     }
   ],
   "population": {
-    "_comment": "Modeled day/night population (site-model/population/prep_population.py): one point per person, size in metres. start = clock at load (hours), speed = simulated seconds per real second. routeColor / neon / neonStrength: the selected person's light trail (neonStrength scales its opacity).",
+    "_comment": "Modeled day/night population (site-model/population/prep_population.py): one point per person, size in metres. start = clock at load (hours), speed = simulated seconds per real second. routeColor / neon / neonStrength: the selected person's light trail (neonStrength scales its opacity). whiteCloud: the 'Highlight people' option - grey level (1 = white) and opacity the point cloud fades to (0.5 s). highlightSize: people's size (m) under 'Highlight people'. colors: Okabe-Ito (colour-blind safe), workers #FFD166 and visitors #06D6A0 from Coolors 'Watermelon Sorbet' (user, 2026-10-09).",
     "meta": "data/population.json",
     "size": 0.7,
     "start": 8.5,
     "speed": 300,
     "routeColor": "#00E5FF",
     "neon": true,
-    "neonStrength": 1,
+    "neonStrength": 1.6,
     "colors": {
-      "resident": "#3A86FF",
-      "worker": "#FB8500",
+      "resident": "#56B4E9",
+      "worker": "#FFD166",
       "hotel": "#8338EC",
-      "visitor": "#06A77D",
-      "unsheltered": "#E9C46A",
-      "passerby": "#9AA0A6"
-    }
+      "visitor": "#06D6A0",
+      "unsheltered": "#CC79A7",
+      "passerby": "#999999"
+    },
+    "whiteCloud": {
+      "white": 0.3,
+      "opacity": 0.35
+    },
+    "highlightSize": 1.0
   }
 }

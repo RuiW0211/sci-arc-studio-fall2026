@@ -231,6 +231,10 @@
   #popCounts .tot { display: block; color: var(--muted); margin: 2px 0 0; }
   #popBox input[type=range] { width: 100%; margin: 0; }
   #popBox details.pm { margin-top: 8px; }
+  #popDay { margin: 6px 0 4px; }
+  /* the Color choice is kept but set aside while the point cloud is drawn white */
+  #colorSec.overridden .seg { opacity: .45; transition: opacity .5s; }
+  #colorSec .seg { transition: opacity .5s; }
   #popBox details.pm > summary { cursor: pointer; color: var(--muted); font-size: 11px; }
   #popMethod ul { padding-left: 16px; margin: 4px 0; }
   #popMethod li { margin-bottom: 3px; word-break: break-word; }
@@ -257,10 +261,11 @@
     </details>
     <!-- modeled population (js/population.js, after Clark Amenudo's layer): one point per person over a typical day -->
     <details class="sec" id="popSec" open><summary>Population</summary>
-      <label class="layer" title="A modeled typical day: one point per person, from Census, survey and Assessor data"><input type="checkbox" id="popOn"><i class="sw" style="--c:#FB8500"></i><span class="nm">Modeled day</span> <span class="n" title="Every person within 250 m of Y-1; farther out fewer and fainter, like the point cloud. The counts include everyone.">1 point = 1 person</span></label>
+      <label class="layer" title="A modeled typical day: one point per person, from Census, survey and Assessor data"><input type="checkbox" id="popOn"><i class="sw" style="--c:#FFD166"></i><span class="nm">People</span> <span class="n" title="A modeled typical day, one point per person. Every person within 250 m of Y-1; farther out fewer and fainter, like the point cloud. The counts include everyone.">modeled typical day</span></label>
       <div id="popBox" hidden>
-        <div class="clock"><span id="popClock">08:30</span><button id="popPlay" title="Plays at 5 minutes per second: the whole day in about 5 minutes">Play</button>
-          <div class="seg" id="popDay"><button data-d="weekday">Weekday</button><button data-d="weekend">Weekend</button></div></div>
+        <label class="layer" id="popWhiteRow" title="The point cloud fades to light grey, half transparent, so the people stand out"><input type="checkbox" id="popWhite" checked><i class="sw" style="--c:#FFFFFF"></i><span class="nm">Highlight people</span><span class="n">point cloud fades</span></label>
+        <div class="clock"><span id="popClock">08:30</span><button id="popPlay" title="Plays at 5 minutes per second: the whole day in about 5 minutes">Play</button></div>
+        <div class="seg" id="popDay"><span class="thumb" aria-hidden="true"></span><button data-d="weekday">Weekday</button><button data-d="weekend">Weekend</button></div>
         <input id="popTime" type="range" min="0" max="86399" step="60" aria-label="Time of day">
         <canvas id="popChart" aria-label="People on site over 24 hours"></canvas>
         <div id="popCounts"></div>

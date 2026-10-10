@@ -445,19 +445,34 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     },
   };
   $("#popTime").oninput = (e) => { st.t = +e.target.value; st.dirty = true; };
-  $("#popPlay").onclick = () => { st.playing = !st.playing; st.dirty = true; $("#popPlay").textContent = st.playing ? "Pause" : "Play"; };
+  $("#popPlay").onclick = () => setPlaying(!st.playing);
+  // Weekday / Weekend: a segmented control with a sliding thumb, like Color (viewer.js moveThumb)
+  function dayThumb(instant) {
+    const th = $("#popDay .thumb"), on = $("#popDay button.on");
+    if (!th || !on || !on.offsetWidth) return;   // hidden: placed when shown
+    th.classList.toggle("instant", !!instant);
+    th.style.width = `${on.offsetWidth}px`;
+    th.style.transform = `translateX(${on.offsetLeft}px)`;
+    if (instant) requestAnimationFrame(() => th.classList.remove("instant"));
+  }
   document.querySelectorAll("#popDay button").forEach((b) => (b.onclick = () => {
     st.day = b.dataset.d; st.dirty = true; recurve();
     document.querySelectorAll("#popDay button").forEach((x) => x.classList.toggle("on", x === b));
+    dayThumb(false);
     if (st.selected >= 0) select(st.selected);
   }));
   $(`#popDay button[data-d='${st.day}']`).classList.add("on");
+  addEventListener("resize", () => dayThumb(true));
+  const setPlaying = (on) => { st.playing = on; st.dirty = true; $("#popPlay").textContent = on ? "Pause" : "Play"; };
   $("#popMethod").innerHTML = methodHtml(meta);
 
   // ---------- public ----------
   let lastNow = 0;
+  // "Highlight people" (viewer.js): people grow from size to highlightSize as the point cloud fades (k 0..1)
+  const SIZE0 = pc.size ?? 0.7, SIZE1 = pc.highlightSize ?? 1.0;
   const api = {
     meta, state: st,
+    highlight(k) { uniforms.size.value = SIZE0 + (SIZE1 - SIZE0) * k; uniforms.minPx.value = 2 + k; st.dirty = true; },
     setVisible(on) {
       points.visible = on;
       if (!on) { hovered = -1; hovPoint.visible = false; }
@@ -465,7 +480,8 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       route.visible = false;
       setXray(on && st.xray);
       if (!on) trails.visible = false;
-      if (on) { st.dirty = true; if (!curveData) recurve(); }
+      if (on) { st.dirty = true; if (!curveData) recurve(); requestAnimationFrame(() => dayThumb(true)); }
+      setPlaying(on);   // turning the layer on plays the day (user, 2026-10-09); off pauses it
     },
     get visible() { return points.visible; },
     tick(now) {
