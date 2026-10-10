@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Y-1 Research Database</title>
 <link rel="stylesheet" href="../site.css">
+<script src="../theme.js"></script>
 <style>
 /* colours, header, type scale, footer and the theme button come from ../site.css; the status colours are Research's own */
 :root {
@@ -465,13 +466,7 @@ function clearFilters() {
 }
 
 function initTheme() {
-    // Not persisted: every visit opens in the system theme.
-    document.getElementById('themeToggle').addEventListener('click', () => {
-        const root = document.documentElement;
-        const dark = root.dataset.theme === 'dark' ||
-            (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
-        root.dataset.theme = dark ? 'light' : 'dark';
-    });
+    // the theme button is wired by ../theme.js (shared with the home page and Methods)
 }
 
 function esc(text) {

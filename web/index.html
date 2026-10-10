@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Angels Knoll Studio</title>
 <link rel="stylesheet" href="site.css">
+<script src="theme.js"></script>
 <style>
   /* the three entries, laid out like Research's findings */
   a.item { display: block; border-bottom: 1px solid var(--line); padding: 20px 0; color: inherit; text-decoration: none; }
@@ -40,13 +41,5 @@
   </footer>
 </main>
 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
-<script>
-// as on the Research page: every visit opens in the system theme (not persisted); the button switches light / dark
-document.getElementById("themeToggle").addEventListener("click", () => {
-  const root = document.documentElement;
-  const dark = root.dataset.theme === "dark" || (!root.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
-  root.dataset.theme = dark ? "light" : "dark";
-});
-</script>
 </body>
 </html>

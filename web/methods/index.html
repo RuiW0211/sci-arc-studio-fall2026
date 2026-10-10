@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Methods · Angels Knoll</title>
 <link rel="stylesheet" href="../site.css">
+<script src="../theme.js"></script>
 <style>
   /* Methods only; the header, colours and type scale come from site.css (as on Research) */
   nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.85rem; margin-bottom: 8px; }
@@ -88,14 +89,6 @@
     <span id="stamp"></span></footer>
 </main>
 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
-<script>
-// as on the Research page: every visit opens in the system theme (not persisted); the button switches light / dark
-document.getElementById("themeToggle").addEventListener("click", () => {
-  const root = document.documentElement;
-  const dark = root.dataset.theme === "dark" || (!root.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
-  root.dataset.theme = dark ? "light" : "dark";
-});
-</script>
 <script>
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const fmt = (n) => Math.round(n).toLocaleString("en-US");
