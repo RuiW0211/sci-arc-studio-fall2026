@@ -3,7 +3,7 @@
   "seed": 2026,
   "officeAttendance": {
     "value": 0.475,
-    "note": "Weekday share of office-type jobs (sectors in remoteEligible) whose holder is in the building today: Kastle Back to Work Barometer, Los Angeles weekly average 47.5% for the week to Wednesday 23 September 2026 (unique badge entries relative to the pre-COVID baseline, Kastle's partner buildings), typed by hand. Fixed, no longer a viewer slider (user, 2026-10-08)."
+    "note": "Weekday share of office-type jobs (officeSectors, weighted by officeAttendanceWeight) whose holder is in the building today: Kastle Back to Work Barometer, Los Angeles weekly average 47.5% for the week to Wednesday 23 September 2026 (unique badge entries relative to the pre-COVID baseline, Kastle's partner buildings), typed by hand. Fixed, no longer a viewer slider (user, 2026-10-08)."
   },
   "otherAttendance": {
     "value": {

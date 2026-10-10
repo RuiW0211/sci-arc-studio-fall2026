@@ -1,0 +1,408 @@
+{
+ "note": "Modeled walkers crossing each LADOT count block (both sidewalks, both directions) in the count hours, against LADOT Walk & Bike Count 2023 and 2025 (one day each; observed_mean = their mean). A check only.",
+ "sources": {
+  "2023": "LADOT Walk & Bike Count 2023, data.lacity.org",
+  "2025": "LADOT Walk & Bike Count 2025, data.lacity.org"
+ },
+ "hours": {
+  "weekday": [
+   [
+    7,
+    10
+   ],
+   [
+    15,
+    18
+   ]
+  ],
+  "weekend": [
+   [
+    11,
+    13
+   ]
+  ]
+ },
+ "half_width_m": 25.0,
+ "held_out": [
+  "5th St bw Main St & Spring St",
+  "Grand Ave bw 7th St & 8th St",
+  "Los Angeles St bw Arcadia St & Aliso St"
+ ],
+ "fit": {
+  "littleTokyo.annual": 3291000.0,
+  "passersBy.weekday": 18500.0,
+  "passersBy.weekend": 19000.0
+ },
+ "angels_flight": {
+  "weekday": 1708,
+  "weekend": 2375,
+  "published": "1,200-1,500 trips a day (2010-13), about 2,200 (1996-2001)"
+ },
+ "blocks": [
+  {
+   "name": "Main St bw Arcadia St & Aliso St",
+   "index": "19-37",
+   "xy": [
+    955.5,
+    496.9
+   ],
+   "block_m": 58,
+   "held_out": false,
+   "weekday": {
+    "model": 686,
+    "by_group": {
+     "resident": 157,
+     "worker": 30,
+     "hotel": 27,
+     "visitor": 205,
+     "unsheltered": 6,
+     "passerby": 261
+    },
+    "2023": 781,
+    "2025": 618,
+    "observed_mean": 700,
+    "ratio": 0.98
+   },
+   "weekend": {
+    "model": 453,
+    "by_group": {
+     "resident": 87,
+     "hotel": 26,
+     "visitor": 242,
+     "unsheltered": 1,
+     "passerby": 97
+    },
+    "2023": 133,
+    "2025": 145,
+    "observed_mean": 139,
+    "ratio": 3.26
+   }
+  },
+  {
+   "name": "Los Angeles St bw Arcadia St & Aliso St",
+   "index": "19-34",
+   "xy": [
+    1036.7,
+    432.9
+   ],
+   "block_m": 62,
+   "held_out": true,
+   "weekday": {
+    "model": 391,
+    "by_group": {
+     "resident": 94,
+     "worker": 21,
+     "hotel": 12,
+     "visitor": 59,
+     "unsheltered": 9,
+     "passerby": 178,
+     "littletokyo": 18
+    },
+    "2023": 539,
+    "2025": 562,
+    "observed_mean": 550,
+    "ratio": 0.71
+   },
+   "weekend": {
+    "model": 237,
+    "by_group": {
+     "resident": 52,
+     "hotel": 7,
+     "visitor": 71,
+     "unsheltered": 3,
+     "passerby": 70,
+     "littletokyo": 34
+    },
+    "2023": 126,
+    "2025": 51,
+    "observed_mean": 88,
+    "ratio": 2.68
+   }
+  },
+  {
+   "name": "1st St bw Central Ave & San Pedro St",
+   "index": "19-2",
+   "xy": [
+    970.7,
+    -149.0
+   ],
+   "block_m": 209,
+   "held_out": false,
+   "weekday": {
+    "model": 4536,
+    "by_group": {
+     "resident": 141,
+     "worker": 2262,
+     "hotel": 130,
+     "visitor": 119,
+     "unsheltered": 51,
+     "passerby": 180,
+     "littletokyo": 1653
+    },
+    "2023": 1848,
+    "2025": 2024,
+    "observed_mean": 1936,
+    "ratio": 2.34
+   },
+   "weekend": {
+    "model": 2209,
+    "by_group": {
+     "resident": 67,
+     "worker": 26,
+     "hotel": 64,
+     "visitor": 116,
+     "unsheltered": 16,
+     "passerby": 57,
+     "littletokyo": 1863
+    },
+    "2023": 1897,
+    "2025": 2351,
+    "observed_mean": 2124,
+    "ratio": 1.04
+   }
+  },
+  {
+   "name": "Alameda St bw 1st St & 2nd St",
+   "index": "19-7",
+   "xy": [
+    1143.4,
+    -341.5
+   ],
+   "block_m": 204,
+   "held_out": false,
+   "weekday": {
+    "model": 947,
+    "by_group": {
+     "resident": 72,
+     "worker": 13,
+     "hotel": 3,
+     "visitor": 51,
+     "unsheltered": 4,
+     "passerby": 702,
+     "littletokyo": 102
+    },
+    "2023": 317,
+    "2025": 502,
+    "observed_mean": 410,
+    "ratio": 2.31
+   },
+   "weekend": {
+    "model": 387,
+    "by_group": {
+     "resident": 22,
+     "hotel": 3,
+     "visitor": 45,
+     "unsheltered": 4,
+     "passerby": 229,
+     "littletokyo": 84
+    },
+    "2023": 258,
+    "2025": 211,
+    "observed_mean": 234,
+    "ratio": 1.65
+   }
+  },
+  {
+   "name": "5th St bw Main St & Spring St",
+   "index": "21-5",
+   "xy": [
+    127.4,
+    -444.0
+   ],
+   "block_m": 131,
+   "held_out": true,
+   "weekday": {
+    "model": 1654,
+    "by_group": {
+     "resident": 755,
+     "worker": 306,
+     "hotel": 134,
+     "visitor": 23,
+     "unsheltered": 38,
+     "passerby": 284,
+     "littletokyo": 114
+    },
+    "2023": 2042,
+    "2025": 1585,
+    "observed_mean": 1814,
+    "ratio": 0.91
+   },
+   "weekend": {
+    "model": 723,
+    "by_group": {
+     "resident": 387,
+     "worker": 18,
+     "hotel": 72,
+     "visitor": 11,
+     "unsheltered": 24,
+     "passerby": 117,
+     "littletokyo": 94
+    },
+    "2023": 726,
+    "2025": 608,
+    "observed_mean": 667,
+    "ratio": 1.08
+   }
+  },
+  {
+   "name": "Grand Ave bw 7th St & 8th St",
+   "index": "21-37",
+   "xy": [
+    -628.2,
+    -486.4
+   ],
+   "block_m": 203,
+   "held_out": true,
+   "weekday": {
+    "model": 1047,
+    "by_group": {
+     "resident": 475,
+     "worker": 319,
+     "hotel": 90,
+     "visitor": 17,
+     "unsheltered": 7,
+     "passerby": 139
+    },
+    "2023": 2407,
+    "2025": 2406,
+    "observed_mean": 2406,
+    "ratio": 0.44
+   },
+   "weekend": {
+    "model": 334,
+    "by_group": {
+     "resident": 251,
+     "worker": 6,
+     "hotel": 37,
+     "visitor": 9,
+     "passerby": 31
+    },
+    "2023": 35,
+    "2025": 884,
+    "observed_mean": 460,
+    "ratio": 0.73
+   }
+  },
+  {
+   "name": "6th St bw Main St & Spring St",
+   "index": "21-6",
+   "xy": [
+    1.1,
+    -601.1
+   ],
+   "block_m": 124,
+   "held_out": false,
+   "weekday": {
+    "model": 1003,
+    "by_group": {
+     "resident": 440,
+     "worker": 240,
+     "hotel": 73,
+     "visitor": 6,
+     "unsheltered": 91,
+     "passerby": 153
+    },
+    "2023": 1660,
+    "2025": 1501,
+    "observed_mean": 1580,
+    "ratio": 0.63
+   },
+   "weekend": {
+    "model": 428,
+    "by_group": {
+     "resident": 272,
+     "worker": 4,
+     "hotel": 42,
+     "visitor": 1,
+     "unsheltered": 46,
+     "passerby": 63
+    },
+    "2023": 768,
+    "2025": 661,
+    "observed_mean": 714,
+    "ratio": 0.6
+   }
+  },
+  {
+   "name": "Spring St bw 6th St & 7th St",
+   "index": "19-51",
+   "xy": [
+    -110.1,
+    -641.1
+   ],
+   "block_m": 201,
+   "held_out": false,
+   "weekday": {
+    "model": 1261,
+    "by_group": {
+     "resident": 595,
+     "worker": 394,
+     "hotel": 11,
+     "visitor": 18,
+     "unsheltered": 33,
+     "passerby": 210
+    },
+    "2023": 2079,
+    "2025": null,
+    "observed_mean": 2079,
+    "ratio": 0.61
+   },
+   "weekend": {
+    "model": 447,
+    "by_group": {
+     "resident": 331,
+     "worker": 6,
+     "hotel": 19,
+     "visitor": 9,
+     "unsheltered": 2,
+     "passerby": 80
+    },
+    "2023": 788,
+    "2025": null,
+    "observed_mean": 788,
+    "ratio": 0.57
+   }
+  },
+  {
+   "name": "Main St bw 6th St & 7th St",
+   "index": "19-35",
+   "xy": [
+    -18.4,
+    -713.1
+   ],
+   "block_m": 200,
+   "held_out": false,
+   "weekday": {
+    "model": 733,
+    "by_group": {
+     "resident": 325,
+     "worker": 66,
+     "hotel": 6,
+     "visitor": 32,
+     "unsheltered": 48,
+     "passerby": 256
+    },
+    "2023": 883,
+    "2025": 878,
+    "observed_mean": 880,
+    "ratio": 0.83
+   },
+   "weekend": {
+    "model": 366,
+    "by_group": {
+     "resident": 209,
+     "worker": 1,
+     "hotel": 14,
+     "visitor": 34,
+     "unsheltered": 11,
+     "passerby": 96,
+     "littletokyo": 1
+    },
+    "2023": 374,
+    "2025": 369,
+    "observed_mean": 372,
+    "ratio": 0.99
+   }
+  }
+ ]
+}

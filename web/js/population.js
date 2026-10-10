@@ -420,11 +420,10 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const ui = {
     refresh() {
       $("#popClock").textContent = hhmm(st.t);
-      $("#popTime").value = st.t;
+      setTimeSlider(st.t);
       const c = counts;
       const byGroup = (g) => meta.types.reduce((s, _, k) => s + (GROUP[k] === g ? c.byType[k] : 0), 0);
-      $("#popCounts").innerHTML = SHOWN.map((g) => `<span><i class="sw" style="display:inline-block;background:${pc.colors[meta.types[g]]}"></i>${labelGroup[meta.types[g]]} ${Math.round(byGroup(g)).toLocaleString()}</span>`).join("") +
-        `<span class="tot">On site ${Math.round(c.total).toLocaleString()} · outdoors ${Math.round(c.outdoors).toLocaleString()} · on Y-1 ${Math.round(c.y1).toLocaleString()}</span>`;
+      $("#popCounts").innerHTML = SHOWN.map((g) => `<span><i class="sw" style="display:inline-block;background:${pc.colors[meta.types[g]]}"></i>${labelGroup[meta.types[g]]} ${Math.round(byGroup(g)).toLocaleString()}</span>`).join("");
       ui.drawChart();
     },
     drawChart() {
@@ -444,7 +443,12 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       ctx.fillText(`peak ${Math.round(max).toLocaleString()}`, 3 * devicePixelRatio, 11 * devicePixelRatio); ctx.globalAlpha = 1;
     },
   };
-  $("#popTime").oninput = (e) => { st.t = +e.target.value; st.dirty = true; };
+  // the time slider: knob and the filled part of its track (--p, as viewer.js does for its sliders)
+  function setTimeSlider(t) {
+    const r = $("#popTime"); r.value = t;
+    r.style.setProperty("--p", `${(100 * (r.value - r.min)) / (r.max - r.min)}%`);
+  }
+  $("#popTime").oninput = (e) => { st.t = +e.target.value; st.dirty = true; setTimeSlider(st.t); };
   $("#popPlay").onclick = () => setPlaying(!st.playing);
   // Weekday / Weekend: a segmented control with a sliding thumb, like Color (viewer.js moveThumb)
   function dayThumb(instant) {
@@ -464,7 +468,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   $(`#popDay button[data-d='${st.day}']`).classList.add("on");
   addEventListener("resize", () => dayThumb(true));
   const setPlaying = (on) => { st.playing = on; st.dirty = true; $("#popPlay").textContent = on ? "Pause" : "Play"; };
-  $("#popMethod").innerHTML = methodHtml(meta);
+  // the method text is on the project's Methods page, web/methods/ (user, 2026-10-10)
 
   // ---------- public ----------
   let lastNow = 0;
@@ -514,55 +518,4 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   };
   onStatus?.("");
   return api;
-}
-
-function methodHtml(meta) {
-  const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
-  const t = meta.totals;
-  const src = Object.entries(meta.sources).map(([k, v]) => `<li><b>${esc(k)}</b>: ${esc(v)}</li>`).join("");
-  const asm = Object.entries(meta.assumptions).map(([k, v]) => `<li><b>${esc(k)}</b>: ${esc(JSON.stringify(v.value))}. ${esc(v.note)}</li>`).join("");
-  const fmt = (n) => Math.round(n).toLocaleString();
-  const notPlaced = t.residents_by_rule?.["not placed"] ?? 0;
-  const metro = meta.calibration?.metro ?? {};
-  const rows = Object.entries(metro).filter(([, v]) => !v.transfer_hub)
-    .map(([k, v]) => `<tr><td>${esc(k)}</td><td>${fmt(v.model_boardings)}</td><td>${fmt(v.metro_boardings)}</td><td>${v.ratio}</td></tr>`).join("");
-  const mSum = Object.values(metro).filter((v) => !v.transfer_hub);
-  const ratio = (mSum.reduce((s, v) => s + v.model_boardings, 0) / mSum.reduce((s, v) => s + v.metro_boardings, 0)).toFixed(2);
-  return `<p><b>A modeled typical day, not real-time or observed data.</b> Across both day types:
-    ${fmt(t.by_type.worker)} jobs placed in buildings (LODES ${fmt(t.lodes_jobs_in_blocks)} jobs in the blocks touching the site,
-    scaled by each block's share inside the 2.5 km square around Y-1), ${fmt(t.by_type.resident)} residents (2020 Census),
-    ${fmt(t.by_type.hotel)} hotel guests and ${fmt(t.by_type.visitor)} visitors. Far from Y-1 only a share of people is drawn,
-    thinned like the point cloud; each drawn person counts for the people it stands for, so the totals and the chart include everyone.
-    Commute modes and arrival times come from CTPP (by tract where it is published), other trip times from NHTS;
-    routes follow OpenStreetMap paths.</p>
-    <p><b>Residents not placed</b>: ${fmt(notPlaced)} of the Census residents live in blocks near the edge whose buildings
-    are not modelled (thinned out of the point cloud or missing from the building entities). They are left out rather than
-    moved into other blocks' buildings.</p>
-    <p><b>People added after the street-count check</b>: people without shelter (LAHSA 2025 street count by tract,
-    dwellings at 1.75 people each; their daily walks are assumed), Little Tokyo visitors and passers-by who walk
-    through the site from edge to edge. Nobody publishes counts of the last two: their daily numbers are fitted to the
-    LADOT Walk &amp; Bike Counts (2023, 2025) on six blocks; three blocks (5th St, Grand Ave, Los Angeles St) are held
-    out as a check (site-model/population/data/walk_check.json). Blocks at the site edge get too many passers-by,
-    because they all enter and leave there. Residents of blocks whose buildings are not modelled (most of South Park)
-    are not drawn at home but walk from the street by their block; shops are Assessor retail parcels (OpenStreetMap maps
-    almost none here). Grand Ave between 7th and 8th St still comes out at about 0.4 of the count, for reasons not found.</p>
-    <p><b>Bunker Hill</b>: route choice counts steep streets as longer (Tobler's hiking function at half strength);
-    steps, escalators, elevators and Angels Flight are part of the network; Angels Knoll's own paths are closed (the
-    park is fenced). Anyone whose shortest route runs along Angels Flight rides it: about 1,700 trips on a weekday and
-    2,400 on a weekend day, against 1,200-1,500 a day last published (2010-13). Its hours (6:45 am-10 pm) and fare
-    are not modelled.</p>
-    <p><b>Metro check</b> (weekday): model rail trips leaving the site through each station's entrances, against Metro's
-    FY2026 average weekday boardings.</p>
-    <table><tr><th>Station</th><th>Model</th><th>Metro</th><th>Ratio</th></tr>${rows}
-    <tr><td>Five stations</td><td></td><td></td><td>${ratio}</td></tr></table>
-    <p>Riders take the line whose branch points toward home, then an entrance on that line, by walking distance and a
-    weight per station. The line weight (metroLines.lineWeight), the station weights (stationWeight) and how far riders
-    will walk past a nearer entrance (stationChoiceTemp) are fitted to these counts: <b>this table shows the fit, it is
-    not an independent check</b> (the LADOT walk counts are). Little Tokyo/Arts District is not fitted, because most of its
-    riders live beyond the modelled area. 7th St/Metro Center is a transfer hub and is not compared. The model has no
-    transfers and no trips that only pass through the site.</p>
-    <p><b>Sources</b></p><ul>${src}</ul><p><b>Assumptions</b> (site-model/population/data/assumptions.json)</p><ul>${asm}</ul>
-    <p><b>Known limits</b>: LODES counts jobs where employers report them; office floor area is from the Assessor, not
-    listings; arrival-time bins are City of LA averages within each tract's periods; hotel rooms are estimated from
-    floor area (historic hotels with ballrooms come out high).</p>`;
 }

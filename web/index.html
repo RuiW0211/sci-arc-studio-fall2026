@@ -18,28 +18,44 @@
   a.item:hover h2 { text-decoration: underline; }
   a.item h2 { font-size: 17px; margin: 0 0 2px; }
   a.item span { color: var(--muted); font-size: 13px; }
+  .theme-toggle { position: fixed; right: 16px; bottom: 16px; width: 36px; height: 36px; font-size: 1rem; color: var(--fg);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 3px; cursor: pointer; }
   footer { border-top: 1px solid var(--line); margin-top: 40px; padding-top: 16px; color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body>
 <main>
   <div class="kicker">Syracuse Visiting Studio · Fall 2026</div>
-  <h1>Angels Knoll / Parcel Y-1</h1>
+  <h1>Angels Knoll</h1>
   <p class="lede">Site model and studio work for Bunker Hill Parcel Y-1, NW corner of 4th and Hill Streets, Downtown Los Angeles.</p>
 
   <a class="item" href="viewer.html">
-    <h2>Site model viewer</h2>
-    <span>USGS 3DEP 2023 LiDAR point cloud, every point labelled by building, tree or vehicle · buildings with names and addresses · design files on top · click for details · views</span>
+    <h2>Model</h2>
+    <span>The site in 3D: an interactive model built from the 2023 LiDAR survey, with the studio's layers and proposals on top</span>
   </a>
 
   <a class="item" href="research/">
-    <h2>Y-1 research database</h2>
-    <span>Disposition, litigation, Surplus Land Act, zoning, MOCA, history · every finding with its sources and status</span>
+    <h2>Research</h2>
+    <span>What is known about Parcel Y-1: history, ownership, law and planning, each finding with its sources and status</span>
+  </a>
+
+  <a class="item" href="methods/">
+    <h2>Methods</h2>
+    <span>How each part of the project is made: data, steps, assumptions, checks and references</span>
   </a>
 
   <footer>
     Research: Clark &amp; Rui. Data: USGS 3DEP (public domain) · LA County GIS · © OpenStreetMap contributors (ODbL).
   </footer>
 </main>
+<button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
+<script>
+// as on the Research page: every visit opens in the system theme (not persisted); the button switches light / dark
+document.getElementById("themeToggle").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme === "dark" || (!root.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  root.dataset.theme = dark ? "light" : "dark";
+});
+</script>
 </body>
 </html>

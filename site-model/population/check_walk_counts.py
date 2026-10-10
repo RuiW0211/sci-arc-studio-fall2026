@@ -245,3 +245,6 @@ OUT.write_text(json.dumps({
     "hours": WINDOWS, "half_width_m": HALF_W, "held_out": sorted(HOLD_OUT), "fit": fit,
     "angels_flight": {**angels, "published": "1,200-1,500 trips a day (2010-13), about 2,200 (1996-2001)"}, "blocks": out}, indent=1), encoding="utf-8")
 print("wrote", OUT)
+if not ARGS.dir:   # the Methods page (web/methods/) shows the full run's check
+    (ROOT / "web" / "data" / "walk_check.json").write_text(OUT.read_text(encoding="utf-8"), encoding="utf-8")
+    print("copied to web/data/walk_check.json")
