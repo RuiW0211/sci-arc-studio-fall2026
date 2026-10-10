@@ -1,4 +1,4 @@
-"""Check the modeled street flows against LADOT Walk & Bike Counts (user, 2026-10-09). A check only: nothing is fitted.
+"""Check the modeled street flows against LADOT Walk & Bike Counts (user, 2026-10-09). A check, and the fit of the two calibrated groups (Little Tokyo visitors, passers-by) on the blocks not held out.
 
 LADOT counts people walking across one street block (both sidewalks, both directions) on one weekday, 7-10 am and
 3-6 pm, and one weekend day, 11 am-1 pm (fetch_walk_counts.py, 2023 and 2025). Each counted block is found in
@@ -25,6 +25,7 @@ HALF_W = 25.0          # m each side of the street centre line
 EDGE = 1150.0          # blocks this close to the site edge (1250 m) are skipped: paths are cut there
 WINDOWS = {"weekday": [(7, 10), (15, 18)], "weekend": [(11, 13)]}
 YEARS = (2023, 2025)
+HOLD_OUT = {"5th St bw Main St & Spring St", "Grand Ave bw 7th St & 8th St", "Los Angeles St bw Arcadia St & Aliso St"}
 
 OX, OY = json.loads((HERE.parent / "houdini" / "handoff" / "buildings.json").read_text(encoding="utf-8"))["origin_utm"]
 to_utm = Transformer.from_crs(4326, 26911, always_xy=True)
@@ -95,18 +96,34 @@ for (st, l1, l2), c in counts.items():
                       "block_m": round(blk), "line": (a, b), "counts": {y: c.get(y) for y in YEARS}})
 print(f"{len(sites)} counted blocks inside the site")
 
-# ---------------------------------------------------------------- the model, as the viewer plays it
+# ---------------------------------------------------------------- the model: everyone, before thinning
+# prep_population.py writes data/raw/population_full.npz (every person, weight 1). Without it, the viewer's thinned
+# file is used, whose large weights far from Y-1 make the counts there noisy.
 meta = json.loads((ROOT / "web" / "data" / "population.json").read_text(encoding="utf-8"))
-buf = (ROOT / "web" / "data" / "population.bin").read_bytes()
-T = {"float32": np.float32, "uint32": np.uint32, "uint16": np.uint16, "int16": np.int16, "uint8": np.uint8}
-sec = lambda k: np.frombuffer(buf, T[meta["sections"][k]["type"]], meta["sections"][k]["count"], meta["sections"][k]["offset"])
-nodes = sec("nodes").reshape(-1, 3)
-NX = np.c_[nodes[:, 0], -nodes[:, 2]]  # viewer (x, y up, z = -north) -> (east, north)
-poff, pn = sec("pathOffsets"), sec("pathNodes")
-weight, rank, sector = sec("weight"), sec("rank"), sec("sector")
-thr = np.array(meta["sectorAttendance"])[sector]
-present = rank < thr * 256
-F_ATTEND, F_EVENT = meta["flags"]["attendance"], meta["flags"]["event"]
+FULL = RAW / "population_full.npz"
+if FULL.exists():
+    Z = np.load(FULL)
+    NX, poff, pn = Z["nodes"].astype(float), Z["pathOffsets"], Z["pathNodes"]
+    TYPE, present = Z["type"], Z["present"]
+    weight = np.ones(len(TYPE))
+    LT_A = int(Z["littletokyo_anchor"])
+    DAYS = {d: (Z[f"{d}.offsets"], Z[f"{d}.path"], (Z[f"{d}.t0"] + Z[f"{d}.t1"]) / 2 / 3600, Z[f"{d}.attend"],
+                Z[f"{d}.orig"], Z[f"{d}.dest"]) for d in WINDOWS}
+    print("model: everyone, before thinning (data/raw/population_full.npz)")
+else:
+    buf = (ROOT / "web" / "data" / "population.bin").read_bytes()
+    T = {"float32": np.float32, "uint32": np.uint32, "uint16": np.uint16, "int16": np.int16, "uint8": np.uint8}
+    sec = lambda k: np.frombuffer(buf, T[meta["sections"][k]["type"]], meta["sections"][k]["count"], meta["sections"][k]["offset"])
+    nodes = sec("nodes").reshape(-1, 3)
+    NX = np.c_[nodes[:, 0], -nodes[:, 2]]  # viewer (x, y up, z = -north) -> (east, north)
+    poff, pn = sec("pathOffsets"), sec("pathNodes")
+    weight, TYPE = sec("weight"), sec("type")
+    present = sec("rank") < np.array(meta["sectorAttendance"])[sec("sector")] * 256
+    LT_A = next((k for k, n in enumerate(meta["anchors"]) if n.startswith("Little Tokyo")), -2)
+    TU, FA = meta["time_unit_s"], meta["flags"]["attendance"]
+    DAYS = {d: (sec(f"{d}.offsets"), sec(f"{d}.path"), (sec(f"{d}.t0").astype(float) + sec(f"{d}.t1")) / 2 * TU / 3600,
+                (sec(f"{d}.flags") & FA) > 0, sec(f"{d}.orig"), sec(f"{d}.dest")) for d in WINDOWS}
+    print("model: the viewer's thinned file (weights)")
 
 
 def seg_cross(P, Q, a, b):
@@ -132,28 +149,32 @@ for p in range(len(poff) - 1):
             cross[p, j] = seg_cross(seg[:-1], seg[1:], a, b)
 
 model = {d: np.zeros(len(sites)) for d in WINDOWS}
-TU = meta["time_unit_s"]
+by_group = {d: {} for d in WINDOWS}   # the same counts split by group (Little Tokyo visitors apart)
+GROUPS = meta["types"] + ["littletokyo"]
 for d, win in WINDOWS.items():
-    off, path, t0, t1, flags = (sec(f"{d}.{k}") for k in ("offsets", "path", "t0", "t1", "flags"))
+    off, path, tm, attend, orig, dest = DAYS[d]
     person = np.repeat(np.arange(len(off) - 1), np.diff(off))
-    tm = (t0.astype(float) + t1) / 2 * TU / 3600
     keep = np.zeros(len(path), bool)
     for h0, h1 in win:
         keep |= (tm >= h0) & (tm < h1)
-    keep &= ~(((flags & F_ATTEND) > 0) & ~present[person])
-    model[d] = (cross[path[keep]].astype(float) * weight[person[keep]][:, None]).sum(0)
+    keep &= ~(attend & ~present[person])
+    contrib = cross[path[keep]].astype(float) * weight[person[keep]][:, None]
+    model[d] = contrib.sum(0)
+    grp = TYPE[person[keep]].astype(int)
+    grp = np.where((orig[keep] == LT_A) | (dest[keep] == LT_A), len(GROUPS) - 1, grp)
+    by_group[d] = {GROUPS[g]: contrib[grp == g].sum(0) for g in range(len(GROUPS))}
 
 # ---------------------------------------------------------------- compare
 out = []
 print(f"\n{'counted block':52s} {'weekday 7-10 + 15-18':>28s}   {'weekend 11-13':>24s}")
 print(f"{'':52s} {'model':>8s} {'2023':>6s} {'2025':>6s} {'ratio':>6s}   {'model':>7s} {'2023':>6s} {'2025':>6s} {'ratio':>6s}")
 for j, s in sorted(enumerate(sites), key=lambda js: -js[1]["xy"][1]):
-    row = {"name": s["name"], "index": s["index"], "xy": s["xy"], "block_m": s["block_m"]}
+    row = {"name": s["name"], "index": s["index"], "xy": s["xy"], "block_m": s["block_m"], "held_out": s["name"] in HOLD_OUT}
     cells = []
     for d in WINDOWS:
         obs = [s["counts"][y][d] for y in YEARS if s["counts"].get(y) and s["counts"][y][d] is not None]
         mean = sum(obs) / len(obs) if obs else None
-        row[d] = {"model": round(float(model[d][j])), **{str(y): (s["counts"][y] or {}).get(d) if s["counts"].get(y) else None for y in YEARS},
+        row[d] = {"model": round(float(model[d][j])), "by_group": {g: round(float(v[j])) for g, v in by_group[d].items() if v[j] >= 0.5}, **{str(y): (s["counts"][y] or {}).get(d) if s["counts"].get(y) else None for y in YEARS},
                   "observed_mean": round(mean) if mean else None, "ratio": round(float(model[d][j]) / mean, 2) if mean else None}
         cells.append(row[d])
     out.append(row)
@@ -164,10 +185,34 @@ for d in WINDOWS:
     m = sum(r[d]["model"] for r in out if r[d]["observed_mean"])
     o = sum(r[d]["observed_mean"] for r in out if r[d]["observed_mean"])
     print(f"all blocks, {d}: model {m:,} / counted {o:,} = {m / o:.2f}")
+    for tag, sel in (("fitted blocks", lambda r: not r["held_out"]), ("held-out blocks", lambda r: r["held_out"])):
+        m = sum(r[d]["model"] for r in out if r[d]["observed_mean"] and sel(r))
+        o = sum(r[d]["observed_mean"] for r in out if r[d]["observed_mean"] and sel(r))
+        print(f"  {tag}: {m / o:.2f}" if o else f"  {tag}: -")
+
+# ---------------------------------------------------------------- the two calibrated groups (user, 2026-10-09)
+# Little Tokyo visitors: scale so the 1st St block matches on the weekend. Passers-by: least squares, per day type, on
+# the blocks that are not held out (and not 1st St); the held-out blocks stay an independent check.
+AS = json.loads((DATA / "assumptions.json").read_text(encoding="utf-8"))
+fit = {}
+lt = next(r for r in out if r["name"].startswith("1st St bw Central"))
+g = lt["weekend"]["by_group"].get("littletokyo", 0)
+if g:
+    k = (lt["weekend"]["observed_mean"] - (lt["weekend"]["model"] - g)) / g
+    fit["littleTokyo.annual"] = round(AS["littleTokyo"]["value"]["annual"] * max(k, 0), -3)
+for d in WINDOWS:
+    rows = [r for r in out if not r["held_out"] and r is not lt and r[d]["observed_mean"]]
+    pb = np.array([r[d]["by_group"].get("passerby", 0) for r in rows], float)
+    rest = np.array([r[d]["model"] - r[d]["by_group"].get("passerby", 0) for r in rows], float)
+    obs = np.array([r[d]["observed_mean"] for r in rows], float)
+    if pb.sum():
+        k = max(float(pb @ (obs - rest) / (pb @ pb)), 0)
+        fit[f"passersBy.{d}"] = round(AS["passersBy"]["value"][d] * k, -2)
+print("fitted values (to put in assumptions.json):", fit)
 
 (DATA / "walk_check.json").write_text(json.dumps({
     "note": "Modeled walkers crossing each LADOT count block (both sidewalks, both directions) in the count hours, against "
             "LADOT Walk & Bike Count 2023 and 2025 (one day each; observed_mean = their mean). A check only.",
     "sources": {str(y): f"LADOT Walk & Bike Count {y}, data.lacity.org" for y in YEARS},
-    "hours": WINDOWS, "half_width_m": HALF_W, "blocks": out}, indent=1), encoding="utf-8")
+    "hours": WINDOWS, "half_width_m": HALF_W, "held_out": sorted(HOLD_OUT), "fit": fit, "blocks": out}, indent=1), encoding="utf-8")
 print("wrote data/walk_check.json")

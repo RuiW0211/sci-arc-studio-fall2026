@@ -604,5 +604,47 @@
   "stationChoiceTemp": {
     "value": 300,
     "note": "CALIBRATED with stationWeight (user 2026-10-09): metres of extra walk at which a rider is e times less likely to use an entrance (softmin over walking distance). The first layer used 120 m, so nearly everyone took the nearest entrance and station weights had almost no effect (iteration 1); riders do walk past an entrance to reach a station that suits their trip (line, transfers), so 300 m."
+  },
+  "unsheltered": {
+    "value": {
+      "peoplePerDwelling": 1.75,
+      "walksPerDay": 3,
+      "walkWindow": [
+        7,
+        20
+      ],
+      "walkRadius": 600,
+      "dwellMin": [
+        20,
+        90
+      ]
+    },
+    "note": "People without shelter (user, 2026-10-09: a group of its own). Counts: LAHSA 2025 Greater Los Angeles Homeless Count, street count by census tract (raw volunteer tally of people and of cars, vans, RVs, tents, makeshift shelters; via the Economic Roundtable data library; data/lahsa_tracts.json), times the share of each tract's land inside the site. peoplePerDwelling 1.75 is DERIVED from the USC 2025 methodology report: (43,073 estimated unsheltered adults - 10,411 people counted) / 18,616 dwellings counted, county-wide. Raw tract tallies do not add up to LAHSA's published estimates. People in shelters (LAHSA counts 2,546 in these tracts) are left to the Census group quarters. walksPerDay, walkWindow, walkRadius (m), dwellMin: ASSUMPTIONS, no survey of daily movement."
+  },
+  "littleTokyo": {
+    "value": {
+      "annual": 3156000,
+      "latlon": [
+        34.0493,
+        -118.24
+      ],
+      "dwell": [
+        90,
+        40
+      ],
+      "window": [
+        10,
+        21
+      ]
+    },
+    "note": "Little Tokyo visitors, one destination at Japanese Village Plaza (hand-typed position). No published visitor count exists (the Little Tokyo Business Association only estimated an extra 1.5 million in 2024): the annual number is CALIBRATED to the LADOT count on 1st St (Central Ave - San Pedro St) and spread like the other visitors (visitorWeekendFactor). Fitted 2026-10-09 on everyone before thinning: 3,156,000 a year."
+  },
+  "passersBy": {
+    "value": {
+      "weekday": 24800,
+      "weekend": 24600,
+      "minCrossM": 800
+    },
+    "note": "People who walk through the site from one edge to another (minCrossM apart): between Union Station, the Arts District, Chinatown, South Park and the rest of Downtown. No source counts them: the daily numbers are CALIBRATED to the LADOT walk counts on the blocks not held out (5th St, Grand Ave and Los Angeles St are kept as a check). Start times follow all NHTS trips of the day. Fitted 2026-10-09 on everyone before thinning (data/raw/population_full.npz): weekday 24,800, weekend 24,600."
   }
 }

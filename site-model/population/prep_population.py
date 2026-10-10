@@ -65,7 +65,7 @@ SECTOR_LABELS = ["", "Agriculture", "Mining, oil & gas", "Utilities", "Construct
                  "Management of companies", "Administrative, support & waste services", "Educational services",
                  "Health care & social assistance", "Arts, entertainment & recreation",
                  "Accommodation & food services", "Other services", "Public administration"]
-TYPES = ["resident", "worker", "hotel", "visitor"]
+TYPES = ["resident", "worker", "hotel", "visitor", "unsheltered", "passerby"]
 MODES = ["stays", "walk", "bike", "bus", "rail", "drive", "taxi / other"]
 OFFICE = set(AS["officeSectors"])   # office schedule: hours, lunch out
 # weekday presence by sector (audit 2026-10-09): w x office attendance (Kastle) + (1 - w) x the in-person rate, with
@@ -581,7 +581,8 @@ def floor_spot(bid, residential=False):
 SPOT_HIDDEN, SPOT_HOME, SPOT_WORK, SPOT_PLACE = 0, 1, 2, 3
 F_ATTEND, F_EVENT = 1, 2
 PURPOSES = ["arrive for work", "leave work", "lunch", "back from lunch", "outing", "back home", "visit",
-            "leave the site", "after-work stop", "head out", "come home", "event", "ride Angels Flight"]
+            "leave the site", "after-work stop", "head out", "come home", "event", "ride Angels Flight",
+            "walk out", "back to their spot", "pass through"]
 P = {k: i for i, k in enumerate(PURPOSES)}
 anchor_names = [p["name"] for p in places] + [p["name"] for p in portals]
 place_idx = {id(p): k for k, p in enumerate(places)}
@@ -710,7 +711,7 @@ def new_person(kind, **kw):
 blocks = {}
 for f in load("blocks.geojson")["features"]:
     g = local(shape(f["geometry"])).buffer(0)
-    blocks[f["properties"]["GEOID"]] = {"geom": g, "frac": g.intersection(EXT).area / g.area,
+    blocks[f["properties"]["GEOID"]] = {"geom": g, "frac": g.intersection(EXT).area / g.area, "land": f["properties"]["AREALAND"] or 0,
                                         "pop": f["properties"]["POP100"] or 0, "hu": f["properties"]["HU100"] or 0}
 bld_block = {}
 for bid in BIDS:
@@ -1185,6 +1186,82 @@ for day in ("weekday", "weekend"):
         add_trip(p, day, rng.uniform(*ev["leave"]) * 3600, e["node"], q["node"], SPOT_HIDDEN, SPOT_HIDDEN,
                  "leave the site", 0, ea, portal_idx[id(q)])
 
+# ---------------------------------------------------------------- people the first layers left out (user, 2026-10-09)
+# The LADOT walk counts showed about half the people on the street missing: people without shelter, Little Tokyo's
+# visitors, and people who only walk through the site. assumptions: unsheltered, littleTokyo, passersBy.
+from shapely import contains_xy
+
+# unsheltered people (LAHSA 2025 street count by tract): people counted + dwellings (cars, vans, RVs, tents, makeshift
+# shelters) x people per dwelling, times the share of the tract's land inside the site; each has a spot on a street
+# inside its tract and walks out a few times a day (to food, services) and back.
+UN = AS["unsheltered"]
+lah = json.loads((POP / "lahsa_tracts.json").read_text(encoding="utf-8"))["tracts"]
+gaz = {t: c["aland_m2"] for t, c in lah.items()}
+tract_geom, tract_land = defaultdict(list), defaultdict(float)
+for g, b in blocks.items():
+    tract_geom[g[5:11]].append(b["geom"].intersection(EXT))
+    tract_land[g[5:11]] += b["land"] * b["frac"]
+NXYa = np.array([XYZ[n][:2] for n in range(len(XYZ))])
+un_log = {}
+for t, c in lah.items():
+    if t not in tract_geom or t not in gaz:
+        continue
+    share = min(tract_land[t] / gaz[t], 1.0)
+    n = round((c["people"] + c["dwellings"] * UN["peoplePerDwelling"]) * share)
+    if n <= 0:
+        continue
+    geom = unary_union(tract_geom[t])
+    cand = np.nonzero(contains_xy(geom, NXYa[:, 0], NXYa[:, 1]))[0]
+    if not len(cand):
+        continue
+    un_log[t] = {"people": c["people"], "dwellings": c["dwellings"], "share_in_site": round(share, 2), "modeled": n}
+    for _ in range(n):
+        node = int(cand[rng.integers(len(cand))])
+        p = new_person("unsheltered", mode=MODES.index("walk"))
+        x, y, z = XYZ[node]
+        p["home_spot"] = (x + rng.normal(0, 2), y + rng.normal(0, 2), z)
+        p["home_node"] = node
+        for day in ("weekday", "weekend"):
+            for _ in range(rng.poisson(UN["walksPerDay"])):
+                t0 = rng.uniform(*UN["walkWindow"]) * 3600
+                f = food_near(node, ("food",), radius=UN["walkRadius"])
+                go = leg_seconds(p, node, f["node"], SPOT_HOME, SPOT_PLACE, p["speed"])
+                dw = rng.uniform(*UN["dwellMin"]) * 60
+                if t0 + 2 * go + dw > DAY - 60 or not home_free(p["trips"][day], t0, t0 + 2 * go + dw):
+                    continue
+                t1 = add_trip(p, day, t0, node, f["node"], SPOT_HOME, SPOT_PLACE, "walk out", 0, -1, place_idx[id(f)])
+                add_trip(p, day, t1 + dw, f["node"], node, SPOT_PLACE, SPOT_HOME, "back to their spot", 0, place_idx[id(f)], -1)
+print("unsheltered", sum(p["type"] == 4 for p in people), "in", len(un_log), "tracts")
+
+# Little Tokyo visitors: one destination (Japanese Village Plaza), the annual count CALIBRATED to the LADOT count on
+# 1st St (Central Ave - San Pedro St); no published visitor count exists.
+LT = AS["littleTokyo"]
+lt_pt = Point(*ll2loc(*LT["latlon"]))
+lt_place = {"name": "Little Tokyo (Japanese Village Plaza)", "kind": "culture", "node": nearest_node(lt_pt), "w": 0.0}
+places.append(lt_place)
+anchor_names.append(lt_place["name"]); place_idx[id(lt_place)] = len(anchor_names) - 1
+for day in ("weekday", "weekend"):
+    ts = lambda: rng.uniform(*LT["window"]) * 3600
+    for _ in range(int(round(per_day(LT, day)))):
+        visitor(day, lt_place, ts(), float(np.clip(rng.normal(*LT["dwell"]), 15, 240)) * 60)
+
+# passers-by: people who walk through the site from one edge to another (to Union Station, the Arts District,
+# Chinatown, South Park...). Edge pairs at least minCrossM apart; start times = all NHTS trips of the day.
+# The daily numbers are CALIBRATED to the LADOT counts (the held-out blocks stay a check).
+PB = AS["passersBy"]
+EDGES = by_kind["edge"]
+EXY = np.array([XYZ[q["node"]][:2] for q in EDGES])
+all_t = {d: time_sampler([k.split("|")[1] for k in nhts["start"] if k.startswith(d + "|to=")], 5, 24, d) for d in ("weekday", "weekend")}
+for day in ("weekday", "weekend"):
+    for _ in range(int(round(PB[day]))):
+        a = int(rng.integers(len(EDGES)))
+        far = np.nonzero(np.hypot(*(EXY - EXY[a]).T) >= PB["minCrossM"])[0]
+        b = int(far[rng.integers(len(far))])
+        p = new_person("passerby", mode=MODES.index("walk"))
+        add_trip(p, day, all_t[day](), EDGES[a]["node"], EDGES[b]["node"], SPOT_HIDDEN, SPOT_HIDDEN, "pass through", 0,
+                 portal_idx[id(EDGES[a])], portal_idx[id(EDGES[b])])
+print("little tokyo visitors", {d: int(round(per_day(LT, d))) for d in ("weekday", "weekend")}, "passers-by", {d: PB[d] for d in ("weekday", "weekend")})
+
 for p in people:
     for d in p["trips"]:
         p["trips"][d].sort(key=lambda t: t[0])
@@ -1200,12 +1277,12 @@ def present(p, day, attendance):
 
 
 def default_spot(p):
-    return SPOT_HOME if p["type"] in (0, 2) else SPOT_HIDDEN
+    return SPOT_HOME if p["type"] in (0, 2, 4) else SPOT_HIDDEN
 
 
 def onsite_curve(day, attendance, event=False):
     """People on site (indoors, at a place, or walking) per 15-minute bin, by type."""
-    out = np.zeros((4, 96))
+    out = np.zeros((len(TYPES), 96))
     t = (np.arange(96) + 0.5) * 900
     for p in people:
         tr = [x for x in p["trips"][day] if (not x[6] & F_ATTEND or present(p, day, attendance)) and (not x[6] & F_EVENT or event)]
@@ -1219,7 +1296,7 @@ att = AS["officeAttendance"]
 checks = {}
 for day in ("weekday", "weekend"):
     c = onsite_curve(day, att)
-    checks[day] = {TYPES[k]: [int(x) for x in c[k]] for k in range(4)}
+    checks[day] = {TYPES[k]: [int(x) for x in c[k]] for k in range(len(TYPES))}
     tot = c.sum(0)
     print(f"{day}: on site at 03:00 {int(tot[12])}, 08:00 {int(tot[32])}, 12:30 {int(tot[50])}, 15:00 {int(tot[60])},"
           f" 19:00 {int(tot[76])}, 23:00 {int(tot[92])}  (peak {int(tot.max())} at {int(tot.argmax()) // 4:02d}:{int(tot.argmax()) % 4 * 15:02d})")
@@ -1266,8 +1343,33 @@ R0, PW, KMIN, EDGE, EDGE_W, JIT = (TH["full_density_radius_m"], TH["falloff_powe
                                    TH.get("edge_width_m", 300), TH.get("object_jitter", 0.18))
 all_people = len(people)
 
+# Everyone, before thinning, for check_walk_counts.py (data/raw/, not committed): the viewer's thinned file carries
+# large weights far from Y-1, too noisy to compare with street counts there.
+_trip_path = {d: [path_between(t[2], t[3])[0] for p in people for t in p["trips"][d]] for d in ("weekday", "weekend")}
+_full = {"nodes": np.array([XYZ[n][:2] for n in range(len(XYZ))], np.float32),
+         "pathOffsets": np.cumsum([0] + [len(q) for q in paths]).astype(np.uint32),
+         "pathNodes": np.array([n for q in paths for n in q], np.uint32),
+         "type": np.array([p["type"] for p in people], np.uint8),
+         "present": np.array([present(p, "weekday", att) for p in people], bool),
+         "littletokyo_anchor": np.int16(place_idx[id(lt_place)])}
+for d in ("weekday", "weekend"):
+    tr = [t for p in people for t in p["trips"][d]]
+    _full[f"{d}.offsets"] = np.cumsum([0] + [len(p["trips"][d]) for p in people]).astype(np.uint32)
+    _full[f"{d}.path"] = np.array(_trip_path[d], np.uint32)
+    _full[f"{d}.t0"] = np.array([t[0] for t in tr], np.float32)
+    _full[f"{d}.t1"] = np.array([t[1] for t in tr], np.float32)
+    _full[f"{d}.attend"] = np.array([bool(t[6] & F_ATTEND) for t in tr], bool)
+    _full[f"{d}.orig"] = np.array([t[8] for t in tr], np.int16)
+    _full[f"{d}.dest"] = np.array([t[9] for t in tr], np.int16)
+(POP / "raw").mkdir(exist_ok=True)
+np.savez_compressed(POP / "raw" / "population_full.npz", **_full)
+del _full, _trip_path
+
 
 def anchor_xy(p):
+    if p["type"] == 5:
+        idx, _ = path_between(*p["trips"]["weekday" if p["trips"]["weekday"] else "weekend"][0][2:4])
+        return min((tuple(XYZ[n][:2]) for n in paths[idx]), key=lambda xy: math.hypot(*xy))
     s = p["work_spot"] if p["type"] == 1 else p["home_spot"]
     if s:
         return s[0], s[1]
@@ -1377,7 +1479,7 @@ meta = {
                    "area_src": B[b]["area_src"], "units": B[b]["units"], "jobs": B[b]["jobs"],
                    "residents": B[b]["residents"], "rooms": B[b]["rooms"], "guests": B[b]["guests"],
                    "base": round(min(bb for _, bb, _ in prisms[b]), 1), "fh": B[b]["fh"]} for b in BIDS],
-    "event": AS["event"]["name"],
+    "event": AS["event"]["name"], "unsheltered_by_tract": un_log,
     "calibration": {"metro": calibration, "note": "model weekday rail trips leaving / entering the site through each station's entrances, against Metro FY2026 average weekday boardings (assumptions: metroBoardings)"},
     # the Y-1 parcel (LA County Assessor, APN 5149-010-951), scene-local [x east, y north], for the "on Y-1" count
     "y1": [[[round(x, 2), round(y, 2)] for x, y in local(shape(f["geometry"])).exterior.coords]

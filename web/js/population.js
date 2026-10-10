@@ -63,7 +63,8 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   }
   updatePresence();
   const active = (D, i, k) => { const f = D.flags[k]; return !((f & F_ATTEND) && !present[i]) && !((f & F_EVENT) && !st.event); };
-  const defaultSpot = (i) => (type[i] === 0 || type[i] === 2 ? HOME : HIDDEN);
+  const T_UNSH = meta.types.indexOf("unsheltered");
+  const defaultSpot = (i) => (type[i] === 0 || type[i] === 2 || type[i] === T_UNSH ? HOME : HIDDEN);
 
   // where person i is at time T (seconds): {k: trip index or -1, moving, spot}
   function locate(D, i, T) {
@@ -130,7 +131,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     if (loc.spot === HIDDEN) return 0;
     const node = loc.k >= 0 ? ends(D, loc.k)[1] : 0;
     spotPos(i, loc.spot, node, out);
-    return loc.spot === PLACE ? 3 : 1;   // 1 indoors (home / work), 3 at a place
+    return loc.spot === PLACE || (loc.spot === HOME && type[i] === T_UNSH) ? 3 : 1;   // 1 indoors (home / work), 3 outdoors at a place or spot
   }
 
   // ---------- distance fade (user, 2026-10-08: "like the point cloud, dense to sparse"): the point cloud's own rule
@@ -299,7 +300,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const y1 = (meta.y1 || []).map((ring) => ring.map(([x, n]) => [x, -n]));   // Y-1 parcel, written by prep_population.py
   const inY1 = (x, z) => y1.some((r) => { let c = false; for (let a = 0, b = r.length - 1; a < r.length; b = a++) { if ((r[a][1] > z) !== (r[b][1] > z) && x < ((r[b][0] - r[a][0]) * (z - r[a][1])) / (r[b][1] - r[a][1]) + r[a][0]) c = !c; } return c; });
 
-  const counts = { total: 0, byType: [0, 0, 0, 0], indoors: 0, outdoors: 0, y1: 0 };
+  const counts = { total: 0, byType: meta.types.map(() => 0), indoors: 0, outdoors: 0, y1: 0 };
   function update() {
     const D = days[st.day], T = st.t;
     counts.total = counts.indoors = counts.outdoors = counts.y1 = 0;
@@ -362,8 +363,10 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   }
 
   // ---------- story for a clicked person ----------
-  const B = meta.buildings, labelType = { resident: "Resident", worker: "Worker", hotel: "Hotel guest", visitor: "Visitor" };
-  const labelGroup = { resident: "Residents", worker: "Workers", visitor: "Visitors (incl. hotel guests)" };
+  const B = meta.buildings, labelType = { resident: "Resident", worker: "Worker", hotel: "Hotel guest", visitor: "Visitor",
+    unsheltered: "Person without shelter", passerby: "Passer-by" };
+  const labelGroup = { resident: "Residents", worker: "Workers", visitor: "Visitors (incl. hotel guests)",
+    unsheltered: "Without shelter", passerby: "Passers-by" };
   const compass = (deg) => ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(deg / 45) % 8];
   const bname = (k) => (k >= 0 ? B[k].name || B[k].addr[0] || B[k].id : "–");
   const floorOf = (k, spot, i) => (k >= 0 ? Math.max(1, Math.round((spot[3 * i + 1] / 10 - B[k].base) / B[k].fh) + 1) : 0);
@@ -375,6 +378,8 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     if (sl) rows.push(["Industry", sl]);
     if (homeBld[i] >= 0) rows.push([t === "hotel" ? "Staying at" : "Lives at", `${bname(homeBld[i])}, floor ${floorOf(homeBld[i], homeSpot, i)}`]);
     else if (t === "worker") rows.push(["Lives", `about ${(distKm[i] / 100).toFixed(1)} km ${compass((bearing[i] / 255) * 360)} (tract ${meta.tracts[tract[i]].slice(5)})`]);
+    else if (t === "unsheltered") rows.push(["Stays", "on the street in this tract (LAHSA 2025 street count, modeled spot)"]);
+    else if (t === "passerby") rows.push(["Walks", "through the site, from one edge to another"]);
     if (mode[i]) rows.push(["Gets here by", meta.modes[mode[i]]]);
     const trips = [];
     let attendDep = false;
@@ -515,6 +520,12 @@ function methodHtml(meta) {
     <p><b>Residents not placed</b>: ${fmt(notPlaced)} of the Census residents live in blocks near the edge whose buildings
     are not modelled (thinned out of the point cloud or missing from the building entities). They are left out rather than
     moved into other blocks' buildings.</p>
+    <p><b>People added after the street-count check</b>: people without shelter (LAHSA 2025 street count by tract,
+    dwellings at 1.75 people each; their daily walks are assumed), Little Tokyo visitors and passers-by who walk
+    through the site from edge to edge. Nobody publishes counts of the last two: their daily numbers are fitted to the
+    LADOT Walk &amp; Bike Counts (2023, 2025) on six blocks; three blocks (5th St, Grand Ave, Los Angeles St) are held
+    out as a check (site-model/population/data/walk_check.json). Blocks at the site edge get too many passers-by,
+    because they all enter and leave there.</p>
     <p><b>Metro check</b> (weekday): model rail trips leaving the site through each station's entrances, against Metro's
     FY2026 average weekday boardings.</p>
     <table><tr><th>Station</th><th>Model</th><th>Metro</th><th>Ratio</th></tr>${rows}
