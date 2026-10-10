@@ -7,14 +7,13 @@
    "parts": [
     "BLD_485426841221",
     "BLD_485649841129",
-    "BLD_485752841247",
     "PC_-159_-80",
     "PC_-154_-56"
    ],
    "use": "office tower",
    "source": "Google Maps label (Consulate General of Japan inside), viewed 2026-10-08",
    "status": "confirmed",
-   "note": "the two small parts (6 m2, 194 m2) are slivers carrying the tower height",
+   "note": "the two small parts (6 m2, 194 m2) are slivers carrying the tower height; BLD_485752841247 (the Angels Flight upper station house and its base walls, inside the same LARIAC outline group) moved to Angels Flight E005 (user, 2026-10-10)",
    "address": "350 S Grand Ave, Los Angeles, CA 90071",
    "address_source": "LA County Assessor parcels (public.gis.lacounty.gov, downloaded 2026-10-08), matched by the entity's LiDAR points",
    "parcel": {
@@ -123,7 +122,8 @@
     "AF_Pier_06",
     "AF_Pier_07",
     "AF_Pier_08",
-    "AF_Pier_09"
+    "AF_Pier_09",
+    "BLD_485752841247"
    ],
    "use": "funicular railway (historic landmark)",
    "source": "Google Maps label, viewed 2026-10-08",
@@ -136,7 +136,8 @@
     ],
     "use": "Government Parcel",
     "situs": null
-   }
+   },
+   "note": "BLD_485752841247 = the upper station house and its base walls (LARIAC), moved here from Two California Plaza (user, 2026-10-10)"
   },
   {
    "id": "E006",

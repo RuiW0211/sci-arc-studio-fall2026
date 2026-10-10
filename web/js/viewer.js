@@ -181,6 +181,7 @@ let glassAt = -1e9;   // last adaptive-glass check (see adaptGlass); declared ea
 const lidarGroup = new THREE.Group();
 scene.add(lidarGroup);
 let lidar = null;
+let lidarDensityMatch = null, lidarPlazaPoints = 0;   // object -> ground / own density, for the moved structures (loadLidar)
 
 function applyVisibility() {
   for (const L of ordered) {
@@ -220,14 +221,14 @@ function pointMaterial(sizeMetres) {
     withFocus(shader);
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nuniform float uColorMix, uSelK;\nuniform vec3 uHi;\nvarying float vSel;\n" +
+    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nuniform float uColorMix, uSelK;\nuniform vec3 uHi;\nvarying float vSel;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
   vColor.rgb = mix(vColor.rgb, uHi, sw);
   vSel = sw;`);
     shader.vertexShader = shader.vertexShader.replace(
-      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize, 1.0);\n#include <fog_vertex>");
+      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n#include <fog_vertex>");
     // round points instead of squares
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <clipping_planes_fragment>",
@@ -266,6 +267,31 @@ async function loadLidar() {
   // unassigned points draw as Terrain); the objects keep their own names
   const MERGE = cfg.mergeLayers || {};
   const objNames = objAttr?.names ?? ["_other"], objLayers = (objAttr?.layers ?? ["_other"]).map((l) => MERGE[l] ?? l);
+  // config.json landmarks (user, 2026-10-10): the listed entities draw as Landmarks, all their parts (one thing, one
+  // colour: also the LARIAC part of Angels Flight); every other object of the Landmarks layer draws as Buildings
+  if (cfg.landmarks) {
+    const lm = new Set();
+    for (const L of cfg.landmarks) {
+      // one entry per designated monument; it can span several entities (Times Mirror Square: a block of five), and an
+      // entity can carry two (Forve-Pettebone and the Roxie share a lot): the first names it, the reasons add up
+      for (const part of L.parts ?? [L.part]) {
+        const e = entityOfName.get(part); if (!e) continue;
+        const first = !lm.has(e); lm.add(e);
+        if (first && L.name && (e.status === "auto" || L.rename)) {   // automatic entities are named by their address
+          if (!e.address && /^\d/.test(e.name)) e.address = e.name;
+          e.name = L.name;
+        }
+        e.landmark = e.landmark && !first ? `${e.landmark}; ${L.basis}` : L.basis;
+        if (first && L.built) e.built = [L.built, L.builtSource];
+        if (L.builtAs) { e.builtAs = L.builtAs; e.builtAsSource = L.builtAsSource; }
+        if (L.now) e.nowFixed = L.now;
+      }
+    }
+    objNames.forEach((nm, k) => {
+      if (lm.has(entityOfName.get(nm))) objLayers[k] = "Landmarks";
+      else if (objLayers[k] === "Landmarks") objLayers[k] = "Buildings";
+    });
+  }
   // estimated facade points join the measured ones as ordinary building points: the object of their nearest return,
   // that object's mean intensity, class "building"; after this nothing tells them apart
   if (facadeData?.obj) {
@@ -287,6 +313,136 @@ async function loadLidar() {
     });
     P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
     facadeData = null;   // memory
+  }
+  // config.json claims: a landmark takes the points of other objects right next to its own (user, 2026-10-10: part of
+  // the Angels Flight upper station lies inside the Two California Plaza outline and was drawn as the tower). A point of
+  // a `from` layer within marginM of a point of a `layer` object joins that object.
+  for (const CL of cfg.claims || []) {
+    const lay = objAttr?.layers ?? [], g = CL.marginM, own = new Map();
+    const key = (x, y, z) => ((Math.floor(x / g) + 4096) * 8192 + Math.floor(y / g) + 4096) * 8192 + Math.floor(z / g) + 4096;
+    for (let i = 0; i < n; i++) if (lay[obj[i]] === CL.layer) own.set(key(P[3 * i], P[3 * i + 1], P[3 * i + 2]), obj[i]);
+    if (!own.size) continue;
+    const from = new Set(CL.from);
+    for (let i = 0; i < n; i++) {
+      if (!from.has(lay[obj[i]])) continue;
+      const x = Math.floor(P[3 * i] / g), y = Math.floor(P[3 * i + 1] / g), z = Math.floor(P[3 * i + 2] / g);
+      search: for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+        const o = own.get(((x + dx + 4096) * 8192 + y + dy + 4096) * 8192 + z + dz + 4096);
+        if (o !== undefined) { obj[i] = o; break search; }
+      }
+    }
+  }
+  // config.json plazas: the open ground around a tower that the building outline takes in (user, 2026-10-10, after Two
+  // California Plaza: LARIAC draws the tower and its Watercourt plaza as one outline) goes back to the ground. In an
+  // object of the layer at least minBuildingM tall, a cellM plan cell whose highest return is under maxHagM above the
+  // ground has no building over it: a plaza, steps, a terrace at street level. Its points become ground points (object
+  // Terrain), so they are coloured, picked and counted as the ground.
+  const PZ = cfg.plazas, terrainObj = objNames.indexOf("Terrain");
+  if (PZ && HG && terrainObj >= 0) {
+    const top = new Float32Array(objNames.length).fill(-1e9), lay = objAttr?.layers ?? [];
+    for (let i = 0; i < n; i++) { const o = obj[i]; if (lay[o] === PZ.layer && HG[i] / 10 > top[o]) top[o] = HG[i] / 10; }
+    const cm = PZ.cellM, keyOf = (o, i) => o * 4294967296 + (Math.floor(P[3 * i] / cm) + 32768) * 65536 + Math.floor(P[3 * i + 2] / cm) + 32768;
+    const tall = (o) => lay[o] === PZ.layer && top[o] >= PZ.minBuildingM;
+    const col = new Map();   // (object, cell) -> [highest return above the ground, its height, plaza?]
+    for (let i = 0; i < n; i++) {
+      const o = obj[i]; if (!tall(o)) continue;
+      const k = keyOf(o, i), h = HG[i] / 10, c = col.get(k);
+      if (!c) col.set(k, [h, P[3 * i + 1], false]); else if (h > c[0]) { c[0] = h; c[1] = P[3 * i + 1]; }
+    }
+    for (const c of col.values()) c[2] = c[0] < PZ.maxHagM;
+    // the plaza's edges: a cell next to the plaza whose top is no higher than the plaza (within PZ.edgeM) - the walls
+    // and steps down to a lower street, where the ground below makes them look tall - joins it, PZ.grow cells out
+    for (let g = 0; g < (PZ.grow ?? 0); g++) {
+      const add = [];
+      for (const [k, c] of col) {
+        if (c[2]) continue;
+        for (let dx = -1; dx <= 1 && !c[2]; dx++) for (let dz = -1; dz <= 1; dz++) {
+          const nb = col.get(k + dx * 65536 + dz);
+          if (nb && nb[2] && c[1] <= nb[1] + PZ.edgeM) { add.push(c); break; }
+        }
+      }
+      for (const c of add) c[2] = true;
+    }
+    let moved = 0;
+    for (let i = 0; i < n; i++) {
+      const o = obj[i]; if (!tall(o)) continue;
+      if (col.get(keyOf(o, i))[2]) { obj[i] = terrainObj; moved++; }
+    }
+    lidarPlazaPoints = moved;   // for checks (__viewer)
+  }
+  // config.json splitLayers sends some objects of a layer elsewhere (user, 2026-10-10: of the LiDAR-only structures,
+  // the bridges, raised walkways, street and plaza decks and canopies draw with the ground and streets; the rest are
+  // building parts and join Buildings through mergeLayers). An object goes when its entity's checked use names it
+  // (s.uses, e.g. the Grand Avenue deck), or by shape: thin (s.maxThickM between the 5th and 95th percentile of its
+  // heights, so a railing or lamp post does not make a deck "thick") and held s.minHagM-s.maxHagM above the ground.
+  const rawLayers = objAttr?.layers ?? ["_other"], moved = new Map();   // moved: object -> its split rule
+  for (const [raw, s] of Object.entries(cfg.splitLayers || {})) {
+    if (!HG || raw.startsWith("_")) continue;
+    const ys = new Map(), hs = new Float64Array(objNames.length);
+    for (let i = 0; i < n; i++) {
+      const o = obj[i]; if (rawLayers[o] !== raw) continue;
+      (ys.get(o) ?? ys.set(o, []).get(o)).push(P[3 * i + 1]);
+      hs[o] += HG[i] / 10;
+    }
+    const byUse = s.uses ? new RegExp(s.uses, "i") : null;
+    for (const [o, y] of ys) {
+      if (objLayers[o] === "Landmarks") continue;   // a landmark keeps all its parts
+      y.sort((p, q) => p - q);
+      const at = (f) => y[Math.round(f * (y.length - 1))], h = hs[o] / y.length;
+      const use = entityOfName.get(objNames[o])?.use ?? "";
+      if ((byUse && byUse.test(use)) || (at(0.95) - at(0.05) < s.maxThickM && h >= s.minHagM && h <= s.maxHagM)) {
+        objLayers[o] = s.to; if (s.matchDensity) moved.set(o, s);
+      }
+    }
+  }
+  // the moved objects are drawn as densely as the ground around them (user, 2026-10-10, option A): the LiDAR has about
+  // half the returns on a deck that it has on the street, and far from Y-1 each object keeps its own random share of
+  // points while the ground thins smoothly, so a deck looked darker or brighter than the street in the same colour.
+  // Per object: f = mean ground returns per 2 m cell around it (its box + 20 m, cells it covers left out) / its own
+  // mean per cell (over cells with returns); f < 1 drops points at random down to the ground's density, f > 1 draws its points sqrt(f) times
+  // larger (at most matchDensity.maxSize) so they cover the same share of the screen. Only the drawing changes.
+  const sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
+  if (moved.size) {
+    const CM = 2, PAD = 10, cellOf = (x, z) => (Math.floor(x / CM) + 32768) * 65536 + Math.floor(z / CM) + 32768;
+    const own = new Map(), box = new Map();
+    for (let i = 0; i < n; i++) {
+      const o = obj[i]; if (!moved.has(o)) continue;
+      const x = P[3 * i], z = P[3 * i + 2], c = cellOf(x, z);
+      let m = own.get(o); if (!m) own.set(o, (m = new Map()));
+      m.set(c, (m.get(c) || 0) + 1);
+      let b = box.get(o); if (!b) box.set(o, (b = [x, z, x, z]));
+      if (x < b[0]) b[0] = x; if (z < b[1]) b[1] = z; if (x > b[2]) b[2] = x; if (z > b[3]) b[3] = z;
+    }
+    const ground = new Map();    // cells around the moved objects -> ground returns
+    for (const [o, b] of box) {
+      const m = own.get(o);
+      for (let x = Math.floor(b[0] / CM) - PAD; x <= Math.floor(b[2] / CM) + PAD; x++)
+        for (let z = Math.floor(b[1] / CM) - PAD; z <= Math.floor(b[3] / CM) + PAD; z++) {
+          const c = (x + 32768) * 65536 + z + 32768; if (!m.has(c)) ground.set(c, 0);
+        }
+    }
+    const groundRaw = new Set([...moved.values()].map((s) => s.to));
+    for (let i = 0; i < n; i++) {
+      if (!groundRaw.has(rawLayers[obj[i]])) continue;
+      const c = cellOf(P[3 * i], P[3 * i + 2]), v = ground.get(c);
+      if (v !== undefined) ground.set(c, v + 1);
+    }
+    const mean = (a) => a.reduce((p, q) => p + q, 0) / a.length;
+    const f = new Map(), seed = (i) => { let h = (i * 2654435761) >>> 0; h ^= h >>> 15; return (h % 10007) / 10007; };
+    for (const [o, b] of box) {
+      const m = own.get(o), g = [];
+      for (let x = Math.floor(b[0] / CM) - PAD; x <= Math.floor(b[2] / CM) + PAD; x++)
+        for (let z = Math.floor(b[1] / CM) - PAD; z <= Math.floor(b[3] / CM) + PAD; z++) {
+          const v = ground.get((x + 32768) * 65536 + z + 32768); if (v) g.push(v);
+        }
+      if (g.length >= 10 && m.size >= 3) f.set(o, mean(g) / mean([...m.values()]));
+    }
+    for (let i = 0; i < n; i++) {
+      const k = f.get(obj[i]); if (k === undefined) continue;
+      if (k < 1) drop[i] = seed(i) > k ? 1 : 0;
+      else sizeK[i] = Math.round(64 * Math.min(Math.sqrt(k), moved.get(obj[i]).matchDensity.maxSize ?? 2.5));
+    }
+    lidarDensityMatch = f;   // for checks (__viewer)
   }
   const material = pointMaterial(cfg.lidar.size ?? 0.3);
   // local density of each point's layer (returns per m2 of plan, from a 10 m grid, bilinear so it varies smoothly) and a
@@ -312,6 +468,7 @@ async function loadLidar() {
   // bucket point indices by layer and LOD chunk
   const buckets = new Map();
   for (let i = 0; i < n; i++) {
+    if (drop[i]) continue;
     const c = lodCell(P[3 * i], P[3 * i + 2]);
     const key = `${objLayers[obj[i]]}|${c}|${Math.floor(P[3 * i] / c)}|${Math.floor(P[3 * i + 2] / c)}`;
     let b = buckets.get(key); if (!b) buckets.set(key, (b = []));
@@ -323,8 +480,10 @@ async function loadLidar() {
     idx.sort((a, b) => q[a] - q[b]);   // by draw priority: the first k points are the ones to keep when thinning
     const pos = new Float32Array(m * 3), zs = new Float32Array(m), cls = new Uint8Array(m), inten = new Uint8Array(m), ob = new Uint16Array(m);
     const qs = new Float32Array(m), hag = HG ? new Int16Array(m) : null;   // height above ground, 0.1 m (Houdini LAZ)
+    const sz = new Uint8Array(m);
     for (let j = 0; j < m; j++) {
       const i = idx[j];
+      sz[j] = sizeK[i];
       pos[3 * j] = P[3 * i]; pos[3 * j + 1] = P[3 * i + 1]; pos[3 * j + 2] = P[3 * i + 2];
       zs[j] = P[3 * i + 1]; cls[j] = C[i]; inten[j] = I[i]; ob[j] = obj[i]; qs[j] = q[i];
       if (hag) hag[j] = HG[i];
@@ -335,6 +494,7 @@ async function loadLidar() {
     g.setAttribute("color", new THREE.BufferAttribute(col, 3));
     g.setAttribute("color0", new THREE.BufferAttribute(new Uint8Array(m * 3), 3, true));   // the colours before a change
     g.setAttribute("aSel", new THREE.BufferAttribute(new Uint8Array(m), 1));               // selection mark (paintSelection)
+    g.setAttribute("aSize", new THREE.BufferAttribute(sz, 1));                             // point size x 64 (density match)
     g.computeBoundingSphere();
     const pts = new THREE.Points(g, material);
     pts.frustumCulled = true;
@@ -881,12 +1041,27 @@ function objectTag(node, point, objSet) {
 }
 // an entity (a whole building / landmark). Use = our own description (typed by hand after checking Google Earth / Maps);
 // for automatic entities the assessor's class. "Land use (assessor)" only when it says more than Use.
+// the assessor's use codes in plain words (the "Now" row of a landmark)
+const ASSESSOR_USE = { "single": "condominiums", "five or more apartments": "apartments", "store combination": "shops with offices or apartments",
+  "office buildings": "offices", "hotel & motels": "hotel", "department stores": "department store", "stores": "shops",
+  "restaurants, cocktail lounges": "restaurant", "parking lots (commercial use properties)": "parking", "government parcel": "government",
+  "churches": "church", "professional buildings": "offices", "theaters": "theatre" };
 function entityTag(e) {
   return (a) => {
     const pc = e.parcel;
-    const use = e.status === "auto" ? (pc?.use || e.use) : e.use;
-    const kicker = [use, pc?.year_built].filter(Boolean).join(" · ");
+    const now = e.status === "auto" ? (pc?.use || e.use) : e.use;
+    // a landmark shows what it was built as (config.json landmarks), and what it is now below
+    const use = e.builtAs || now;
+    // a landmark's year built from config.json (the assessor's is often a later remodel), else the assessor's
+    const kicker = [use, e.built?.[0] ?? (e.landmark ? null : pc?.year_built)].filter(Boolean).join(" · ");   // a landmark without a looked-up year shows none
     const rows = [["Height", len(a.height)], ["Roof elevation", len(a.topY)]];
+    if (e.landmark) rows.push(["Landmark", e.landmark]);   // config.json landmarks: why it is one
+    if (e.built) rows.push(["Built", `${e.built[0]} · ${e.built[1]}`]);
+    if (e.builtAsSource) rows.push(["Built as", `${e.builtAs} · ${e.builtAsSource}`]);
+    if (e.builtAs) {
+      const n = e.nowFixed || (e.status === "auto" ? ASSESSOR_USE[String(now).toLowerCase()] ?? `${now} (assessor)` : now);
+      if (n && n.toLowerCase() !== e.builtAs.toLowerCase()) rows.push(["Now", n]);
+    }
     if (pc?.units) rows.push(["Units", pc.units]);
     if (pc?.use && e.status !== "auto" && pc.use.toLowerCase() !== String(use).toLowerCase()) rows.push(["Land use (assessor)", pc.use]);
     rows.push(["Source", e.status === "auto" ? "LA County Assessor parcel (automatic, not checked by hand)"
@@ -960,9 +1135,9 @@ function layerCounts() {
   if (mode === "cloud" && lidar) {
     const seen = new Map();
     lidar.objNames.forEach((nm, k) => {
-      if (NOT_OBJECTS.has(nm) || !lidar.objCount[k]) return;
       const lay = lidar.objLayers[k], ent = lidar.objEntity[k];
-      const key = ent >= 0 && /^Buildings/.test(lay) ? `e${ent}` : `o${k}`;
+      if (NOT_OBJECTS.has(nm) || !lidar.objCount[k] || cfg.layers[lay]?.highlight === false) return;   // ground: no number
+      const key = ent >= 0 ? `e${ent}` : `o${k}`;   // an entity of several parts counts once
       if (!seen.has(lay)) seen.set(lay, new Set());
       seen.get(lay).add(key);
     });
@@ -1075,7 +1250,7 @@ renderer.setAnimationLoop((now) => {
 });
 window.__viewer = {
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate,   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();

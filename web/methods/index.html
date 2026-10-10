@@ -62,10 +62,12 @@
       view grazes the walls. Points are added on the walls of each building's stepped volume, only where no measured
       return is near, mostly on the storey lines read from the building's own wall returns, and not in the lowest metres
       above the ground (arcades, entrances and plazas stay open). They thin with distance like the measured cloud.
-      <b>They are estimates, not measurements</b>: the viewer shows them as their own layer, "Facades (estimated)".
+      <b>They are estimates, not measurements</b>; the viewer draws them with the measured points of their building.
       <span class="note">(site-model/houdini/tools/synth_facades.py)</span></p>
     <h3 class="entry-title">2.5 Terrain</h3>
     <p class="todo">To be written.</p>
+    <h3 class="entry-title">2.6 Layers in the viewer</h3>
+    <div id="layers"><p>Loading…</p></div>
   </section>
 
   <section id="people">
@@ -95,8 +97,8 @@ const fmt = (n) => Math.round(n).toLocaleString("en-US");
 const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
 (async () => {
-  const [lidar, ents, pop, walk] = await Promise.all([get("../data/lidar_points.json"), get("../data/entities.json"),
-    get("../data/population.json"), get("../data/walk_check.json")]);
+  const [lidar, ents, pop, walk, cfg] = await Promise.all([get("../data/lidar_points.json"), get("../data/entities.json"),
+    get("../data/population.json"), get("../data/walk_check.json"), get("../config.json")]);
 
   // 2.1 LiDAR
   if (lidar) {
@@ -116,6 +118,30 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
       ${fmt(checked)} were checked by hand against Google Earth and Google Maps (name, address, use, typed by hand);
       the other ${fmt(n - checked)} take their name, address and use from the LA County Assessor parcel they stand on,
       automatically and not checked. <span class="note">(site-model/houdini/annotations/entities.json)</span>`;
+  }
+
+  // 2.6 layers (config.json: mergeLayers, splitLayers, plazas, claims, landmarks)
+  if (cfg) {
+    const lab = (k) => cfg.layers?.[k]?.label ?? k;
+    const sp = Object.values(cfg.splitLayers || {})[0], pz = cfg.plazas, cl = (cfg.claims || [])[0];
+    const lm = (cfg.landmarks || []).map((l) => `<tr><td>${esc(l.name)}</td><td class="note">${esc(l.builtAs ?? "")}</td><td class="r">${esc(l.built ?? "")}</td><td class="note">${esc(l.basis)}</td></tr>`).join("");
+    document.getElementById("layers").innerHTML = `
+      <p>The labelled LiDAR objects are drawn in five layers: ${["Terrain", "Buildings", "Landmarks", "Trees", "Vehicles"].map(lab).join(", ")}.
+        Street furniture, low walls and fences and the unassigned points are drawn with the ground; shrubs with the trees.</p>
+      ${sp ? `<p><b>Bridges and decks.</b> Structures the LiDAR sees but the LARIAC building outlines do not are building parts,
+        except the thin ones held above the ground (less than ${sp.maxThickM} m between the 5th and 95th percentile of their
+        heights, on average ${sp.minHagM}–${sp.maxHagM} m up) and those whose checked use is a street structure: bridges, raised
+        walkways, street and plaza decks, canopies. These are drawn with the ground, and as densely as the ground around them
+        (the LiDAR returns fewer points from a deck than from the street; only the drawing is changed).</p>` : ""}
+      ${pz ? `<p><b>Plazas.</b> A LARIAC outline can take in a tower's plaza (Two California Plaza and its Watercourt). In a
+        building at least ${pz.minBuildingM} m tall, every ${pz.cellM} m plan cell whose highest return is under ${pz.maxHagM} m
+        above the ground, and the walls and steps next to it that rise no more than ${pz.edgeM} m above it, are drawn as ground.</p>` : ""}
+      ${cl ? `<p><b>Landmark parts.</b> Building points within ${cl.marginM} m of a landmark's own points belong to the landmark
+        (the Angels Flight upper station inside the Two California Plaza outline).</p>` : ""}
+      ${cfg.landmarkRule ? `<p><b>Landmarks.</b> ${esc(cfg.landmarkRule)} The year built and what it was built as are the building's
+        own, looked up for each (the assessor's year is often that of a later remodel); the viewer adds what it is now.</p>
+        <div class="wrap"><table><tr><th>Landmark</th><th>Built as</th><th class="r">Built</th><th>Why</th></tr>${lm}</table></div>` : ""}
+      <p class="note">(web/config.json; drawing only, the point cloud is unchanged)</p>`;
   }
 
   // 3 people
