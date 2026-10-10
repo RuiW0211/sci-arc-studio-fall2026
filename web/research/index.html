@@ -4,30 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Y-1 Research Database</title>
+<link rel="stylesheet" href="../site.css">
 <style>
+/* colours, header, type scale, footer and the theme button come from ../site.css; the status colours are Research's own */
 :root {
-    --bg: #ffffff;
-    --text: #1a1a1a;
-    --muted: #6b6b6b;
-    --faint: #9a9a9a;
-    --line: #e6e6e6;
-    --hover: #f7f7f7;
     --verified: #2e7d32;
     --unverified: #b26a00;
     --question: #6b6b6b;
     --analysis: #3f51b5;
-    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        color-scheme: dark;
-        --bg: #161616;
-        --text: #ededed;
-        --muted: #a0a0a0;
-        --faint: #777777;
-        --line: #2c2c2c;
-        --hover: #1f1f1f;
         --verified: #81c784;
         --unverified: #ffb74d;
         --question: #a0a0a0;
@@ -36,48 +24,15 @@
 }
 
 :root[data-theme="dark"] {
-    color-scheme: dark;
-    --bg: #161616;
-    --text: #ededed;
-    --muted: #a0a0a0;
-    --faint: #777777;
-    --line: #2c2c2c;
-    --hover: #1f1f1f;
     --verified: #81c784;
     --unverified: #ffb74d;
     --question: #a0a0a0;
     --analysis: #9fa8da;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
 
-body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-}
-
-.container {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 48px 16px 64px;
-}
 
 /* Header, modeled on ruyf26.samlay.xyz */
-.header { padding-bottom: 32px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
-.home { color: inherit; text-decoration: none; }
-.home:hover { text-decoration: underline; }
-.eyebrow {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--faint);
-    margin-bottom: 12px;
-}
-.header h1 { font-size: 2.4rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 12px; }
-.subtitle { color: var(--muted); max-width: 520px; }
 
 /* Search */
 .search-section { margin-bottom: 24px; }
@@ -193,21 +148,7 @@ body {
 
 .no-results { padding: 48px 0; text-align: center; color: var(--muted); }
 
-.footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 0.8rem; color: var(--faint); }
 
-.theme-toggle {
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    cursor: pointer;
-}
 
 @media (max-width: 600px) {
     .container { padding-top: 32px; }
@@ -221,7 +162,7 @@ body {
 <body>
 <main class="container">
         <header class="header">
-            <p class="eyebrow"><a href="../" class="home">Angels Knoll Studio</a> · Clark &amp; Rui</p>
+            <p class="eyebrow"><a href="../" class="home">Angels Knoll</a> · Clark &amp; Rui</p>
             <h1>Y-1 Research Database</h1>
             <p class="subtitle">Bunker Hill Parcel Y-1. Every finding, where it came from, and how sure we are.</p>
         </header>

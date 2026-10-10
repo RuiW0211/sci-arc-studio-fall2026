@@ -3,103 +3,88 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Y-1 Methods</title>
+<title>Methods · Angels Knoll</title>
+<link rel="stylesheet" href="../site.css">
 <style>
-  :root { --bg: #fff; --fg: #1a1a1a; --muted: #6b6b6b; --faint: #9a9a9a; --line: #e6e6e6; --tint: #3f51b5; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; --bg: #161616; --fg: #ededed; --muted: #a0a0a0; --faint: #777; --line: #2c2c2c; --tint: #9fa8da; } }
-  :root[data-theme="dark"] { color-scheme: dark; --bg: #161616; --fg: #ededed; --muted: #a0a0a0; --faint: #777; --line: #2c2c2c; --tint: #9fa8da; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--fg);
-    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding: 48px 16px 64px; }
-  a { color: inherit; }
-  .back { color: var(--muted); font-size: 13px; text-decoration: none; }
-  .back:hover { text-decoration: underline; }
-  .kicker { color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; margin-top: 28px; }
-  h1 { font-size: 34px; margin: 6px 0 4px; letter-spacing: -.01em; }
-  .lede { color: var(--muted); margin: 0 0 24px; }
-  nav.toc { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 10px 0; margin-bottom: 8px; font-size: 13px; }
-  nav.toc a { color: var(--muted); text-decoration: none; margin-right: 14px; white-space: nowrap; }
-  nav.toc a:hover { color: var(--fg); }
-  section { border-top: 1px solid var(--line); padding-top: 18px; margin-top: 32px; }
-  h2 { font-size: 22px; margin: 0 0 10px; letter-spacing: -.005em; }
-  h2 .n { color: var(--faint); font-weight: 400; margin-right: 8px; }
-  h3 { font-size: 15px; margin: 22px 0 6px; }
-  p { margin: 0 0 10px; }
+  /* Methods only; the header, colours and type scale come from site.css (as on Research) */
+  nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.85rem; margin-bottom: 8px; }
+  nav.toc a { color: var(--muted); text-decoration: none; }
+  nav.toc a:hover { color: var(--text); }
+  section { margin-top: 40px; font-size: 0.95rem; }   /* running text: the size of a Research finding's body */
+  section > h2 { margin-bottom: 4px; }            /* .label: small uppercase, hairline, like Research's topics */
+  h2 .n { margin-right: 8px; }
+  h3 { margin: 22px 0 6px; }                      /* .entry-title size, like a Research finding */
   .todo { color: var(--faint); font-style: italic; }
-  .note { color: var(--muted); font-size: 13px; }
-  table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 6px 0 12px; font-variant-numeric: tabular-nums; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.85rem; margin: 6px 0 12px; font-variant-numeric: tabular-nums; }
   th, td { text-align: left; padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { color: var(--muted); font-weight: 600; }
   td.r, th.r { text-align: right; }
-  .tag { display: inline-block; border: 1px solid var(--line); border-radius: 10px; padding: 0 7px; font-size: 11px; color: var(--muted); }
-  .tag.fit { border-color: var(--tint); color: var(--tint); }
-  dl.asm { margin: 0; font-size: 13px; }
-  dl.asm dt { font-weight: 600; margin-top: 10px; }
+  .tag { display: inline-block; border: 1px solid currentColor; border-radius: 2px; padding: 0 6px; font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); vertical-align: 1px; }
+  .tag.fit { color: var(--tint); }
+  dl.asm { font-size: 0.85rem; }
+  dl.asm dt { font-weight: 700; margin-top: 12px; }
   dl.asm dt code { font-weight: 400; color: var(--muted); }
-  dl.asm dd { margin: 2px 0 0; color: var(--muted); }
-  ul.src { padding-left: 18px; font-size: 13px; }
+  dl.asm dd { margin-top: 2px; color: var(--muted); }
+  ul.src { padding-left: 18px; font-size: 0.85rem; margin-bottom: 12px; }
   ul.src li { margin-bottom: 4px; word-break: break-word; }
-  code { font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   .wrap { overflow-x: auto; }
-  .theme-toggle { position: fixed; right: 16px; bottom: 16px; width: 36px; height: 36px; font-size: 1rem; color: var(--fg);
-    background: var(--bg); border: 1px solid var(--line); border-radius: 3px; cursor: pointer; }
-  footer { border-top: 1px solid var(--line); margin-top: 48px; padding-top: 14px; color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body>
-<main>
-  <a class="back" href="../">← Angels Knoll</a>
-  <div class="kicker">Clark &amp; Rui · Syracuse Visiting Studio · Fall 2026</div>
-  <h1>Methods</h1>
-  <p class="lede">How each part of the project is made: data, steps, assumptions, checks and references.</p>
+<main class="container">
+  <header class="header">
+    <p class="eyebrow"><a href="../" class="home">Angels Knoll</a> · Clark &amp; Rui</p>
+    <h1>Methods</h1>
+    <p class="subtitle">How each part of the project is made: data, steps, assumptions, checks and references.</p>
+  </header>
   <nav class="toc">
     <a href="#project">1 Project</a><a href="#site">2 Site model</a><a href="#people">3 People</a>
     <a href="#design">4 Design</a><a href="#refs">5 References</a>
   </nav>
 
   <section id="project">
-    <h2><span class="n">1</span>Project</h2>
+    <h2 class="label"><span class="n">1</span>Project</h2>
     <p class="todo">To be written.</p>
   </section>
 
   <section id="site">
-    <h2><span class="n">2</span>Site model</h2>
-    <h3>2.1 LiDAR point cloud</h3>
+    <h2 class="label"><span class="n">2</span>Site model</h2>
+    <h3 class="entry-title">2.1 LiDAR point cloud</h3>
     <p id="lidar">Loading…</p>
-    <h3>2.2 Labelling the points</h3>
+    <h3 class="entry-title">2.2 Labelling the points</h3>
     <p class="todo">To be written.</p>
-    <h3>2.3 Buildings</h3>
+    <h3 class="entry-title">2.3 Buildings</h3>
     <p id="ents">Loading…</p>
-    <h3>2.4 Estimated facades</h3>
+    <h3 class="entry-title">2.4 Estimated facades</h3>
     <p>Airborne LiDAR sees roofs well and walls badly: glass curtain walls reflect the laser away and the near-vertical
       view grazes the walls. Points are added on the walls of each building's stepped volume, only where no measured
       return is near, mostly on the storey lines read from the building's own wall returns, and not in the lowest metres
       above the ground (arcades, entrances and plazas stay open). They thin with distance like the measured cloud.
       <b>They are estimates, not measurements</b>: the viewer shows them as their own layer, "Facades (estimated)".
       <span class="note">(site-model/houdini/tools/synth_facades.py)</span></p>
-    <h3>2.5 Terrain</h3>
+    <h3 class="entry-title">2.5 Terrain</h3>
     <p class="todo">To be written.</p>
   </section>
 
   <section id="people">
-    <h2><span class="n">3</span>People: a modeled typical day</h2>
+    <h2 class="label"><span class="n">3</span>People: a modeled typical day</h2>
     <div id="pop"><p>Loading…</p></div>
   </section>
 
   <section id="design">
-    <h2><span class="n">4</span>Design</h2>
+    <h2 class="label"><span class="n">4</span>Design</h2>
     <p class="todo">To be written.</p>
   </section>
 
   <section id="refs">
-    <h2><span class="n">5</span>References</h2>
+    <h2 class="label"><span class="n">5</span>References</h2>
     <p class="note">The data behind each part is listed with it above (2.1, 2.3, 3.3); the published figures used in the
       population model are cited in its assumptions (3.4).</p>
     <p class="todo">Further references to be added.</p>
   </section>
 
-  <footer>Data: USGS 3DEP (public domain) · LA County GIS · US Census · LADOT · LA Metro · LAHSA · © OpenStreetMap contributors (ODbL).
+  <footer class="footer">Data: USGS 3DEP (public domain) · LA County GIS · US Census · LADOT · LA Metro · LAHSA · © OpenStreetMap contributors (ODbL).
     <span id="stamp"></span></footer>
 </main>
 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
@@ -192,14 +177,14 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
       point cloud; each drawn person counts for the people it stands for, so the counts and the chart include everyone.
       <span class="note">(site-model/population/prep_population.py)</span></p>
 
-    <h3>3.1 Who is in the model</h3>
+    <h3 class="entry-title">3.1 Who is in the model</h3>
     <div class="wrap"><table><tr><th>Group</th><th class="r">People</th><th>From</th></tr>${groups}</table></div>
     <p class="note">Residents, workers, hotel guests and people without shelter are the same people on both day types;
       visitors and passers-by are counted once for the weekday and once for the weekend day.</p>
     <p class="note">${fmt(offModel)} residents live in blocks whose buildings are not in the model (thinned out of the point
       cloud, most of South Park): they are not drawn at home and start their walks from the street by their block.</p>
 
-    <h3>3.2 How they move</h3>
+    <h3 class="entry-title">3.2 How they move</h3>
     <p>Commute modes and arrival times come from CTPP 2017-2021 for the tracts where people work; other trip times
       from the 2022 NHTS. Everyone walks on the OpenStreetMap network, including steps, escalators, elevators, bridges
       and Angels Flight. Route choice counts steep streets as longer (Tobler's hiking function at half strength).
@@ -207,18 +192,18 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
       an entrance on it by distance and a weight per station. Shops are Assessor retail parcels, with the buildings
       checked by hand deciding first.</p>
 
-    <h3>3.3 Data sources</h3>
+    <h3 class="entry-title">3.3 Data sources</h3>
     <ul class="src">${src}
       <li><b>walk counts</b>: LADOT Walk &amp; Bike Count 2023 and 2025, data.lacity.org</li>
       <li><b>people without shelter</b>: LAHSA 2025 Greater Los Angeles Homeless Count, street count by census tract (via the Economic Roundtable data library)</li></ul>
 
-    <h3>3.4 Assumptions</h3>
+    <h3 class="entry-title">3.4 Assumptions</h3>
     <p class="note">Every number the model uses that is not read from a data file, with its source or why it is assumed
       (site-model/population/data/assumptions.json). <span class="tag fit">fitted</span> = adjusted so the model matches a
       count; <span class="tag">assumption</span> = no source found.</p>
     <dl class="asm">${asm}</dl>
 
-    <h3>3.5 Checks</h3>
+    <h3 class="entry-title">3.5 Checks</h3>
     <p><b>Street counts</b> (the independent check). People crossing each counted block, both sidewalks and directions,
       in LADOT's count hours (weekdays 7-10 am and 3-6 pm, weekends 11 am-1 pm), against the mean of the 2023 and 2025
       counts. Little Tokyo visitors and passers-by are fitted on the blocks not held out; the held-out blocks are not.</p>
@@ -231,7 +216,7 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
       <tr><td><b>Five stations</b></td><td></td><td></td><td class="r"><b>${mtot.toFixed(2)}</b></td></tr></table></div>
     ${af ? `<p><b>Angels Flight</b>: trips whose route runs along the funicular, ${af}. Its hours and fare are not modelled.</p>` : ""}
 
-    <h3>3.6 Known limits</h3>
+    <h3 class="entry-title">3.6 Known limits</h3>
     <ul class="src">
       <li>The model has no Metro transfers and no trips that only pass through a station.</li>
       <li>Blocks at the site edge get too many passers-by, because they all enter and leave there.</li>
