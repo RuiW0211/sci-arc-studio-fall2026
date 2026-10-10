@@ -14,8 +14,6 @@
     "_comment": "Point cloud, Color = Layer: points coloured by the layer colours below (user, 2026-10-10): a physical-model look, concrete-grey ground, white buildings, and the coloured layers at one muted saturation (OKLCH chroma about 0.07: vehicles 0.07, trees 0.085 and a little lighter so the planting does not look grey, landmarks a grey violet at 0.055) so the people and the highlight, kept saturated, stand out. Lightness steps apart (ground 0.62, landmarks 0.64, trees 0.75, vehicles 0.74, buildings 0.95), so the layers part in grey too. The clicked object turns the highlight colour unless its layer has \"highlight\": false (Terrain: too large to light up).",
     "highlight": "#FF3EA5"
   },
-  "_cloudColor": "the first colouring: layer / height / class / intensity",
-  "cloudColor": "layer",
   "layers": {
     "Terrain": {
       "label": "Ground & streets",

@@ -114,7 +114,11 @@
   /* the collapse "–" sits on the same vertical line as the section chevrons: both are centred in a 14px box */
   #toggle { width: 14px; padding: 0; text-align: center; color: var(--muted); }
   /* the four colourings fit one row: buttons sized by their label */
-  .seg.c4 button { flex: 1 1 auto; padding: 5px 4px; }
+  /* Units: a sliding switch sized and coloured like the Views buttons (user, 2026-10-10): glass pill track, pill thumb */
+  .seg.pill { display: inline-flex; border-radius: 999px; padding: 2px; background: var(--chip); border: 1px solid var(--glass-rim);
+    box-shadow: none; }
+  .seg.pill button, .seg.pill button:last-child { flex: 0 0 auto; border-radius: 999px; padding: 2px 11px; }
+  .seg.pill .thumb { border-radius: 999px; }
   input[type=checkbox] { accent-color: var(--tint); }
   /* sliders, iOS-like: thin rounded track, filled part in the text colour at 55 % (--p = filled %, set by viewer.js),
      13px white glass knob like the Mode thumb; grows a little on hover / drag */
@@ -234,8 +238,6 @@
   #popBox input[type=range] { width: 100%; margin: 0; }
   #popDay { margin: 6px 0 4px; }
   /* the Color choice is kept but set aside while the point cloud is drawn white */
-  #colorSec.overridden .seg { opacity: .45; transition: opacity var(--t-out); }
-  #colorSec .seg { transition: opacity var(--t-out); }
 </style>
 </head>
 <body>
@@ -244,15 +246,10 @@
   <div class="body">
     <div class="sub">Site model · <a href="./" style="color:inherit">home</a></div>
     <details class="sec" open hidden><summary>Mode</summary>
-    <!-- one mode for now (hidden): the 2023 LiDAR point cloud, coloured by layer / height / class / intensity -->
+    <!-- one mode for now (hidden): the 2023 LiDAR point cloud, coloured by layer -->
     <div id="modes"><div class="seg"><span class="thumb" aria-hidden="true"></span>
       <button data-mode="cloud" title="The 2023 USGS LiDAR point cloud, every point tied to a model object; layers and click apply">Point cloud</button>
     </div></div>
-    </details>
-    <details class="sec" id="colorSec" open hidden><summary>Color</summary>
-      <div class="seg c4" id="lidarOpts"><span class="thumb" aria-hidden="true"></span>
-        <button data-c="layer" title="One colour per layer, as in the legend">Layer</button><button data-c="height">Height</button><button data-c="class" title="USGS class: ground vs everything else">Class</button><button data-c="intensity" title="Return strength: road markings and materials show">Intensity</button>
-      </div>
     </details>
     <details class="sec" id="layersBox" open><summary>Layers</summary>
       <div id="layers"></div>
@@ -272,15 +269,11 @@
     <details class="sec" open><summary>Views</summary>
       <div class="row" id="views"></div>
     </details>
-    <!-- display settings: units in both modes (every length the viewer shows; kept in this browser), then the point cloud
-         settings (filled by viewer.js) -->
-    <details class="sec" id="dispSec"><summary>Display settings</summary>
-      <div class="set"><div class="top"><span>Units</span></div>
-        <div class="seg" id="units"><span class="thumb" aria-hidden="true"></span>
-          <button data-u="ft" title="Feet (0.3048 m); the default">ft</button><button data-u="m" title="Metres">m</button>
-        </div>
+    <!-- units of every length the viewer shows (kept in this browser) -->
+    <details class="sec" id="unitsSec" open><summary>Units</summary>
+      <div class="seg pill" id="units"><span class="thumb" aria-hidden="true"></span>
+        <button data-u="ft" title="Feet (0.3048 m); the default">ft</button><button data-u="m" title="Metres">m</button>
       </div>
-      <div id="disp"></div>
     </details>
   </div>
 </div>
