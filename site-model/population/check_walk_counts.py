@@ -210,9 +210,30 @@ for d in WINDOWS:
         fit[f"passersBy.{d}"] = round(AS["passersBy"]["value"][d] * k, -2)
 print("fitted values (to put in assumptions.json):", fit)
 
+# ---------------------------------------------------------------- Angels Flight (user, 2026-10-09)
+# Trips whose path runs along the funicular (OSM railway=funicular), everyone counted; against the last published
+# ridership: 1,200-1,500 trips a day (2010-13), about 2,200 a day (1996-2001).
+from scipy.spatial import cKDTree
+fun_xy = np.array([ll2loc(g["lat"], g["lon"]) for e in osm["elements"]
+                   if e["type"] == "way" and e.get("tags", {}).get("railway") == "funicular" for g in e["geometry"]])
+dist, idx = cKDTree(NX).query(fun_xy)
+FUN = set(int(i) for d, i in zip(dist, idx) if d < 0.5)
+on_fun = np.zeros(len(poff) - 1, bool)
+for p in range(len(poff) - 1):
+    seq = pn[poff[p]:poff[p + 1]]
+    on_fun[p] = any(int(a) in FUN and int(b) in FUN for a, b in zip(seq[:-1], seq[1:]))
+angels = {}
+for d in WINDOWS:
+    off, path, tm, attend, orig, dest = DAYS[d]
+    person = np.repeat(np.arange(len(off) - 1), np.diff(off))
+    k = on_fun[path] & ~(attend & ~present[person])
+    angels[d] = round(float(weight[person[k]].sum()))
+print(f"Angels Flight trips a day: weekday {angels['weekday']:,}, weekend {angels['weekend']:,} (last published: 1,200-1,500 a day, 2010-13)")
+
 (DATA / "walk_check.json").write_text(json.dumps({
     "note": "Modeled walkers crossing each LADOT count block (both sidewalks, both directions) in the count hours, against "
             "LADOT Walk & Bike Count 2023 and 2025 (one day each; observed_mean = their mean). A check only.",
     "sources": {str(y): f"LADOT Walk & Bike Count {y}, data.lacity.org" for y in YEARS},
-    "hours": WINDOWS, "half_width_m": HALF_W, "held_out": sorted(HOLD_OUT), "fit": fit, "blocks": out}, indent=1), encoding="utf-8")
+    "hours": WINDOWS, "half_width_m": HALF_W, "held_out": sorted(HOLD_OUT), "fit": fit,
+    "angels_flight": {**angels, "published": "1,200-1,500 trips a day (2010-13), about 2,200 (1996-2001)"}, "blocks": out}, indent=1), encoding="utf-8")
 print("wrote data/walk_check.json")

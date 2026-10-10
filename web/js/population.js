@@ -530,6 +530,11 @@ function methodHtml(meta) {
     because they all enter and leave there. Residents of blocks whose buildings are not modelled (most of South Park)
     are not drawn at home but walk from the street by their block; shops are Assessor retail parcels (OpenStreetMap maps
     almost none here). Grand Ave between 7th and 8th St still comes out at about 0.4 of the count, for reasons not found.</p>
+    <p><b>Bunker Hill</b>: route choice counts steep streets as longer (Tobler's hiking function at half strength);
+    steps, escalators, elevators and Angels Flight are part of the network; Angels Knoll's own paths are closed (the
+    park is fenced). Anyone whose shortest route runs along Angels Flight rides it: about 1,700 trips on a weekday and
+    2,400 on a weekend day, against 1,200-1,500 a day last published (2010-13). Its hours (6:45 am-10 pm) and fare
+    are not modelled.</p>
     <p><b>Metro check</b> (weekday): model rail trips leaving the site through each station's entrances, against Metro's
     FY2026 average weekday boardings.</p>
     <table><tr><th>Station</th><th>Model</th><th>Metro</th><th>Ratio</th></tr>${rows}

@@ -33,6 +33,11 @@
   "passersBy.weekday": 18500.0,
   "passersBy.weekend": 19000.0
  },
+ "angels_flight": {
+  "weekday": 1708,
+  "weekend": 2375,
+  "published": "1,200-1,500 trips a day (2010-13), about 2,200 (1996-2001)"
+ },
  "blocks": [
   {
    "name": "Main St bw Arcadia St & Aliso St",
