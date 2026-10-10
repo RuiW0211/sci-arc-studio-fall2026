@@ -22,7 +22,6 @@ for (const e of ENTITIES?.entities ?? []) for (const p of e.parts) entityOfName.
 // Display settings (panel section): ?px= ?keep= ?cap= ?size= override config.json "lidar" for this page only (lodPixels,
 // lodKeepDensity, pointCap, size), so settings can be tried before they go into config.json
 const urlq = new URLSearchParams(location.search);
-const CFG_LIDAR = { ...cfg.lidar };   // config.json as delivered: the Display settings "Reset"
 for (const [k, key] of [["px", "lodPixels"], ["keep", "lodKeepDensity"], ["cap", "pointCap"], ["size", "size"]])
   if (urlq.has(k)) cfg.lidar[key] = +urlq.get(k);
 
@@ -91,7 +90,6 @@ function withFocus(shader) {
 let focusAnim = 0;
 function setWhiteCloud(on) {
   const from = FOCUS.value, to = on ? 1 : 0, t0 = performance.now();
-  $("#colorSec").classList.toggle("overridden", on);
   if (on) for (const m of focusMats) if (!m.userData.alwaysTransparent && !m.transparent) { m.transparent = true; m.needsUpdate = true; }
   cancelAnimationFrame(focusAnim);
   const step = (now) => {
@@ -514,7 +512,9 @@ async function loadLidar() {
     if (e) { const i = entIndex.get(e); objEntity[k] = i; (entityObjs.get(i) ?? entityObjs.set(i, []).get(i)).push(k); }
   });
   lidar = { parts, material, objNames, objLayers, objCount, objEntity, entityObjs, count: n,
-            how: urlq.get("color") ?? cfg.cloudColor ?? "layer", selected: -1, selMask: new Uint8Array(objNames.length) };
+            // by layer only (user, 2026-10-10: the Color menu is gone); ?color=height / class / intensity / object still
+            // works for checking the data
+            how: urlq.get("color") ?? "layer", selected: -1, selMask: new Uint8Array(objNames.length) };
   status("");
 }
 
@@ -525,7 +525,7 @@ async function loadLidar() {
 // thinning has no steps at chunk borders. Chunks hold their points sorted by q, so this is a draw range. The count depends
 // only on where the camera is, never on whether it is moving, so nothing pops when a drag or zoom stops; counts also ease
 // towards their target over a few frames. A total cap protects slow machines.
-let LOD_PX = cfg.lidar.lodPixels ?? 1.2, LOD_CAP = cfg.lidar.pointCap ?? 6e6;   // let: Display settings change them live
+let LOD_PX = cfg.lidar.lodPixels ?? 1.2, LOD_CAP = cfg.lidar.pointCap ?? 6e6;
 const LOD_EASE = 0.25;
 const LOD_KEEP = cfg.lidar.lodKeepDensity ?? 0.8, LOD_RHO0 = cfg.lidar.lodRefDensity ?? 1.0;   // see loadLidar
 const _c = new THREE.Vector3();
@@ -603,13 +603,9 @@ function paintCloud(how = lidar.how) {
   for (const p of lidarGroup.children) p.geometry.attributes.color.needsUpdate = true;
   if (fade) crossFade(); else COLOR_MIX.value = 1;
   lidar.painted = true;
-  const first = !$("#lidarOpts button.on");
-  document.querySelectorAll("#lidarOpts button").forEach((b) => b.classList.toggle("on", b.dataset.c === how));
-  moveThumb(first, "#lidarOpts");
   document.body.classList.toggle("linked", mode === "cloud" && how === "layer");   // layer legend swatches
   invalidate();
 }
-document.querySelectorAll("#lidarOpts button").forEach((b) => (b.onclick = () => paintCloud(b.dataset.c)));
 // the selection lights the clicked object, or all objects of its entity (a whole building); shift + click adds.
 // Only the marks of points whose state changes are written; the highlight eases in / out over --t-out.
 function paintSelection() {
@@ -641,7 +637,7 @@ function paintSelection() {
 // ---------- modes ----------
 let busy = false;
 // a segmented control's thumb slides under its selected button (no animation for the first placement);
-// used by Mode (#modes) and Color (#lidarOpts)
+// used by Mode (#modes)
 function moveThumb(instant, sel = "#modes") {
   const th = $(`${sel} .thumb`), on = $(`${sel} button.on`);
   if (th && on && !on.offsetWidth) return;   // section hidden or folded: placed when shown
@@ -651,10 +647,9 @@ function moveThumb(instant, sel = "#modes") {
   th.style.transform = `translateX(${on.offsetLeft}px)`;
   if (instant) requestAnimationFrame(() => th.classList.remove("instant"));
 }
-addEventListener("resize", () => { moveThumb(true); moveThumb(true, "#lidarOpts"); });
+addEventListener("resize", () => moveThumb(true));
 $("#modes").closest("details")?.addEventListener("toggle", () => moveThumb(true));   // re-measure after unfolding
-$("#colorSec").addEventListener("toggle", () => moveThumb(true, "#lidarOpts"));
-// one mode, "cloud" (the LiDAR points, coloured by layer / height / class / intensity); the mode machinery stays for
+// one mode, "cloud" (the LiDAR points, coloured by layer); the mode machinery stays for
 // later modes (e.g. a potential field). The Mode section is hidden while there is only one.
 // The old names still work (config.json defaultMode, links): "linked" = cloud by layer, "lidar" = cloud by height.
 const OLD_MODES = { linked: "layer", lidar: "height" };
@@ -676,10 +671,6 @@ async function setMode(m) {
   document.querySelectorAll("#modes button").forEach((b) => { b.disabled = false; b.classList.toggle("on", b.dataset.mode === m); });
   layerCounts();
   glassAt = -1e9;   // the picture behind the panels changes completely: pick light / dark glass again right away
-  $("#colorSec").hidden = m !== "cloud";
-  moveThumb(true, "#lidarOpts");   // measured now that the section shows
-  $("#disp").hidden = m !== "cloud";           // the point settings are for the cloud; Units stay in both modes
-  syncDisplay();
   busy = false;
 }
 document.querySelectorAll("#modes button").forEach((b) => (b.onclick = () => setMode(b.dataset.mode)));
@@ -945,7 +936,10 @@ function tagHTML(kicker, title, sub, rows, note) {
       + (note ? `<p class="nt">${esc(note)}</p>` : "") + "</details>" : "");
 }
 function fillTag(s) {
+  // refilled in place (units switch): an open Details stays open (user, 2026-10-10)
+  const wasOpen = s.el.querySelector(".dd")?.open;
   s.el.innerHTML = s.build(s.a);
+  if (wasOpen) s.el.querySelector(".dd")?.setAttribute("open", "");
   s.el.querySelector(".x").onclick = (ev) => { ev.stopPropagation(); deselect(s.key); };
   const dd = s.el.querySelector(".dd");
   if (dd) dd.ontoggle = () => {
@@ -1084,49 +1078,8 @@ $("#ui").addEventListener("scroll", () => {
 if (innerWidth < 560) collapse(true);  // phones: start with the panel folded
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); invalidate(); });
 
-// ---------- Display settings (panel section; values start from config.json "lidar", URL ?px= ?keep= ?cap= ?size=) ----------
-// Each row: key, label, slider range, read, write (null = applies on reload), tooltip. Add new settings here.
-const DISPLAY = [
-  ["px", "Point spacing (px)", 0.4, 4, 0.1, () => LOD_PX, (v) => { LOD_PX = v; }, "on-screen gap the LiDAR LOD aims for: smaller = denser, heavier"],
-  ["keep", "Density contrast", 0, 1, 0.05, () => LOD_KEEP, null, "how much of the LiDAR's dense-to-sparse fade survives on screen (0 flat, 1 as in the data); applies on reload"],
-  ["cap", "Point cap (millions)", 1, 15, 0.5, () => LOD_CAP / 1e6, (v) => { LOD_CAP = v * 1e6; }, "most LiDAR points drawn at once"],
-  ["size", "Point size", 0.05, 1.5, 0.05, () => lidar?.material.size ?? cfg.lidar.size, (v) => { if (lidar) lidar.material.size = v; }, "disk size of each LiDAR point (default = the average LiDAR spacing)"],
-];
-const DISPLAY_DEFAULT = { px: CFG_LIDAR.lodPixels ?? 1.2, keep: CFG_LIDAR.lodKeepDensity ?? 0.8, cap: (CFG_LIDAR.pointCap ?? 6e6) / 1e6, size: CFG_LIDAR.size ?? 0.25 };
-const dispVal = {};
-$("#disp").innerHTML = DISPLAY.map(([k, label, lo, hi, st, , , tip]) =>
-  `<div class="set" title="${tip}"><div class="top"><span id="dl_${k}">${label}</span><span class="v" id="dv_${k}"></span></div>`
-  + `<input id="dr_${k}" type="range" min="${lo}" max="${hi}" step="${st}"></div>`).join("")
-  + '<div class="row"><button id="disp_default" class="ghost" title="Back to the defaults in config.json">Reset</button>'
-  + '<button id="disp_apply" class="ghost" title="Reload with these values (needed for Density contrast)">Apply</button></div>'
-
-  + '<div class="note" id="disp_note">Spacing, cap and size change live; contrast needs Apply.</div>';
-function setDisplay(k, v) {
-  dispVal[k] = v; const r = $(`#dr_${k}`); r.value = v;
-  $(`#dv_${k}`).textContent = (k === "size" ? toUnit(+v) : +v).toFixed(2);   // lengths in the display units
-  r.style.setProperty("--p", `${(100 * (r.value - r.min)) / (r.max - r.min)}%`);   // filled part of the track
-}
-function syncDisplay() { for (const [k, , , , , get] of DISPLAY) setDisplay(k, +get()); }
-for (const [k, , , , , , set] of DISPLAY) {
-  $(`#dr_${k}`).oninput = (e) => { setDisplay(k, +e.target.value); if (set) { set(dispVal[k]); lodEasing = true; invalidate(); } };
-}
-syncDisplay();
-const reloadWith = (vals) => {
-  const u = new URLSearchParams(location.search);
-  for (const k of ["px", "keep", "cap", "size"]) {
-    if (vals && vals[k] !== DISPLAY_DEFAULT[k]) u.set(k, k === "cap" ? Math.round(vals[k] * 1e6) : vals[k]); else u.delete(k);
-  }
-  location.search = u.toString();
-};
-$("#disp_apply").onclick = () => reloadWith(dispVal);
-$("#disp_default").onclick = () => {
-  if (Math.abs(LOD_KEEP - DISPLAY_DEFAULT.keep) > 1e-9) return reloadWith(null);   // contrast is baked in at load: reload
-  for (const [k, , , , , , set] of DISPLAY) { setDisplay(k, DISPLAY_DEFAULT[k]); if (set) set(DISPLAY_DEFAULT[k]); }
-  const u = new URLSearchParams(location.search); ["px", "keep", "cap", "size"].forEach((k) => u.delete(k));
-  history.replaceState(null, "", u.toString() ? "?" + u : location.pathname);
-  lodEasing = true; invalidate();
-  $("#disp_note").textContent = "Back to the defaults in config.json.";
-};
+// ---------- point settings: no panel any more (user, 2026-10-10); config.json "lidar" or the URL (?px= ?keep= ?cap= ?size=,
+// read at the top) still set them ----------
 // ---------- layer counts: objects per layer in the point cloud (buildings counted as entities) ----------
 // Point cloud: objects of the layer in the cloud, buildings counted as entities (a building of several parts = 1);
 // Terrain / Other / Street furniture are not objects -> no number. Mesh: objects of the layer in the model.
@@ -1148,19 +1101,17 @@ function layerCounts() {
   for (const L of ordered) if (L.countEl) L.countEl.textContent = counts.has(L.name) ? counts.get(L.name).toLocaleString() : "";
 }
 
-// ---------- units switch (m / ft): segmented control like Mode / Color, kept in this browser ----------
+// ---------- units switch (ft / m): a sliding switch the size of the Views buttons, kept in this browser ----------
 function setUnits(u, instant = false) {
   units = u;
   try { localStorage.setItem("y1-viewer-units", u); } catch { /* private mode */ }
   document.querySelectorAll("#units button").forEach((b) => b.classList.toggle("on", b.dataset.u === u));
   moveThumb(instant, "#units");
-  const dl = $("#dl_size"); if (dl) dl.textContent = `Point size (${u})`;
-  if (dispVal.size !== undefined) setDisplay("size", dispVal.size);
   cloudTip();
   refreshTags();
 }
 document.querySelectorAll("#units button").forEach((b) => (b.onclick = () => setUnits(b.dataset.u)));
-$("#dispSec").addEventListener("toggle", () => moveThumb(true, "#units"));
+$("#unitsSec").addEventListener("toggle", () => moveThumb(true, "#units"));
 addEventListener("resize", () => moveThumb(true, "#units"));
 setUnits(units, true);
 
