@@ -26,6 +26,13 @@ People are placed inside the LiDAR building volumes, floor by floor; they walk o
 including stairs, bridges and Angels Flight. Census block counts that straddle the site edge are scaled
 by the share of the block's area inside the site.
 
+Run (refactor 2026-10-10; a full run takes about 3 minutes):
+  python prep_population.py                full model -> web/data/ (+ data/raw/population_full.npz, sanity.json)
+  python prep_population.py --sample 0.1   10 % of the people, each counting 10 -> data/raw/sample/
+  python prep_population.py --smoke        1 % sample and sanity checks (under a minute); fails on any warning
+  python check_walk_counts.py [--dir data/raw/sample]   street counts against LADOT
+Progress and stage times go to data/raw/progress.txt while it runs.
+
 Outputs (../../web/data/):
   population.json  metadata: sources, assumptions, labels, buildings, places, binary layout, checks
   population.bin   nodes, paths, people and their weekday / weekend trips (layout in population.json)
@@ -43,11 +50,69 @@ from scipy.sparse.csgraph import connected_components, dijkstra
 from shapely import STRtree
 from shapely.geometry import Point, Polygon, box, shape
 from shapely.ops import unary_union
+from shapely.prepared import prep
 
 HERE = Path(__file__).resolve().parent
 POP = HERE / "data"
 HANDOFF = HERE.parent / "houdini" / "handoff"
-WEB = HERE.parent.parent / "web" / "data"
+
+# ---------------------------------------------------------------- run options (user, 2026-10-10)
+#   python prep_population.py                 the full model -> web/data/ (what the viewer loads)
+#   python prep_population.py --sample 0.1    10 % of the people, each counting for 10 -> data/raw/sample/ (quick
+#                                             tests and calibration; web/data/ is not touched)
+#   python prep_population.py --smoke         1 % sample + sanity checks, for a minute-long test before a full run
+# The sample is drawn with its own random generator after each person is made, so a full run is the same as before.
+import argparse
+import time
+_ap = argparse.ArgumentParser(description="Modeled day/night population of the site")
+_ap.add_argument("--sample", type=float, default=1.0, help="share of people to keep (0-1]; each counts 1/share")
+_ap.add_argument("--smoke", action="store_true", help="1 %% sample and sanity checks; writes to data/raw/smoke/")
+_ap.add_argument("--out", help="output folder (default: web/data/, or data/raw/sample|smoke/ for a sample)")
+ARGS = _ap.parse_args()
+SAMPLE = 0.01 if ARGS.smoke else ARGS.sample
+assert 0 < SAMPLE <= 1, "--sample must be in (0, 1]"
+WEB = Path(ARGS.out) if ARGS.out else (HERE.parent.parent / "web" / "data" if SAMPLE == 1 else
+                                      POP / "raw" / ("smoke" if ARGS.smoke else "sample"))
+WEB.mkdir(parents=True, exist_ok=True)
+RAWOUT = POP / "raw" if SAMPLE == 1 else WEB          # where the unthinned dump goes
+srng = np.random.default_rng(12345)                   # the sample's own draws (not the model's)
+SW1 = 1.0 / SAMPLE                                    # each kept person counts for this many
+PROGRESS = (POP / "raw" if SAMPLE == 1 else WEB) / "progress.txt"
+_T0 = time.time(); _stage = [None, _T0]
+
+
+def stage(name):
+    """Start a stage: print and log the time, and how long the last one took."""
+    now = time.time()
+    if _stage[0]:
+        line = f"  ... {_stage[0]}: {now - _stage[1]:.0f} s"
+        print(line, flush=True); PROGRESS.open("a", encoding="utf-8").write(line + "\n")
+    _stage[0], _stage[1] = name, now
+    line = f"[{time.strftime('%H:%M:%S')} +{(now - _T0) / 60:4.1f} min] {name}"
+    print(line, flush=True)
+    PROGRESS.open("a" if name != "start" else "w", encoding="utf-8").write(line + "\n")
+
+
+def progress(i, n, label, every=0.1):
+    """Inside a long loop: a line every 10 %."""
+    step = max(int(n * every), 1)
+    if i % step == 0 and i:
+        line = f"    {label}: {i / n:4.0%} ({i:,} of {n:,}) +{(time.time() - _T0) / 60:.1f} min"
+        print(line, flush=True); PROGRESS.open("a", encoding="utf-8").write(line + "\n")
+
+
+WARN = []
+
+
+def warn(msg):
+    """Something the sanity checks report at the end (and the smoke test fails on)."""
+    if msg not in WARN:
+        WARN.append(msg); print("WARNING:", msg, flush=True)
+
+
+stage("start")
+if SAMPLE < 1:
+    print(f"SAMPLE RUN: {SAMPLE:.0%} of the people, each counting {SW1:.0f}; writing to {WEB}")
 
 AS = {k: v["value"] for k, v in json.loads((POP / "assumptions.json").read_text()).items()
       if isinstance(v, dict) and "value" in v}
@@ -75,6 +140,7 @@ SECTOR_ATT = [OAW.get(s, 0) * AS["officeAttendance"] + (1 - OAW.get(s, 0)) * OTH
 load = lambda name: json.loads((POP / name).read_text())
 
 
+stage("terrain")
 # ---------------------------------------------------------------- terrain
 TER = np.load(HANDOFF / "terrain.npy")
 tg = hand["terrain"]
@@ -95,6 +161,7 @@ def local(geom):
     return translate(geom, -OX, -OY)
 
 
+stage("buildings")
 # ---------------------------------------------------------------- buildings (entities as LiDAR prisms)
 prisms = defaultdict(list)
 ENT = {}   # entity id -> its record in the hand-off (name, address, use, parcel)
@@ -111,6 +178,7 @@ FOOT = {i: unary_union([p for p, _, _ in prisms[i]]) for i in BIDS}
 HEIGHT = {i: max(t for _, _, t in prisms[i]) - min(b for _, b, _ in prisms[i]) for i in BIDS}
 foot_tree = STRtree([FOOT[i] for i in BIDS])
 
+stage("parcels -> building use and floor area")
 # ---------------------------------------------------------------- parcels -> building use and floor area
 
 
@@ -208,6 +276,7 @@ for bid in BIDS:
               "name": ENT[bid].get("name") or bid,
               "use_sqft": s, "jobs": 0, "residents": 0, "rooms": 0, "guests": 0}
 
+stage("walking network")
 # ---------------------------------------------------------------- walking network (OSM)
 osm = load("osm.json")
 WALK = {"footway": 1.0, "pedestrian": 1.0, "steps": 1.05, "path": 1.0, "corridor": 1.0, "living_street": 1.0,
@@ -331,6 +400,7 @@ def nearest_node(geom):
     return int(node_tree.nearest(geom))
 
 
+stage("anchors: doors, places, portals")
 # ---------------------------------------------------------------- anchors: doors, places, portals
 for bid in BIDS:
     B[bid]["door"] = nearest_node(FOOT[bid].exterior if FOOT[bid].geom_type == "Polygon" else FOOT[bid])
@@ -491,6 +561,7 @@ def netdist(a, b):
     return D[arow[a], b] if a in arow else D[arow[b], a]
 
 
+stage("distributions")
 # ---------------------------------------------------------------- distributions
 acs, nhts = load("acs.json"), load("nhts.json")
 ARR_EDGES = [0, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11, 12, 16, 24]  # B08602 / B08302 bins (hours)
@@ -620,8 +691,24 @@ def dwell_sampler(keys, lo_min, hi_min, day):
     return lambda: min(max((rng.choice(48, p=p) + rng.random()) * 10, lo_min), hi_min) * 60
 
 
+stage("people: spots, choices, trips")
 # ---------------------------------------------------------------- people: spots, choices, trips
 SPEED_M, SPEED_SD = AS["walkSpeed"]
+
+
+_inner_cache = {}
+
+
+def _inner_floor(poly):
+    """The storey's outline 1.5 m in from the walls, prepared for fast tests; computed once per storey
+    (refactor 2026-10-10: buffering the LiDAR outlines for every person took most of the run)."""
+    k = id(poly)
+    if k not in _inner_cache:
+        inner = poly.buffer(-1.5) if poly.area > 60 else poly
+        if inner.is_empty:
+            inner = poly
+        _inner_cache[k] = (poly, prep(inner))   # keep poly alive so its id stays unique
+    return _inner_cache[k][1]
 
 
 def floor_spot(bid, residential=False):
@@ -633,9 +720,7 @@ def floor_spot(bid, residential=False):
     w = np.array([a for _, _, a in fl])
     z, poly, _ = fl[rng.choice(len(fl), p=w / w.sum())]
     minx, miny, maxx, maxy = poly.bounds
-    inner = poly.buffer(-1.5) if poly.area > 60 else poly
-    if inner.is_empty:
-        inner = poly
+    inner = _inner_floor(poly)
     for _ in range(40):
         x, y = rng.uniform(minx, maxx), rng.uniform(miny, maxy)
         if inner.contains(Point(x, y)):
@@ -770,10 +855,12 @@ def new_person(kind, **kw):
          "work_bid": None, "home_spot": None, "work_spot": None, "dist_km": 0.0, "bearing": 0.0, "tract": "",
          "speed": float(np.clip(rng.normal(SPEED_M, SPEED_SD), 0.6, 2.0)), "trips": {"weekday": [], "weekend": []}}
     p.update(kw)
-    people.append(p)
+    if SAMPLE == 1 or srng.random() < SAMPLE:
+        people.append(p)
     return p
 
 
+stage("Census blocks -> buildings")
 # ---------------------------------------------------------------- Census blocks -> buildings
 blocks = {}
 for f in load("blocks.geojson")["features"]:
@@ -870,7 +957,7 @@ def block_buildings(g):
     span several blocks (Angelus Plaza, Two California Plaza)."""
     geom = blocks[g]["geom"]
     out = []
-    for x in BIDS:
+    for x in [BIDS[k] for k in sorted(foot_tree.query(geom))]:   # BIDS order, as before
         if FOOT[x].intersects(geom):
             a = FOOT[x].intersection(geom).area
             if a >= 50 and a >= 0.1 * FOOT[x].area:
@@ -953,6 +1040,7 @@ for g, plist in res_by_block.items():
         p["sector"] = SECTORS.index(s)
         p["worker"] = True
 
+stage("jobs -> people")
 # ---------------------------------------------------------------- jobs -> people (workers + residents)
 tll = load("tracts_ll.json")["tracts"]
 ll_o = Transformer.from_crs(26911, 4326, always_xy=True).transform(OX, OY)[::-1]   # (lat, lon) of the origin
@@ -1023,7 +1111,7 @@ hotel_bids = {}
 for name, h in HR.items():
     bid = next((by_addr[a.upper()] for a in h["addr"] if a.upper() in by_addr), None)
     if bid is None:
-        print("hotel not found in the buildings:", name)
+        warn(f"hotel not found in the buildings: {name}")
         continue
     hotel_bids[bid] = hotel_bids.get(bid, 0) + h["rooms"]
 for bid, rooms in hotel_bids.items():
@@ -1035,6 +1123,7 @@ for bid, rooms in hotel_bids.items():
         p["home_spot"] = floor_spot(bid)
 print("hotel guests", sum(p["type"] == 2 for p in people))
 
+stage("schedules")
 # ---------------------------------------------------------------- schedules
 work_hours = AS["workHours"]
 WEEKEND_SHARE = AS["weekendWorkShare"]
@@ -1112,7 +1201,9 @@ def outings(p, day, n, door):
         add_trip(p, day, t1 + dw, dest, door, dk, hk, "back home", 0, oi, -1)
 
 
-for p in [q for q in people if q["type"] in (0, 1)]:
+_sched = [q for q in people if q["type"] in (0, 1)]
+for _k, p in enumerate(_sched):
+    progress(_k, len(_sched), "schedules (residents, workers)")
     for day in ("weekday", "weekend"):
         sec = SECTORS[p["sector"]]
         works = day == "weekday" or rng.random() < WEEKEND_SHARE.get(sec, WEEKEND_SHARE["default"])
@@ -1216,7 +1307,7 @@ for name, v in AS["visitors"].items():
         ts = meal_t[day] if v["profile"] == "meals" else (lambda lo=lo, hi=hi: rng.uniform(lo, hi) * 3600)
         target = DEST.get(name)
         if "annual" in v and target is None:
-            print("skip visitors for", name, "(not found)")
+            warn(f"visitor destination not found: {name}")
             continue
         for _ in range(int(round(per_day(v, day)))):
             t = ts()
@@ -1253,7 +1344,7 @@ venues = [(north, {d: ev["seats"] * ev["occupancy"] * AS["eveningShare"][d] * (1
 for name, v in AS["theatres"].items():
     f = next((p for p in places if re.search(v["match"], p["name"], re.I)), None)
     if f is None:
-        print("theatre not found:", name)
+        warn(f"theatre not found: {name}")
         continue
     venues.append(([f], {d: v["annual"] / 365 for d in ("weekday", "weekend")}, True))
 for day in ("weekday", "weekend"):
@@ -1271,6 +1362,7 @@ for day in ("weekday", "weekend"):
         add_trip(p, day, rng.uniform(*ev["leave"]) * 3600, e["node"], q["node"], SPOT_HIDDEN, SPOT_HIDDEN,
                  "leave the site", 0, ea, portal_idx[id(q)])
 
+stage("people the first layers left out")
 # ---------------------------------------------------------------- people the first layers left out (user, 2026-10-09)
 # The LADOT walk counts showed about half the people on the street missing: people without shelter, Little Tokyo's
 # visitors, and people who only walk through the site. assumptions: unsheltered, littleTokyo, passersBy.
@@ -1354,6 +1446,7 @@ print(f"people {len(people)}  paths {len(paths)}  trips weekday {sum(len(p['trip
       f"  weekend {sum(len(p['trips']['weekend']) for p in people)}")
 
 
+stage("checks: who is on site, hour by hour")
 # ---------------------------------------------------------------- checks: who is on site, hour by hour
 def present(p, day, attendance):
     if p["type"] != 1 and p["type"] != 0:
@@ -1369,11 +1462,12 @@ def onsite_curve(day, attendance, event=False):
     """People on site (indoors, at a place, or walking) per 15-minute bin, by type."""
     out = np.zeros((len(TYPES), 96))
     t = (np.arange(96) + 0.5) * 900
-    for p in people:
+    for _k, p in enumerate(people):
+        progress(_k, len(people), f"on-site curve ({day})", 0.25)
         tr = [x for x in p["trips"][day] if (not x[6] & F_ATTEND or present(p, day, attendance)) and (not x[6] & F_EVENT or event)]
         for i, ti in enumerate(t):
             if state_at(tr, ti, default_spot(p)) != SPOT_HIDDEN:
-                out[p["type"], i] += 1
+                out[p["type"], i] += SW1
     return out
 
 
@@ -1386,6 +1480,7 @@ for day in ("weekday", "weekend"):
     print(f"{day}: on site at 03:00 {int(tot[12])}, 08:00 {int(tot[32])}, 12:30 {int(tot[50])}, 15:00 {int(tot[60])},"
           f" 19:00 {int(tot[76])}, 23:00 {int(tot[92])}  (peak {int(tot.max())} at {int(tot.argmax()) // 4:02d}:{int(tot.argmax()) % 4 * 15:02d})")
 
+stage("calibration: Metro rail stations")
 # ---------------------------------------------------------------- calibration: Metro rail stations (user, 2026-10-09)
 # Weekday trips that leave the site by rail through a station's entrances (= its boardings from the site) and that
 # arrive by rail (alightings), against Metro's FY2026 average weekday rail boardings per station (metroBoardings in
@@ -1405,9 +1500,10 @@ for p in people:
         if t[6] & F_ATTEND and not present(p, "weekday", att):
             continue
         if t[9] in rail_station and rail_station[t[9]]:
-            board[rail_station[t[9]]] += 1
+            board[rail_station[t[9]]] += SW1
         if t[8] in rail_station and rail_station[t[8]]:
-            alight[rail_station[t[8]]] += 1
+            alight[rail_station[t[8]]] += SW1
+board = Counter({k: round(v) for k, v in board.items()}); alight = Counter({k: round(v) for k, v in alight.items()})
 calibration = {k: {"model_boardings": board[k], "model_alightings": alight[k], "metro_boardings": MB[k]["boardings"],
                    "ratio": round(board[k] / MB[k]["boardings"], 2) if MB[k]["boardings"] else None,
                    "transfer_hub": MB[k].get("transfer", False)}
@@ -1418,6 +1514,7 @@ for k, v in calibration.items():
           f"   ratio {v['ratio']}{'  (transfer hub)' if v['transfer_hub'] else ''}")
 print("  entrances without a station within 250 m:", sum(1 for v in rail_station.values() if v is None))
 
+stage("keep the people the viewer draws")
 # ---------------------------------------------------------------- keep the people the viewer draws (user, 2026-10-08)
 # The viewer fades people with distance from Y-1 like the point cloud (site-model/houdini/thinning.json): within R0
 # everyone is drawn, farther out a share (R0 / d_eff)^P. Only those people are written, each with a weight = 1 / share,
@@ -1447,7 +1544,8 @@ for d in ("weekday", "weekend"):
     _full[f"{d}.orig"] = np.array([t[8] for t in tr], np.int16)
     _full[f"{d}.dest"] = np.array([t[9] for t in tr], np.int16)
 (POP / "raw").mkdir(exist_ok=True)
-np.savez_compressed(POP / "raw" / "population_full.npz", **_full)
+_full["weight"] = np.full(len(people), SW1, np.float32)
+np.savez_compressed(RAWOUT / "population_full.npz", **_full)
 del _full, _trip_path
 
 
@@ -1478,7 +1576,7 @@ kept = []
 for p in people:
     sh = share(*anchor_xy(p), rng.random())
     if sh > 0 and rng.random() < sh:
-        p["weight"] = 1.0 / sh
+        p["weight"] = SW1 / sh
         kept.append(p)
 # people with no share (beyond the cloud's edge, or below keep_min) are drawn by nobody: rescale each type's weights
 # so the counts still add up to everyone of that type
@@ -1497,6 +1595,7 @@ paths = [paths[k] for k in used]
 _pb = path_between
 path_between = lambda a, b: (lambda r: (pmap[r[0]], r[1]))(_pb(a, b))
 
+stage("write web/data/population.{json,bin}")
 # ---------------------------------------------------------------- write web/data/population.{json,bin}
 sections, blob = {}, bytearray()
 
@@ -1591,3 +1690,39 @@ meta = {
 }
 (WEB / "population.json").write_text(json.dumps(meta, separators=(",", ":")))
 print(f"wrote population.bin {len(blob) / 1e6:.1f} MB, population.json {(WEB / 'population.json').stat().st_size / 1e3:.0f} KB")
+# ---------------------------------------------------------------- sanity checks (refactor 2026-10-10)
+# Things that must hold whatever the assumptions; a broken one has cost a 30-minute run before (Angels Flight chain,
+# an unreachable home, a place lost from the list). --smoke fails on any of them.
+stage("sanity checks")
+_n = Counter(TYPES[p["type"]] for p in people)
+for t in TYPES:
+    if _n[t] == 0:
+        warn(f"no {t} in the model")
+if af_place is None:
+    warn("Angels Flight is not in the walking network")
+_fun = set(fn)
+def _on_af(t):
+    seq = paths[path_between(t[2], t[3])[0]]
+    return any(a in _fun and b in _fun for a, b in zip(seq[:-1], seq[1:]))
+_af = sum(1 for p in people for t in p["trips"]["weekday"] if _on_af(t))
+if fn and _af == 0:
+    warn("no trip runs along Angels Flight")
+for k, v in calibration.items():
+    if not v["transfer_hub"] and v["model_boardings"] == 0:
+        warn(f"no boardings at {k}")
+for name, v in DEST.items():
+    if v is None:
+        warn(f"visitor destination missing: {name}")
+_stuck = sum(1 for p in people if p["type"] in (1, 3, 5) and not (p["trips"]["weekday"] or p["trips"]["weekend"]))
+if _stuck > 0.02 * len(people):
+    warn(f"{_stuck:,} workers / visitors / passers-by have no trip at all")
+for d in ("weekday", "weekend"):
+    if not any(t[1] > t[0] for p in people for t in p["trips"][d]):
+        warn(f"no {d} trips")
+print(f"sanity: {len(WARN)} warning(s)" + ("" if not WARN else ": " + "; ".join(WARN)))
+(RAWOUT / "sanity.json").write_text(json.dumps({"sample": SAMPLE, "warnings": WARN, "people": dict(_n)}, indent=1), encoding="utf-8")
+stage("done")
+if ARGS.smoke and WARN:
+    raise SystemExit(f"SMOKE TEST FAILED: {len(WARN)} warning(s)")
+if ARGS.smoke:
+    print("SMOKE TEST PASSED")

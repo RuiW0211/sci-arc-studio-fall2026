@@ -15,8 +15,14 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+import argparse
+
 import numpy as np
 from pyproj import Transformer
+
+_ap = argparse.ArgumentParser()
+_ap.add_argument("--dir", help="a sample run's folder (prep_population.py --sample / --smoke), e.g. data/raw/sample")
+ARGS = _ap.parse_args()
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -99,19 +105,20 @@ print(f"{len(sites)} counted blocks inside the site")
 # ---------------------------------------------------------------- the model: everyone, before thinning
 # prep_population.py writes data/raw/population_full.npz (every person, weight 1). Without it, the viewer's thinned
 # file is used, whose large weights far from Y-1 make the counts there noisy.
-meta = json.loads((ROOT / "web" / "data" / "population.json").read_text(encoding="utf-8"))
-FULL = RAW / "population_full.npz"
+SRC = Path(ARGS.dir).resolve() if ARGS.dir else ROOT / "web" / "data"
+meta = json.loads((SRC / "population.json").read_text(encoding="utf-8"))
+FULL = (SRC if ARGS.dir else RAW) / "population_full.npz"
 if FULL.exists():
     Z = np.load(FULL)
     NX, poff, pn = Z["nodes"].astype(float), Z["pathOffsets"], Z["pathNodes"]
     TYPE, present = Z["type"], Z["present"]
-    weight = np.ones(len(TYPE))
+    weight = Z["weight"].astype(float) if "weight" in Z else np.ones(len(TYPE))   # a sample: each counts 1/share
     LT_A = int(Z["littletokyo_anchor"])
     DAYS = {d: (Z[f"{d}.offsets"], Z[f"{d}.path"], (Z[f"{d}.t0"] + Z[f"{d}.t1"]) / 2 / 3600, Z[f"{d}.attend"],
                 Z[f"{d}.orig"], Z[f"{d}.dest"]) for d in WINDOWS}
     print("model: everyone, before thinning (data/raw/population_full.npz)")
 else:
-    buf = (ROOT / "web" / "data" / "population.bin").read_bytes()
+    buf = (SRC / "population.bin").read_bytes()
     T = {"float32": np.float32, "uint32": np.uint32, "uint16": np.uint16, "int16": np.int16, "uint8": np.uint8}
     sec = lambda k: np.frombuffer(buf, T[meta["sections"][k]["type"]], meta["sections"][k]["count"], meta["sections"][k]["offset"])
     nodes = sec("nodes").reshape(-1, 3)
@@ -230,10 +237,11 @@ for d in WINDOWS:
     angels[d] = round(float(weight[person[k]].sum()))
 print(f"Angels Flight trips a day: weekday {angels['weekday']:,}, weekend {angels['weekend']:,} (last published: 1,200-1,500 a day, 2010-13)")
 
-(DATA / "walk_check.json").write_text(json.dumps({
+OUT = (SRC / "walk_check.json") if ARGS.dir else (DATA / "walk_check.json")   # a sample never overwrites the real check
+OUT.write_text(json.dumps({
     "note": "Modeled walkers crossing each LADOT count block (both sidewalks, both directions) in the count hours, against "
             "LADOT Walk & Bike Count 2023 and 2025 (one day each; observed_mean = their mean). A check only.",
     "sources": {str(y): f"LADOT Walk & Bike Count {y}, data.lacity.org" for y in YEARS},
     "hours": WINDOWS, "half_width_m": HALF_W, "held_out": sorted(HOLD_OUT), "fit": fit,
     "angels_flight": {**angels, "published": "1,200-1,500 trips a day (2010-13), about 2,200 (1996-2001)"}, "blocks": out}, indent=1), encoding="utf-8")
-print("wrote data/walk_check.json")
+print("wrote", OUT)
