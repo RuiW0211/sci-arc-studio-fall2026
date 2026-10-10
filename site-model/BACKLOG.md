@@ -212,12 +212,30 @@
 ## 11. Houdini（2026-10-05 起）
 
 - [ ] ⭐⭐⭐ **未归类的点**：Y-1 周边 250 m 内还有约 2.5 万个 `_other` 点（原来 6.7 万），多是立面、低矮杂物和树下的点。
-- [ ] ⭐⭐⭐ **人流图层在 Houdini 数据上重做**（Rui）：Clark 的版本在旧项目（PR #9）。新数据已经准备好：`site-model/houdini/handoff/`（建筑体块带名称、地址、用途，加地形）。
+- [x] ~~⭐⭐⭐ **人流图层在 Houdini 数据上重做**（Rui）：Clark 的版本在旧项目（PR #9）。~~ （2026-10-10 完成，分支 `rui/population-houdini`；未完成的见第 12 节）
 - [ ] ⭐⭐ **自动实体的名字**：部分自动生成的名字有重复字，例如 “Building on Government Parcel parcel”（`tools/auto_entities.py`）。
-- [ ] ⭐⭐ **核心区以外的地标正式名称**：现在 83 个手工确认的实体都在 250 m 内（含 35 个地标名），之外的 1,051 个是按县里地块自动生成的。
+- [ ] ⭐⭐ **核心区以外的实体名称**：手工确认的实体之外，其余是按县里地块自动生成的。1 km 内的地标已经按规则取了正式名称（`web/config.json` 的 `landmarks`，2026-10-10）；其他自动实体仍以地址命名。
 - [ ] ⭐⭐ **Mac 上走一遍安装教程**：`docs/SETUP.md` 第 6–7 节（Houdini、Houdini MCP）还没有在 Mac 上实际跑过。
 - [ ] ⭐⭐ **点的“势场”模式**（第 0 节）：每个点带研究属性，随设计变化，例如 φ = Σ wᵢfᵢ，加一个回到原位的弹簧。放在新的模式里，Point cloud 保持不变。
 - [ ] ⭐ 浮动标签：眉题太长时会压到右上角的 ×；多个标签有时互相重叠。
+
+## 12. 人流图层与查看器图层：未完成（2026-10-10 记，分支 `rui/population-houdini`）
+
+**人流模型**（`site-model/population/`）
+- [ ] ⭐⭐⭐ **重跑 hand-off**：Angels Flight 上站（`BLD_485752841247`）已在 `annotations/entities.json` 里从 Two California Plaza 移到 Angels Flight，但 `houdini/handoff/` 没重新生成。下次重跑人口模型时一起做：`export_handoff.py` → `synth_facades.py` → `prep_population.py` → `check_walk_counts.py`。影响很小（Two California Plaza 多约几百 m² 楼面）。
+- [ ] ⭐⭐ **Grand Ave 步行量偏低**：模型 / LADOT 约 0.44，加了住户、商铺、坡度后原因仍未找到（Methods 3.6 已注明）。
+- [ ] ⭐ **Little Tokyo 地铁站没有拟合**：乘客多住在模型范围外。
+- [ ] ⭐ 查看器还没接入网站共享的明暗主题设置（没定要不要接）。
+
+**查看器图层**（`web/config.json` 的 `splitLayers` / `plazas` / `claims` / `landmarks`，规则见 Methods 2.6）
+- [ ] ⭐⭐ **广场规则只核对了 Two California Plaza**：40 m 以上高楼里顶部离地不到 10 m 的格子都按地面画，可能误伤矮的裙楼屋顶。逐栋高楼看一遍。
+- [ ] ⭐⭐ **桥和平台的形状规则**：171 个无地块结构里仍有 33 个按建筑画（20–50 m 高，看起来是真的楼，但没逐个核对）；带高顶棚的步行桥可能还被当成建筑。
+- [ ] ⭐ **远处的广场没做点密度补偿**：从高楼里移回地面的广场点，在 250 m 以外仍按楼的抽稀比例，可能和旁边路面疏密不同。
+- [ ] ⭐ **广场上的绿篱、花坛归到了地面**：点云没有颜色，分不出绿篱和矮墙。需要的话按实体表手工标成树。
+- [ ] ⭐ **地标认领 1 m**：紧贴地标的普通建筑会有约 1 m 的边被画成地标色。
+- [ ] ⭐ **地标资料缺口**：最初用途没找到：Gans Brothers、Westinghouse Electric；来源较弱：Edwards-Wildey、Great Republic Life、Fine Arts；建成年份没找到：M.J. Connell 1, 2, 3 & 7、Gans Brothers。信息卡上的 "Now" 来自县估价员登记的用途，可能过时。
+- [ ] ⭐ **Music Center** 在实体表里仍叫 "Dorothy Chandler Pavilion (Music Center)"，查看器里按地标清单改了显示名；要不要改实体表本身，待定。
+- [ ] ⭐ Methods 页还空着的节（1 项目、2.2 点的标注、2.5 地形、4 设计、5 参考文献）等 Rui 补。
 
 ---
 
