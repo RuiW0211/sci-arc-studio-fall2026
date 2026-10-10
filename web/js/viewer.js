@@ -83,21 +83,16 @@ function setWhiteCloud(on) {
 
 // estimated facade points (site-model/houdini/tools/synth_facades.py): walls the airborne LiDAR barely saw, filled
 // only where no return is near. NOT measured: their own layer and colour, drawn over the cloud, never picked.
-let facadePts = null;
+// (user, 2026-10-10) they are merged into the building points when the LiDAR loads (loadLidar): same layer, colour,
+// opacity, picking and highlight; each point carries the object of the nearest measured return and its height above
+// the ground. Here only the file is read.
+let facadeData = null;
 try {
   const fm = await (await fetch(cfg.facades.meta)).json();
   const buf = await (await fetch(cfg.facades.meta.replace(/[^/]*$/, "") + fm.file)).arrayBuffer();
-  const fc = cfg.layers.Facades_estimated || {};
-  const fpos = new Float32Array(buf);
-  const fg = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(fpos, 3))
-    .setAttribute("color", new THREE.BufferAttribute(new Float32Array(fpos.length), 3));   // set by paintCloud
-  const fmat = new THREE.PointsMaterial({ vertexColors: true, size: cfg.lidar.size ?? 0.25,
-    sizeAttenuation: true, transparent: true, opacity: fc.opacity ?? 0.55, depthWrite: false });
-  fmat.userData.alwaysTransparent = true; fmat.onBeforeCompile = withFocus; focusMats.push(fmat);
-  const fpts = new THREE.Points(fg, fmat);
-  facadePts = fpts;
-  fpts.userData.layer = "Facades_estimated"; fpts.userData.noPick = true; fpts.name = "Estimated facade points";
-  model.add(fpts);
+  const m = fm.count;
+  facadeData = { n: m, names: fm.objects || [], pos: new Float32Array(buf, 0, 3 * m),
+                 obj: fm.objects ? new Uint16Array(buf, 12 * m, m) : null, hag: fm.objects ? new Int16Array(buf, 14 * m, m) : null };
 } catch (e) { /* no estimated facades */ }
 
 // design files: every site-model/exports/design_<name>.glb (listed in assets/models.json by the Pages workflow and by
@@ -232,9 +227,31 @@ async function loadLidar() {
   const meta = lidarMeta;
   const base = cfg.lidar.meta.replace(/[^/]*$/, "");
   const objAttr = meta.attributes?.object;
-  const { n, pos: P, cls: C, inten: I, obj, hag: HG } = await decodeLaz(base + meta.file, meta);
+  let { n, pos: P, cls: C, inten: I, obj, hag: HG } = await decodeLaz(base + meta.file, meta);
   status("Preparing LiDAR…");
   const objNames = objAttr?.names ?? ["_other"], objLayers = objAttr?.layers ?? ["_other"];
+  // estimated facade points join the measured ones as ordinary building points: the object of their nearest return,
+  // that object's mean intensity, class "building"; after this nothing tells them apart
+  if (facadeData?.obj) {
+    const nameIdx = new Map(objNames.map((nm, k) => [nm, k]));
+    const map = facadeData.names.map((nm) => nameIdx.get(nm) ?? -1);
+    const sum = new Float64Array(objNames.length), cnt = new Uint32Array(objNames.length);
+    for (let i = 0; i < n; i++) { sum[obj[i]] += I[i]; cnt[obj[i]]++; }
+    const keep = [];
+    for (let j = 0; j < facadeData.n; j++) if (map[facadeData.obj[j]] >= 0) keep.push(j);
+    const m = keep.length, N2 = n + m;
+    const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2);
+    const H2 = HG ? new HG.constructor(N2) : null;
+    P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
+    keep.forEach((j, k) => {
+      const i = n + k, o = map[facadeData.obj[j]];
+      P2[3 * i] = facadeData.pos[3 * j]; P2[3 * i + 1] = facadeData.pos[3 * j + 1]; P2[3 * i + 2] = facadeData.pos[3 * j + 2];
+      C2[i] = 6; O2[i] = o; I2[i] = cnt[o] ? Math.round(sum[o] / cnt[o]) : 128;
+      if (H2) H2[i] = facadeData.hag[j];
+    });
+    P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
+    facadeData = null;   // memory
+  }
   const material = pointMaterial(cfg.lidar.size ?? 0.3);
   // local density of each point's layer (returns per m2 of plan, from a 10 m grid, bilinear so it varies smoothly) and a
   // draw priority q = random * density^(1 - LOD_KEEP): the LOD draws the points with q below a target, so dense ground is
@@ -384,18 +401,6 @@ function paintCloud(how = lidar.how) {
     }
   }
   for (const p of lidarGroup.children) p.geometry.attributes.color.needsUpdate = true;
-  // estimated facade points follow the colouring like building returns; they have no measured intensity: neutral grey
-  if (facadePts) {
-    const P = facadePts.geometry.attributes.position.array, C = facadePts.geometry.attributes.color;
-    const lc = new THREE.Color(cfg.layers.Facades_estimated?.color || "#F0EAD2"), base = [lc.r, lc.g, lc.b];
-    for (let i = 0; i < P.length / 3; i++) {
-      const y = P[3 * i + 1];
-      const c = how === "height" ? ramp((y - 78) / 60) : how === "class" ? (y > 140 ? [0.55, 0.58, 0.62] : [0.3, 0.52, 0.36])
-        : how === "intensity" ? [0.42, 0.42, 0.42] : base;
-      C.array.set(c, 3 * i);
-    }
-    C.needsUpdate = true;
-  }
   const first = !$("#lidarOpts button.on");
   document.querySelectorAll("#lidarOpts button").forEach((b) => b.classList.toggle("on", b.dataset.c === how));
   moveThumb(first, "#lidarOpts");

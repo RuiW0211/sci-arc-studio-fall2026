@@ -21,7 +21,8 @@ Like the measured cloud, the estimate thins with distance from Y-1 (pack_wide.ra
 with its own random draw.
 
   python site-model/houdini/tools/synth_facades.py ["The entity name" ...]   (default: every building of the hand-off)
-  -> web/data/facades_estimated.bin (float32 x, y, z in the viewer frame: x east, y up, z -north) + .json
+  -> web/data/facades_estimated.bin (float32 x, y, z in the viewer frame: x east, y up, z -north; then the object of
+     each point and its height above the building's base) + .json. The viewer merges them into the building points.
 """
 import json
 import sys
@@ -93,7 +94,7 @@ def main(names):
     hand = json.loads((eh.OUT / "buildings.json").read_text(encoding="utf-8"))["buildings"]
     index = {n: i for i, n in enumerate(objnames)}
     rng = np.random.default_rng(2026)
-    pts, report = [], []
+    pts, objs, hags, report = [], [], [], []
     todo = [b for b in hand if not names or (b.get("name") or "") in names]
     for e in todo:
         want = e.get("name") or e["id"]
@@ -133,6 +134,12 @@ def main(names):
             C = C[free]
             C = C[rng.random(len(C)) < eh.pw.ratio(C[:, 0], C[:, 1], np.full(len(C), u_bld))]   # thin with distance
             pts.append(C)
+            # merged into the building (user, 2026-10-10): each point takes the object of the nearest measured return,
+            # so it is picked and highlighted with its building, and that return's ground (its z - height above ground)
+            if len(C):
+                k_near = tree.query(C)[1]
+                objs.append(obj[sel][k_near])
+                hags.append(np.round((C[:, 2] - (z[sel][k_near] - hag[sel][k_near])) * 10).astype(np.int16))
             added += len(C)
         report.append({"name": want, "id": e["id"], "measured": int(len(sel)), "estimated": added,
                        "storey_m": round(per, 2), "storey_from": "measured walls" if per != FLOOR_M or phase != base else "default"})
@@ -140,10 +147,18 @@ def main(names):
             print(f"{want}: {len(sel)} measured points, {added} estimated wall points, storeys {per:.2f} m ({report[-1]['storey_from']})")
     A = np.concatenate(pts) if pts else np.zeros((0, 3))
     three = np.c_[A[:, 0], A[:, 2], -A[:, 1]].astype(np.float32)          # viewer frame
+    O = np.concatenate(objs) if objs else np.zeros(0, int)
+    used = sorted(set(O.tolist()))
+    oi = {o: k for k, o in enumerate(used)}
+    obj_idx = np.array([oi[o] for o in O], np.uint16)                       # index into "objects" (names)
+    H = np.concatenate(hags) if hags else np.zeros(0, np.int16)
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "facades_estimated.bin").write_bytes(three.tobytes())
+    (OUT / "facades_estimated.bin").write_bytes(three.tobytes() + obj_idx.tobytes() + H.astype(np.int16).tobytes())
     (OUT / "facades_estimated.json").write_text(json.dumps({
-        "file": "facades_estimated.bin", "count": int(len(three)), "format": "float32 x, y, z (x east, y up, z -north)",
+        "file": "facades_estimated.bin", "count": int(len(three)),
+        "format": "float32 x, y, z (x east, y up, z -north) for every point, then uint16 object (index into objects), "
+                  "then int16 height above the building's base (0.1 m)",
+        "objects": [objnames[o] for o in used],
         "buildings": report,
         "source": "ESTIMATED, not measured: points on the walls of the building prisms of site-model/houdini/handoff/ "
                   "where the 2023 LiDAR has no return within %.1f m (site-model/houdini/tools/synth_facades.py)" % GAP_M,

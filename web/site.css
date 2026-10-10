@@ -18,7 +18,8 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { scrollbar-gutter: stable; }   /* short pages keep the scrollbar's room, so every page's column lines up */
+/* short pages keep the scrollbar's room, so every page's column lines up; the page colour reaches the window edges */
+html { scrollbar-gutter: stable; background: var(--bg); }
 body { font-family: var(--font); font-size: 16px; line-height: 1.6; background: var(--bg); color: var(--text); }
 a { color: inherit; }
 code { font: 0.8rem var(--mono); }
