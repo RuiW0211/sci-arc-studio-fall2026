@@ -738,15 +738,20 @@ function select(key, a, build, objs, add) {
   if (lidar && mode === "cloud") paintCloud();
   invalidate(); wake();
 }
+// a tag and its line fade out over 0.5 s, then go (user, 2026-10-10: Esc should not make them vanish at once)
+function fadeAway(s) {
+  for (const n of [s.el, s.line]) { n.style.transition = "opacity .5s ease"; n.style.opacity = "0"; n.style.pointerEvents = "none"; }
+  setTimeout(() => { s.el.remove(); s.line.remove(); }, 500);
+}
 function deselect(key) {
   const i = selection.findIndex((s) => s.key === key); if (i < 0) return;
-  const [s] = selection.splice(i, 1); s.el.remove(); s.line.remove();
+  const [s] = selection.splice(i, 1); fadeAway(s);
   if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection();
   if (lidar && mode === "cloud") paintCloud();
   invalidate();
 }
 function clearSelection() {
-  for (const s of selection.splice(0)) { s.el.remove(); s.line.remove(); if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection(); }
+  for (const s of selection.splice(0)) { fadeAway(s); if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection(); }
   if (lidar && mode === "cloud") paintCloud();
   invalidate();
 }
