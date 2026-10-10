@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Angels Knoll Studio</title>
 <style>
-  :root { --bg: #fff; --fg: #111; --muted: #777; --line: #e3e3e3; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0d0d0d; --fg: #eee; --muted: #999; --line: #2a2a2a; } }
-  :root[data-theme="dark"] { --bg: #0d0d0d; --fg: #eee; --muted: #999; --line: #2a2a2a; }
+  /* the same colours as Research and Methods */
+  :root { --bg: #fff; --fg: #1a1a1a; --muted: #6b6b6b; --line: #e6e6e6; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; --bg: #161616; --fg: #ededed; --muted: #a0a0a0; --line: #2c2c2c; } }
+  :root[data-theme="dark"] { color-scheme: dark; --bg: #161616; --fg: #ededed; --muted: #a0a0a0; --line: #2c2c2c; }
   body { margin: 0; background: var(--bg); color: var(--fg);
     font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
   main { max-width: 680px; margin: 0 auto; padding: 56px 16px; }
