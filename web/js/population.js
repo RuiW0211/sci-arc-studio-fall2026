@@ -400,10 +400,26 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       (trips.length ? `<div class="label">Today (${st.day})</div><div class="trips">${trips.map(esc).join("<br>")}</div>` : "") +
       `<div class="note">Modeled person, not a real individual. Data: LODES, ACS, NHTS, Assessor, OSM.</div>`;
   }
+  // people's overall opacity eases over --t-out (the site's shared timing, viewer.html): showing / hiding the layer and
+  // isolating a person (user, 2026-10-10: no hard switches)
+  const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) * 1000 || 0;
+  let alphaAnim = 0;
+  function fadeAlpha(to, done) {
+    const from = uniforms.alpha.value, t0 = performance.now(), dur = tms("--t-out");
+    cancelAnimationFrame(alphaAnim);
+    st.fading = true;
+    const step = (now) => {
+      const k = dur ? Math.min((now - t0) / dur, 1) : 1;
+      uniforms.alpha.value = from + (to - from) * k * k * (3 - 2 * k);
+      st.dirty = true;
+      if (k < 1) alphaAnim = requestAnimationFrame(step); else { st.fading = false; done?.(); }
+    };
+    alphaAnim = requestAnimationFrame(step);
+  }
   function select(i) {
     st.selected = i;
     // isolate the selected person: everyone else fades and loses their trail
-    uniforms.alpha.value = i < 0 ? 1 : pc.isolateAlpha ?? 0.15;
+    fadeAlpha(i < 0 ? 1 : pc.isolateAlpha ?? 0.15);
     material.depthWrite = i < 0;
     st.dirty = true;
     if (i < 0) { selPoint.visible = route.visible = false; return; }
@@ -478,7 +494,9 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     meta, state: st,
     highlight(k) { uniforms.size.value = SIZE0 + (SIZE1 - SIZE0) * k; uniforms.minPx.value = 2 + k; st.dirty = true; },
     setVisible(on) {
-      points.visible = on;
+      st.shown = on;
+      if (on) { points.visible = true; uniforms.alpha.value = 0; fadeAlpha(st.selected >= 0 ? pc.isolateAlpha ?? 0.15 : 1); }
+      else fadeAlpha(0, () => { if (!st.shown) points.visible = false; });   // fade out, then stop drawing
       if (!on) { hovered = -1; hovPoint.visible = false; }
       selPoint.visible = on && st.selected >= 0;
       route.visible = false;
@@ -487,7 +505,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       if (on) { st.dirty = true; if (!curveData) recurve(); requestAnimationFrame(() => dayThumb(true)); }
       setPlaying(on);   // turning the layer on plays the day (user, 2026-10-09); off pauses it
     },
-    get visible() { return points.visible; },
+    get visible() { return points.visible && st.shown !== false; },
     tick(now) {
       const dt = lastNow ? Math.min((now - lastNow) / 1000, 0.25) : 0;
       lastNow = now;
@@ -499,7 +517,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     },
     // the person within maxPx of a screen point (client px), or -1 (user, 2026-10-08: screen distance, so picking a
     // person or a building behaves the same at every zoom)
-    nearest(cx, cy, maxPx) { return points.visible ? nearestOnScreen(cx, cy, maxPx) : -1; },
+    nearest(cx, cy, maxPx) { return points.visible && st.shown !== false ? nearestOnScreen(cx, cy, maxPx) : -1; },
     // hover marker: person index or -1
     hover(i) {
       if (i === hovered) return;

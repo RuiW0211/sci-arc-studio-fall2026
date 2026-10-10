@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Y-1 Site Viewer</title>
 <style>
+  /* timing, the same across the site (user, 2026-10-10; also in site.css): small feedback (hover, toggles, arrows),
+     overlays appearing, closing / a change of the whole picture, overlays fading after the idle wait (viewer.js reads these) */
+  :root { --t-feedback: .2s; --t-in: .3s; --t-out: .5s; --t-idle: 1.5s; }
   :root { --bg: #f4f4f2; --fg: #111; --muted: #777; --panel: rgba(255,255,255,.9); --line: #ddd; --accent: #111; --bg3d: #eceae6; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0d0d0d; --fg: #eee; --muted: #999; --panel: rgba(20,20,20,.86); --line: #333; --accent: #eee; --bg3d: #121212; } }
   :root[data-theme="dark"] { --bg: #0d0d0d; --fg: #eee; --muted: #999; --panel: rgba(20,20,20,.86); --line: #333; --accent: #eee; --bg3d: #121212; }
@@ -25,13 +28,13 @@
   .note { color: var(--muted); font-size: 11px; margin-top: 4px; }
   .note[hidden], #layersBox[hidden] { display: none; }
   /* layer rows: the dot is the toggle (filled = shown, ring = hidden); layer colours only when the cloud is coloured by layer */
-  i.sw { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); transition: background .2s, box-shadow .2s; }
+  i.sw { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); transition: background var(--t-feedback), box-shadow var(--t-feedback); }
   body.linked i.sw { background: var(--c); }
   label.layer input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
   label.layer:has(input:not(:checked)) i.sw { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
   label.layer:has(input:not(:checked)) .nm { opacity: .45; }
   label.layer:has(input:focus-visible) i.sw { outline: 2px solid var(--tint); outline-offset: 2px; }
-  label.layer .nm { transition: opacity .2s; }
+  label.layer .nm { transition: opacity var(--t-feedback); }
   button { font: inherit; background: none; color: var(--fg); border: 1px solid var(--line); padding: 4px 8px; cursor: pointer; }
   button.on { background: var(--accent); color: var(--bg); }
   button:disabled { opacity: .4; cursor: default; }
@@ -92,7 +95,7 @@
   #ui { padding: 14px 16px; }
   #info { border-radius: 18px; }
   button { border-radius: 999px; border: 1px solid var(--glass-rim); background: var(--chip); padding: 4px 11px;
-    transition: background .18s, box-shadow .18s, color .18s; }
+    transition: background var(--t-feedback), box-shadow var(--t-feedback), color var(--t-feedback); }
   button:hover:not(:disabled):not(.on) { background: color-mix(in srgb, var(--thumb) 55%, transparent); }
   button.on { background: var(--thumb); color: var(--thumb-fg); border-color: var(--glass-hi); font-weight: 600;
     box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08); }
@@ -123,9 +126,9 @@
   input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--fg) 55%, transparent); }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; margin-top: -4.5px; border-radius: 50%;
     background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.28), 0 0 0 .5px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.9);
-    transition: transform .18s cubic-bezier(.34,1.4,.5,1); }
+    transition: transform var(--t-feedback) cubic-bezier(.34,1.4,.5,1); }
   input[type=range]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: #fff; border: 0;
-    box-shadow: 0 1px 4px rgba(0,0,0,.28), 0 0 0 .5px rgba(0,0,0,.10); transition: transform .18s cubic-bezier(.34,1.4,.5,1); }
+    box-shadow: 0 1px 4px rgba(0,0,0,.28), 0 0 0 .5px rgba(0,0,0,.10); transition: transform var(--t-feedback) cubic-bezier(.34,1.4,.5,1); }
   input[type=range]:hover::-webkit-slider-thumb, input[type=range]:active::-webkit-slider-thumb { transform: scale(1.18); }
   input[type=range]:hover::-moz-range-thumb, input[type=range]:active::-moz-range-thumb { transform: scale(1.18); }
   input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px color-mix(in srgb, var(--tint) 45%, transparent), 0 1px 4px rgba(0,0,0,.28); }
@@ -152,7 +155,7 @@
   details.sec > summary { color: var(--fg); font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0;
     margin-bottom: 6px; align-items: center; }
   details.sec > summary::after { content: "›"; width: 14px; text-align: center; color: var(--muted); font-weight: 400; font-size: 15px; line-height: 1;
-    transition: transform .2s; }
+    transition: transform var(--t-feedback); }
   details.sec[open] > summary::after { content: "›"; transform: rotate(90deg); }
   details.sec:not([open]) { padding-bottom: 4px; }
   details.sec:not([open]) > summary { margin-bottom: 0; }
@@ -176,15 +179,15 @@
   }
   /* idle (user, 2026-10-08): no input for 5 s -> the panels and the hint fade out completely over 1.5 s; any input
      fades them back in (0.5 s, quicker, so a reach for the panel is not kept waiting). viewer.js toggles body.idle */
-  #ui, #info, #hint { transition: opacity .5s ease; }
-  body.idle #ui, body.idle #info, body.idle #hint { opacity: 0; pointer-events: none; transition: opacity 1.5s ease; }
+  #ui, #info, #hint { transition: opacity var(--t-in) ease; }
+  body.idle #ui, body.idle #info, body.idle #hint { opacity: 0; pointer-events: none; transition: opacity var(--t-idle) ease; }
   /* floating tags (viewer.js addTag): a label at the end of the leader line from the object's top; light text on a
      soft dark fade, the category in the highlight colour; follows the camera; fades after 10 s without input */
   .tag { position: fixed; left: 0; top: 0; z-index: 5; max-width: 270px; padding: 7px 26px 8px 12px; margin-left: -1px;
     border-left: 1px solid var(--tag); color: #f4f4f6; pointer-events: auto;
     background: linear-gradient(90deg, rgba(8, 8, 12, .62), rgba(8, 8, 12, .38) 70%, rgba(8, 8, 12, 0));
     backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
-    transition: opacity .5s ease; font-weight: 300; }
+    transition: opacity var(--t-in) ease; font-weight: 300; }
   .tag .k { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--tag); font-weight: 500; }
   .tag .t { font-size: 17px; line-height: 1.2; margin: 2px 0 1px; letter-spacing: .01em; }
   .tag .a { font-size: 11px; color: rgba(244, 244, 246, .72); }
@@ -195,7 +198,7 @@
   .tag .dd > summary::-webkit-details-marker { display: none; }
   /* the chevron and the close × share one 14 px column at the label's right edge (6 px in), so they line up */
   .tag .dd > summary { width: calc(100% + 20px); }
-  .tag .dd > summary::after { content: "›"; width: 14px; text-align: center; font-size: 13px; line-height: 1; transition: transform .2s; letter-spacing: 0; }
+  .tag .dd > summary::after { content: "›"; width: 14px; text-align: center; font-size: 13px; line-height: 1; transition: transform var(--t-feedback); letter-spacing: 0; }
   .tag .dd[open] > summary::after { transform: rotate(90deg); }
   .tag .dd > summary:hover { color: #fff; }
   .tag dl { display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; margin: 5px 0 0; font-size: 10.5px; }
@@ -215,9 +218,9 @@
   .tag.left .dd > summary::after { content: "‹"; }
   .tag.left .dd[open] > summary::after { transform: rotate(-90deg); }
   .tag.left dl { text-align: left; }
-  #leads { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; transition: opacity .5s ease; }
+  #leads { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; transition: opacity var(--t-in) ease; }
   #leads line { stroke: var(--tag); stroke-width: 1; }
-  body.idle-tags .tag, body.idle-tags #leads { opacity: 0; pointer-events: none; transition: opacity 1.5s ease; }
+  body.idle-tags .tag, body.idle-tags #leads { opacity: 0; pointer-events: none; transition: opacity var(--t-idle) ease; }
   #info { display: none !important; }   /* replaced by the floating tags */
   /* population section */
   /* toggles work like the layer toggles: filled when on, an outline when off */
@@ -231,8 +234,8 @@
   #popBox input[type=range] { width: 100%; margin: 0; }
   #popDay { margin: 6px 0 4px; }
   /* the Color choice is kept but set aside while the point cloud is drawn white */
-  #colorSec.overridden .seg { opacity: .45; transition: opacity .5s; }
-  #colorSec .seg { transition: opacity .5s; }
+  #colorSec.overridden .seg { opacity: .45; transition: opacity var(--t-out); }
+  #colorSec .seg { transition: opacity var(--t-out); }
 </style>
 </head>
 <body>

@@ -16,7 +16,12 @@
     if (!b) return;
     b.addEventListener("click", function () {
       var next = isDark() ? "light" : "dark";
+      // ease the colours over --t-out (site.css .theme-anim), then drop the class so hovers stay quick
+      var ms = parseFloat(getComputedStyle(root).getPropertyValue("--t-out")) * 1000 || 0;
+      root.classList.add("theme-anim");
       root.dataset.theme = next;
+      clearTimeout(window.__themeAnim);
+      window.__themeAnim = setTimeout(function () { root.classList.remove("theme-anim"); }, ms + 50);
       try { sessionStorage.setItem(KEY, next); } catch (e) { /* this page only */ }
     });
   });

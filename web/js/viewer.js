@@ -53,7 +53,25 @@ const model = new THREE.Group();   // everything drawn as geometry over the poin
 scene.add(model);
 
 // ---------- "white point cloud" (user, 2026-10-09): an option of the population layer; the point cloud fades to white,
-// a little transparent, so the people stand out. One shared uniform, eased over 0.5 s.
+// a little transparent, so the people stand out. One shared uniform, eased over --t-out.
+// the site's shared durations (CSS --t-feedback / --t-in / --t-out / --t-idle in viewer.html), in ms, for JS animations
+const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) * 1000 || 0;
+// colour changes of the point cloud (colour mode, selection) cross-fade: the shader mixes the previous colours (color0)
+// into the new ones as uColorMix goes 0 -> 1 over --t-out
+const COLOR_MIX = { value: 1 };
+let mixAnim = 0;
+function crossFade() {
+  const t0 = performance.now(), dur = tms("--t-out");
+  COLOR_MIX.value = 0;
+  cancelAnimationFrame(mixAnim);
+  const step = (now) => {
+    const k = dur ? Math.min((now - t0) / dur, 1) : 1;
+    COLOR_MIX.value = k * k * (3 - 2 * k);
+    invalidate();
+    if (k < 1) mixAnim = requestAnimationFrame(step);
+  };
+  mixAnim = requestAnimationFrame(step);
+}
 const FOCUS = { value: 0 };
 const FOCUS_GREY = { value: cfg.population?.whiteCloud?.white ?? 0.8 }, FOCUS_ALPHA = { value: cfg.population?.whiteCloud?.opacity ?? 0.5 };
 const focusMats = [];
@@ -71,7 +89,7 @@ function setWhiteCloud(on) {
   if (on) for (const m of focusMats) if (!m.userData.alwaysTransparent && !m.transparent) { m.transparent = true; m.needsUpdate = true; }
   cancelAnimationFrame(focusAnim);
   const step = (now) => {
-    const k = Math.min((now - t0) / 500, 1), e = k * k * (3 - 2 * k);
+    const dur = tms("--t-out"), k = dur ? Math.min((now - t0) / dur, 1) : 1, e = k * k * (3 - 2 * k);
     FOCUS.value = from + (to - from) * e;
     pop?.highlight(FOCUS.value);   // people grow with it
     invalidate();
@@ -194,6 +212,9 @@ function pointMaterial(sizeMetres) {
   focusMats.push(mat);
   mat.onBeforeCompile = (shader) => {
     withFocus(shader);
+    shader.uniforms.uColorMix = COLOR_MIX;
+    shader.vertexShader = "attribute vec3 color0;\nuniform float uColorMix;\n" + shader.vertexShader.replace(
+      "#include <color_vertex>", "#include <color_vertex>\n  vColor.rgb = mix(color0, vColor.rgb, uColorMix);");
     shader.vertexShader = shader.vertexShader.replace(
       "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize, 1.0);\n#include <fog_vertex>");
     // round points instead of squares
@@ -301,6 +322,7 @@ async function loadLidar() {
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     const col = new Float32Array(m * 3);
     g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    g.setAttribute("color0", new THREE.BufferAttribute(new Uint8Array(m * 3), 3, true));   // the colours before a change
     g.computeBoundingSphere();
     const pts = new THREE.Points(g, material);
     pts.frustumCulled = true;
@@ -386,6 +408,13 @@ function objColor(k) {
   return (objCols[k] = [c.r, c.g, c.b]);
 }
 function paintCloud(how = lidar.how) {
+  // the colours on screen become the start of a cross-fade (the first painting has none: no fade)
+  const fade = lidar.painted;
+  if (fade) for (const pts of lidarGroup.children) {
+    const c = pts.geometry.attributes.color.array, c0 = pts.geometry.attributes.color0;
+    for (let k = 0; k < c.length; k++) c0.array[k] = c[k] * 255;
+    c0.needsUpdate = true;
+  }
   lidar.how = how;
   const hi = [HILITE.r, HILITE.g, HILITE.b], mask = lidar.selMask;
   // the selection lights the clicked object, or all objects of its entity (a whole building)
@@ -405,6 +434,8 @@ function paintCloud(how = lidar.how) {
     }
   }
   for (const p of lidarGroup.children) p.geometry.attributes.color.needsUpdate = true;
+  if (fade) crossFade(); else COLOR_MIX.value = 1;
+  lidar.painted = true;
   const first = !$("#lidarOpts button.on");
   document.querySelectorAll("#lidarOpts button").forEach((b) => b.classList.toggle("on", b.dataset.c === how));
   moveThumb(first, "#lidarOpts");
@@ -733,15 +764,18 @@ function select(key, a, build, objs, add) {
   if (old) { if (add) deselect(key); return; }            // shift + click on a selected object: take it out
   const el = document.createElement("div"); el.className = "tag"; document.body.append(el);
   const line = document.createElementNS(svgNS, "line"); leadSvg.append(line);
+  // fade in over --t-in (the label's CSS transition); the line follows
+  el.style.opacity = "0"; line.style.opacity = "0"; line.style.transition = "opacity var(--t-in) ease";
+  requestAnimationFrame(() => requestAnimationFrame(() => { el.style.opacity = ""; line.style.opacity = ""; }));
   const s = { key, a, build, objs, el, line };
   fillTag(s); selection.push(s);
   if (lidar && mode === "cloud") paintCloud();
   invalidate(); wake();
 }
-// a tag and its line fade out over 0.5 s, then go (user, 2026-10-10: Esc should not make them vanish at once)
+// a tag and its line fade out over --t-out, then go (user, 2026-10-10: Esc should not make them vanish at once)
 function fadeAway(s) {
-  for (const n of [s.el, s.line]) { n.style.transition = "opacity .5s ease"; n.style.opacity = "0"; n.style.pointerEvents = "none"; }
-  setTimeout(() => { s.el.remove(); s.line.remove(); }, 500);
+  for (const n of [s.el, s.line]) { n.style.transition = "opacity var(--t-out) ease"; n.style.opacity = "0"; n.style.pointerEvents = "none"; }
+  setTimeout(() => { s.el.remove(); s.line.remove(); }, tms("--t-out"));
 }
 function deselect(key) {
   const i = selection.findIndex((s) => s.key === key); if (i < 0) return;
@@ -998,7 +1032,7 @@ renderer.setAnimationLoop((now) => {
   // LiDAR level of detail: recomputed whenever the view changed or a chunk is still easing to its target
   if (lidar && mode === "cloud" && (dirty || lodEasing)) { lodEasing = updateLod(); if (lodEasing) dirty = true; }
   // the population plays on its own clock: draw while it plays or after one of its settings changed
-  if (pop?.visible) { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing) dirty = true; }
+  if (pop && (pop.visible || pop.state.fading)) { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing || pop.state.fading) dirty = true; }
   if (!dirty) return;
   dirty = false;
   renderer.render(scene, camera);
