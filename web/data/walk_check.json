@@ -29,13 +29,13 @@
   "Los Angeles St bw Arcadia St & Aliso St"
  ],
  "fit": {
-  "littleTokyo.annual": 3291000.0,
-  "passersBy.weekday": 18500.0,
-  "passersBy.weekend": 19000.0
+  "littleTokyo.annual": 3633000.0,
+  "passersBy.weekday": 16800.0,
+  "passersBy.weekend": 11500.0
  },
  "angels_flight": {
-  "weekday": 1708,
-  "weekend": 2375,
+  "weekday": 1898,
+  "weekend": 2334,
   "published": "1,200-1,500 trips a day (2010-13), about 2,200 (1996-2001)"
  },
  "blocks": [
@@ -49,33 +49,32 @@
    "block_m": 58,
    "held_out": false,
    "weekday": {
-    "model": 686,
+    "model": 616,
     "by_group": {
-     "resident": 157,
-     "worker": 30,
+     "resident": 189,
+     "worker": 19,
      "hotel": 27,
-     "visitor": 205,
-     "unsheltered": 6,
-     "passerby": 261
+     "visitor": 186,
+     "unsheltered": 4,
+     "passerby": 191
     },
     "2023": 781,
     "2025": 618,
     "observed_mean": 700,
-    "ratio": 0.98
+    "ratio": 0.88
    },
    "weekend": {
-    "model": 453,
+    "model": 405,
     "by_group": {
-     "resident": 87,
-     "hotel": 26,
-     "visitor": 242,
-     "unsheltered": 1,
-     "passerby": 97
+     "resident": 98,
+     "hotel": 19,
+     "visitor": 245,
+     "passerby": 43
     },
     "2023": 133,
     "2025": 145,
     "observed_mean": 139,
-    "ratio": 3.26
+    "ratio": 2.91
    }
   },
   {
@@ -88,35 +87,35 @@
    "block_m": 62,
    "held_out": true,
    "weekday": {
-    "model": 391,
+    "model": 394,
     "by_group": {
-     "resident": 94,
-     "worker": 21,
-     "hotel": 12,
-     "visitor": 59,
-     "unsheltered": 9,
-     "passerby": 178,
-     "littletokyo": 18
+     "resident": 114,
+     "worker": 31,
+     "hotel": 13,
+     "visitor": 66,
+     "unsheltered": 5,
+     "passerby": 153,
+     "littletokyo": 12
     },
     "2023": 539,
     "2025": 562,
     "observed_mean": 550,
-    "ratio": 0.71
+    "ratio": 0.72
    },
    "weekend": {
-    "model": 237,
+    "model": 182,
     "by_group": {
-     "resident": 52,
+     "resident": 47,
      "hotel": 7,
-     "visitor": 71,
+     "visitor": 60,
      "unsheltered": 3,
-     "passerby": 70,
-     "littletokyo": 34
+     "passerby": 33,
+     "littletokyo": 32
     },
     "2023": 126,
     "2025": 51,
     "observed_mean": 88,
-    "ratio": 2.68
+    "ratio": 2.06
    }
   },
   {
@@ -129,36 +128,36 @@
    "block_m": 209,
    "held_out": false,
    "weekday": {
-    "model": 4536,
+    "model": 4380,
     "by_group": {
-     "resident": 141,
-     "worker": 2262,
-     "hotel": 130,
-     "visitor": 119,
-     "unsheltered": 51,
-     "passerby": 180,
-     "littletokyo": 1653
+     "resident": 131,
+     "worker": 2155,
+     "hotel": 125,
+     "visitor": 105,
+     "unsheltered": 48,
+     "passerby": 112,
+     "littletokyo": 1704
     },
     "2023": 1848,
     "2025": 2024,
     "observed_mean": 1936,
-    "ratio": 2.34
+    "ratio": 2.26
    },
    "weekend": {
-    "model": 2209,
+    "model": 2110,
     "by_group": {
-     "resident": 67,
-     "worker": 26,
-     "hotel": 64,
-     "visitor": 116,
-     "unsheltered": 16,
-     "passerby": 57,
-     "littletokyo": 1863
+     "resident": 57,
+     "worker": 39,
+     "hotel": 57,
+     "visitor": 93,
+     "unsheltered": 18,
+     "passerby": 22,
+     "littletokyo": 1824
     },
     "2023": 1897,
     "2025": 2351,
     "observed_mean": 2124,
-    "ratio": 1.04
+    "ratio": 0.99
    }
   },
   {
@@ -171,35 +170,35 @@
    "block_m": 204,
    "held_out": false,
    "weekday": {
-    "model": 947,
+    "model": 820,
     "by_group": {
-     "resident": 72,
-     "worker": 13,
-     "hotel": 3,
-     "visitor": 51,
-     "unsheltered": 4,
-     "passerby": 702,
-     "littletokyo": 102
+     "resident": 106,
+     "worker": 8,
+     "hotel": 4,
+     "visitor": 55,
+     "unsheltered": 6,
+     "passerby": 526,
+     "littletokyo": 115
     },
     "2023": 317,
     "2025": 502,
     "observed_mean": 410,
-    "ratio": 2.31
+    "ratio": 2.0
    },
    "weekend": {
-    "model": 387,
+    "model": 311,
     "by_group": {
-     "resident": 22,
-     "hotel": 3,
-     "visitor": 45,
-     "unsheltered": 4,
-     "passerby": 229,
-     "littletokyo": 84
+     "resident": 54,
+     "hotel": 5,
+     "visitor": 61,
+     "unsheltered": 5,
+     "passerby": 108,
+     "littletokyo": 78
     },
     "2023": 258,
     "2025": 211,
     "observed_mean": 234,
-    "ratio": 1.65
+    "ratio": 1.33
    }
   },
   {
@@ -212,36 +211,36 @@
    "block_m": 131,
    "held_out": true,
    "weekday": {
-    "model": 1654,
+    "model": 1835,
     "by_group": {
-     "resident": 755,
-     "worker": 306,
-     "hotel": 134,
-     "visitor": 23,
-     "unsheltered": 38,
-     "passerby": 284,
-     "littletokyo": 114
+     "resident": 956,
+     "worker": 310,
+     "hotel": 159,
+     "visitor": 24,
+     "unsheltered": 54,
+     "passerby": 227,
+     "littletokyo": 105
     },
     "2023": 2042,
     "2025": 1585,
     "observed_mean": 1814,
-    "ratio": 0.91
+    "ratio": 1.01
    },
    "weekend": {
-    "model": 723,
+    "model": 838,
     "by_group": {
-     "resident": 387,
-     "worker": 18,
-     "hotel": 72,
-     "visitor": 11,
-     "unsheltered": 24,
-     "passerby": 117,
-     "littletokyo": 94
+     "resident": 557,
+     "worker": 9,
+     "hotel": 98,
+     "visitor": 15,
+     "unsheltered": 20,
+     "passerby": 46,
+     "littletokyo": 93
     },
     "2023": 726,
     "2025": 608,
     "observed_mean": 667,
-    "ratio": 1.08
+    "ratio": 1.26
    }
   },
   {
@@ -254,33 +253,34 @@
    "block_m": 203,
    "held_out": true,
    "weekday": {
-    "model": 1047,
+    "model": 1005,
     "by_group": {
-     "resident": 475,
-     "worker": 319,
-     "hotel": 90,
-     "visitor": 17,
-     "unsheltered": 7,
-     "passerby": 139
+     "resident": 452,
+     "worker": 343,
+     "hotel": 73,
+     "visitor": 19,
+     "unsheltered": 9,
+     "passerby": 109
     },
     "2023": 2407,
     "2025": 2406,
     "observed_mean": 2406,
-    "ratio": 0.44
+    "ratio": 0.42
    },
    "weekend": {
-    "model": 334,
+    "model": 331,
     "by_group": {
-     "resident": 251,
-     "worker": 6,
+     "resident": 243,
+     "worker": 11,
      "hotel": 37,
-     "visitor": 9,
-     "passerby": 31
+     "visitor": 12,
+     "unsheltered": 2,
+     "passerby": 26
     },
     "2023": 35,
     "2025": 884,
     "observed_mean": 460,
-    "ratio": 0.73
+    "ratio": 0.72
    }
   },
   {
@@ -293,34 +293,33 @@
    "block_m": 124,
    "held_out": false,
    "weekday": {
-    "model": 1003,
+    "model": 1113,
     "by_group": {
-     "resident": 440,
-     "worker": 240,
-     "hotel": 73,
-     "visitor": 6,
-     "unsheltered": 91,
-     "passerby": 153
+     "resident": 568,
+     "worker": 225,
+     "hotel": 74,
+     "visitor": 8,
+     "unsheltered": 110,
+     "passerby": 128
     },
     "2023": 1660,
     "2025": 1501,
     "observed_mean": 1580,
-    "ratio": 0.63
+    "ratio": 0.7
    },
    "weekend": {
-    "model": 428,
+    "model": 425,
     "by_group": {
-     "resident": 272,
+     "resident": 313,
      "worker": 4,
-     "hotel": 42,
-     "visitor": 1,
-     "unsheltered": 46,
-     "passerby": 63
+     "hotel": 45,
+     "unsheltered": 47,
+     "passerby": 16
     },
     "2023": 768,
     "2025": 661,
     "observed_mean": 714,
-    "ratio": 0.6
+    "ratio": 0.59
    }
   },
   {
@@ -333,29 +332,29 @@
    "block_m": 201,
    "held_out": false,
    "weekday": {
-    "model": 1261,
+    "model": 1366,
     "by_group": {
-     "resident": 595,
-     "worker": 394,
-     "hotel": 11,
-     "visitor": 18,
-     "unsheltered": 33,
-     "passerby": 210
+     "resident": 708,
+     "worker": 410,
+     "hotel": 24,
+     "visitor": 21,
+     "unsheltered": 32,
+     "passerby": 171
     },
     "2023": 2079,
     "2025": null,
     "observed_mean": 2079,
-    "ratio": 0.61
+    "ratio": 0.66
    },
    "weekend": {
-    "model": 447,
+    "model": 449,
     "by_group": {
-     "resident": 331,
-     "worker": 6,
+     "resident": 371,
+     "worker": 4,
      "hotel": 19,
-     "visitor": 9,
-     "unsheltered": 2,
-     "passerby": 80
+     "visitor": 5,
+     "unsheltered": 15,
+     "passerby": 35
     },
     "2023": 788,
     "2025": null,
@@ -373,35 +372,34 @@
    "block_m": 200,
    "held_out": false,
    "weekday": {
-    "model": 733,
+    "model": 747,
     "by_group": {
-     "resident": 325,
-     "worker": 66,
-     "hotel": 6,
-     "visitor": 32,
-     "unsheltered": 48,
-     "passerby": 256
+     "resident": 392,
+     "worker": 77,
+     "hotel": 14,
+     "visitor": 36,
+     "unsheltered": 36,
+     "passerby": 192
     },
     "2023": 883,
     "2025": 878,
     "observed_mean": 880,
-    "ratio": 0.83
+    "ratio": 0.85
    },
    "weekend": {
-    "model": 366,
+    "model": 301,
     "by_group": {
-     "resident": 209,
-     "worker": 1,
-     "hotel": 14,
-     "visitor": 34,
-     "unsheltered": 11,
-     "passerby": 96,
-     "littletokyo": 1
+     "resident": 208,
+     "worker": 2,
+     "hotel": 3,
+     "visitor": 37,
+     "unsheltered": 13,
+     "passerby": 38
     },
     "2023": 374,
     "2025": 369,
     "observed_mean": 372,
-    "ratio": 0.99
+    "ratio": 0.81
    }
   }
  ]

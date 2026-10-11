@@ -222,7 +222,8 @@
 ## 12. 人流图层与查看器图层：未完成（2026-10-10 记，分支 `rui/population-houdini`）
 
 **人流模型**（`site-model/population/`）
-- [ ] ⭐⭐⭐ **重跑 hand-off**：Angels Flight 上站（`BLD_485752841247`）已在 `annotations/entities.json` 里从 Two California Plaza 移到 Angels Flight，但 `houdini/handoff/` 没重新生成。下次重跑人口模型时一起做：`export_handoff.py` → `synth_facades.py` → `prep_population.py` → `check_walk_counts.py`。影响很小（Two California Plaza 多约几百 m² 楼面）。
+- [x] ~~⭐⭐⭐ **重跑 hand-off**：Angels Flight 上站移到 Angels Flight 后同步 `houdini/handoff/`。~~ （2026-10-10 完成，和城市开放数据更新一起重跑）
+- [ ] ⭐⭐ **城市开放数据更新的后续**（2026-10-10，`fetch_open_data.py`）：7 栋 2020 年后的住宅楼不在 hand-off 里（2023 LiDAR 之后完工），居民按"不在模型里"处理；营业登记里的商店、餐饮未逐一核实是否还在营业；EBEWE 入住率是业主自报，只用来比较楼与楼之间的差别。
 - [ ] ⭐⭐ **Grand Ave 步行量偏低**：模型 / LADOT 约 0.44，加了住户、商铺、坡度后原因仍未找到（Methods 3.6 已注明）。
 - [ ] ⭐ **Little Tokyo 地铁站没有拟合**：乘客多住在模型范围外。
 - [ ] ⭐ 查看器还没接入网站共享的明暗主题设置（没定要不要接）。

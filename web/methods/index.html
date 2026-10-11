@@ -149,8 +149,8 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
   const t = pop.totals, bt = t.by_type, rules = t.residents_by_rule || {};
   const label = { resident: "Residents", worker: "Workers", hotel: "Hotel guests", visitor: "Visitors",
     unsheltered: "People without shelter", passerby: "Passers-by" };
-  const from = { resident: "2020 Census blocks: housing units × occupancy × household size",
-    worker: "LEHD LODES 2022 jobs by block and sector, placed in buildings by floor area",
+  const from = { resident: "2020 Census blocks: housing units × occupancy × household size; plus buildings finished after the Census (LADBS permits, City open data)",
+    worker: "LEHD LODES 2022 jobs by block and sector, placed in buildings by floor area and office occupancy (EBEWE, City open data)",
     hotel: "published room counts of 15 visitor hotels × occupancy",
     visitor: "published annual visitors of destinations, Music Center and Disney Hall audiences, Little Tokyo (fitted)",
     unsheltered: "LAHSA 2025 street count by census tract",

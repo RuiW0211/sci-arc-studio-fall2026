@@ -137,7 +137,7 @@ OFFICE = set(AS["officeSectors"])   # office schedule: hours, lunch out
 # w = officeAttendanceWeight (share of the sector's jobs that work like offices; 0 if absent)
 OAW, OTH = AS["officeAttendanceWeight"], AS["otherAttendance"]
 SECTOR_ATT = [OAW.get(s, 0) * AS["officeAttendance"] + (1 - OAW.get(s, 0)) * OTH.get(s, OTH["default"]) for s in SECTORS]
-load = lambda name: json.loads((POP / name).read_text())
+load = lambda name: json.loads((POP / name).read_text(encoding="utf-8"))
 
 
 stage("terrain")
@@ -476,6 +476,40 @@ for name, pt, area, why in shop_w.values():
     places.append({"name": f"Shop · {name}", "kind": "shop", "node": nearest_node(pt),
                    "w": min(max(area, 1000) / SH["sqftPerWeight"], SH["maxWeight"])})
 print("shops:", len(shop_w), dict(Counter(v[3] for v in shop_w.values())))
+# businesses (user, 2026-10-10: City open data, Listing of Active Businesses, fetch_open_data.py): restaurants, cafes,
+# bars (NAICS 722) and shops (44-45) at their registered locations, where OSM (food) and the shops above have none.
+# Businesses at one location (a mall, a jewelry mart, a food hall: one point for dozens of stalls) make one place,
+# their weights summed and capped like the shops (openData.businesses).
+OD = load("open_data.json")
+BZ = AS["openData"]["businesses"]
+shop_parcels = [v[1] for v in shop_w.values()]
+biz = {}
+for r in OD["businesses"]:
+    pt = Point(*ll2loc(r["lat"], r["lon"]))
+    if not EXT.contains(pt):
+        continue
+    n = r["naics"] or ""
+    kind = "bar" if n.startswith("7224") else "food" if n.startswith("722") else "shop"
+    w = next((v for k, v in BZ["weight"].items() if n.startswith(k)), BZ["weight"]["default"])
+    if w <= 0:
+        continue
+    key = (kind, round(pt.x / BZ["mergeM"]), round(pt.y / BZ["mergeM"]))
+    b = biz.setdefault(key, {"pt": pt, "w": 0.0, "names": [], "n": 0})
+    b["w"] += w; b["n"] += 1
+    if r["name"] and len(b["names"]) < 2:
+        b["names"].append(r["name"])
+added = Counter()
+for (kind, _, _), b in biz.items():
+    if kind == "shop" and any(q.distance(b["pt"]) < BZ["mergeM"] for q in shop_parcels):
+        continue                      # an Assessor / checked shop is here already
+    node = nearest_node(b["pt"])
+    if kind != "shop" and any(p["node"] == node and p["kind"] in ("food", "bar") for p in places):
+        continue                      # OSM has a food place at this street node already
+    label = b["names"][0] if b["n"] == 1 else f"{b['names'][0] if b['names'] else kind} and {b['n'] - 1} more"
+    places.append({"name": (f"Shop · {label}" if kind == "shop" else label), "kind": kind, "node": node,
+                   "w": min(b["w"], SH["maxWeight"])})
+    added[kind] += 1
+print("businesses (City open data) added as places:", dict(added), f"from {len(OD['businesses'])} registered locations")
 # the Regional Connector portal from the site model (Grand Av Arts / Bunker Hill), if OSM lacks it
 mp = hand["landmarks"]["Metro_Canopy_Glass"]["center"]   # the 4th & Hill portal canopy, from the point cloud
 mpn = nearest_node(Point(*mp))
@@ -899,6 +933,22 @@ def scaled(counts, total):
 
 lodes = load("lodes.json")
 JW, AFF = AS["jobWeightByUse"], AS["sectorUseAffinity"]
+# office occupancy (user, 2026-10-10: City open data, EBEWE energy benchmarking, fetch_open_data.py): a building's
+# self-reported occupancy relative to the mean of the matched offices scales its share of its block's jobs. LODES
+# already puts jobs in their block, so this only moves jobs between the buildings of one block.
+OCC = {}
+_occ = {o["address"]: o["occupancy"] for o in OD["offices"]}
+for bid in BIDS:
+    for a in B[bid]["addr"]:
+        street = a.upper().split(",")[0].split(" LOS ANGELES")[0].strip()
+        if street in _occ:
+            OCC[bid] = _occ[street]
+            break
+OCC_MEAN = float(np.mean(list(OCC.values()))) if OCC else 1.0
+OCC_K = {b: min(max(v / OCC_MEAN, AS["openData"]["officeOccupancy"]["minFactor"]),
+                AS["openData"]["officeOccupancy"]["maxFactor"]) for b, v in OCC.items()}
+print(f"office occupancy (EBEWE): {len(OCC)} buildings matched by address, mean {OCC_MEAN:.0%}")
+jobs_moved = 0
 jobs_by_block = {}
 dropped = Counter()
 for g, wac in lodes["wac"].items():
@@ -908,16 +958,20 @@ for g, wac in lodes["wac"].items():
     cand = block_blds.get(g) or near_blds(g)
     jobs = []
     for sec, n in scaled({s: wac.get(s, 0) for s in SECTORS[1:]}, total).items():
-        w = np.array([B[b]["area_m2"] * JW.get(B[b]["use"], JW["unknown"]) * AFF.get(sec, {}).get(B[b]["use"], 1.0)
-                      for b in cand])
+        w0 = np.array([B[b]["area_m2"] * JW.get(B[b]["use"], JW["unknown"]) * AFF.get(sec, {}).get(B[b]["use"], 1.0)
+                       for b in cand])
+        w = w0 * np.array([OCC_K.get(b, 1.0) for b in cand])
         if w.sum() == 0:
             dropped[g] += n
             continue
+        if w0.sum() > 0:   # expected jobs moved by the occupancy weights (half the L1 difference of the shares)
+            jobs_moved += 0.5 * n * float(np.abs(w / w.sum() - w0 / w0.sum()).sum())
         for b, m in zip(cand, rng.multinomial(n, w / w.sum())):
             jobs += [(b, sec)] * int(m)
     rng.shuffle(jobs)
     jobs_by_block[g] = jobs
-print("jobs placed", sum(len(j) for j in jobs_by_block.values()), "dropped", sum(dropped.values()))
+print("jobs placed", sum(len(j) for j in jobs_by_block.values()), "dropped", sum(dropped.values()),
+      f"| moved between buildings by office occupancy: about {jobs_moved:.0f}")
 
 # residents (user, 2026-10-08: "the rule that fits our data best", option B). The 2020 Census adds noise to block
 # population counts (disclosure avoidance) but keeps housing-unit counts exact, so a block's residents are estimated as
@@ -1027,6 +1081,50 @@ for g, v in sorted(res_log.items(), key=lambda kv: -kv[1]["residents"]):
     if v["rule"] != "units":
         print(f"  block {g[-4:]}: {v['residents']} residents ({v['share']:.0%} on site) -> {v['rule']}: {v['buildings']}")
 
+# residents of buildings finished after the 2020 Census (user, 2026-10-10: City open data, LADBS permits with a
+# Certificate of Occupancy after Census day, fetch_open_data.py): their housing units are not in HU100, so they are
+# added here, units x residential occupancy x persons per household (the tract of the permit point), in the building
+# at the permit point (or the nearest within NEAR_M); a building not in the hand-off (finished after the 2023 LiDAR,
+# or thinned out) houses them "off model", like rule 4 above. Their workers are not in the 2022 LODES home counts
+# (RAC): they work at the site-wide rate of the residents above, off site.
+def block_at(pt):
+    """The Census block containing pt, else the nearest one."""
+    return next((g for g, b in blocks.items() if b["geom"].contains(pt)), None) or \
+        min(blocks, key=lambda g: blocks[g]["geom"].distance(pt))
+
+
+NEW_HOUSING = []
+for h in OD["new_housing"]:
+    pt = Point(*ll2loc(h["lat"], h["lon"]))
+    if not EXT.contains(pt):
+        continue
+    g = block_at(pt)
+    hh = hh_size.get(g[:11], HH_DEFAULT)
+    n = int(round(h["units"] * AS["residentialOccupancy"] * hh))
+    inside = [BIDS[k] for k in foot_tree.query(pt) if FOOT[BIDS[k]].contains(pt)]
+    near = inside or [x for x in sorted(BIDS, key=lambda x: FOOT[x].distance(pt))[:1] if FOOT[x].distance(pt) <= NEAR_M]
+    key = "new:" + h["address"]
+    if near:
+        x = near[0]
+        for _ in range(n):
+            p = new_person("resident", home_bid=x, tract=g[:11])
+            p["home_spot"] = floor_spot(x, True)
+            res_by_block[key].append(p)
+            B[x]["residents"] += 1
+        rule, where = "built after the 2020 Census", B[x]["name"]
+    else:
+        door = min(arow, key=lambda k: math.dist(XYZ[k][:2], (pt.x, pt.y)))
+        for _ in range(n):
+            p = new_person("resident", tract=g[:11])
+            p["home_kind"], p["home_door"] = SPOT_HIDDEN, door
+            res_by_block[key].append(p)
+        rule, where = "built after the 2020 Census, building not modelled", None
+    res_log[key] = {"residents": n, "share": 1.0, "rule": rule, "buildings": [where] if where else []}
+    NEW_HOUSING.append({"address": h["address"], "units": h["units"], "cofo": h["cofo"], "residents": n,
+                        "building": where})
+print("residents in buildings finished after the 2020 Census:", sum(v["residents"] for v in NEW_HOUSING),
+      f"in {len(NEW_HOUSING)} buildings ({sum(1 for v in NEW_HOUSING if not v['building'])} not in the hand-off)")
+
 # resident workers (RAC) and the share who work on site (OD home blocks inside the site)
 for g, plist in res_by_block.items():
     rac = lodes["rac"].get(g)
@@ -1039,6 +1137,15 @@ for g, plist in res_by_block.items():
     for p, s in zip(rng.permutation(plist)[:nw], secs):
         p["sector"] = SECTORS.index(s)
         p["worker"] = True
+_old = [p for g, pl in res_by_block.items() if not g.startswith("new:") for p in pl]
+_rate = float(np.mean([bool(p.get("worker")) for p in _old])) if _old else 0.0
+_sec = Counter(p["sector"] for p in _old if p.get("worker"))
+for g, plist in res_by_block.items():
+    if g.startswith("new:"):
+        for p in plist:
+            if rng.random() < _rate:
+                p["worker"] = True
+                p["sector"] = int(rng.choice(list(_sec), p=np.array(list(_sec.values()), float) / sum(_sec.values())))
 
 stage("jobs -> people")
 # ---------------------------------------------------------------- jobs -> people (workers + residents)
@@ -1685,7 +1792,10 @@ meta = {
                      "prisms from " + hand["source"],
         "commute": load("ctpp.json")["source"] + " (workers' mode and arrival time); residents: " + acs["source"],
         "trip_times": nhts["source"], "network": osm["source"],
+        "open_data": OD["source"] + f" (fetched {OD['fetched']}): residents of buildings finished after the 2020 Census, "
+                     "office occupancy, restaurants, bars and shops",
     },
+    "new_housing": NEW_HOUSING,
     "assumptions": {k: {"value": v["value"], "note": v["note"]} for k, v in assumptions.items() if isinstance(v, dict) and "value" in v},
 }
 (WEB / "population.json").write_text(json.dumps(meta, separators=(",", ":")))
