@@ -173,6 +173,37 @@
       "sourceFile": "Y-1_V2_Complete_Research.md §1"
     },
     {
+      "id": "disp-007",
+      "title": "Angels Landing lobbying: quarterly filings 2018-2025, none since",
+      "summary": "City lobbying disclosures show Angels Landing Partners, LLC (formerly The Peebles Corporation) paid registered lobbying firms to lobby the City on the Angels Landing project in every quarter from 2018 Q1 to 2025 Q4; no Angels Landing filing appears in 2026 Q1-Q2.",
+      "details": [
+        "Lobbying firms must register with the City Ethics Commission and report each quarter which client, project and City agencies they lobbied. The City publishes these reports as open data.",
+        "- Client: Angels Landing Partners, LLC (formerly The Peebles Corporation)",
+        "- Firms and years: Sheppard, Mullin, Richter & Hampton LLP (2018-2025, most entries), LG Strategies (2021-2023), Dakota Communications (2023-2024), The Rynders Corporation (2021-2022), Urban Solutions, LLC (2018); the Central City Association also reported Angels Landing in 2024 Q4",
+        "- Agencies lobbied: Mayor's Office, City Council, City Attorney, Chief Legislative Analyst, City Administrative Officer, City Planning, Building and Safety, Economic and Workforce Development; LG Strategies also reported CRA/LA (2022-2023)",
+        "- Lobbying went on after the City terminated the agreement (February 2024) and after the developers sued (December 2024), through 2025 Q4",
+        "What it does not show: the filings record that lobbying took place, on which project and with which agencies, not what was asked or said, and not any effect on decisions. One quarter can have several entries (one per firm, agency group or amendment), so entry counts are not a measure of intensity. Many 2024-2025 entries list the agencies as 'None/Not Yet Assigned'.",
+        "Query used: City Projects and Agencies Lobbied by Registered Lobbying Firms (data.lacity.org 4xuf-944h), project containing 'Angels Landing', checked 2026-10-10. Each entry links to the firm's quarterly report on ethics.lacity.org. Other Bunker Hill projects in the same data: Grand Avenue Project (Parcel Q, Phases IIC and III / W-2) and the W-1 parcel."
+      ],
+      "topic": "Disposition & Notice",
+      "date": "2025-12-31",
+      "sources": [
+        {
+          "type": "official",
+          "title": "City of Los Angeles Open Data: City Projects and Agencies Lobbied by Registered Lobbying Firms (4xuf-944h)",
+          "url": "https://data.lacity.org/d/4xuf-944h"
+        },
+        {
+          "type": "official",
+          "title": "Los Angeles City Ethics Commission: a lobbying firm quarterly report for Angels Landing (example)",
+          "url": "https://ethics.lacity.org/view?document_id=56068"
+        }
+      ],
+      "status": "verified",
+      "confidence": "high",
+      "sourceFile": "LA City Open Data, queried 2026-10-10"
+    },
+    {
       "id": "lit-001",
       "title": "Angels Landing Partners v. City of Los Angeles (24STCV32173) filed",
       "summary": "Angels Landing Partners LLC (Don Peebles and Victor MacFarlane) sued the City of Los Angeles in LA County Superior Court for breach of contract over the termination of the $1.6 billion Angels Landing project, seeking $20 million.",
