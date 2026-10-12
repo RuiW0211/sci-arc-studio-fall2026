@@ -504,6 +504,10 @@ async function loadLidar() {
   }
   const objCount = new Uint32Array(objNames.length);
   for (let i = 0; i < n; i++) objCount[obj[i]]++;
+  // per object: the chunks holding its points, so a click looks at a few chunks instead of all 9M points (user, 2026-10-12:
+  // the highlight and label came late; selecting took ~100 ms of scanning)
+  const objParts = Array.from({ length: objNames.length }, () => []), stamp = new Int32Array(objNames.length).fill(-1);
+  parts.forEach((p, j) => { for (let i = 0; i < p.n; i++) { const k = p.ob[i]; if (stamp[k] !== j) { stamp[k] = j; objParts[k].push(j); } } });
   // per object: its entity (index into ENTITIES.entities, -1 = none); per entity: its objects
   const objEntity = new Int32Array(objNames.length).fill(-1), entityObjs = new Map();
   const entIndex = new Map((ENTITIES?.entities ?? []).map((e, i) => [e, i]));
@@ -511,7 +515,7 @@ async function loadLidar() {
     const e = entityOfName.get(nm);
     if (e) { const i = entIndex.get(e); objEntity[k] = i; (entityObjs.get(i) ?? entityObjs.set(i, []).get(i)).push(k); }
   });
-  lidar = { parts, material, objNames, objLayers, objCount, objEntity, entityObjs, count: n,
+  lidar = { parts, material, objNames, objLayers, objCount, objEntity, entityObjs, objParts, litParts: new Set(), count: n,
             // by layer only (user, 2026-10-10: the Color menu is gone); ?color=height / class / intensity / object still
             // works for checking the data
             how: urlq.get("color") ?? "layer", selected: -1, selMask: new Uint8Array(objNames.length) };
@@ -617,27 +621,38 @@ function paintCloud(how = lidar.how) {
   invalidate();
 }
 // the selection lights the clicked object, or all objects of its entity (a whole building); shift + click adds.
-// Only the marks of points whose state changes are written; the highlight eases in / out over --t-out.
+// Only the chunks holding the new or the last selection are visited, and only the marks of points whose state changes are
+// written. The highlight eases in / out with the label: over --t-in on the CSS "ease" curve (user, 2026-10-12: in step
+// with the label; it used --t-out with a slow-starting curve and lagged behind).
+const cssEase = (x) => {   // cubic-bezier(.25, .1, .25, 1): solve the curve's x(t) = x by bisection, return y(t)
+  const bz = (t, p1, p2) => 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t;
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 20; i++) { const m = (lo + hi) / 2; if (bz(m, 0.25, 0.25) < x) lo = m; else hi = m; }
+  return bz((lo + hi) / 2, 0.1, 1);
+};
 function paintSelection() {
   if (!lidar) return;
-  const mask = lidar.selMask;
+  const mask = lidar.selMask, touched = new Set(lidar.litParts);
   mask.fill(0);
-  for (const s of selection) for (const k of s.objs) mask[k] = 1;
-  for (const pts of lidarGroup.children) {
-    const part = pts.userData.part, a = pts.geometry.attributes.aSel, v = a.array, ob = part.ob;
-    let changed = false;
+  for (const s of selection) for (const k of s.objs) { mask[k] = 1; for (const j of lidar.objParts[k]) touched.add(j); }
+  lidar.litParts.clear();
+  for (const j of touched) {
+    const pts = lidarGroup.children[j], part = pts.userData.part, a = pts.geometry.attributes.aSel, v = a.array, ob = part.ob;
+    let changed = false, lit = false;
     for (let i = 0; i < part.n; i++) {
       const was = v[i] >= 2, is = mask[ob[i]] === 1, nv = is ? (was ? 3 : 2) : was ? 1 : 0;
       if (nv !== v[i]) { v[i] = nv; changed = true; }
+      if (nv) lit = true;
     }
     if (changed) a.needsUpdate = true;
+    if (lit) lidar.litParts.add(j);
   }
-  const t0 = performance.now(), dur = tms("--t-out");
+  const t0 = performance.now(), dur = tms("--t-in");
   SEL_K.value = 0;
   cancelAnimationFrame(selAnim);
   const step = (now) => {
     const k = dur ? Math.min((now - t0) / dur, 1) : 1;
-    SEL_K.value = k * k * (3 - 2 * k);
+    SEL_K.value = cssEase(k);
     invalidate();
     if (k < 1) selAnim = requestAnimationFrame(step);
   };
@@ -801,6 +816,7 @@ renderViews();
 // ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------
 let pop = null;
 const PICK_PX = 6;   // a click or hover this close to a person (screen px) means the person
+const PICK_LIDAR_PX = 5;   // a click this close to a LiDAR point (screen px) picks it (pickLidar)
 // hover with Alt held: the person an Alt + click would select is drawn bigger and the cursor turns into a pointer
 let hoverAt = null;
 renderer.domElement.addEventListener("pointermove", (e) => {
@@ -885,9 +901,15 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   select(`m:${node.uuid}`, a, objectTag(node, hit.point, null), [], add);
 
   // LiDAR: the clicked point's object label -> its entity or object; highlight all its points
+  // The click takes the nearest drawn point within PICK_LIDAR_PX on screen (at least 0.6 m), so a click between the
+  // points of a thinned, far building still finds it (user, 2026-10-12: clicks on buildings were often missed; the old
+  // fixed 0.6 m is less than a pixel gap seen from far away). Where a facade has no returns (glass) the click still
+  // goes through to what is behind.
   function pickLidar() {
-    ray.params.Points.threshold = 0.6;
-    const hit = ray.intersectObjects(lidarGroup.children.filter((p) => p.visible), false)[0];
+    const perPx = (d) => (2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) / innerHeight;
+    const tol = (d) => Math.max(0.6, perPx(d) * PICK_LIDAR_PX);
+    ray.params.Points.threshold = tol(camera.position.distanceTo(controls.target) * 2);
+    const hit = ray.intersectObjects(lidarGroup.children.filter((p) => p.visible), false).find((h) => h.distanceToRay <= tol(h.distance));
     if (!hit) return add ? undefined : hideInfo();
     const id = hit.object.userData.part.ob[hit.index], name = lidar.objNames[id];
     const node = model.getObjectByName(name) || { name: name === "_other" ? "Unassigned LiDAR points" : name,
@@ -923,14 +945,16 @@ let detailsOpen = false;   // Details start closed on every new label (user, 202
 // centre, top, height above ground and plan radius of a set of LiDAR objects
 function anchorOf(objSet) {
   let maxY = -1e9, minY = 1e9, sx = 0, sz = 0, n = 0;
-  for (const p of lidar.parts) for (let i = 0; i < p.n; i++) if (objSet.has(p.ob[i])) {
+  const js = new Set(); for (const k of objSet) for (const j of lidar.objParts[k]) js.add(j);   // only the chunks holding them
+  const ps = [...js].map((j) => lidar.parts[j]);
+  for (const p of ps) for (let i = 0; i < p.n; i++) if (objSet.has(p.ob[i])) {
     const y = p.pos[3 * i + 1]; if (y > maxY) maxY = y; if (y < minY) minY = y;
     sx += p.pos[3 * i]; sz += p.pos[3 * i + 2]; n++;
   }
   if (!n) return null;
   // height = height above ground of the highest points (LiDAR hag): right on slopes too (Angels Flight)
   let hagTop = -1e9;
-  for (const p of lidar.parts) if (p.hag) for (let i = 0; i < p.n; i++) if (objSet.has(p.ob[i]) && p.pos[3 * i + 1] > maxY - 1.5) hagTop = Math.max(hagTop, p.hag[i] * 0.1);
+  for (const p of ps) if (p.hag) for (let i = 0; i < p.n; i++) if (objSet.has(p.ob[i]) && p.pos[3 * i + 1] > maxY - 1.5) hagTop = Math.max(hagTop, p.hag[i] * 0.1);
   const height = hagTop > -1e8 ? hagTop : maxY - minY;
   return { centre: new THREE.Vector3(sx / n, (Math.max(minY, maxY - height) + maxY) / 2, sz / n), topY: maxY, height };
 }
