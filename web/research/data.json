@@ -5317,6 +5317,3070 @@
         }
       ],
       "sourceFile": "Y-1_Validation_Research_Protocol.md"
+    },
+    {
+      "id": "bh-001",
+      "title": "Bunker Hill lies in the traditional homeland of the Tongva (Gabrielino) people",
+      "summary": "USC's Bunker Hill Refrain project describes the hill as part of the traditional homeland of the Tongva peoples, located above the original Spanish and Mexican pueblo. LAist describes the Los Angeles Basin as home to the Gabrielino-Tongva and places the large village of Yaanga in what is now downtown.",
+      "details": [
+        "Bunker Hill Refrain (USC-led project, home page): the hill was part of the traditional homeland of the Tongva peoples and sits above the city's original Spanish and Mexican pueblo.",
+        "LAist (Annie Lloyd, published October 2017): the Los Angeles Basin was home to the Gabrielino-Tongva people; what is now downtown was the site of Yaanga, a large Tongva village, whose centre (the El Aliso sycamore) historians place near a 101 freeway on-ramp close to Union Station.",
+        "Neither source places Yaanga on Bunker Hill itself or on Parcel Y-1; no archaeological record specific to the hilltop or the parcel was found in this search.",
+        "Both sources are secondary (a university public-history project and a public-radio newsroom), so confidence is medium."
+      ],
+      "topic": "Bunker Hill Before Redevelopment",
+      "date": null,
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": null,
+      "viewer": "A base-layer note for the whole hill (place area:Bunker Hill, no date); could be the first card on a timeline slider, before 1867.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "Bunker Hill Refrain (USC) - home page",
+          "url": "https://bunkerhillrefrain.org/",
+          "accessed": "2026-10-12",
+          "excerpt": "The hill was part of the traditional homeland of the Tongva peoples, and is located above the city’s original Spanish and Mexican pueblo."
+        },
+        {
+          "type": "news",
+          "title": "LAist - A brief history of LA's indigenous Tongva people (Annie Lloyd, Oct 2017)",
+          "url": "https://laist.com/news/la-history/a-brief-history-of-the-tongva-people",
+          "accessed": "2026-10-12",
+          "excerpt": "the Los Angeles Basin in particular was home to the Gabrieliño-Tongva people."
+        },
+        {
+          "type": "news",
+          "title": "LAist - same article, Yaanga",
+          "url": "https://laist.com/news/la-history/a-brief-history-of-the-tongva-people",
+          "accessed": "2026-10-12",
+          "excerpt": "What is now downtown also had a large concentration of Tongva peoples because it was originally the site of Yaanga, a large Tongva village."
+        }
+      ]
+    },
+    {
+      "id": "bh-002",
+      "title": "1867: Prudent Beaudry buys the Bunker Hill hilltop and builds his own water system",
+      "summary": "In 1867 Prudent Beaudry, a French-Canadian merchant and later mayor of Los Angeles (1874-76), bought land atop Bunker Hill, subdivided it and, after the Los Angeles Water Company declined to serve it, built his own water system. The purchase price is reported as $51 by one source and $517 by another; no source found mentions a tax sale.",
+      "details": [
+        "PBS SoCal Lost LA (Nathan Masters, July 11, 2012): Beaudry bought the land atop Bunker Hill in 1867 'at the reported cost of $51'; spurned by the Los Angeles Water Company, he built his own system of pipes and steam-powered pumps fed from a reservoir below; he reportedly spent $95,000 improving the hill.",
+        "LAmag CityDig (Glen Creason, LAPL map librarian, March 5, 2015): Beaudry bought the hillside lots for $517 total and had surveyor George Hanson subdivide them into 80 properties; his system had two reservoirs, 11 miles of iron pipe and steam-driven pumps moving up to 40,000 gallons per hour. LAmag calls the area on the 1869 map the Mott Tract.",
+        "Wikipedia (Bunker Hill; pointer only): the Los Angeles Water Company denied Beaudry's request, so he built his own pipes and formed the Canal and Reservoir Company. Wikipedia (Prudent Beaudry): mayor December 18, 1874 - December 8, 1876; a merchant until 1867, then active in real estate.",
+        "Price: the two sources disagree ($51 'reported' vs $517). The entry gives both and does not pick one; neither cites a primary record. The lead's '$51 at a tax sale' could not be confirmed: no opened source mentions a tax sale (see notFound)."
+      ],
+      "topic": "Bunker Hill Before Redevelopment",
+      "date": "1867",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": {
+        "start": "1867",
+        "end": null
+      },
+      "conflicts": [
+        {
+          "note": "Purchase price: PBS SoCal gives 'the reported cost of $51'; LAmag (LAPL map librarian) gives $517 total. Neither cites a deed; the entry reports both.",
+          "sources": [
+            0,
+            2
+          ]
+        }
+      ],
+      "viewer": "A dated marker (1867) on the hilltop; if a public-domain scan of the 1869 subdivision map is found, it could be a ground overlay.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "PBS SoCal Lost LA - Rediscovering Downtown L.A.'s Lost Neighborhood of Bunker Hill (Nathan Masters, 2012-07-11)",
+          "url": "https://www.pbssocal.org/shows/lost-la/rediscovering-downtown-l-a-s-lost-neighborhood-of-bunker-hill",
+          "accessed": "2026-10-12",
+          "excerpt": "1867 that an enterprising French Canadian immigrant named Prudent Beaudry bought the land atop Bunker Hill -- at the reported cost of $51"
+        },
+        {
+          "type": "secondary",
+          "title": "Same PBS SoCal article, water system",
+          "url": "https://www.pbssocal.org/shows/lost-la/rediscovering-downtown-l-a-s-lost-neighborhood-of-bunker-hill",
+          "accessed": "2026-10-12",
+          "excerpt": "Spurned by the Los Angeles Water Company, Beaudry constructed his own system of pipes and steam-powered pumps to deliver water to the hilltop"
+        },
+        {
+          "type": "secondary",
+          "title": "LAmag CityDig - This 1869 Map Is an Antique Blueprint of Bunker Hill (Glen Creason, 2015-03-05)",
+          "url": "https://lamag.com/lahistory/citydig-1869-map-antique-blueprint-bunker-hill/",
+          "accessed": "2026-10-12",
+          "excerpt": "Beaudry bought up those hillside lots for $517 total and immediately set Hanson to work subdividing them into 80 properties."
+        },
+        {
+          "type": "secondary",
+          "title": "Same LAmag article, water system",
+          "url": "https://lamag.com/lahistory/citydig-1869-map-antique-blueprint-bunker-hill/",
+          "accessed": "2026-10-12",
+          "excerpt": "Beaudry built his own system on Bunker Hill with two reservoirs, 11 miles of iron pipes, and steam-driven Hooker pumps"
+        },
+        {
+          "type": "secondary",
+          "title": "Wikipedia - Prudent Beaudry (pointer only)",
+          "url": "https://en.wikipedia.org/wiki/Prudent_Beaudry",
+          "accessed": "2026-10-12",
+          "excerpt": "He worked as a merchant in Los Angeles until 1867, and afterwards became active in real estate."
+        }
+      ]
+    },
+    {
+      "id": "bh-003",
+      "title": "Was Parcel Y-1 inside Beaudry's 1867 purchase? Likely, but resting on one secondary source",
+      "summary": "Wikipedia, citing William Pugsley's 1977 book, gives Beaudry's purchase as running from Hill Street to Olive Street between 2nd and 4th Streets; Parcel Y-1 is at the corner of 4th and Hill. If that boundary is right, Y-1 falls inside it, but the boundary has not been checked against a deed, a map or the book itself.",
+      "details": [
+        "Wikipedia (Bunker Hill): Beaudry's purchase ranged from present-day Hill Street to Olive Street and 4th Street and 2nd Street; Stephen Mott's ran from 4th Street to Temple and Figueroa and Grand. The footnote cites Pugsley, Bunker Hill: Last of the Lofty Mansions (1977), pp. 8-14, which was not opened.",
+        "Bisnow (January 5, 2017): Parcel Y-1 (Angels Knoll) is at the corner of 4th and Hill Streets and covers 2.26 acres.",
+        "Our analysis: a site at 4th and Hill lies within a Hill-Olive / 2nd-4th rectangle, so Y-1 would be inside Beaudry's purchase if the Wikipedia boundary holds. The lead's phrase 'squarely inside the original 1867 subdivision' is not confirmed by any opened source.",
+        "Caution: LAmag calls the land Beaudry subdivided on the 1869 map the 'Mott Tract', and PCAD places the Castle (325 S. Bunker Hill Ave.) on Lot 16, Block L of the Mott Tract, so the tract names and limits in the sources are not consistent. A primary map (e.g. the 1869 tract map or an early Sanborn sheet) is needed before this is stated as fact."
+      ],
+      "topic": "Bunker Hill Before Redevelopment",
+      "date": null,
+      "kind": "analysis",
+      "status": "unverified",
+      "confidence": "low",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1",
+        "area:Bunker Hill"
+      ],
+      "timeline": null,
+      "conflicts": [
+        {
+          "note": "Wikipedia separates Beaudry's purchase (Hill-Olive, 2nd-4th) from Mott's (4th-Temple, Figueroa-Grand); LAmag describes Beaudry's subdivided lots as the Mott Tract. The tract limits are unresolved.",
+          "sources": [
+            0,
+            2
+          ]
+        }
+      ],
+      "viewer": "Only after a primary map is found: a dashed outline of the Hill-Olive / 2nd-4th rectangle over the parcel, labelled 'unconfirmed'.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "Wikipedia - Bunker Hill, Los Angeles (pointer to Pugsley 1977)",
+          "url": "https://en.wikipedia.org/wiki/Bunker_Hill,_Los_Angeles",
+          "accessed": "2026-10-12",
+          "excerpt": "Beaudry's land purchase ranged from present-day Hill Street to Olive Street and 4th Street and 2nd Street."
+        },
+        {
+          "type": "news",
+          "title": "Bisnow - City Seeks Developers For Angel's Knoll Site In DTLA (2017-01-05)",
+          "url": "https://www.bisnow.com/news/los-angeles/construction-development/city-seeks-developers-for-angels-knoll-site-in-dtla-69508",
+          "accessed": "2026-10-12",
+          "excerpt": "The property, at the corner of 4th and Hill streets in DTLA , takes up 2.26 acres."
+        },
+        {
+          "type": "secondary",
+          "title": "LAmag CityDig (2015-03-05)",
+          "url": "https://lamag.com/lahistory/citydig-1869-map-antique-blueprint-bunker-hill/",
+          "accessed": "2026-10-12",
+          "excerpt": "On this map, one of the first to portray commercial subdivision in L.A., we see the Mott Tract."
+        },
+        {
+          "type": "secondary",
+          "title": "PCAD - 325 South Bunker Hill Avenue House (The Castle)",
+          "url": "https://pcad.lib.washington.edu/building/21759",
+          "accessed": "2026-10-12",
+          "excerpt": "Located on Lot 16, Block L of the Mott Tract"
+        }
+      ]
+    },
+    {
+      "id": "bh-004",
+      "title": "How Bunker Hill got its name: Bunker Hill Avenue and the Revolutionary War battle",
+      "summary": "The neighbourhood took its name from Bunker Hill Avenue, a hilltop street named after the Revolutionary War battle; PBS SoCal says Beaudry named it for the battle's 100th anniversary. The West End Museum offers an alternative (forts dug by the Mormon Battalion in 1847) and says the avenue existed by 1873.",
+      "details": [
+        "PBS SoCal Lost LA (Nathan Masters, 2012): Beaudry named one hilltop street Bunker Hill Avenue in honour of the 100th anniversary of the battle fought in Boston, and the street lent its name to the community. The battle was in 1775, so a centennial naming would point to about 1875 (our inference); the article gives no year.",
+        "Wikipedia (Bunker Hill; pointer only): Bunker Hill Avenue was named in commemoration of the Battle of Bunker Hill and eventually gave its name to the neighbourhood (cites Pugsley 1977, pp. 18-19, not opened).",
+        "The West End Museum (Boston; Janelle Smart, November 2025): the hill was named either for the battle or for forts dug by the Mormon Battalion in 1847, or both; Bunker Hill Avenue ran along the top of the hill by 1873.",
+        "The West End Museum's 'by 1873' does not fit well with a naming for the 1875 centennial. No primary record (council minutes, tract map) of the street's naming date was found."
+      ],
+      "topic": "Bunker Hill Before Redevelopment",
+      "date": null,
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": null,
+      "conflicts": [
+        {
+          "note": "PBS SoCal: named for the battle's centennial; West End Museum: the battle or the Mormon Battalion forts (1847), with the avenue in place by 1873.",
+          "sources": [
+            0,
+            2
+          ]
+        }
+      ],
+      "viewer": "Bunker Hill Avenue (erased by redevelopment) could be traced as a ghost street on the hilltop, carrying this naming note.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "PBS SoCal Lost LA - Rediscovering Downtown L.A.'s Lost Neighborhood of Bunker Hill (2012-07-11)",
+          "url": "https://www.pbssocal.org/shows/lost-la/rediscovering-downtown-l-a-s-lost-neighborhood-of-bunker-hill",
+          "accessed": "2026-10-12",
+          "excerpt": "which Beaudry named Bunker Hill Avenue in honor of the 100th anniversary of the Revolutionary War battle fought in Boston"
+        },
+        {
+          "type": "secondary",
+          "title": "Wikipedia - Bunker Hill, Los Angeles (pointer only)",
+          "url": "https://en.wikipedia.org/wiki/Bunker_Hill,_Los_Angeles",
+          "accessed": "2026-10-12",
+          "excerpt": "Bunker Hill Avenue, named in commemoration of the Battle of Bunker Hill —eventually gave its name to the new neighborhood."
+        },
+        {
+          "type": "secondary",
+          "title": "The West End Museum - The Angels' Flight from the Hill (Janelle Smart, 2025)",
+          "url": "https://thewestendmuseum.org/history/topic/urban-renewal/the-angels-flight-from-the-hill-urban-renewal-in-l-a-s-bunker-hill-neighborhood/",
+          "accessed": "2026-10-12",
+          "excerpt": "named either for the Revolutionary War battle or for the forts dug into the side of the hill by the Mormon Battalion in 1847"
+        }
+      ]
+    },
+    {
+      "id": "bh-005",
+      "title": "From Victorian residential district (1880s-1890s) to rooming houses (1900s-1950s)",
+      "summary": "Victorian houses rose on the hilltop from the 1880s and by the 1890s Bunker Hill was the city's most fashionable residential district; from the early twentieth century wealthier residents left and many large houses were subdivided into rooming houses and apartments for a working-class, diverse population.",
+      "details": [
+        "KCET / PBS SoCal (Nathan Masters, October 13, 2011): Victorian mansions began to rise from the summit in the 1880s and by the turn of the 20th century it was one of the city's most fashionable neighbourhoods.",
+        "PBS SoCal Lost LA (Masters, 2012): by the 1890s Bunker Hill was the city's most fashionable residential district; by 1901 its fashionableness had already peaked, and new construction virtually stopped after 1920.",
+        "USC finding aid (OAC, Bunker Hill Redevelopment Project records): divides the history into periods, including 'The Rise of Bunker Hill' (around the turn of the century) and 'The Decline of Bunker Hill' (1920s-1940s).",
+        "Examples: PCAD (Salt Box, 339 S. Bunker Hill Ave., built 1888): a duplex in 1900, seven rented spaces by 1908, 10 units by 1920 and 13 by 1939. PBS SoCal (Meredith Drake Reitan, July 6, 2021): the Castle (325 S. Bunker Hill Ave.) was converted to a rooming house in 1902 with fifteen units.",
+        "Bunker Hill Refrain: in the early 20th century the area shifted to middle- and working-class housing, with immigrants from Mexico, the Philippines, Japan, Korea and China, Dust Bowl migrants and Native Americans from the Midwest."
+      ],
+      "topic": "Bunker Hill Before Redevelopment",
+      "date": null,
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": null,
+      "viewer": "A time slider for the pre-1959 hill: house markers (e.g. Salt Box 1888, the Castle) whose labels change from 'house' to 'rooming house' with unit counts by year.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "KCET Lost LA - The Lost Hills of Downtown Los Angeles (Nathan Masters, 2011-10-13)",
+          "url": "https://www.kcet.org/shows/lost-la/the-lost-hills-of-downtown-los-angeles",
+          "accessed": "2026-10-12",
+          "excerpt": "Victorian mansions began to rise from its summit in the 1880s, and by the turn of the 20th century it had become"
+        },
+        {
+          "type": "archival",
+          "title": "OAC - Bunker Hill Redevelopment Project records (USC 0226), historical note",
+          "url": "https://oac.cdlib.org/findaid/ark:/13030/kt6t1nf3kt/admin/",
+          "accessed": "2026-10-12",
+          "excerpt": "\"The Decline of Bunker Hill\" extended throughout the 1920s, 30s, and 40s"
+        },
+        {
+          "type": "secondary",
+          "title": "PCAD - 339 South Bunker Hill Avenue House (Salt Box)",
+          "url": "https://pcad.lib.washington.edu/building/21764",
+          "accessed": "2026-10-12",
+          "excerpt": "subdivided into seven rented spaces. This multiplied to 10 units by 1920 and to 13 by 1939."
+        },
+        {
+          "type": "secondary",
+          "title": "PBS SoCal Lost LA - Before Downtown L.A.'s High Rises, Bunker Hill Was Simply Home (Meredith Drake Reitan, 2021-07-06)",
+          "url": "https://pbssocal.org/shows/lost-la/before-downtown-l-a-s-high-rises-bunker-hill-was-simply-home",
+          "accessed": "2026-10-12",
+          "excerpt": "It had been converted to a rooming house in 1902 and included fifteen individual units."
+        },
+        {
+          "type": "secondary",
+          "title": "Bunker Hill Refrain (USC) - home page",
+          "url": "https://bunkerhillrefrain.org/",
+          "accessed": "2026-10-12",
+          "excerpt": "the area experienced a transition to middle and working-class housing with a diverse population of immigrants from Mexico, the Philippines, Japan, Korea, and China"
+        },
+        {
+          "type": "secondary",
+          "title": "PBS SoCal Lost LA - Rediscovering ... Bunker Hill (2012)",
+          "url": "https://www.pbssocal.org/shows/lost-la/rediscovering-downtown-l-a-s-lost-neighborhood-of-bunker-hill",
+          "accessed": "2026-10-12",
+          "excerpt": "by the 1890s, Bunker Hill had become the city's most fashionable residential district"
+        }
+      ]
+    },
+    {
+      "id": "bh-006",
+      "title": "March 31, 1959: City Council adopts the Bunker Hill Urban Renewal Project (Ordinance 113,231)",
+      "summary": "The Los Angeles City Council adopted the final redevelopment plan for the Bunker Hill project area on March 31, 1959, by Ordinance No. 113,231, after planning steps from 1955 and the agency's adoption of the final plan in May 1958; the California Supreme Court upheld the plan on February 27, 1964. The project area is given as 133 acres by CRA/LA and 136 acres in other accounts.",
+      "details": [
+        "California Supreme Court, In re Redevelopment Plan for Bunker Hill (1964) 61 Cal.2d 21, decided Feb. 27, 1964: the planning commission selected the area on August 11, 1955; the agency adopted the final plan on May 7, 1958; the council held hearings from June 24, 1958 to January 8, 1959; on March 31, 1959 the council adopted Ordinance No. 113,231 approving the final plan. The court upheld the plan.",
+        "CRA/LA project document (archive.org copy, uploaded in 2013 by a third party): the 133-acre Bunker Hill Urban Renewal Project was adopted by the City Council on March 31, 1959 and converted to a Redevelopment Project in 1968; it is bounded by First Street (north), Hill Street (east), a line generally following Fifth Street (south) and the Harbor Freeway (west). Five lawsuits followed; the Supreme Court upheld the plan in 1964.",
+        "Acreage: blogdowntown (Eric Richardson, October 30, 2009) calls it the 136-acre project and reports $58 million in federal funding announced on October 30, 1959. The 1964 opinion says the part south of Fourth Street is 23.17 acres, about 17 per cent of the project area, which implies roughly 136 acres (our arithmetic). The entry reports both figures.",
+        "1958: Bunker Hill Refrain dates the designation of the redevelopment area to 1958 (consistent with the agency's May 1958 adoption of the final plan).",
+        "USC finding aid (OAC): the project began in 1955, and a redevelopment plan was finally adopted in 1959."
+      ],
+      "topic": "Bunker Hill Before Redevelopment",
+      "date": "1959-03-31",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": {
+        "start": "1959-03-31",
+        "end": null
+      },
+      "conflicts": [
+        {
+          "note": "Project area: the CRA/LA document says 133 acres; blogdowntown says 136 acres (the 1964 opinion's 23.17 acres = about 17% also implies about 136). The entry reports both; later amendments may explain the difference, but this was not checked.",
+          "sources": [
+            1,
+            2
+          ]
+        }
+      ],
+      "viewer": "A dated event (1959-03-31) that switches on the project-area outline (First St / Hill St / about Fifth St / Harbor Freeway) over the whole model.",
+      "sources": [
+        {
+          "type": "court",
+          "title": "In re Redevelopment Plan for Bunker Hill (1964) 61 Cal.2d 21 - SCOCAL",
+          "url": "https://scocal.stanford.edu/opinion/re-redevelopment-plan-bunker-hill-27156",
+          "accessed": "2026-10-12",
+          "excerpt": "March 31, 1959. The council adopted ordinance No. 113,231 in form and substance as required by law, approving and adopting the final plan"
+        },
+        {
+          "type": "official",
+          "title": "CRA/LA - Bunker Hill Redevelopment Project (archive.org copy)",
+          "url": "https://archive.org/details/BunkerHillRedevelopmentProject",
+          "accessed": "2026-10-12",
+          "excerpt": "The 133-acre Bunker Hill Urban Renewal Project, located in the northwest sector of downtown Los Angeles, was adopted by the Los Angeles City Council"
+        },
+        {
+          "type": "news",
+          "title": "blogdowntown - 50 Years Ago: Bunker Hill Funds Approved (Eric Richardson, 2009-10-30)",
+          "url": "https://blogdowntown.com/2009/10/4811-50-years-ago-bunker-hill-funds-approved",
+          "accessed": "2026-10-12",
+          "excerpt": "$58 million in federal funding for Los Angeles' 136-acre Bunker Hill redevelopment project was announced"
+        },
+        {
+          "type": "court",
+          "title": "Same opinion, area south of Fourth Street",
+          "url": "https://scocal.stanford.edu/opinion/re-redevelopment-plan-bunker-hill-27156",
+          "accessed": "2026-10-12",
+          "excerpt": "aggregating 23.17 acres and constitutes approximately 17 per cent of the entire project area."
+        },
+        {
+          "type": "archival",
+          "title": "OAC - Bunker Hill Redevelopment Project records (USC 0226), historical note",
+          "url": "https://oac.cdlib.org/findaid/ark:/13030/kt6t1nf3kt/admin/",
+          "accessed": "2026-10-12",
+          "excerpt": "a redevelopment plan was finally adopted for Bunker Hill in 1959."
+        },
+        {
+          "type": "secondary",
+          "title": "Bunker Hill Refrain (USC) - home page",
+          "url": "https://bunkerhillrefrain.org/",
+          "accessed": "2026-10-12",
+          "excerpt": "In 1958, Bunker Hill was designated a redevelopment area, and the community was razed."
+        }
+      ]
+    },
+    {
+      "id": "bh-007",
+      "title": "How many people were displaced? Published figures range from more than 6,000 to at least 8,000",
+      "summary": "Published estimates of the people displaced by the Bunker Hill project differ: the Bunker Hill Refrain project gives 'more than 6,000' on one page and 'at least 8,000' (likely more) on another, the West End Museum gives at least 8,000, and a 2017 CUNY thesis speaks of the hill's 9,000 residents. A CRA/LA report cited by KCET counts 7,310 housing units demolished.",
+      "details": [
+        "Bunker Hill Refrain, Zooniverse research page: more than 6,000 individuals were displaced.",
+        "Bunker Hill Refrain home page: according to official records at least 8,000 individuals were displaced, and the number is likely far greater (the records are not named).",
+        "The West End Museum (2025): records show 7,310 housing units demolished and at least 8,000 people displaced.",
+        "KCET / PBS SoCal (Jeremy Rosenberg, January 23, 2012): 7,310 housing units were demolished, according to a recent CRA/LA report (not named or linked).",
+        "Stephen Jones, CUNY thesis abstract (2017): the city was poised to evict the hill's 9,000 residents - a population figure, not a count of those displaced.",
+        "None of these cites a primary relocation record. The lead's range of 'roughly 6,000 to 8,000' matches the published figures, and its 'more than 7,000 units' matches the 7,310 figure. Which figure is correct is not settled; the entry reports them all."
+      ],
+      "topic": "Bunker Hill Before Redevelopment",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": null,
+      "conflicts": [
+        {
+          "note": "People displaced: 'more than 6,000' (Bunker Hill Refrain, Zooniverse page) vs 'at least 8,000' (Bunker Hill Refrain home page; West End Museum); 9,000 residents (CUNY thesis) is a population, not a displacement count.",
+          "sources": [
+            0,
+            1,
+            2,
+            4
+          ]
+        }
+      ],
+      "viewer": "Better as a statistics panel than a 3D object; could go with a fading layer of pre-1959 building footprints if a historical footprint dataset is used.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "Bunker Hill Refrain - Zooniverse research page",
+          "url": "https://www.zooniverse.org/projects/arutkows/bunker-hill-refrain/about/research",
+          "accessed": "2026-10-12",
+          "excerpt": "More than 6,000 individuals were displaced."
+        },
+        {
+          "type": "secondary",
+          "title": "Bunker Hill Refrain (USC) - home page",
+          "url": "https://bunkerhillrefrain.org/",
+          "accessed": "2026-10-12",
+          "excerpt": "According to official records, at least 8,000 individuals were displaced. This number is likely far greater."
+        },
+        {
+          "type": "secondary",
+          "title": "The West End Museum - The Angels' Flight from the Hill (2025)",
+          "url": "https://thewestendmuseum.org/history/topic/urban-renewal/the-angels-flight-from-the-hill-urban-renewal-in-l-a-s-bunker-hill-neighborhood/",
+          "accessed": "2026-10-12",
+          "excerpt": "Records show that 7,310 housing units were demolished and at least 8,000 people were displaced."
+        },
+        {
+          "type": "secondary",
+          "title": "KCET / PBS SoCal - Laws That Shaped L.A.: How Bunker Hill Lost its Victorians (Jeremy Rosenberg, 2012-01-23)",
+          "url": "https://www.pbssocal.org/socal/departures/columns/laws-that-shaped-la/laws-that-shaped-la-how-bunker-hill-lost-its-victorians.html",
+          "accessed": "2026-10-12",
+          "excerpt": "7,310 Bunker Hill housing units were demolished, according to a recent Community Redevelopment Agency / Los Angeles report."
+        },
+        {
+          "type": "secondary",
+          "title": "Stephen Jones, The Bunker Hill Story (CUNY thesis, 2017) - abstract",
+          "url": "https://academicworks.cuny.edu/gc_etds/2344",
+          "accessed": "2026-10-12",
+          "excerpt": "the City was poised to evict the Hill’s 9,000 residents, demolish its buildings, and regrade the steep incline"
+        }
+      ]
+    },
+    {
+      "id": "bh-008",
+      "title": "The hill itself was cut down: about 30 feet of earth scraped from the top in the 1960s",
+      "summary": "During the CRA's 1960s clearance, crews demolished the existing buildings and, according to KCET, scraped some 30 feet of earth from the top of Bunker Hill, creating 27 superblocks; streets such as Bunker Hill Avenue and Clay Street disappeared and Olive Street now lies several stories below its old level.",
+      "details": [
+        "KCET / PBS SoCal (Nathan Masters, October 13, 2011): in the 1960s the CRA oversaw demolition and the scraping of some 30 feet of earth from the top of Bunker Hill, creating 27 superblocks for high-rise development. Earlier regrading schemes (the 1912 Bunker Hill Razing and Regrading Association; C.C. Bigelow in the late 1920s) were not carried out.",
+        "PBS SoCal Lost LA (Masters, July 11, 2012): the 1950s redevelopment scheme cleared all structures, reconfigured the streets and altered the topography; Clay Street and Bunker Hill Avenue no longer exist, and Olive Street now rests several stories below where it once was.",
+        "The West End Museum (2025): engineers regraded and flattened the hill itself.",
+        "'Some 30 feet' is the only figure found and comes from one secondary source; no CRA grading plan or survey with elevations was opened. The lead's statement that the slope surviving on Y-1 is 'a relic' is interpretation and is not confirmed here."
+      ],
+      "topic": "Bunker Hill Before Redevelopment",
+      "date": null,
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": null,
+      "viewer": "Strong viewer candidate: a 'before' terrain surface (hilltop raised about 30 ft, ideally from historical contours) toggled against today's LiDAR ground, with Olive Street's old level marked.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "KCET Lost LA - The Lost Hills of Downtown Los Angeles (Nathan Masters, 2011-10-13)",
+          "url": "https://www.kcet.org/shows/lost-la/the-lost-hills-of-downtown-los-angeles",
+          "accessed": "2026-10-12",
+          "excerpt": "scraped some 30 feet of earth from the top of Bunker Hill, creating 27 virgin superblocks cleared for high-rise development."
+        },
+        {
+          "type": "secondary",
+          "title": "PBS SoCal Lost LA - Rediscovering ... Bunker Hill (2012-07-11)",
+          "url": "https://www.pbssocal.org/shows/lost-la/rediscovering-downtown-l-a-s-lost-neighborhood-of-bunker-hill",
+          "accessed": "2026-10-12",
+          "excerpt": "Others, like Olive Street, now rest several stories below where they once were."
+        },
+        {
+          "type": "secondary",
+          "title": "The West End Museum - The Angels' Flight from the Hill (2025)",
+          "url": "https://thewestendmuseum.org/history/topic/urban-renewal/the-angels-flight-from-the-hill-urban-renewal-in-l-a-s-bunker-hill-neighborhood/",
+          "accessed": "2026-10-12",
+          "excerpt": "Engineers regraded and flattened the Hill itself, erasing its distinctive topography."
+        }
+      ]
+    },
+    {
+      "id": "bh-009",
+      "title": "The Castle and the Salt Box: moved to Heritage Square in 1969, burned October 9, 1969",
+      "summary": "The Castle (325 S. Bunker Hill Ave.) and the Salt Box (339 S. Bunker Hill Ave.), the last two 19th-century houses on Bunker Hill and both city Historic-Cultural Monuments, were moved to the new Heritage Square site in 1969; on October 9, 1969 both were burned by vandals before they could be restored.",
+      "details": [
+        "PCAD (Castle): Historic-Cultural Monument #27 (listed 1964-05-28); by 1968 only the Castle and the Salt Box remained; the Recreation and Parks Commission arranged for both to be moved to Heritage Square in 03/1969 at a cost of $43,000; about seven months later, on 10/09/1969, vandals burned both houses.",
+        "PCAD (Salt Box): built 1888; Historic-Cultural Monument #5; relocated in 05/1969; burned 10/09/1969. PCAD's two pages give different months for the move (March vs May 1969).",
+        "KCET / PBS SoCal (Rosenberg, 2012) photo caption: the Castle and the Saltbox being moved to Heritage Square, 1969 (LAPL photo). PBS SoCal (Masters, 2012) correction note: the Castle was moved to Heritage Square in 1969 and burned shortly afterwards.",
+        "Los Angeles Almanac: the Cultural Heritage Foundation of Southern California was formed in 1969 to raise money for the move; both houses were destroyed in a fire after it.",
+        "The West End Museum's photo caption gives the Castle's address as 324 Bunker Hill Ave; PCAD and PBS SoCal give 325 South Bunker Hill Avenue. The entry follows 325."
+      ],
+      "topic": "Bunker Hill Before Redevelopment",
+      "date": "1969-10-09",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": {
+        "start": "1969",
+        "end": "1969-10-09"
+      },
+      "conflicts": [
+        {
+          "note": "Month of the move: PCAD's Castle page says 03/1969, its Salt Box page says 05/1969.",
+          "sources": [
+            0,
+            1
+          ]
+        }
+      ],
+      "viewer": "Two house markers on the vanished line of Bunker Hill Avenue, shown until 1969 and then leaving the hill; they stood elsewhere on the hill, not on Y-1.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "PCAD - 325 South Bunker Hill Avenue House (The Castle)",
+          "url": "https://pcad.lib.washington.edu/building/21759",
+          "accessed": "2026-10-12",
+          "excerpt": "arranged to have the two moved to the Highland Park Heritage Square Museum in 03/1969 at a cost of $43,000."
+        },
+        {
+          "type": "secondary",
+          "title": "PCAD - 339 South Bunker Hill Avenue House (Salt Box)",
+          "url": "https://pcad.lib.washington.edu/building/21764",
+          "accessed": "2026-10-12",
+          "excerpt": "They relocated the two dwellings in 05/1969, where they awaited renovation as museum attractions."
+        },
+        {
+          "type": "secondary",
+          "title": "Same PCAD Castle page, fire",
+          "url": "https://pcad.lib.washington.edu/building/21759",
+          "accessed": "2026-10-12",
+          "excerpt": "on 10/09/1969, vandals burned both houses (the Castle and Salt Box) while they awaited restoration in the museum."
+        },
+        {
+          "type": "secondary",
+          "title": "KCET / PBS SoCal - Laws That Shaped L.A. (2012-01-23), photo caption",
+          "url": "https://www.pbssocal.org/socal/departures/columns/laws-that-shaped-la/laws-that-shaped-la-how-bunker-hill-lost-its-victorians.html",
+          "accessed": "2026-10-12",
+          "excerpt": "'The Castle' and 'The Saltbox' being moved from Bunker Hill to Heritage Square, 1969."
+        },
+        {
+          "type": "secondary",
+          "title": "PBS SoCal Lost LA - Rediscovering ... Bunker Hill (2012), update note",
+          "url": "https://www.pbssocal.org/shows/lost-la/rediscovering-downtown-l-a-s-lost-neighborhood-of-bunker-hill",
+          "accessed": "2026-10-12",
+          "excerpt": "it was moved to Heritage Square in 1969 and then burned shortly thereafter."
+        },
+        {
+          "type": "secondary",
+          "title": "Los Angeles Almanac - Heritage Square Museum",
+          "url": "https://www.laalmanac.com/arts/ar02hs.php",
+          "accessed": "2026-10-12",
+          "excerpt": "after all the trouble to trying to save and move the two structures to their new haven, they were destroyed in a fire."
+        }
+      ]
+    },
+    {
+      "id": "af-001",
+      "title": "Angels Flight opens beside the Third Street tunnel (Dec 31, 1901)",
+      "summary": "Colonel J. W. Eddy built Angels Flight in 1901 beside the new Third Street tunnel, linking Hill Street to Olive Street; it opened on December 31, 1901. Its two cars were named Olivet and Sinai, and the fare was one cent.",
+      "details": [
+        "Eddy received City Council approval in May 1901 to build a funicular by the tunnel, began construction on August 2, 1901, and opened the railway on December 31, 1901; more than 2,000 people rode on opening day (operator history page).",
+        "The NRHP nomination places the original line on the south side of the Third Street tunnel, in the public right-of-way of the 400 block of West Third Street, running from South Hill Street up to South Olive Street; it says the cars were christened on December 31, 1901.",
+        "The NTSB 2001 accident report states the cars were named Olivet and Sinai in 1901 and kept those names after the 1990s renovation; the 1996 LA Times article says they are named after Holy Land mountains.",
+        "Fare: the NRHP nomination says the fare was one cent and never more than five cents up to 1969; ABC7 (2017) says it cost one penny when it opened on Dec. 31, 1901.",
+        "Original geometry (NRHP nomination): in 1901 the line climbed about 40 ft to Clay Street and then about 70 ft on trestle to Olive Street; in 1905 the cars were replaced by larger ones and the track rebuilt at a uniform 33% grade, slightly over 315 ft long with a vertical rise of about 100 ft. The operator says the present cars date from that 1905 rebuilding."
+      ],
+      "topic": "Angels Flight",
+      "date": "1901-12-31",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": {
+        "start": "1901-12-31",
+        "end": null
+      },
+      "conflicts": [
+        {
+          "note": "The operator says the railway \"opened\" on Dec 31, 1901; the NRHP nomination says the cars were \"christened\" that day. Both give the same date; the entry follows Dec 31, 1901.",
+          "sources": [
+            0,
+            2
+          ]
+        }
+      ],
+      "viewer": "A ghost line and marker at 3rd & Hill (outside the model) pointing to the original 1901 alignment beside the Third Street tunnel.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"History of Angels Flight\" (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/history/",
+          "accessed": "2026-10-12",
+          "excerpt": "Col. Eddy started building Angels Flight® on August 2, 1901. The Railway opened December 31, 1901."
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"History of Angels Flight\" (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/history/",
+          "accessed": "2026-10-12",
+          "excerpt": "In May of 1901, Col. J.W. Eddy had sought and received City Council approval to build a funicular by the tunnel."
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "Originally located along the south side of the Third Street tunnel, Angels Flight was dismantled in 1969."
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "The fare was one cent thereafter, and never more than five cents during its entire run."
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "The length of the track was slightly over 315 feet with a vertical rise of approximately 100 feet."
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Report NTSB/RAR-03/03, \"Uncontrolled Movement, Collision, and Passenger Fatality on the Angels Flight Railway in Los Angeles, California, February 1, 2001\" (adopted Aug 5, 2003)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAR0303.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The two Angels Flight cars were named Olivet and Sinai. The cars were given these names in 1901"
+        },
+        {
+          "type": "news",
+          "title": "ABC7 Los Angeles (KABC), John Gregory, \"Angels Flight reopens amid fanfare in downtown LA after 4-year hiatus\", Aug 31, 2017",
+          "url": "https://abc7.com/post/angels-flight-reopens-in-downtown-la/2361934/",
+          "accessed": "2026-10-12",
+          "excerpt": "The railway cost one penny to ride when it opened on Dec. 31, 1901."
+        }
+      ]
+    },
+    {
+      "id": "af-002",
+      "title": "Hill Street arch and the 1912 sale to a second owner",
+      "summary": "A Beaux Arts entrance arch and station house were added around 1908-1910, and in 1912 Colonel Eddy sold the railway to its second owner, the Funding Company of Los Angeles. That the railway took its official name from the arch in 1912 could not be confirmed from a primary source.",
+      "details": [
+        "The operator history page says Eddy sold the railway in 1912 to the Funding Company of Los Angeles, which sold it in 1914 to Continental Securities Company; it dates the new station house and the Hill Street Arch to 1908.",
+        "The NRHP nomination dates the Beaux Arts station house (by Train & Williams) and the cast stone entrance arch to about 1910, and describes a panel on the arch bearing the words \"ANGELS FLIGHT\".",
+        "Not confirmed: Wikipedia says the archway name became the railway's official name in 1912, citing a 1961 book (Wheelock) that was not opened; neither the operator page nor the NRHP nomination says this. Listed in notFound."
+      ],
+      "topic": "Angels Flight",
+      "date": "1912",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": {
+        "start": "1912",
+        "end": null
+      },
+      "conflicts": [
+        {
+          "note": "Arch and station house date: the operator says 1908, the NRHP nomination says approximately 1910. The entry gives both.",
+          "sources": [
+            1,
+            2
+          ]
+        },
+        {
+          "note": "Buyer name: the operator says Funding Company of Los Angeles; Wikipedia's naming sentence says Funding Company of California. The entry follows the operator.",
+          "sources": [
+            0,
+            4
+          ]
+        }
+      ],
+      "viewer": "Label the restored Hill Street arch at the lower station of E005 with its 1908/1910 date.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"History of Angels Flight\" (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/history/",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Flight® passed to its second private owner in 1912 when Colonel Eddy sold to the Funding Company of Los Angeles."
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"History of Angels Flight\" (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/history/",
+          "accessed": "2026-10-12",
+          "excerpt": "the railway benefited from the addition of a new station house and the Hill Street Arch in 1908."
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "The original arch was replaced in approximately 1910 with a more substantial and ornate masonry structure, which remains today."
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "bears the words \"ANGELS FLIGHT\" flanked by stylized scrolls"
+        },
+        {
+          "type": "secondary",
+          "title": "Wikipedia, \"Angels Flight\" (pointer only; read 2026-10-12)",
+          "url": "https://en.wikipedia.org/wiki/Angels_Flight",
+          "accessed": "2026-10-12",
+          "excerpt": "which became the official name of the railway in 1912 when the Funding Company of California purchased it from its founders."
+        }
+      ]
+    },
+    {
+      "id": "af-003",
+      "title": "Historic-Cultural Monument No. 4 (Aug 6, 1962)",
+      "summary": "Angels Flight is Los Angeles Historic-Cultural Monument No. 4, adopted on August 6, 1962. The same year the City's redevelopment agency forced a sale of the railway to the City.",
+      "details": [
+        "The City Planning HCM list (version of June 4, 2026) lists No. 4 \"Angel's Flight\", 4th Street & Hill Street, adopted 08/06/1962, Central City, CD 14, with the note that it was dismantled in May 1969 and moved to Hill Street between 3rd and 4th Streets in February 1996.",
+        "The NRHP nomination says the Cultural Heritage Board designated it one of the first Historic-Cultural Monuments in 1962.",
+        "The operator history page says the City's redevelopment agency forced the Moreland family to sell the railway to the City in 1962, and that the City then had the Oliver & Williams Elevator Company run it from 1962 to 1969."
+      ],
+      "topic": "Angels Flight",
+      "date": "1962-08-06",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "1962-08-06",
+        "end": null
+      },
+      "viewer": "Badge on E005: \"LA HCM No. 4, 1962\".",
+      "sources": [
+        {
+          "type": "official",
+          "title": "City of Los Angeles Department of City Planning, Historic-Cultural Monument list (\"HCM list for Web Posting 20260604\")",
+          "url": "https://planning.lacity.gov/odocument/24f6fce7-f73d-4bca-87bc-c77ed3fc5d4f/Historical%20Cultural%20Monuments%20List.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "4 Angel's Flight 4th Street & Hill Street 08/06/1962 Central City 14 Street between 3rd"
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "designated by the Cultural Heritage Board as one of the first Historic-Cultural Monuments in 1962."
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"History of Angels Flight\" (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/history/",
+          "accessed": "2026-10-12",
+          "excerpt": "After the City’s redevelopment agency forced the Morelands to sell Angels Flight® to the City in 1962"
+        }
+      ]
+    },
+    {
+      "id": "af-004",
+      "title": "Last rides and dismantling, May 1969; parts stored until 1996",
+      "summary": "Angels Flight made its last trips at the Third Street tunnel on May 18, 1969, and dismantling began the next day as Bunker Hill was redeveloped. The cars, arch and station house stayed in storage until the 1990s rebuilding.",
+      "details": [
+        "The operator history page gives the last trips as late on Sunday, May 18, 1969, with dismantling starting Monday, May 19, 1969; the cars went to a warehouse at 1200 South Olive Street and later a CRA warehouse, and the arch, station house and other artifacts to a storage yard in Gardena.",
+        "The NRHP nomination gives the last weekend as May 17-18, 1969, says it was to have been restored at the same site within two years, and says rides that weekend were free.",
+        "The 1996 LA Times article mentions a passenger on the last journey at 10:48 p.m. on May 18, 1969, and says officials had pledged its return within a few years."
+      ],
+      "topic": "Angels Flight",
+      "date": "1969-05-18",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "area:Bunker Hill"
+      ],
+      "timeline": {
+        "start": "1969-05-18",
+        "end": "1996-02-24"
+      },
+      "viewer": "Timeline slider: E005 absent from 1969 to 1996, with the empty original alignment shown at 3rd & Hill.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"History of Angels Flight\" (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/history/",
+          "accessed": "2026-10-12",
+          "excerpt": "late on Sunday, May 18, 1969, Sinai and Olivet took their last trips on their tracks at the Third Street Tunnel location."
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"History of Angels Flight\" (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/history/",
+          "accessed": "2026-10-12",
+          "excerpt": "For most of the next 27 years (1969-1996), the two cars were just lying in a dark warehouse."
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "Its last weekend of operation was May 17-18, 1969."
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Larry Gordon, \"Maiden Voyage: Historic Angels Flight Railway Reopens to Public With Plenty of Revelry and a Wisp of Nostalgia\", Feb 25, 1996",
+          "url": "https://www.latimes.com/archives/la-xpm-1996-02-25-me-39843-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "was a passenger on Angels Flight’s last journey at 10:48 p.m. on May 18, 1969."
+        }
+      ]
+    },
+    {
+      "id": "af-005",
+      "title": "Rebuilt half a block south, reopening February 1996",
+      "summary": "The CRA rebuilt Angels Flight about half a block south of its original site, mid-block between 3rd and 4th Streets, running from Hill Street up to California Plaza; it reopened to the public in late February 1996 with the original cars. The rebuilt track is 298 ft long on a grade of about 33%.",
+      "details": [
+        "NTSB RAR-03/03: reconstruction began in 1993 half a block from the original location; a ceremonial opening took place February 23-25, 1996; the funicular was 298 ft long on an approximately 33-percent grade.",
+        "Operator history page: the Angels Flight Railway Foundation became the seventh private operator with a gala reopening on February 24, 1996.",
+        "LA Times, Feb 25, 1996: first public riders on the Saturday (Feb 24); a $4.1 million overhaul; moved half a block south; track 298 ft long, 17 ft shorter than the original, on a 33% incline at 3.5 mph; one-way fare 25 cents.",
+        "NRHP nomination: the line runs between and parallel to Third and Fourth Streets, from the entrance arch at Hill Street to the station house now on California Plaza at Olive Street, about 300 ft south of the original site; cars, station house and arch were restored, track and trestle replicated in modern materials.",
+        "HCM list: moved to Hill Street between 3rd and 4th Streets in February 1996 (see af-003).",
+        "Vertical rise: no opened primary source gives a figure for the rebuilt line. Wikipedia states a 96 ft vertical gain over 298 ft, but its cited LA Times article (July 2015), opened today, does not contain that figure. The NRHP nomination gives about 100 ft for the pre-1969 line. Listed in notFound.",
+        "For the parcel relationship (the 2017 lot line adjustment separating the Angels Flight Railway from the Y-1 Project Site), see site-002 in the existing database."
+      ],
+      "topic": "Angels Flight",
+      "date": "1996-02-24",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "entity:E005",
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "1996-02-24",
+        "end": null
+      },
+      "conflicts": [
+        {
+          "note": "Track length: 298 ft (NTSB 2003; LA Times 1996, 2010, 2015, 2017); \"about 300 feet\" (NTSB 2014); 282 ft (ArchDaily 2017). The entry follows 298 ft from NTSB RAR-03/03.",
+          "sources": [
+            2,
+            4,
+            7,
+            8
+          ]
+        },
+        {
+          "note": "Slope: NTSB and LA Times 1996 give a 33% grade; LA Times March 2017 says a \"33-degree incline\". A 33% grade is about 18 degrees, so the \"degree\" wording appears to be an error; the entry follows 33% grade.",
+          "sources": [
+            2,
+            4,
+            9
+          ]
+        },
+        {
+          "note": "Distance moved: the NRHP nomination says about 300 feet south in one passage and \"approximately 3200 feet\" in another (likely a typo); NTSB and LA Times say half a block. The entry follows half a block.",
+          "sources": [
+            1,
+            6
+          ]
+        },
+        {
+          "note": "Reopening date: the NTSB gives a ceremonial opening Feb 23-25, 1996; the operator gives the gala reopening as Feb 24, 1996, which is also the Saturday of the first public rides in the LA Times. The entry uses Feb 24, 1996.",
+          "sources": [
+            0,
+            1,
+            3
+          ]
+        }
+      ],
+      "viewer": "Highlight E005 along the north edge of Y-1 and label it with 298 ft of track at a 33% grade; measure the actual rise from the LiDAR instead of quoting an unconfirmed figure.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"History of Angels Flight\" (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/history/",
+          "accessed": "2026-10-12",
+          "excerpt": "The Railway Foundation became the seventh private operator of Angels Flight® with a gala reopening on February 24, 1996."
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Report NTSB/RAR-03/03, \"Uncontrolled Movement, Collision, and Passenger Fatality on the Angels Flight Railway in Los Angeles, California, February 1, 2001\" (adopted Aug 5, 2003)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAR0303.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Beginning in 1993, the Angels Flight funicular was reconstructed 1/2 block from its original location."
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Report NTSB/RAR-03/03, \"Uncontrolled Movement, Collision, and Passenger Fatality on the Angels Flight Railway in Los Angeles, California, February 1, 2001\" (adopted Aug 5, 2003)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAR0303.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The Angels Flight funicular was 298 feet long on an approximately 33-percent grade."
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Larry Gordon, \"Maiden Voyage: Historic Angels Flight Railway Reopens to Public With Plenty of Revelry and a Wisp of Nostalgia\", Feb 25, 1996",
+          "url": "https://www.latimes.com/archives/la-xpm-1996-02-25-me-39843-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "After nearly three decades in storage and a $4.1-million overhaul"
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Larry Gordon, \"Maiden Voyage: Historic Angels Flight Railway Reopens to Public With Plenty of Revelry and a Wisp of Nostalgia\", Feb 25, 1996",
+          "url": "https://www.latimes.com/archives/la-xpm-1996-02-25-me-39843-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Its track is 298 feet long (17 feet shorter than the original). It runs up a 33% incline at 3.5 mph."
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "ascending from the entrance arch at Hill Street to the station house now on California Plaza at Olive Street."
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "approximately 300 feet south of the original site."
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Brief NTSB/RAB-14/02, \"Angels Flight Railway Derailment\", Accident No. DCA13FR011 (adopted June 23, 2014)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAB1402.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The cars are moved about 300 feet by means of a wire rope on an inclined guideway."
+        },
+        {
+          "type": "news",
+          "title": "ArchDaily, Patrick Lynch, \"Los Angeles Icon Angel's Flight Reopens After Renovations\", Sept 1, 2017",
+          "url": "https://www.archdaily.com/878920/los-angeles-icon-angels-flight-reopens-after-renovations",
+          "accessed": "2026-10-12",
+          "excerpt": "the 282-foot-long inclined railway"
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Laura J. Nelson, \"Angels Flight expected to reopen by Labor Day, officials say\", March 1, 2017",
+          "url": "https://www.latimes.com/local/lanow/la-me-ln-angels-flight-20170301-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "carrying passengers on a 33-degree incline between Hill and Olive streets."
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Larry Gordon, \"Maiden Voyage: Historic Angels Flight Railway Reopens to Public With Plenty of Revelry and a Wisp of Nostalgia\", Feb 25, 1996",
+          "url": "https://www.latimes.com/archives/la-xpm-1996-02-25-me-39843-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "the restoration moved the railway half a block south of its original site and built new trestles and beams."
+        },
+        {
+          "type": "secondary",
+          "title": "Wikipedia, \"Angels Flight\" (pointer only; read 2026-10-12)",
+          "url": "https://en.wikipedia.org/wiki/Angels_Flight",
+          "accessed": "2026-10-12",
+          "excerpt": "The tracks cover a distance of 298 feet (91 m) over a vertical gain of 96 feet (29 m)."
+        }
+      ]
+    },
+    {
+      "id": "af-006",
+      "title": "Listed on the National Register of Historic Places (2000)",
+      "summary": "Angels Flight Railway was listed on the National Register of Historic Places in 2000 (NRIS reference 00001168); the NPS NPGallery record gives the date 10/13/2000. It was nominated under Criteria A and C with Criteria Consideration B because it had been moved.",
+      "details": [
+        "NPGallery record for NRIS 00001168: title Angels Flight Railway, resource type structure, architects Merceau Bridge & Construction Co. and Train & Williams, Beaux Arts style, \"Date Published: 10/13/2000\".",
+        "The nomination (prepared Feb 9, 2000) finds it eligible under Criterion A (transportation) and Criterion C (engineering and architecture), with Consideration B for a relocated property; it calls it one of only six extant incline railways operating in the United States.",
+        "The LA Conservancy timeline lists 2000 as the year it was added to the National Register.",
+        "The exact listing date is taken from the NPGallery date field; the Keeper's signature date on the scanned form is not legible in the text layer. Wikipedia also gives October 13, 2000."
+      ],
+      "topic": "Angels Flight",
+      "date": "2000-10-13",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "2000-10-13",
+        "end": null
+      },
+      "viewer": "Badge on E005: \"National Register, 2000 (NRIS 00001168)\".",
+      "sources": [
+        {
+          "type": "official",
+          "title": "NPS NPGallery asset record: Angels Flight Railway, National Register Information System ID 00001168",
+          "url": "https://npgallery.nps.gov/AssetDetail/NRIS/00001168",
+          "accessed": "2026-10-12",
+          "excerpt": "Date Published: 10/13/2000"
+        },
+        {
+          "type": "official",
+          "title": "National Register of Historic Places nomination form, \"Angels Flight Railway\", Los Angeles (NRIS 00001168; prepared by Historic Resources Group, Feb 9, 2000), NPS NPGallery",
+          "url": "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/00001168_text",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Flight is eligible for listing in the National Register of Historic Places under Criterion A, Consideration B, for significance in transportation"
+        },
+        {
+          "type": "secondary",
+          "title": "Los Angeles Conservancy, \"Angels Flight\" (historic places page with timeline)",
+          "url": "https://www.laconservancy.org/learn/historic-places/angels-flight/",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Flight was added to the National Register of Historic Places."
+        }
+      ]
+    },
+    {
+      "id": "af-007",
+      "title": "Fatal collision of Feb 1, 2001; closed until March 15, 2010",
+      "summary": "On February 1, 2001, the ascending car Sinai ran back down the incline and struck Olivet, killing one passenger and injuring seven. The NTSB blamed the drive design and construction and weak safety oversight; the railway stayed closed until March 15, 2010.",
+      "details": [
+        "NTSB RAR-03/03: at about 12:17 p.m. the two cars collided; 7 injuries and 1 fatality among the 20 passengers, plus injuries to a pedestrian; damage estimated at $370,000 to the cars and $1.2 million to replace the haul system.",
+        "Mechanism (NTSB): the drive axle for Sinai's cable drum disengaged from its planetary gear; the service brakes had no effect on the freewheeling drum, the emergency brake was inoperative, and the cars had no track brakes.",
+        "Probable cause (NTSB): improper design and construction of the funicular drive by Yantrak (Lift Engineering), and the failure of the CRA, its contractors (Pueblo Contracting Services, Yantrak, Harris and Associates) and the CPUC to ensure the system met its safety specifications and known funicular standards. Recommendations went to the CPUC, the CRA and ANSI.",
+        "The NTSB 2014 brief says Angels Flight reopened on March 15, 2010, after a safety redesign that added a track brake on each car; the LA Times reported the reopening the same day."
+      ],
+      "topic": "Angels Flight",
+      "date": "2001-02-01",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "2001-02-01",
+        "end": "2010-03-15"
+      },
+      "conflicts": [
+        {
+          "note": "Injury count: the NTSB counts 7 injured passengers plus an injured pedestrian; the LA Times (2010) says seven people were seriously injured. The entry follows the NTSB passenger count.",
+          "sources": [
+            1,
+            5
+          ]
+        }
+      ],
+      "viewer": "Timeline: mark E005 as closed (greyed) from 2001 to 2010, with a pin at the lower end where the cars collided.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Report NTSB/RAR-03/03, \"Uncontrolled Movement, Collision, and Passenger Fatality on the Angels Flight Railway in Los Angeles, California, February 1, 2001\" (adopted Aug 5, 2003)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAR0303.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "About 12:17 p.m. on February 1, 2001, the two cars of the Angels Flight funicular railway collided in downtown Los Angeles, California."
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Report NTSB/RAR-03/03, \"Uncontrolled Movement, Collision, and Passenger Fatality on the Angels Flight Railway in Los Angeles, California, February 1, 2001\" (adopted Aug 5, 2003)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAR0303.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The accident resulted in 7 injuries and 1 fatality among the 20 passengers aboard the two cars and injuries to a pedestrian."
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Report NTSB/RAR-03/03, \"Uncontrolled Movement, Collision, and Passenger Fatality on the Angels Flight Railway in Los Angeles, California, February 1, 2001\" (adopted Aug 5, 2003)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAR0303.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "the probable cause of this accident was the Yantrak Company's (Lift Engineering's) improper design and construction of the Angels Flight funicular drive"
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Report NTSB/RAR-03/03, \"Uncontrolled Movement, Collision, and Passenger Fatality on the Angels Flight Railway in Los Angeles, California, February 1, 2001\" (adopted Aug 5, 2003)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAR0303.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "drive axle for the car's cable drum became disengaged from its driving planetary gear."
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Brief NTSB/RAB-14/02, \"Angels Flight Railway Derailment\", Accident No. DCA13FR011 (adopted June 23, 2014)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAB1402.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Flight reopened on March 15, 2010."
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Cara Mia DiMassa and Hector Becerra, \"Angels Flight rides again\", March 15, 2010 (Wayback Machine copy of Mar 22, 2010)",
+          "url": "https://web.archive.org/web/20100322191030/http://www.latimes.com/news/local/la-me-angels-flight16-2010mar16%2C0%2C814117.story",
+          "accessed": "2026-10-12",
+          "excerpt": "An 83-year-old New Jersey man was killed, and seven people were seriously injured."
+        }
+      ]
+    },
+    {
+      "id": "af-008",
+      "title": "Sept 5, 2013 derailment and closure until 2017",
+      "summary": "On September 5, 2013, a descending car derailed mid-track with no injuries, and the CPUC ordered the railway shut. The NTSB found that operators had bypassed the safety system with a tree branch, with management's knowledge.",
+      "details": [
+        "NTSB RAB-14/02: about 11:30 a.m., one passenger was on the derailed car and five on the other; property damage $6,000; no injuries. Passengers self-evacuated or were helped by a firefighter across open ties, with no walkway, about 25 ft above the sidewalk.",
+        "Operators had used a small stick (a tree branch) to hold down the start button because of repeated undesired stops; the NTSB found grease had fouled the track-brake grounding brush and the batteries were discharged.",
+        "Probable cause (NTSB): intentional bypass of the safety system with management knowledge, and continued revenue operation despite repeated unexplained safety shutdowns. Urgent recommendation R-13-037 (Oct 10, 2013) asked the CPUC to verify wheel/track wear, emergency stopping, no bypass, passenger containment, and emergency egress before any reopening.",
+        "Earlier closure: the same brief says the CPUC ordered Angels Flight closed on June 10, 2011 for wheel wear and allowed it to resume on July 5, 2011.",
+        "The railway stayed closed until August 31, 2017 (see af-009)."
+      ],
+      "topic": "Angels Flight",
+      "date": "2013-09-05",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "2013-09-05",
+        "end": "2017-08-31"
+      },
+      "conflicts": [
+        {
+          "note": "Fox LA / City News Service (2017) says the CPUC shut it for a month in 2012; the NTSB brief dates the wheel-wear closure June 10 to July 5, 2011. The entry follows the NTSB.",
+          "sources": [
+            4,
+            5
+          ]
+        }
+      ],
+      "viewer": "Timeline: grey out E005 from 2013 to 2017; the fenced Angels Knoll beside it was also closed in those years.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Brief NTSB/RAB-14/02, \"Angels Flight Railway Derailment\", Accident No. DCA13FR011 (adopted June 23, 2014)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAB1402.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "an Angels Flight Railway (Angels Flight) car that was moving down the incline derailed near the middle of the guideway"
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Brief NTSB/RAB-14/02, \"Angels Flight Railway Derailment\", Accident No. DCA13FR011 (adopted June 23, 2014)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAB1402.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The operators used a small stick (that is, a branch from a nearby tree) to constantly depress the start button."
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Brief NTSB/RAB-14/02, \"Angels Flight Railway Derailment\", Accident No. DCA13FR011 (adopted June 23, 2014)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAB1402.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "the intentional bypass of the funicular safety system with Angels Flight management knowledge"
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Brief NTSB/RAB-14/02, \"Angels Flight Railway Derailment\", Accident No. DCA13FR011 (adopted June 23, 2014)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAB1402.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The CPUC ordered the railway to cease operations until all identified issues and concerns were corrected."
+        },
+        {
+          "type": "official",
+          "title": "NTSB Railroad Accident Brief NTSB/RAB-14/02, \"Angels Flight Railway Derailment\", Accident No. DCA13FR011 (adopted June 23, 2014)",
+          "url": "https://www.ntsb.gov/investigations/AccidentReports/Reports/RAB1402.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "the CPUC ordered Angels Flight to close on June 10, 2011."
+        },
+        {
+          "type": "news",
+          "title": "FOX 11 Los Angeles (City News Service), \"Los Angeles' historic Angels Flight railway reopens\", Aug 31, 2017",
+          "url": "https://www.foxla.com/news/los-angeles-historic-angels-flight-railway-reopens",
+          "accessed": "2026-10-12",
+          "excerpt": "the CPUC shut it down for a month in 2012 over safety concerns"
+        }
+      ]
+    },
+    {
+      "id": "af-009",
+      "title": "30-year ACS agreement (Mar 2017) and reopening on Aug 31, 2017",
+      "summary": "On March 1, 2017, Mayor Eric Garcetti announced an agreement under which a group led by ACS Infrastructure Development would pay for safety upgrades and operate the railway for 30 years. After about $5 million in work, including an evacuation stairway beside the track and higher car doors, Angels Flight reopened on August 31, 2017.",
+      "details": [
+        "LA Times, March 1, 2017: the agreement was announced that Wednesday; the firms cover the safety upgrades in exchange for a share of revenue over the next three decades; the group is led by ACS Infrastructure Development with the Angels Flight Railway Foundation, which owns the funicular; the mayor's office said the agreement was finalized the week before; the CPUC had approved a plan in January; cost and contract value were confidential.",
+        "PBS SoCal, March 1, 2017: a 30-year agreement with the ACS Group, announced with Mayor Garcetti and Councilman Huizar, including an emergency walkway along the route.",
+        "Operator history page: ACS, with minority partner SENER, entered a 30-year contract to operate and maintain the railway; official reopening August 31, 2017.",
+        "Upgrades: the LA Times (Aug 25, 2017) lists higher car doors and a walkway connected to the track for evacuation; ABC7 (Aug 31, 2017) says a stairway was installed alongside the line; ArchDaily and LAist call it an emergency stairway.",
+        "Cost: Fox LA / City News Service and PBS SoCal give $5 million in renovations by the partnership (the Angels Flight Development Co.); LAist says about $5 million."
+      ],
+      "topic": "Angels Flight",
+      "date": "2017-08-31",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "2017-03-01",
+        "end": "2017-08-31"
+      },
+      "conflicts": [
+        {
+          "note": "Cost: news reports from August 2017 give about $5 million, while the LA Times in March 2017 said the cost and contract value were confidential. The entry reports the $5 million figure as reported, not as an official number.",
+          "sources": [
+            6,
+            2
+          ]
+        }
+      ],
+      "viewer": "Show the 2017 evacuation stairway as its own element alongside the E005 track.",
+      "sources": [
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Laura J. Nelson, \"Angels Flight expected to reopen by Labor Day, officials say\", March 1, 2017",
+          "url": "https://www.latimes.com/local/lanow/la-me-ln-angels-flight-20170301-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "But the cars, Sinai and Olivet, could begin working again by Labor Day under the terms of a new agreement announced Wednesday."
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Laura J. Nelson, \"Angels Flight expected to reopen by Labor Day, officials say\", March 1, 2017",
+          "url": "https://www.latimes.com/local/lanow/la-me-ln-angels-flight-20170301-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The private group will be led by ACS Infrastructure Development, the U.S. arm of a Spanish infrastructure company"
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Laura J. Nelson, \"Angels Flight expected to reopen by Labor Day, officials say\", March 1, 2017",
+          "url": "https://www.latimes.com/local/lanow/la-me-ln-angels-flight-20170301-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Officials said the cost of the repairs and the contract’s total value are confidential."
+        },
+        {
+          "type": "news",
+          "title": "PBS SoCal (KCET), \"Angels Flight is Coming Back in 2017\", March 1, 2017",
+          "url": "https://www.pbssocal.org/news-analysis/angels-flight-is-coming-back-in-2017",
+          "accessed": "2026-10-12",
+          "excerpt": "Thanks to a 30-year agreement with the ACS Group, the short funicular on Bunker Hill will be upgraded and renovated"
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"History of Angels Flight\" (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/history/",
+          "accessed": "2026-10-12",
+          "excerpt": "The official re-opening occurred on August 31, 2017."
+        },
+        {
+          "type": "news",
+          "title": "ABC7 Los Angeles (KABC), John Gregory, \"Angels Flight reopens amid fanfare in downtown LA after 4-year hiatus\", Aug 31, 2017",
+          "url": "https://abc7.com/post/angels-flight-reopens-in-downtown-la/2361934/",
+          "accessed": "2026-10-12",
+          "excerpt": "A stairway has been installed alongside the rail line, giving riders an exit in the event of a breakdown."
+        },
+        {
+          "type": "news",
+          "title": "FOX 11 Los Angeles (City News Service), \"Los Angeles' historic Angels Flight railway reopens\", Aug 31, 2017",
+          "url": "https://www.foxla.com/news/los-angeles-historic-angels-flight-railway-reopens",
+          "accessed": "2026-10-12",
+          "excerpt": "The $5 million in renovations have been made through a partnership between the nonprofit Angels Flight Railway Foundation, ACS Infrastructure and the engineering firm Sener"
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Laura J. Nelson, \"Angels Flight, closed since 2013, will reopen Thursday\", Aug 25, 2017",
+          "url": "https://www.latimes.com/local/lanow/la-me-ln-angels-flight-20170825-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The upgrades included raising the height of the train’s doors to prevent passengers from being flung out during a sudden stop"
+        }
+      ]
+    },
+    {
+      "id": "af-010",
+      "title": "Operations as of Oct 12, 2026: hours, fare, operator",
+      "summary": "As of October 12, 2026 the operator's website lists daily hours of 6:45 am to 10:00 pm and a fare of $1.50 each way ($0.75 with a Metro TAP card), between the lower entrance at 351 S Hill Street and the top station at California Plaza, 350 S Grand Avenue. It names the Angels Flight Development Company, LLC, led by ACS Infrastructure, as the company that runs and maintains the funicular for 30 years from 2017.",
+      "details": [
+        "Operations page (modified 2025-05-28 per page metadata): open seven days a week 6:45 am-10:00 pm; $1.50 each way, $3.00 souvenir round trip; $0.75 one-way with TAP stored value; ticket books of 5 for $6.00 and 40 for $45.00.",
+        "Home page: in 2017 the Angels Flight Railway Foundation selected the Angels Flight Development Company, LLC, a joint venture led by ACS Infrastructure, to rehabilitate, operate and maintain it for 30 years; it claims more than 100 million rides since 1901. The same page still says \"118-year-old\", which looks like text from about 2019.",
+        "FAQ: the cars were not designed for wheelchairs, but wheelchair riders can use a modified upper platform on Sinai; dogs are not allowed except service animals.",
+        "Ridership: the operator site publishes no current ridership figures; none were found from Metro either (see notFound)."
+      ],
+      "topic": "Angels Flight",
+      "date": "2026-10-12",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "2017-08-31",
+        "end": "present"
+      },
+      "conflicts": [
+        {
+          "note": "Fares changed over time: 25 cents in 1996 (LA Times), $1 one-way / 50 cents with TAP at the 2017 reopening (Fox LA), $1.50 / $0.75 now (operator). The entry gives the operator's current fare as of the access date.",
+          "sources": [
+            1,
+            5,
+            6
+          ]
+        }
+      ],
+      "viewer": "Click E005 in the viewer to show a card with hours, fare and the two station addresses.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"Angels Flight Railway Operations\" (operator website; page last modified 2025-05-28 per page metadata)",
+          "url": "https://www.angelsflight.org/operations/",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Flight® is open seven days a week from 6:45 am to 10:00 pm."
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"Angels Flight Railway Operations\" (operator website; page last modified 2025-05-28 per page metadata)",
+          "url": "https://www.angelsflight.org/operations/",
+          "accessed": "2026-10-12",
+          "excerpt": "The fare is $1.50 each way, and for $3.00 you can purchase a souvenir round trip ticket"
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"Angels Flight Railway Operations\" (operator website; page last modified 2025-05-28 per page metadata)",
+          "url": "https://www.angelsflight.org/operations/",
+          "accessed": "2026-10-12",
+          "excerpt": "For Metro TAP Card users, a $0.75 fare is available for one-way trips."
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: \"Angels Flight Railway Operations\" (operator website; page last modified 2025-05-28 per page metadata)",
+          "url": "https://www.angelsflight.org/operations/",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Flight® Railway’s top station is located at California Plaza, 350 S Grand Avenue and the lower entrance is located at 351 S Hill Street"
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: home page (operator website, angelsflight.org)",
+          "url": "https://www.angelsflight.org/",
+          "accessed": "2026-10-12",
+          "excerpt": "selected the Angels Flight® Development Company, LLC, a joint venture led by ACS Infrastructure, to rehabilitate, operate, and maintain the funicular"
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Times, Larry Gordon, \"Maiden Voyage: Historic Angels Flight Railway Reopens to Public With Plenty of Revelry and a Wisp of Nostalgia\", Feb 25, 1996",
+          "url": "https://www.latimes.com/archives/la-xpm-1996-02-25-me-39843-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The one-way fare is 25 cents, compared to a nickel in 1969."
+        },
+        {
+          "type": "news",
+          "title": "FOX 11 Los Angeles (City News Service), \"Los Angeles' historic Angels Flight railway reopens\", Aug 31, 2017",
+          "url": "https://www.foxla.com/news/los-angeles-historic-angels-flight-railway-reopens",
+          "accessed": "2026-10-12",
+          "excerpt": "One-way fares are $1, or 50 cents for Metro tap card holders."
+        },
+        {
+          "type": "official",
+          "title": "Angels Flight Railway: FAQs (operator website)",
+          "url": "https://www.angelsflight.org/faqs/",
+          "accessed": "2026-10-12",
+          "excerpt": "Riders in a wheelchair can access the modified upper platform on Sinai."
+        }
+      ]
+    },
+    {
+      "id": "park-001",
+      "title": "CRA turns the upper part of Parcel Y-1 into an interim park, Angels Knoll (2000s)",
+      "summary": "In the 2000s the Community Redevelopment Agency (CRA) made part of the unbuilt third California Plaza tower site into a temporary public green known as Angels Knoll. No opened source gives an opening date; dated mentions run from December 2001 (an 'Angels Knoll Interim Park' named in a CRA redesign item) to a September 2004 CRA plan to convert the knoll into a temporary park.",
+      "details": [
+        "Dec 31, 2001 (LA Downtown News, 'Knoll in One'): the CRA gave initial approval to a $1 million redesign of the 'Angels Knoll lower plaza and upper landing'; new artist-designed paving was to connect the Pershing Square MTA portal to the 'Angels Knoll Interim Park' and Angels Flight, with work expected from July 2002 pending City Council approval.",
+        "Sept 9, 2002 (LA Downtown News): CRA deputy administrator Don Spivack said the only dog park then being looked at was at Angels Knoll; the article also mentions an interim landscaped area at Fourth and Hill on a site awaiting development.",
+        "Sept 6, 2004 (LA Downtown News, 'CRA Plans Park Near Angels Flight'): the CRA planned to convert 'the property, known as Angel's Knoll' into a temporary park; project manager Kaveh Samsamy described it as public investment for a green space until the parcel is developed; the land was expected to be developed in 5 to 15 years; construction 'could start next spring'.",
+        "Suisman Urban Design (firm's own news page, June 2009): calls Angels Knoll 'a temporary park in downtown Los Angeles designed by Suisman Urban Design with Pat Smith' (designer's self-description; not checked against CRA records).",
+        "Urbanize LA (Sept 22, 2016): the CRA 'repurposed a significant portion' of the planned third California Plaza tower site as the temporary green space; LA Downtown News (Aug 9, 2013) says the park was 'always intended as a temporary park'.",
+        "By 2008-2010 the park was in use: the CRA hired goats to clear brush in Sept 2008 (LA Downtown News, Sept 15, 2008) and a July 2010 Downtown News item calls the parcel 'now a lovely, if steep, park'.",
+        "Opening year: not found. Searched LA Downtown News archive (ladowntownnews.com search for 'angels knoll' / 'angel's knoll'), Urbanize LA, LAist, Esotouric, Suisman; none states when the park opened. The lead's 'early 2000s' is consistent with the dated mentions but no source gives a year."
+      ],
+      "topic": "Angels Knoll Park",
+      "date": "2004-09-06",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2001-12",
+        "end": "2013-07-30"
+      },
+      "conflicts": [
+        {
+          "note": "The Dec 2001 item already names an 'Angels Knoll Interim Park', while the Sept 2004 item describes a CRA plan to convert the knoll into a temporary park with construction from spring 2005. The two may refer to different parts of the parcel or to a redesign; the timeline start (2001-12) is the earliest dated mention of the name, not a confirmed opening date.",
+          "sources": [
+            0,
+            2
+          ]
+        }
+      ],
+      "viewer": "Show the upper Olive Street slope as a green 'interim park' layer, labelled 'opening year unknown (2000s)', active until the July 2013 fence.",
+      "sources": [
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'Knoll in One' (Dec 31, 2001)",
+          "url": "https://www.ladowntownnews.com/news/knoll-in-one/article_192152b9-1ee3-59aa-b2b7-155d202542c7.html",
+          "accessed": "2026-10-12",
+          "excerpt": "connect the Pershing Square MTA portal to the Angels Knoll Interim Park and the Angels Flight railway"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'It's Not Easy Being Green' (Margot Carmichael Lester, Sept 9, 2002)",
+          "url": "https://www.ladowntownnews.com/news/its-not-easy-being-green/article_06e7cd91-2e6e-5aeb-a5c0-5c4cb4f1beba.html",
+          "accessed": "2026-10-12",
+          "excerpt": "the only one being looked at is at Angels Knoll (near Angels Flight)"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'CRA Plans Park Near Angels Flight' (Sept 6, 2004)",
+          "url": "https://www.ladowntownnews.com/news/cra-plans-park-near-angels-flight/article_f1e0a4cb-9665-5dcb-bc14-4e599fad6a74.html",
+          "accessed": "2026-10-12",
+          "excerpt": "plans to convert the property, known as Angel's Knoll, into a temporary park"
+        },
+        {
+          "type": "secondary",
+          "title": "Suisman Urban Design, 'Angels Knoll featured in movie \"500 Days of Summer\"' (June 2009)",
+          "url": "https://suisman.com/?p=661",
+          "accessed": "2026-10-12",
+          "excerpt": "a temporary park in downtown Los Angeles designed by Suisman Urban Design with Pat Smith"
+        },
+        {
+          "type": "news",
+          "title": "Urbanize LA (Steven Sharp, Sept 22, 2016), 'City to Seek Developer for Angel's Knoll Site'",
+          "url": "https://la.urbanize.city/post/city-seek-developer-angels-knoll-site",
+          "accessed": "2026-10-12",
+          "excerpt": "repurposed a significant portion of the tower as a temporary green space known as Angel's Knoll"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'Goats to Munch Again on Bunker Hill' (July 1, 2010)",
+          "url": "https://www.ladowntownnews.com/news/goats-to-munch-again-on-bunker-hill/article_b1b1773a-dc1b-5763-aa9d-c1342a581f34.html",
+          "accessed": "2026-10-12",
+          "excerpt": "a parcel of land that is now a lovely, if steep, park"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'CRA Fences Off Plaza to Curb Loitering' (Ryan Vaillancourt, Aug 9, 2013)",
+          "url": "https://www.ladowntownnews.com/news/cra-fences-off-plaza-to-curb-loitering/article_8d52f172-0112-11e3-8e6d-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Angel’s Knoll was always intended as a temporary park"
+        }
+      ]
+    },
+    {
+      "id": "park-002",
+      "title": "What the park was: a shaded lawn with benches off Olive Street, above a fenced slope and the Hill Street plaza",
+      "summary": "Angels Knoll was a small grassy, tree-shaded park on the upper (Olive Street / California Plaza) end of Parcel Y-1, with benches; a steep slope separated it from a separate public plaza on Hill Street at the foot of Angels Flight. The parcel's official address is 361 S. Hill Street; '356 S Olive St' appears only in a film-location blog.",
+      "details": [
+        "Trees and lawn: Esotouric says the land was 'planted with shade trees' (Sept 2024); a 2013 Downtown News editorial calls it 'the shady park' and one of Downtown's few grassy destinations; in 2014 'the once-green grass has gone brown' (LA Downtown News, Sept 29, 2014).",
+        "Benches: the 2013 editorial objects to putting 'the benches, and even the information stand for Angels Flight' behind a six-foot fence; LAist (Aug 9, 2013) refers to 'the park's iconic bench'.",
+        "Layout: the plaza at Hill Street and the park 'are both part of the same parcel, though the park is higher up the hill and has an entrance close to the Cal Plaza complex' (Downtown News editorial, Apr 14, 2015); the 2014 editorial calls it 'the small park off Olive Street'. The slope between them 'has long been fenced off' and was where the CRA sent goats to trim grass (Aug 9, 2013).",
+        "Stairs: the 2013 fence was designed to keep 'unimpeded pedestrian access to the stairwell adjacent to Angel's Flight' (successor agency statement, Aug 9, 2013); CRA/LA's 2026 maintenance scope includes 'Angels Knoll Plaza and stairways' and 'stairwell gates'. No opened source says the CRA built a stair as part of the park.",
+        "Address: CRA/LA and the City use 361 S. Hill Street (CRA/LA staff report, Aug 26, 2026). The 2019 Angels Landing Notice of Preparation lists the site as '361 S. Hill Street (332-358 S. Olive Street, 351-361 S. Hill Street, 417-425 W. 4th Street)'. The LA County Assessor record for the main parcel (AIN 5149-010-951, lot 95,463 sq ft) shows no situs address. '356 S Olive St' is given only by the Film Oblivion location blog for the bench (secondary).",
+        "Size of the whole parcel as reported: 2.6 acres (Downtown News editorial, 2008), about 2.4 acres (Downtown News and Urbanize LA, 2016), 2.26 acres (Downtown News 2017; Esotouric), 2.24 acres / 97,631 sq ft (2019 NOP). These describe the whole Y-1 site, not the park alone; the park's own area was not found."
+      ],
+      "topic": "Angels Knoll Park",
+      "date": null,
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2001-12",
+        "end": "2013-07-30"
+      },
+      "conflicts": [
+        {
+          "note": "Site area differs by source (2.6, ~2.4, 2.26, 2.24 acres). The NOP figure (2.24 acres) is the most formal; the 2008 editorial figure is probably loose.",
+          "sources": [
+            10,
+            7
+          ]
+        },
+        {
+          "note": "Address: official records use 361 S. Hill Street (range 332-358 S. Olive Street on the NOP); only a film-location blog gives 356 S Olive St. The entry follows the official address and treats 356 S Olive as unconfirmed.",
+          "sources": [
+            5,
+            6,
+            8,
+            9
+          ]
+        }
+      ],
+      "viewer": "Split Y-1 into three zones in the viewer: upper park (Olive St / Cal Plaza entrance), fenced slope, lower Hill Street plaza; tag the upper zone with benches and shade trees.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "Esotouric, 'Ask Councilmember Kevin de Leon to Re-open Angels Knoll Park' (Substack, Sept 18, 2024, with updates to June 2026)",
+          "url": "https://esotouric.substack.com/p/angelsknoll",
+          "accessed": "2026-10-12",
+          "excerpt": "planted with shade trees and briefly accessible as a public park in the 2000s"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News editorial, 'Fencing Fourth and Hill and Angels Knoll Was a Dumb Decision' (Aug 19, 2013)",
+          "url": "https://www.ladowntownnews.com/opinion/fencing-fourth-and-hill-and-angels-knoll-was-a-dumb-decision/article_cb0a66c4-06c3-11e3-bc14-0019bb2963f4.html",
+          "accessed": "2026-10-12",
+          "excerpt": "stick the benches, and even the information stand for Angels Flight, behind a six-foot-high silver fence"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News (Eddie Kim), 'Downtowners Displeased as Closure of Park and Plaza Passes One-Year Mark' (Sept 29, 2014)",
+          "url": "https://www.ladowntownnews.com/news/downtowners-displeased-as-closure-of-park-and-plaza-passes-one-year-mark/article_658bc416-45c2-11e4-ba3b-a758fa060392.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The once-green grass has gone brown."
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News editorial, 'Lack of Leadership Means a Waste of Much-Needed Public Space' (Apr 14, 2015)",
+          "url": "https://www.ladowntownnews.com/opinion/lack-of-leadership-means-a-waste-of-much-needed-public-space/article_2d5ed4f6-e1fe-11e4-8dc6-cf78d640f233.html",
+          "accessed": "2026-10-12",
+          "excerpt": "the park is higher up the hill and has an entrance close to the Cal Plaza complex"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News (Ryan Vaillancourt), 'CRA Fences Off Plaza to Curb Loitering' (Aug 9, 2013)",
+          "url": "https://www.ladowntownnews.com/news/cra-fences-off-plaza-to-curb-loitering/article_8d52f172-0112-11e3-8e6d-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The site includes a slope between the plaza and Angel’s Knoll that has long been fenced off."
+        },
+        {
+          "type": "official",
+          "title": "CRA/LA staff report, Governing Board special meeting Aug 26, 2026, Item 3 (DTLA Alliance purchase order, Bunker Hill Parcel Y-1)",
+          "url": "https://www.crala.org/internet-site/Meetings/Board_Agenda_2026/Aug_26_2026_Item_3.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Power washing Angels Knoll Plaza and stairways"
+        },
+        {
+          "type": "official",
+          "title": "LA City Planning, Notice of Preparation, Angels Landing Project, ENV-2018-3273-EIR (Mar 29, 2019)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/nop.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "361 S. Hill Street (332-358 S. Olive Street, 351-361 S. Hill Street, 417-425 W. 4th Street)"
+        },
+        {
+          "type": "official",
+          "title": "LA City Planning, Notice of Preparation, Angels Landing Project (Mar 29, 2019), site area",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/nop.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "97,631-square-foot (2.24-acre) parcel"
+        },
+        {
+          "type": "official",
+          "title": "LA County Assessor portal, parcel detail AIN 5149010951 (JSON)",
+          "url": "https://portal.assessor.lacounty.gov/api/parceldetail?ain=5149010951",
+          "accessed": "2026-10-12",
+          "excerpt": "\"SitusStreet\":\"\""
+        },
+        {
+          "type": "secondary",
+          "title": "Film Oblivion, '(500) Days Of Summer (2009)' location post (June 30, 2018, updated Mar 12, 2025)",
+          "url": "https://filmoblivion.com/tag/plaque/",
+          "accessed": "2026-10-12",
+          "excerpt": "LOCATION: 356 S Olive St, Los Angeles, CA 90013 (since closed)"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News editorial (Sept 22, 2008), on the CRA's goats",
+          "url": "https://www.ladowntownnews.com/opinion/editorial/article_44c5544b-3100-579e-9a48-94b77ebf7cca.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The 2.6-acre plot known as Angels Knoll, at Fourth and Hill streets"
+        }
+      ]
+    },
+    {
+      "id": "park-003",
+      "title": "(500) Days of Summer (2009) makes the Angels Knoll bench a pilgrimage spot",
+      "summary": "Marc Webb's 2009 film (500) Days of Summer used a bench on Angels Knoll overlooking the Historic Core as the lead character Tom's favourite spot, and the bench drew film fans until the 2013 closure. Esotouric reported in January 2025, citing the Angels Flight operators, that all the benches had been removed.",
+      "details": [
+        "Suisman Urban Design (June 2009) says the park 'served as the dramatic centerpiece' of the film, whose lovers' romance begins and ends on a bench overlooking the backs of Broadway buildings.",
+        "LA Downtown News (Aug 26, 2009) lists the 'Angels Knoll bench, his favorite spot' as a stop on a free film-location walking tour led by the film's key assistant location manager Marty Cummins and Harry Medved, benefiting the LA Conservancy; a Sept 10, 2010 article describes a tour group of about 70 hoping to see 'Angels Knoll, an easy-to-overlook pocket park'.",
+        "Downtown News 'Best of' staff picks (Aug 2, 2010) recommend a picnic on 'the small, somewhat hidden park enjoyed by the couple in the film'.",
+        "After the closure the bench was the press hook: LAist (Aug 9, 2013) and The A.V. Club (Aug 22, 2013) reported that the park with the bench had been fenced since July 30; the A.V. Club says the bench had been 'a popular tourist destination' since the film came out.",
+        "Plaque (secondary only, low confidence): the Film Oblivion location blog says a plaque on the bench read 'Tom's favorite place becomes one of Summer's too' and that it has since been removed. Not confirmed by any news or official source.",
+        "Claim (Esotouric update of Jan 30, 2025): 'all of the benches, famous from the film (500) Days of Summer and popular with fence-hopping citizens, have been removed from Angels Knoll', as reported to Esotouric by the Angels Flight operators. Not confirmed independently."
+      ],
+      "topic": "Angels Knoll Park",
+      "date": "2009",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2009",
+        "end": "2013-07-30"
+      },
+      "viewer": "Place a bench marker at the park's east edge facing the Historic Core, with a 2009 film note and a '2025: benches reported removed' flag.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "Suisman Urban Design, 'Angels Knoll featured in movie \"500 Days of Summer\"' (June 2009)",
+          "url": "https://suisman.com/?p=661",
+          "accessed": "2026-10-12",
+          "excerpt": "served as the dramatic centerpiece of the 2009 indy hit"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'A \"500 Days of Summer\" Tour' (Aug 26, 2009)",
+          "url": "https://www.ladowntownnews.com/news/a-500-days-of-summer-tour/article_49bc643a-4e49-54e2-bc90-022bd5cec42d.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Knoll bench, his favorite spot"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News (Pamela Albanese), 'Location Location Location' (Sept 10, 2010)",
+          "url": "https://www.ladowntownnews.com/news/location-location-location/article_0287dc16-c240-5a6b-81dd-d1419a720cf8.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Knoll, an easy-to-overlook pocket park that had a featured role in last year’s independent film (500) Days of Summer"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'Best of Downtown: Staff Picks' (Aug 2, 2010)",
+          "url": "https://www.ladowntownnews.com/news/best-of-downtown-staff-picks/article_ee884b99-3ed9-5218-ac0f-40176d18cac9.html",
+          "accessed": "2026-10-12",
+          "excerpt": "the small, somewhat hidden park enjoyed by the couple in the film (500) Days of Summer"
+        },
+        {
+          "type": "news",
+          "title": "LAist (Emma G. Gallegos), 'Why You Can't Enjoy Angel's Knoll Or Its (500) Days Of Summer Bench' (Aug 9, 2013)",
+          "url": "https://laist.com/news/why-you-cant-sit-on-the-500-days-of",
+          "accessed": "2026-10-12",
+          "excerpt": "Access to Angel's Knoll and the bench inside has been blocked off by a gate since July 30"
+        },
+        {
+          "type": "news",
+          "title": "The A.V. Club (Marah Eakin), 'The bench from (500) Days Of Summer has just become the latest victim of California state budget cutbacks' (Aug 22, 2013)",
+          "url": "https://avclub.com/the-bench-from-500-days-of-summer-has-just-become-the-1798240132",
+          "accessed": "2026-10-12",
+          "excerpt": "which has been a popular tourist destination since the moony 2009 Joseph Gordon-Levitt/Zooey Deschanel movie came out"
+        },
+        {
+          "type": "secondary",
+          "title": "Film Oblivion, '(500) Days Of Summer (2009)' (June 30, 2018, updated Mar 12, 2025)",
+          "url": "https://filmoblivion.com/tag/plaque/",
+          "accessed": "2026-10-12",
+          "excerpt": "There was even a plaque on the bench commemorating the film"
+        },
+        {
+          "type": "secondary",
+          "title": "Esotouric campaign page, update of Jan 30, 2025",
+          "url": "https://esotouric.substack.com/p/angelsknoll",
+          "accessed": "2026-10-12",
+          "excerpt": "all of the benches, famous from the film (500) Days of Summer and popular with fence-hopping citizens, have been removed from Angels Knoll"
+        }
+      ]
+    },
+    {
+      "id": "park-004",
+      "title": "CRA successor agency fences Angels Knoll and the Hill Street plaza on July 30, 2013; still closed in 2026",
+      "summary": "On July 30, 2013 the CRA's successor agency fenced off Angels Knoll and the plaza at Fourth and Hill, citing complaints about trash, litter and loitering and saying the fence would keep the asset's value pending sale under the state-approved Long Range Property Management Plan. The site has stayed closed since; CRA/LA's August 2026 maintenance contract covers securing gates and repairing the chain-link fence.",
+      "details": [
+        "Date and actor: the successor agency 'installed the fence on July 30' (agency spokesman Ackley Padilla, LA Downtown News, Aug 9, 2013); LAist and The A.V. Club give the same date.",
+        "Stated reasons (successor agency statement): complaints from stakeholders about trash, litter and loitering; the fence would 'enable the asset's value to be maintained' pending disposition under a Department of Finance-approved Long Range Property Management Plan; access to the stairway beside Angels Flight was kept open (Downtown News, Aug 9, 2013).",
+        "First days: no gate was installed at first and trash cans were not emptied, so rubbish and rats stayed for more than a week; a gate was added and the plaza cleaned on Aug 7, 2013 (Downtown News, Aug 9, 2013).",
+        "Context: the CRA had been dissolved under state law; its successor agency is charged with winding down and disposing of property and 'has no obligation to open or maintain the property' (Downtown News, Sept 29, 2014). A 2015 Downtown News editorial says the agency 'had neither the money nor the means to operate and maintain the park and the plaza'.",
+        "Still closed: Sept 2014 (Downtown News, 'more than a year'), Apr 2015 ('likely to remain shuttered for years'), Sept 2016 (LAist: 'fenced off to the public since'), July 2017 (LA Magazine: 'now fenced-off'), Sept 2017 (Downtown News: 'four years'), Sept 2024 (Esotouric: '11 years behind locked gates'), May 2026 (Esotouric: 'locked gates and inaccessibility').",
+        "As of Aug 26, 2026, CRA/LA's staff report on maintenance and security at Parcel Y-1 lists 'Securing stairwell gates', 'Replacing broken locks' and 'Repairing chain-link fencing' among DTLA Alliance's services, which indicates the site is still fenced; no source reports a reopening.",
+        "Owner: CRA/LA, A Designated Local Authority, owns the property in fee (CRA/LA staff report, Aug 26, 2026)."
+      ],
+      "topic": "Angels Knoll Park",
+      "date": "2013-07-30",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-07-30",
+        "end": "present"
+      },
+      "conflicts": [
+        {
+          "note": "Date of CRA dissolution: LAist (2016) says the CRA was dissolved 'also in 2013' and The A.V. Club says it was 'defunded due to state cutbacks'; Downtown News (2014) says 'in 2011'. Redevelopment agencies were dissolved as of Feb 1, 2012 (California Department of Finance; see ins-001 in the existing database). This entry follows Feb 1, 2012.",
+          "sources": [
+            3,
+            5,
+            12
+          ]
+        },
+        {
+          "note": "Ownership: Downtown News (Jan 18, 2017) and Wikipedia say the site was transferred to / owned by the City; CRA/LA's 2026 staff report says CRA/LA owns it in fee and the City only held an option (Jan 2015 to Sept 30, 2025). This entry follows CRA/LA.",
+          "sources": [
+            11,
+            9
+          ]
+        }
+      ],
+      "viewer": "Draw the chain-link fence line around the park and plaza with a '30 Jul 2013 - present' label; a timeline slider could grey the park from that date.",
+      "sources": [
+        {
+          "type": "news",
+          "title": "LA Downtown News (Ryan Vaillancourt), 'CRA Fences Off Plaza to Curb Loitering' (Aug 9, 2013)",
+          "url": "https://www.ladowntownnews.com/news/cra-fences-off-plaza-to-curb-loitering/article_8d52f172-0112-11e3-8e6d-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "installed the fence on July 30 “due to an increase in complaints from stakeholders about trash, litter and concerns with loitering onsite,”"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, Aug 9, 2013 (gate and clean-up)",
+          "url": "https://www.ladowntownnews.com/news/cra-fences-off-plaza-to-curb-loitering/article_8d52f172-0112-11e3-8e6d-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "On Wednesday, Aug. 7, agency officials added a gate and a maintenance crew cleaned the plaza area on Hill Street."
+        },
+        {
+          "type": "news",
+          "title": "LAist (Emma G. Gallegos), Aug 9, 2013",
+          "url": "https://laist.com/news/why-you-cant-sit-on-the-500-days-of",
+          "accessed": "2026-10-12",
+          "excerpt": "They decided to just fence the whole thing off in order to \"enable the asset's value to be maintained.\""
+        },
+        {
+          "type": "news",
+          "title": "LAist (Matt Tinoco), 'Angels Knoll, The (500) Days Of Summer Park, Is Going To Be Put Up For Sale' (Sept 22, 2016)",
+          "url": "https://laist.com/news/angels-knoll-sale",
+          "accessed": "2026-10-12",
+          "excerpt": "was dissolved by Governor Jerry Brown, also in 2013. The land has been fenced off to the public since."
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News (Eddie Kim), Sept 29, 2014",
+          "url": "https://www.ladowntownnews.com/news/downtowners-displeased-as-closure-of-park-and-plaza-passes-one-year-mark/article_658bc416-45c2-11e4-ba3b-a758fa060392.html",
+          "accessed": "2026-10-12",
+          "excerpt": "In July 2013, the plaza and Angels Knoll were fenced off, partly in preparation for a land sale that has yet to occur"
+        },
+        {
+          "type": "news",
+          "title": "The A.V. Club (Marah Eakin), Aug 22, 2013",
+          "url": "https://avclub.com/the-bench-from-500-days-of-summer-has-just-become-the-1798240132",
+          "accessed": "2026-10-12",
+          "excerpt": "after the Community Redevelopment Agency that maintained the park was defunded due to state cutbacks"
+        },
+        {
+          "type": "news",
+          "title": "Los Angeles Magazine, 'Angels Flight Deserves a More Uplifting Home' (published July 31, 2017 PT per page metadata)",
+          "url": "https://lamag.com/urbandevelopment/angels-flight-area/",
+          "accessed": "2026-10-12",
+          "excerpt": "The nearly-vertical park is now fenced-off, a tantalizing and out-of-reach spot of green in a vast expanse of concrete."
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News editorial, 'An Open Railway, A Closed Park' (Sept 11, 2017)",
+          "url": "https://www.ladowntownnews.com/opinion/an-open-railway-a-closed-park/article_58d4b4f4-94e7-11e7-b981-27be6d9d4a98.html",
+          "accessed": "2026-10-12",
+          "excerpt": "For four years there has been no access to one of the few green spaces in Downtown Los Angeles."
+        },
+        {
+          "type": "secondary",
+          "title": "Esotouric campaign page, update of May 2026",
+          "url": "https://esotouric.substack.com/p/angelsknoll",
+          "accessed": "2026-10-12",
+          "excerpt": "complain about the locked gates and inaccessibility"
+        },
+        {
+          "type": "official",
+          "title": "CRA/LA staff report, Aug 26, 2026, Item 3",
+          "url": "https://www.crala.org/internet-site/Meetings/Board_Agenda_2026/Aug_26_2026_Item_3.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Securing stairwell gates; • Replacing broken locks; • Repairing chain-link fencing"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News editorial, Apr 14, 2015",
+          "url": "https://www.ladowntownnews.com/opinion/lack-of-leadership-means-a-waste-of-much-needed-public-space/article_2d5ed4f6-e1fe-11e4-8dc6-cf78d640f233.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The fencing went up because the successor agency had neither the money nor the means to operate and maintain the park and the plaza."
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'City Begins Marketing \"Angels Landing\" Site' (Jan 18, 2017)",
+          "url": "https://www.ladowntownnews.com/news/city-begins-marketing-angels-landing-site/article_884d437c-dcdc-11e6-b70f-ebdfa5d51fbd.html",
+          "accessed": "2026-10-12",
+          "excerpt": "it was transferred to the city and officials have been brainstorming how best to sell it as a project site"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News (Eddie Kim), Sept 29, 2014, on the CRA shutdown",
+          "url": "https://www.ladowntownnews.com/news/downtowners-displeased-as-closure-of-park-and-plaza-passes-one-year-mark/article_658bc416-45c2-11e4-ba3b-a758fa060392.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Gov. Jerry Brown’s dissolution of Community Redevelopment Agencies across the state in 2011"
+        }
+      ]
+    },
+    {
+      "id": "park-005",
+      "title": "2013 Change.org petition to reopen Angels Knoll; Recreation and Parks board notes and files it",
+      "summary": "In 2013 Chris Yamashita started a Change.org petition asking Mayor Eric Garcetti to reopen Angels Knoll; batches of signatures were forwarded to the city's Board of Recreation and Park Commissioners, which noted and filed them in October-November 2013 and February 2014. No opened source shows the petition asked for a transfer to Recreation and Parks, and the park was not reopened.",
+      "details": [
+        "LA Downtown News (Sept 17, 2013): in a petition drafted on change.org, Chris Yamashita 'asked Mayor Eric Garcetti to reopen the park'; the petition calls it a 'beautiful and beloved park in the heart of urban Downtown'; Yamashita also ran a Facebook page, 'Re-Open Angel's Knoll'.",
+        "Board of Recreation and Park Commissioners, General Manager's reports on 'Various Communications': Oct 16, 2013 (No. 13-272, item 7: approximately sixty additional signers), Nov 6, 2013 (No. 13-280, item 9: approximately forty), Feb 19, 2014 (No. 14-046, item 15: approximately one hundred ninety five). Each is described as 'a continuation of Chris Yamashita's petition (via Change.org) relative to the State-owned Angel's Knoll Park'; the recommendation shown is 'Note and File'.",
+        "Search results also list further RAP reports (e.g. Nov 20, 2013; Mar-Oct 2014) that were not opened; total signatures not found. The Change.org page itself was not found.",
+        "The lead's statement that 'a petition asked the city to transfer the knoll to the Department of Recreation and Parks' is not supported by the sources opened: the petition as reported asked the mayor to reopen the park; it reached RAP as correspondence only."
+      ],
+      "topic": "Angels Knoll Park",
+      "date": "2013-09-17",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-09",
+        "end": "2014-02-19"
+      },
+      "conflicts": [
+        {
+          "note": "Lead (professor's narrative) says the petition sought a transfer to Recreation and Parks; Downtown News says it asked the mayor to reopen the park. The entry follows Downtown News.",
+          "sources": [
+            0
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'Petition Aims to Reopen Angels Knoll' (Sept 17, 2013)",
+          "url": "https://www.ladowntownnews.com/news/petition-aims-to-reopen-angels-knoll/article_baecc20c-1cc4-11e3-8386-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Chris Yamashita has asked Mayor Eric Garcetti to reopen the park near the top of Angels Flight"
+        },
+        {
+          "type": "official",
+          "title": "Board of Recreation and Park Commissioners, Report of General Manager No. 13-272 (Oct 16, 2013), item 7",
+          "url": "https://dev.pastilla.recreation.parks.lacity.gov/sites/default/files/pdf/commissioner/2013/oct16/13-272.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Approximately sixty additional signers, a continuation of Chris Yamashita's petition (via Change.org) relative to the State-owned Angel's Knoll Park."
+        },
+        {
+          "type": "official",
+          "title": "Board of Recreation and Park Commissioners, Report of General Manager No. 13-280 (Nov 6, 2013), item 9",
+          "url": "https://dev.pastilla.recreation.parks.lacity.gov/sites/default/files/pdf/commissioner/2013/nov06/13-280.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Approximately forty additional signers, a continuation of Chris Yamashita's petition"
+        },
+        {
+          "type": "official",
+          "title": "Board of Recreation and Park Commissioners, Report of General Manager No. 14-046 (Feb 19, 2014), item 15",
+          "url": "https://dev.pastilla.recreation.parks.lacity.gov/sites/default/files/pdf/commissioner/2014/feb19/14-046.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Approximately one hundred ninety five additional signers, a continuation of Chris Yamashita's petition (via Change.org)"
+        }
+      ]
+    },
+    {
+      "id": "park-006",
+      "title": "Upkeep today: CRA/LA pays DTLA Alliance for maintenance and security at Parcel Y-1 (2025-2027)",
+      "summary": "Since October 1, 2025, after the City's option expired, CRA/LA has paid the DTLA Alliance (Downtown Center Business Improvement District Management Corporation) for maintenance and security at Parcel Y-1. On August 26, 2026 staff asked the CRA/LA Governing Board to extend the purchase order to June 30, 2027 and raise it from $100,000 to $197,000 while the site is prepared for disposition under the Surplus Land Act.",
+      "details": [
+        "Background (staff report): CRA/LA owns the property in fee; the Department of Finance approved the Long-Range Property Management Plan, including the property, in 2014; in January 2015 CRA/LA and the City signed an Option Agreement; the City did not exercise it and it expired on Sept 30, 2025, when 'sole responsibility for maintaining the Property returned to CRA/LA'.",
+        "Purchase Order No. 26-0002 was issued on Sept 11, 2025 for up to $78,568, covering Oct 1, 2025 to June 30, 2026; the CEO extended it on June 16, 2026 (to July 31, 2026) and July 30, 2026 (to Sept 30, 2026, raising it to $100,000, the limit of his delegated authority).",
+        "Requested action (Item 3, consent calendar, Aug 26, 2026 special meeting): extend nine months to June 30, 2027 and add $97,000; source of funds: Redevelopment Property Tax Trust Funds.",
+        "Scope: removing trash, graffiti and bulky items; power washing Angels Knoll Plaza and stairways; maintaining landscaped areas (mowing lawns, removing weeds, clearing brush); securing stairwell gates; replacing broken locks; repairing chain-link fencing; rodent abatement; security patrols and reporting encampments and illegal activity to LAPD.",
+        "Outcome not confirmed: the Aug 26, 2026 minutes were not found (the Sept 3 and Oct 1, 2026 board meetings are listed as cancelled on crala.org), so whether the board approved the amendment is unverified as of 2026-10-12.",
+        "Earlier: in 2015 a City official said the City could consider partnering with a business improvement district to run and maintain the sites, but this depended on someone providing money (Downtown News, Apr 7, 2015)."
+      ],
+      "topic": "Angels Knoll Park",
+      "date": "2026-08-26",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-10-01",
+        "end": "2027-06-30"
+      },
+      "viewer": "A small 'maintained, not open' status chip on the parcel with the contract term (Oct 2025 - Jun 2027).",
+      "sources": [
+        {
+          "type": "official",
+          "title": "CRA/LA staff report, Governing Board special meeting Aug 26, 2026, Item 3: Amendment of Purchase Order No. 26-0002 with DTLA Alliance",
+          "url": "https://www.crala.org/internet-site/Meetings/Board_Agenda_2026/Aug_26_2026_Item_3.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Extend the term by nine months, from September 30, 2026, to June 30, 2027; and 2. Increase compensation by $97,000, from $100,000 to $197,000."
+        },
+        {
+          "type": "official",
+          "title": "Same staff report, background",
+          "url": "https://www.crala.org/internet-site/Meetings/Board_Agenda_2026/Aug_26_2026_Item_3.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Upon its expiration, sole responsibility for maintaining the Property returned to CRA/LA."
+        },
+        {
+          "type": "official",
+          "title": "CRA/LA Governing Board special meeting agenda, Aug 26, 2026",
+          "url": "https://crala.org/internet-site/Meetings/Board_Agenda_2026/A08-26-26_GB_Special_Meeting.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "FOR MAINTENANCE AND SECURITY SERVICES AT BUNKER HILL PARCEL Y-1"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News (Eddie Kim), 'Public Plaza and Park Likely to Remain Shuttered for Years' (Apr 7, 2015)",
+          "url": "https://www.ladowntownnews.com/news/public-plaza-and-park-likely-to-remain-shuttered-for-years/article_ad7eb0c6-dc8a-11e4-b0cc-f75ab4ffac12.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The city could consider partnering with area stakeholders, such as a business improvement district, to run and maintain the sites"
+        }
+      ]
+    },
+    {
+      "id": "park-007",
+      "title": "Esotouric's campaign (since Sept 2024) to reopen the knoll as 'Leo & Helen Politi Bunker Hill Park'",
+      "summary": "Since September 18, 2024 the preservation and tour group Esotouric has asked the Council District 14 office to open Angels Knoll and the Hill Street plaza to the public permanently and to name the upper part 'Leo & Helen Politi Bunker Hill Park', after the artist Leo Politi, who painted old Bunker Hill, and his wife Helen. As of its June 2026 update the campaign was still active and the site still locked; no Council action to reopen or name the park was found.",
+      "details": [
+        "Claim (Esotouric, Sept 18, 2024): Esotouric argues that the best use of Parcel Y-1 is as a park, which is what people already take it to be; readers were asked to email or call Councilmember Kevin de León's office to open Angels Knoll and the Hill Street Plaza permanently and name the upper portion Leo & Helen Politi Bunker Hill Park.",
+        "Sept 23, 2024 follow-up: a video with Suzanne Politi Bischof, Leo and Helen's daughter and a one-time Bunker Hill resident, who considers the naming proposal 'a blessing' (Esotouric's paraphrase).",
+        "Council action cited by Esotouric: on Sept 20, 2024 de León moved (CF 14-0425-S4) that the Mayor pursue a 36-month extension of the City's Option Agreement on Parcel Y-1, to Sept 30, 2027; the Council adopted it on Sept 27, 2024. The motion's text is about developing the property 'in a manner that provides the greatest benefit to the City and the Affected Taxing Entities' and does not mention reopening a park; the link to the park campaign is Esotouric's reading. CRA/LA reports the option expired on Sept 30, 2025.",
+        "Later updates (Esotouric page): Dec 10, 2024, campaign 'still active' under new councilmember Ysabel Jurado; May 2026, 'The aspirational Leo & Helen Politi Bunker Hill Park is now on Google Maps'; June 2026, a garage elevator window at the Broadway-Spring Center gives a view of the plot, 'Open it up!'.",
+        "Leo Politi (LA Public Library blog, Nov 13, 2023): artist and author of more than twenty children's books, including Song of the Swallows, winner of the 1950 Caldecott Medal; his 1964 book 'Bunker Hill, Los Angeles: Reminiscences of Bygone Days' documented the neighbourhood's vanishing Victorian houses; in 1965 the Library bought a selection of the book's paintings for $3,000.",
+        "Start date: the lead says the campaign began in 2023. Esotouric's Substack sitemaps for 2023-2026 list its Angels Knoll posts only from Sept 2024 (2023 posts are Politi tours that do not mention the knoll). The entry follows Sept 2024.",
+        "CD14 position: no statement by Councilmember Jurado or her office on reopening or naming the park was found (web search, Oct 12, 2026)."
+      ],
+      "topic": "Angels Knoll Park",
+      "date": "2024-09-18",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2024-09-18",
+        "end": "present"
+      },
+      "conflicts": [
+        {
+          "note": "Lead says the campaign has run since 2023; Esotouric's own posts start Sept 18, 2024. The entry follows Esotouric.",
+          "sources": [
+            0
+          ]
+        }
+      ],
+      "viewer": "Optional 'proposed name' label 'Leo & Helen Politi Bunker Hill Park (proposed, Esotouric)' on the upper park, clearly marked as a proposal.",
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "Esotouric, 'Ask Councilmember Kevin de Leon to Re-open Angels Knoll Park' (Substack, Sept 18, 2024; updates Dec 2024 - June 2026)",
+          "url": "https://esotouric.substack.com/p/angelsknoll",
+          "accessed": "2026-10-12",
+          "excerpt": "open to the public permanently, and that the upper portion is named Leo & Helen Politi Bunker Hill Park"
+        },
+        {
+          "type": "secondary",
+          "title": "Esotouric, 'Keep On Asking Councilmember Kevin de Leon to Re-open Angels Knoll Park—it's working!' (Substack, Sept 23, 2024)",
+          "url": "https://esotouric.substack.com/p/angelsknoll2",
+          "accessed": "2026-10-12",
+          "excerpt": "we hear from Suzanne Politi Bischof, Leo and Helen’s daughter and herself a one-time resident of old Bunker Hill"
+        },
+        {
+          "type": "official",
+          "title": "LA City Council motion (de León - Park), Council File 14-0425-S4, presented Sept 20, 2024",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-s4_misc_9-23-24.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "develop the Property in a manner that provides the greatest benefit to the City and the Affected Taxing Entities"
+        },
+        {
+          "type": "official",
+          "title": "LA City Clerk, Official Action of the Council, CF 14-0425-S4, Sept 27, 2024",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_caf_9-27-24.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "MOTION (DE LEON - PARK) - ADOPTED"
+        },
+        {
+          "type": "secondary",
+          "title": "Esotouric campaign page, update of Dec 10, 2024",
+          "url": "https://esotouric.substack.com/p/angelsknoll",
+          "accessed": "2026-10-12",
+          "excerpt": "this campaign to reopen Angels Knoll as a park is still active"
+        },
+        {
+          "type": "secondary",
+          "title": "Esotouric campaign page, update of May 2026",
+          "url": "https://esotouric.substack.com/p/angelsknoll",
+          "accessed": "2026-10-12",
+          "excerpt": "The aspirational Leo & Helen Politi Bunker Hill Park is now on Google Maps"
+        },
+        {
+          "type": "secondary",
+          "title": "Los Angeles Public Library blog (Tina Princenthal), 'Leo Politi, Fondly Remembered' (Nov 13, 2023)",
+          "url": "https://lapl.org/collections-resources/blogs/lapl/leo-politi-fondly-remembered",
+          "accessed": "2026-10-12",
+          "excerpt": "Song of the Swallows , winner of the 1950 Caldecott Medal"
+        },
+        {
+          "type": "secondary",
+          "title": "Same LAPL blog post",
+          "url": "https://lapl.org/collections-resources/blogs/lapl/leo-politi-fondly-remembered",
+          "accessed": "2026-10-12",
+          "excerpt": "Politi documented the rapidly vanishing Victorian homes of Downtown LA's upper-class neighborhood"
+        },
+        {
+          "type": "official",
+          "title": "CRA/LA staff report, Aug 26, 2026, Item 3",
+          "url": "https://www.crala.org/internet-site/Meetings/Board_Agenda_2026/Aug_26_2026_Item_3.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The City did not exercise the option, and the Option Agreement expired on September 30, 2025."
+        }
+      ]
+    },
+    {
+      "id": "park-008",
+      "title": "Names of the site: Y-1, Angels Knoll, Angels Landing (and a proposed Politi park)",
+      "summary": "'Y-1' is a CRA parcel designation used in Bunker Hill redevelopment documents from at least 1979; 'Angels Knoll' appears in the press from 2001 for the CRA's interim park beside Angels Flight; 'Angels Landing' is the name under which the City began marketing the site in January 2017. No naming act for any of these names was found.",
+      "details": [
+        "Y-1: a USC Bunker Hill Redevelopment Project records item (OAC) is titled 'Develop Offering - Remaining 8.75 acres of Bunker Hill ... Parcel R, S, T, U, Y-1, 1979'. Later official documents use 'Bunker Hill Parcel Y-1' (City Council motion 2024; CRA/LA 2025-2026). How the letter was assigned was not found.",
+        "Angels Knoll: earliest dated use found is LA Downtown News, Dec 31, 2001 ('Angels Knoll lower plaza and upper landing'; 'Angels Knoll Interim Park'); in 2004 the paper writes 'the property, known as Angel's Knoll'. Spellings vary (Angels Knoll, Angel's Knoll; 'Angel Knolls Park' on a 2013 blog). CRA/LA still uses 'Angels Knoll Plaza' for the lower plaza in 2026. Who coined the name, and whether it comes from the neighbouring Angels Flight, is not stated in any source opened (the lead's 'consensus of local historians' was not traced).",
+        "Angels Landing: LA Downtown News (Jan 18, 2017): the City 'this month began marketing the development potential of the Bunker Hill plot, now dubbed Angels Landing', with brokerage JLL and the website angelslandingla.com. The name was then used for the Angels Landing Partners project (2017-2024). Who chose the name was not found.",
+        "Leo & Helen Politi Bunker Hill Park: a proposed name from Esotouric's 2024 campaign (see park-007); Esotouric says it appeared on Google Maps by May 2026. It has no official status in any source opened.",
+        "Note: the 2024 Council motion (CF 14-0425-S4) lists the property as 'adjacent to a Metro station, Angels Knoll, Angels Flight, and Grand Central Market', treating Angels Knoll as a separate place, although the park lies on Y-1."
+      ],
+      "topic": "Angels Knoll Park",
+      "date": null,
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "viewer": "A name-history tooltip on the parcel: Y-1 (CRA, 1979) / Angels Knoll (2001-) / Angels Landing (2017-) / proposed Politi park (2024-).",
+      "sources": [
+        {
+          "type": "archival",
+          "title": "OAC / USC Regional History Collection, Bunker Hill Redevelopment Project records (0226), Box 12, Folder 19",
+          "url": "https://oac.cdlib.org/findaid/ark:/13030/kt6t1nf3kt_ref1212",
+          "accessed": "2026-10-12",
+          "excerpt": "Develop Offering - Remaining 8.75 acres of Bunker Hill, Downtown Los Angeles by the Community Redevelopment Agency- Parcel R, S, T, U, Y-1, 1979"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'Knoll in One' (Dec 31, 2001)",
+          "url": "https://www.ladowntownnews.com/news/knoll-in-one/article_192152b9-1ee3-59aa-b2b7-155d202542c7.html",
+          "accessed": "2026-10-12",
+          "excerpt": "A new $1 million redesign for Angels Knoll lower plaza and upper landing"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, Sept 6, 2004",
+          "url": "https://www.ladowntownnews.com/news/cra-plans-park-near-angels-flight/article_f1e0a4cb-9665-5dcb-bc14-4e599fad6a74.html",
+          "accessed": "2026-10-12",
+          "excerpt": "the property, known as Angel's Knoll"
+        },
+        {
+          "type": "news",
+          "title": "LA Downtown News, 'City Begins Marketing \"Angels Landing\" Site' (Jan 18, 2017)",
+          "url": "https://www.ladowntownnews.com/news/city-begins-marketing-angels-landing-site/article_884d437c-dcdc-11e6-b70f-ebdfa5d51fbd.html",
+          "accessed": "2026-10-12",
+          "excerpt": "the city this month began marketing the development potential of the Bunker Hill plot, now dubbed Angels Landing"
+        },
+        {
+          "type": "official",
+          "title": "CRA/LA staff report, Aug 26, 2026, Item 3",
+          "url": "https://www.crala.org/internet-site/Meetings/Board_Agenda_2026/Aug_26_2026_Item_3.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Power washing Angels Knoll Plaza and stairways"
+        },
+        {
+          "type": "official",
+          "title": "LA City Council motion, CF 14-0425-S4 (Sept 20, 2024)",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-s4_misc_9-23-24.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The Property is also adjacent to a Metro station, Angels Knoll, Angels Flight, and Grand Central Market"
+        },
+        {
+          "type": "secondary",
+          "title": "Esotouric campaign page, update of May 2026",
+          "url": "https://esotouric.substack.com/p/angelsknoll",
+          "accessed": "2026-10-12",
+          "excerpt": "The aspirational Leo & Helen Politi Bunker Hill Park is now on Google Maps"
+        }
+      ]
+    },
+    {
+      "id": "ghost-001",
+      "title": "Three California Plaza: the third office tower planned for Y-1 (Phase 3A), never built",
+      "summary": "City documents describe Y-1 as the intended third phase (Phase 3A) of California Plaza, the phase that was never built. Sources give the tower as 65 floors, or 62 floors and 853 ft. The City's 2016 motion blames poor economic conditions for commercial uses and the dissolution of redevelopment; the LA Times (2022) says the downtown financial center was oversupplied with offices by 1992.",
+      "details": [
+        "New in this entry (official): the Angels Landing Draft EIR and the Zoning Administrator's 2022 determination both call the site the third phase 'Phase 3A' of the California Plaza Project, the project that built One and Two California Plaza (DEIR p. II-5 to II-6; ZA determination p. 15). The 2019 Initial Study says only 'the third phase' (p. 12, PDF p. 17), already cited in plaza-006.",
+        "New (official): the Huizar motion that opened Council File 14-0425-S4 (Sept 21, 2016) says Y-1 was previously meant to be the third phase of California Plaza but 'was not pursued due to poor economic conditions for commercial uses and redevelopment dissolution'. This is the City's own reason, given about 30 years after the fact.",
+        "New (press): the LA Times (Roger Vincent, Mar 28, 2022) says the site 'was originally expected to hold the third office skyscraper in California Plaza'. By 1992, when the second tower was finished, the downtown financial center was 'substantially oversupplied with offices' and new building stopped.",
+        "New (secondary): PCAD says the developer built only two of the three towers 'Due to the high rate of office vacancy at the time', and that the third tower 'was intended to rise 65 stories' across the street.",
+        "Size (repeated from plaza-006 for the viewer, sources re-opened today): 65 floors (Wikipedia, PCAD, SkyscraperPage); 62 floors and 260 m / 853 ft (Skyscraper Center); roof 915 ft marked 'Unconfirmed' (SkyscraperPage). No primary document (DDA, EIR, CRA record) giving the tower's height, floors, floor area or footprint was found.",
+        "Position: Wikipedia says the tower was planned for a site just north of 4th Street, directly across Olive Street from the first two towers. That is Y-1, bounded by Angels Flight (north), Hill St (east), 4th St (south) and Olive St / California Plaza (west) (Initial Study p. 12). Where the tower stood within the parcel is not documented in anything we opened.",
+        "Timing: on 'indefinite hold' by 1990 (LA Times obituary of Erickson, 2009); SkyscraperPage says 'proposed in 1993' and gives an intended completion of 1993. These dates may describe different versions of the plan; not resolved.",
+        "The idea that the tower was to house the MWD headquarters is not confirmed; see plaza-006. The 1980-81 program for all of California Plaza (three office towers of 37-60 stories, 3.2 million sq ft) is in plaza-001."
+      ],
+      "topic": "Unbuilt Schemes",
+      "date": "1990",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1",
+        "entity:E001",
+        "entity:E002"
+      ],
+      "timeline": {
+        "start": "1981-09-30",
+        "end": "1990"
+      },
+      "conflicts": [
+        {
+          "note": "Floors and height: 65 floors (PCAD, Wikipedia, SkyscraperPage) vs 62 floors / 853 ft (Skyscraper Center); 915 ft roof is 'Unconfirmed' (SkyscraperPage). All are secondary; no primary figure found. The geometry gives both and does not choose.",
+          "sources": [
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "note": "Timing: 'indefinite hold' by 1990 (LA Times 2009) vs 'proposed in 1993' / intended completion 1993 (SkyscraperPage). The timeline follows the LA Times for the end date.",
+          "sources": [
+            8,
+            7
+          ]
+        },
+        {
+          "note": "Reason: oversupply of office space (LA Times 2022; PCAD: high vacancy) vs 'poor economic conditions for commercial uses and redevelopment dissolution' (2016 Council motion). These do not conflict; the motion adds the 2011-12 dissolution as a later reason.",
+          "sources": [
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "geometry": {
+        "towers": [
+          {
+            "name": "Three California Plaza",
+            "use": "office",
+            "floors": [
+              65,
+              62
+            ],
+            "heightFt": [
+              853,
+              915
+            ],
+            "heightNote": "853 ft (Skyscraper Center, 62 floors); 915 ft roof marked unconfirmed (SkyscraperPage); 65 floors with no height (PCAD, Wikipedia). No primary source.",
+            "position": "On Y-1: 'just north of 4th Street, directly across Olive Street' from One and Two California Plaza (Wikipedia). Footprint and placement within the parcel not documented."
+          }
+        ],
+        "site": {
+          "bounds": "Angels Flight (N), Hill St (E), 4th St (S), Olive St / California Plaza (W)"
+        }
+      },
+      "viewer": "A single ghost office tower on Y-1, shown as a translucent extrusion with a height slider or two outlines (853 ft and 915 ft), labelled 'height unconfirmed'. No footprint is documented, so draw it as a generic square tower placed loosely on the parcel, marked schematic.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Landing Draft EIR, Jan 2021, Section II Project Description (p. II-6; sentence begins on p. II-5)",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "Phase 3A) for the California Plaza Project, which developed the existing large office buildings located at One and Two California Plaza.",
+          "page": "II-6"
+        },
+        {
+          "type": "official",
+          "title": "Zoning Administrator determination ZA-2018-3271-MCUP-CUX-SPPA-SPP, Feb 3, 2022 (p. 15)",
+          "url": "https://planning.lacity.gov/pdiscaseinfo/document/MjIyMTE0/1823a02c-5d95-4003-95c4-258347c32f18/pdd/archive",
+          "accessed": "2026-10-12",
+          "excerpt": "originally slated as the third phase of development (e.g., Phase 3A) for the California Plaza Project",
+          "page": "15"
+        },
+        {
+          "type": "official",
+          "title": "Motion (Huizar), Council File 14-0425-S4, Sept 21, 2016",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-s4_mot_09-21-2016.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "was not pursued due to poor economic conditions for commercial uses and redevelopment dissolution",
+          "page": "1"
+        },
+        {
+          "type": "news",
+          "title": "Roger Vincent, Los Angeles Times, Mar 28, 2022 (syndicated on Yahoo Finance)",
+          "url": "https://finance.yahoo.com/news/bet-downtown-los-angeles-huge-120055494.html",
+          "accessed": "2026-10-12",
+          "excerpt": "By that time, however, downtown's financial center was substantially oversupplied with offices and new development came to a halt."
+        },
+        {
+          "type": "secondary",
+          "title": "PCAD - 1 California Plaza Office Building",
+          "url": "https://pcad.lib.washington.edu/building/6491/",
+          "accessed": "2026-10-12",
+          "excerpt": "Due to the high rate of office vacancy at the time, the developer built only two of the towers"
+        },
+        {
+          "type": "secondary",
+          "title": "1 Cal Plaza - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/1_Cal_Plaza",
+          "accessed": "2026-10-12",
+          "excerpt": "Three California Plaza at 65 floors, was planned for a site just north of 4th Street, directly across Olive Street"
+        },
+        {
+          "type": "secondary",
+          "title": "Three California Plaza - The Skyscraper Center",
+          "url": "https://www.skyscrapercenter.com/building/three-california-plaza/759",
+          "accessed": "2026-10-12",
+          "excerpt": "Height 260 m / 853 ft Floors 62"
+        },
+        {
+          "type": "secondary",
+          "title": "Three California Plaza - SkyscraperPage",
+          "url": "https://skyscraperpage.com/cities/?buildingID=5095",
+          "accessed": "2026-10-12",
+          "excerpt": "Roof 915 ft Unconfirmed"
+        },
+        {
+          "type": "news",
+          "title": "Christopher Hawthorne, LA Times obituary of Arthur Erickson, May 22, 2009",
+          "url": "https://www.latimes.com/entertainment/arts/la-me-arthur-erickson22-2009may22-story.html",
+          "accessed": "2026-10-12",
+          "excerpt": "By 1990, the faltering economy in the United States had not only put the third California Plaza tower on indefinite hold"
+        },
+        {
+          "type": "official",
+          "title": "Angels Landing Initial Study, March 2019, Section 3.2.1 (p. 12, PDF p. 17)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Hill Street to the east; 4th Street to the south; and Olive Street and the California Plaza to the west.",
+          "page": "12 (PDF 17)"
+        }
+      ],
+      "sourceFile": "Initial_Site_Narrative_TBC section 4 (lead only)"
+    },
+    {
+      "id": "ghost-002",
+      "title": "2017 winning proposal: Angels Landing as 88- and 24-story towers",
+      "summary": "The concept that won the City's 2017 competition (CLA report, Dec 8, 2017) was a 1.27 million sq ft development with two towers over a shared podium, one of 24 stories and one of 88 stories. It included about 400 rental units, 250 condominiums, 500 hotel rooms, 50,000 sq ft of retail and a 32,500 sq ft K-5 charter school, with about 54,000 sq ft of public open space.",
+      "details": [
+        "CLA report 17-12-1126 (Dec 8, 2017), p. 7: ALP proposed 'a 1.27 million square foot world-class mixed-use development' with 'two towers over a shared podium'; 'One tower is 24 stories and the second tower is 88 stories, rising above its neighboring Cal Plaza One and Two buildings.'",
+        "Program, approximate (CLA p. 7): 400 residential rental units; 250 condominium units; 500 luxury/lifestyle hotel rooms (operated by SBE, split between SLS and Mondrian); 50,000 sq ft of restaurant and retail; 32,500 sq ft for a K-5 public charter school run by the Los Angeles Academy of Arts and Enterprise. Affordable: five percent, about 20 rental units, for 80-120 percent of AMI.",
+        "Open space (CLA p. 7): about 54,000 sq ft publicly accessible, about 58 percent of the site, including a 13,700 sq ft plaza and a 25,400 sq ft 'flexible-use, multi-season public terrace located in the center of the project'.",
+        "Architect: Handel Architects (Glenn Rescalvo, partner-in-charge) (CLA pp. 6-7). Projected completion in the proposal: December 31, 2024 (CLA p. 9).",
+        "A LiUNA Local 300 letter (Jan 12, 2018) in the council file describes the same project: two towers, 400 rentals, 250 condominiums, 500 hotel rooms, nearly 50,000 sq ft of restaurant and retail, and a K-5 charter school.",
+        "Press (2022, looking back): City News Service on FOX 11 says the project was 'Originally planned as one 88-story skyscraper and one 24-story high-rise'. Urbanize LA says the first pitch had 650 homes, 500 hotel rooms and a 'centered 1,000-foot-tall skyscraper'. No official document opened gives the 2017 tower's height in feet.",
+        "Tower positions in the 2017 concept are not described in the CLA report; renderings were not found."
+      ],
+      "topic": "Unbuilt Schemes",
+      "date": "2017-10-16",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2017-10-16",
+        "end": "2018-06-07"
+      },
+      "conflicts": [
+        {
+          "note": "Height of the tall tower: the CLA report gives only 88 stories; Urbanize LA (2022) says '1,000-foot-tall'. The feet figure is press only and is not used in the geometry.",
+          "sources": [
+            0,
+            5
+          ]
+        },
+        {
+          "note": "Competing teams: the CLA report names Onni Group and Angels Landing Development Partners, LLC; Urbanize names Onni Group and Lowe Enterprises. Whether Lowe was part of Angels Landing Development Partners was not checked. The entry follows the CLA report.",
+          "sources": [
+            6,
+            5
+          ]
+        }
+      ],
+      "geometry": {
+        "towers": [
+          {
+            "name": "tall tower",
+            "stories": 88,
+            "heightFt": null,
+            "position": "not described"
+          },
+          {
+            "name": "short tower",
+            "stories": 24,
+            "heightFt": null,
+            "position": "not described"
+          }
+        ],
+        "podium": "shared podium (no dimensions given)",
+        "totalFloorAreaSf": 1270000,
+        "totalFloorAreaNote": "'1.27 million square foot' (approximate, CLA p. 7)",
+        "openSpaceSf": {
+          "publicTotal": 54000,
+          "plaza": 13700,
+          "centralTerrace": 25400
+        }
+      },
+      "viewer": "Two ghost towers on a shared podium labelled with stories only (88 and 24). Heights in feet are not documented; if a height is needed, show stories times an assumed floor height and label it as an assumption, not a source figure. The central terrace can be drawn as a flat open area in the middle of the site.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Report of the Chief Legislative Analyst 17-12-1126, Dec 8, 2017 (p. 7), CF 14-0425-S4",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_12-08-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "One tower is 24 stories and the second tower is 88 stories, rising above its neighboring Cal Plaza One and Two buildings.",
+          "page": "7"
+        },
+        {
+          "type": "official",
+          "title": "CLA report, Dec 8, 2017 (p. 7) - program",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_12-08-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "32,500 square feet for a K-5 public charter school operated by the Los Angeles Academy of Arts and Enterprise",
+          "page": "7"
+        },
+        {
+          "type": "official",
+          "title": "CLA report, Dec 8, 2017 (p. 7) - open space",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_12-08-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The open space component includes a 13,700 square foot plaza and a 25,400 square foot flexible-use, multi-season public terrace",
+          "page": "7"
+        },
+        {
+          "type": "official",
+          "title": "LiUNA Local 300 letter, Jan 12, 2018, CF 14-0425-S4",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_misc_1-12-18.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "400 residential rentals, , 250 condominiums, 500 hotel rooms, nearly 50,000 square feet of restaurant and retail space, and a K-5",
+          "page": "1"
+        },
+        {
+          "type": "news",
+          "title": "City News Service, FOX 11 Los Angeles, Mar 29, 2022",
+          "url": "https://www.foxla.com/news/downtown-la-angels-landing-project-advances",
+          "accessed": "2026-10-12",
+          "excerpt": "Originally planned as one 88-story skyscraper and one 24-story high-rise"
+        },
+        {
+          "type": "news",
+          "title": "Steven Sharp, Urbanize LA, Mar 29, 2022",
+          "url": "https://la.urbanize.city/post/la-city-officials-sign-massive-angels-landing-development",
+          "accessed": "2026-10-12",
+          "excerpt": "called for a larger complex with 650 apartments and condominiums with 500 hotel rooms, centered 1,000-foot-tall skyscraper"
+        },
+        {
+          "type": "official",
+          "title": "CLA report, Dec 8, 2017 (p. 5) - RFP responses",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_12-08-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "the City received three qualified responses: Angels Landing Development Partners, LLC; Angels Landing Partners, LLC; and the Onni Group.",
+          "page": "5"
+        },
+        {
+          "type": "official",
+          "title": "CLA report, Dec 8, 2017 (p. 9) - schedule",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_12-08-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Construction is estimated to take 41 months with a projected completion date of December 31,2024.",
+          "page": "9"
+        }
+      ],
+      "sourceFile": "Initial_Site_Narrative_TBC section 7 (lead only)"
+    },
+    {
+      "id": "ghost-003",
+      "title": "June 2018 filing: 1,269,359 sq ft with a 45,381 sq ft charter school",
+      "summary": "The entitlement case filed on June 7, 2018 (CPC-2018-3272-DA) describes a mixed-use project of about 1,269,359 sq ft: 120 condominiums, 450 apartments, 480 hotel rooms, a 45,381 sq ft charter school and 50,504 sq ft of commercial space. Tower heights are not given.",
+      "details": [
+        "PDIS case record CPC-2018-3272-DA: 'Case Filed On: 06/07/2018'. Project description: 'UP TO APPROX.1,269,359 SF, WHICH INCLUDES 120 CONDOS, 450 APARTMENTS, 480 HOTEL GUESTROOMS, 45,381 SF CHARTER SCHOOL AND 50,504 SF OF COMMERCIAL SPACE.'",
+        "The same record asks for a Master CUP for 12 alcohol establishments (10 restaurants and 2 in hotels). The applicant is shown as Angels Landing Partners [The Peebles Corporation].",
+        "This case (the Development Agreement) was later withdrawn (see ent-004)."
+      ],
+      "topic": "Unbuilt Schemes",
+      "date": "2018-06-07",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2018-06-07",
+        "end": "2019-03-29"
+      },
+      "geometry": {
+        "totalFloorAreaSf": 1269359,
+        "towers": null
+      },
+      "sources": [
+        {
+          "type": "official",
+          "title": "LA City Planning PDIS case record CPC-2018-3272-DA",
+          "url": "https://planning.lacity.gov/pdiscaseinfo/search/case/CPC-2018-3272-DA",
+          "accessed": "2026-10-12",
+          "excerpt": "120 CONDOS, 450 APARTMENTS, 480 HOTEL GUESTROOMS, 45,381 SF CHARTER SCHOOL AND 50,504 SF OF COMMERCIAL SPACE."
+        },
+        {
+          "type": "official",
+          "title": "Same record - filing date",
+          "url": "https://planning.lacity.gov/pdiscaseinfo/search/case/CPC-2018-3272-DA",
+          "accessed": "2026-10-12",
+          "excerpt": "Case Filed On: 06/07/2018"
+        }
+      ]
+    },
+    {
+      "id": "ghost-004",
+      "title": "2019 NOP / Initial Study scheme: Tower A 64 floors (854 ft), Tower B 42 floors (494 ft), seven-level garage",
+      "summary": "The March 2019 Notice of Preparation and Initial Study describe two towers on a terraced, shared podium: Tower A with 64 floors up to 854 ft on the north side of the site near Hill Street and Angels Flight, and Tower B with 42 floors up to 494 ft along 4th Street. Below them a garage of up to seven levels, 110 to 170 ft deep, holds 750 spaces. Totals are 1,269,150 sq ft at FAR 13:1, about 590,000 cubic yards of export, and Angels Terrace as the central public open space.",
+      "details": [
+        "Towers (NOP p. 2; IS p. 9, PDF p. 14): 'Tower A would include 64 floors with a building height of up to 854 feet. Tower B would include 42 floors with a building height of up to 494 feet.' The base level from which heights are measured is not stated.",
+        "Tower B position (IS p. 15, PDF p. 20): 'located along 4th Street and set back from the corner of Hill Street', sized between the low buildings across 4th Street and the planned towers across Hill Street. Tower A position: 'located on the north side of the Project Site and is located closer to the street edge' (IS p. 15) and 'intentionally placed on Hill Street, near the Angels Flight portal' (IS p. 25, PDF p. 30).",
+        "Tower A and Angels Flight (IS p. 25): set back about 10 ft from the shared property line with Angels Flight; steps down to about eight stories along the upper part of the track; its northwest end set back about 50 ft from California Plaza.",
+        "Podium and terraces (IS pp. 14 and 24): a series of cantilevered floors and landscaped terraced levels rising from Hill/4th up to California Plaza. Levels: Hill Street Plaza at the Metro portal (southeast corner), lower porte cochère, upper porte cochère, Angels Terrace level, Level 4 (service/loading), Level 5 (most of the educational/cultural/civic space), and a level with access to Angels Flight and California Plaza. The two towers share part of the podium.",
+        "Angels Terrace (IS p. 24, PDF p. 29): the primary public open space, 'located in the center of the Project Site, between the two towers', linked by a paseo from 4th/Olive to the Angels Flight steps and by escalators and an elevator to California Plaza. Total open space 56,881 sq ft (IS p. 25).",
+        "Garage (IS p. 26, PDF p. 31): 750 spaces in up to seven subterranean levels; 'below grade parking would extend to a maximum depth of 110 feet to 170 feet'; 'The built condition may include fewer subterranean levels.' Export about 590,000 cubic yards (IS p. 27). Vehicle access from Olive Street (garage ramp) and 4th Street (porte cochère); loading dock under the California Plaza overbuild on Olive.",
+        "Program (IS Table 1, p. 15): condominiums 436,195 sf (180 units); apartments 333,910 sf (261 units); hotel 423,553 sf (509 rooms); educational/cultural/civic 38,977 sf; commercial 36,551 sf; total 1,269,150 sf. By tower (IS p. 24): Tower A has a 260-room hotel, 60 apartments and 180 condominiums; Tower B has a 249-room hotel and 201 apartments. 366 bicycle spaces (IS p. 26). Planned completion 2028 (IS p. 27).",
+        "Site (IS p. 9; NOP p. 1): 97,631 sq ft (2.24 acres), bounded by Angels Flight (N), Hill St (E), 4th St (S), Olive St and California Plaza (W); Metro Pershing Square portal at the southeast corner, kept.",
+        "Design team: the IS figures credit 'Angels Landing Partners, Handel Architects LLP, 2018' (e.g. Figure 3, PDF p. 21). OLIN is named as co-lead designer in 2022 press (Urbanize LA: 'Handel Architects and Olin lead the design team'; Archinect). OLIN's role is not named in the 2019 documents opened.",
+        "Floor plans: IS Figures 3-10 (PDF pp. 21-28) show the site plan and level plans. They are images with no dimension text; footprints would have to be traced from them."
+      ],
+      "topic": "Unbuilt Schemes",
+      "date": "2019-03-29",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1",
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "2019-03-29",
+        "end": "2021-01-14"
+      },
+      "conflicts": [
+        {
+          "note": "Commercial floor area: the text gives 36,515 sf (IS p. 9; NOP p. 2) and Table 1 / the NOP table give 36,551 sf. Inside the same documents; unresolved.",
+          "sources": [
+            0,
+            4
+          ]
+        },
+        {
+          "note": "Total floor area: the text and IS Table 1 give 1,269,150 sf, but the NOP summary table totals 1,269,186 sf. The Table 1 rows also add up to 1,269,186 sf (436,195 + 333,910 + 423,553 + 38,977 + 36,551; our arithmetic). Probably the 36 sf commercial discrepancy above; the entry uses 1,269,150 sf, the stated cap.",
+          "sources": [
+            4,
+            5
+          ]
+        },
+        {
+          "note": "Garage depth: the NOP and IS say 110 to 170 ft; the CEQAnet NOP record summary says 'up to a depth of 84 ft'. The entry follows the NOP/IS documents.",
+          "sources": [
+            0,
+            6
+          ]
+        },
+        {
+          "note": "Alcohol establishments: the NOP lists twelve; the 2022 approval allows 15 (see ent-004). Not a conflict, a change between stages.",
+          "sources": [
+            7
+          ]
+        }
+      ],
+      "geometry": {
+        "site": {
+          "areaSf": 97631,
+          "acres": 2.24,
+          "bounds": "Angels Flight (N), Hill St (E), 4th St (S), Olive St / California Plaza (W)",
+          "metroPortal": "southeast corner (kept)"
+        },
+        "towers": [
+          {
+            "name": "Tower A",
+            "floors": 64,
+            "heightFt": 854,
+            "heightBasis": "'up to'; base level not stated",
+            "position": "north side of the site, closer to the street edge; on Hill Street near the Angels Flight lower portal; about 10 ft from the Angels Flight property line; steps down to about eight stories along the upper part of the track; northwest end about 50 ft from California Plaza",
+            "program": "260-room hotel, 60 apartments, 180 condominiums"
+          },
+          {
+            "name": "Tower B",
+            "floors": 42,
+            "heightFt": 494,
+            "heightBasis": "'up to'; base level not stated",
+            "position": "along 4th Street, set back from the corner of Hill Street",
+            "program": "249-room hotel, 201 apartments"
+          }
+        ],
+        "podium": {
+          "form": "terraced, cantilevered levels rising from Hill/4th up to California Plaza; shared by both towers",
+          "levels": [
+            "Hill Street Plaza (at Metro portal)",
+            "lower porte cochere",
+            "upper porte cochere",
+            "Angels Terrace",
+            "Level 4 service/loading",
+            "Level 5 educational/cultural/civic",
+            "level connecting to Angels Flight and California Plaza"
+          ]
+        },
+        "garage": {
+          "levelsMax": 7,
+          "depthFt": [
+            110,
+            170
+          ],
+          "spaces": 750,
+          "note": "built condition may include fewer levels"
+        },
+        "openSpace": {
+          "totalSf": 56881,
+          "main": "Angels Terrace, centre of the site between the towers"
+        },
+        "totalFloorAreaSf": 1269150,
+        "far": "13:1",
+        "exportCubicYards": 590000,
+        "plans": "IS Figures 3-10, PDF pp. 21-28 (images, no dimensions)"
+      },
+      "viewer": "Two extruded ghost volumes on Y-1: Tower A (854 ft, 64 floors) along the north edge next to the Angels Flight track and toward Hill Street, with a low stepped wing (about 8 stories) running up beside the upper track and stopping about 50 ft short of California Plaza; Tower B (494 ft, 42 floors) along 4th Street, set back from the Hill/4th corner. Between them a stepped terrace mass (the podium) climbing from Hill/4th to Olive, with Angels Terrace as a flat open level in the middle. Optionally, a translucent box below grade to 110-170 ft for the garage. Trace footprints from IS Figure 3.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Notice of Preparation, ENV-2018-3273-EIR, Mar 29, 2019 (p. 2 of 4)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/nop.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Tower A would include 64 floors with a building height of up to 854 feet. Tower B would include 42 floors with a building height",
+          "page": "2"
+        },
+        {
+          "type": "official",
+          "title": "Angels Landing Initial Study, March 2019, Section 3.3.2 (p. 15, PDF p. 20)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "the lower tower (Tower B), which is located along 4th Street and set back from the corner of Hill Street, is transitional",
+          "page": "15 (PDF 20)"
+        },
+        {
+          "type": "official",
+          "title": "Initial Study, Section 3.3.2 (p. 25, PDF p. 30)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Tower A is intentionally placed on Hill Street, near the Angels Flight portal",
+          "page": "25 (PDF 30)"
+        },
+        {
+          "type": "official",
+          "title": "Initial Study, Section 3.3.2 (p. 25, PDF p. 30)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "The northwest end of Tower A would be set back approximately 50 feet from California Plaza",
+          "page": "25 (PDF 30)"
+        },
+        {
+          "type": "official",
+          "title": "Initial Study, Table 1 (p. 15, PDF p. 20)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Commercial (retail/restaurant) 36,551 sf Total 1,269,150 sf",
+          "page": "15 (PDF 20)"
+        },
+        {
+          "type": "official",
+          "title": "NOP project summary table (p. 2 of 4)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/nop.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "1,269,186 sf",
+          "page": "2"
+        },
+        {
+          "type": "official",
+          "title": "CEQAnet, SCH 2019039164, NOP record summary",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/2",
+          "accessed": "2026-10-12",
+          "excerpt": "Both towers would be built over a 7-level subterranean parking garage up to a depth of 84 ft."
+        },
+        {
+          "type": "official",
+          "title": "NOP requested actions (p. 2 of 4)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/nop.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "on-site and off-site consumption at twelve establishments.",
+          "page": "2"
+        },
+        {
+          "type": "official",
+          "title": "Initial Study, Section 3.3.4 (p. 26, PDF p. 31)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "below grade parking would extend to a maximum depth of 110 feet to 170 feet. The built condition may include fewer subterranean levels.",
+          "page": "26 (PDF 31)"
+        },
+        {
+          "type": "official",
+          "title": "Initial Study, Section 3.3.2 (p. 24, PDF p. 29)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "located in the center of the Project Site, between the two towers, as the primary publicly accessible open space of the Project.",
+          "page": "24 (PDF 29)"
+        },
+        {
+          "type": "official",
+          "title": "Initial Study, Section 3.3.2 (p. 24, PDF p. 29)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Tower A would include a 260-room hotel, 60 residential apartments",
+          "page": "24 (PDF 29)"
+        },
+        {
+          "type": "official",
+          "title": "Initial Study, Section 3.3.7 (p. 27, PDF p. 32)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "approximately 590,000 cubic yards of export material would be hauled from the Project Site during the excavation phase.",
+          "page": "27 (PDF 32)"
+        },
+        {
+          "type": "official",
+          "title": "Initial Study, Section 3.3.2 (p. 25, PDF p. 30)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "For the upper portion of the track, Tower A would step down to approximately eight stories.",
+          "page": "25 (PDF 30)"
+        },
+        {
+          "type": "official",
+          "title": "Initial Study, Figure 3 caption (PDF p. 21)",
+          "url": "https://planning.lacity.gov/eir/nops/AngelsLanding/IS.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Source: Angels Landing Partners, Handel Architects LLP, 2018. Figure 3 Conceptual Site Plan",
+          "page": "16 (PDF 21)"
+        },
+        {
+          "type": "news",
+          "title": "Urbanize LA, Mar 29, 2022",
+          "url": "https://la.urbanize.city/post/la-city-officials-sign-massive-angels-landing-development",
+          "accessed": "2026-10-12",
+          "excerpt": "lead the design team for Angels Landing"
+        }
+      ],
+      "sourceFile": "Initial_Site_Narrative_TBC section 7 (lead only)"
+    },
+    {
+      "id": "ghost-005",
+      "title": "2021 EIR / Feb 2022 approved scheme: Tower A 63 floors, three-level garage about 70 ft below Hill Street",
+      "summary": "The January 2021 Draft EIR, the May 2021 Final EIR and the February 3, 2022 Zoning Administrator approval describe a revised scheme. Tower A has 63 floors (up to 854 ft) and Tower B 42 floors (up to 494 ft). The garage is cut to three levels with parking stackers, about 70 ft below Hill Street, and soil export to about 334,000 cubic yards. The program becomes 180 condominiums, 252 apartments (5 percent affordable), 515 hotel rooms and 72,091 sq ft of commercial space, with no educational/civic use.",
+      "details": [
+        "Towers (DEIR p. II-1 and II-8; FEIR p. I-2; ZA Condition 12, p. 4): Tower A 63 floors up to 854 ft; Tower B 42 floors up to 494 ft. Tower A drops from 64 to 63 floors at the same height. Positions are unchanged in wording: Tower B 'located along 4th Street and set back from the corner of Hill Street'; Tower A 'on the north side' and 'placed on Hill Street, near the lower station of Angels Flight' (DEIR pp. II-16, II-26).",
+        "Change at Angels Flight (DEIR p. II-27): Tower A now steps down 'to the Terrace, two stories below the upper station', and its northwest end is set back 'approximately 125 feet' from California Plaza (2019: about eight stories and about 50 ft). The setback of about 10 ft from the Angels Flight line is kept.",
+        "Garage (DEIR p. II-8 and II-32): three subterranean levels, 750 spaces 'with parking stacker machines to reduce the number of parking levels required', excavated 'approximately 70 feet below ground surface as measured from the elevation of Hill Street'. Export about 334,000 cubic yards (2019: seven levels, 110-170 ft, 590,000 cy). Table II-1 note b: 178,145 sf of structured parking not counted as floor area. 375 bicycle spaces.",
+        "Program by tower (DEIR Table II-1, p. II-9): Tower A 798,580 sf (417,185 condominiums; 90,137 apartments; 230,245 hotel; 61,013 commercial); Tower B 470,570 sf (219,620 apartments; 239,872 hotel; 11,078 commercial); total 1,269,150 sf, FAR 13:1. Tower A has a 260-room hotel, 60 apartments and 180 condominiums; Tower B a 255-room hotel and 192 apartments (DEIR p. II-26).",
+        "Educational/cultural/civic use: the 2019 program had 38,977 sf. The DEIR Table II-1 and the approved project description list no such use (our reading of the tables; no statement explaining the removal was found).",
+        "Podium levels (DEIR pp. II-16 to II-27): PB1 Hill Street Plaza; Level 1 lower porte cochère (main vehicle entry from 4th St); Level 2 upper porte cochère; Level 3 Angels Terrace (centre, between the towers; about 400 sq ft elevated linear water feature, p. II-28); Level 4 service/loading; Level 5 commercial / Tower B hotel amenities and pool deck; Level 6 Lower California Plaza terrace; Level 7 Upper California Plaza Terrace extending the existing plaza over Olive Street. Open space 56,881 sq ft.",
+        "Site grade (DEIR p. II-2): about 355 ft above mean sea level on Olive Street down to about 285 ft at Hill/4th, an elevation differential of about 70 ft.",
+        "Approval (ZA Condition 12, p. 4): the project must be built as 'An approximately 1,269,150 square-foot (maximum 13:1 FAR), two-tower mixed use development over three levels of subterranean parking' with Tower A 63 floors / 854 ft and Tower B 42 floors / 494 ft, 515 hotel rooms, 432 units and 72,091 sq ft commercial. Haul route up to 334,000 cy (ZA p. 17; see ent-004). Affordable: 5 percent of rental units, 55 years (Letter of Correction; see ent-004).",
+        "Press (claim, developers): the LA Times (Mar 28, 2022) reports that the developers agreed to subsidize 78 affordable units, 13 of the 252 on site and 65 at another location not yet chosen; hotels hoped to be a 255-room four-star and a 260-room five-star. Archinect's '78 of which are considered affordable' conflates the two (see ent-004 / group3 note).",
+        "Design team (press): Urbanize LA (Mar 29, 2022) says Handel Architects and Olin lead the design team; Archinect credits 'Handel Architects and OLIN'. The DEIR figures credit 'Angels Landing Partners, Handel Architects LLP' (e.g. Figure II-3, p. II-10).",
+        "The scheme was never built; see lit-002 (ENA terminated Feb 13, 2024) and ent-005/ent-006 (status of the entitlements)."
+      ],
+      "topic": "Unbuilt Schemes",
+      "date": "2022-02-03",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1",
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "2021-01-14",
+        "end": "2024-02-13"
+      },
+      "conflicts": [
+        {
+          "note": "Tower A stories: 63 floors in the DEIR, FEIR, ZA approval and the LA Times; Urbanize LA ('64 and 42 stories') and Archinect ('42- and 64-story') still give the 2019 figure. The entry follows the official documents.",
+          "sources": [
+            0,
+            9,
+            10
+          ]
+        },
+        {
+          "note": "Garage levels: the ZA determination says 'three levels of subterranean parking' (Condition 12, p. 4, and pp. 15, 45) but its Bunker Hill Specific Plan finding (p. 44) says 'a seven-level subterranean parking garage'. Probably left over from the 2019 text; the entry follows the DEIR and Condition 12.",
+          "sources": [
+            2,
+            7
+          ]
+        },
+        {
+          "note": "Affordable units: 13 on site (5 percent; DEIR, ZA) vs 78 (Archinect). The LA Times explains 78 = 13 on site + 65 off site.",
+          "sources": [
+            0,
+            8,
+            10
+          ]
+        }
+      ],
+      "geometry": {
+        "site": {
+          "areaSf": 97631,
+          "gradeFtAMSL": {
+            "OliveSt_northwest": 355,
+            "Hill4th_southeast": 285
+          }
+        },
+        "towers": [
+          {
+            "name": "Tower A",
+            "floors": 63,
+            "heightFt": 854,
+            "heightBasis": "'up to'; base level not stated",
+            "floorAreaSf": 798580,
+            "position": "north side of the site, closer to the street edge; on Hill Street near the Angels Flight lower station; about 10 ft from the Angels Flight property line; steps down to the Terrace two stories below the upper station; northwest end about 125 ft from California Plaza",
+            "program": "260-room hotel, 60 apartments, 180 condominiums"
+          },
+          {
+            "name": "Tower B",
+            "floors": 42,
+            "heightFt": 494,
+            "heightBasis": "'up to'; base level not stated",
+            "floorAreaSf": 470570,
+            "position": "along 4th Street, set back from the corner of Hill Street",
+            "program": "255-room hotel, 192 apartments"
+          }
+        ],
+        "podium": {
+          "levels": [
+            "PB1 Hill Street Plaza",
+            "L1 lower porte cochere (4th St entry)",
+            "L2 upper porte cochere",
+            "L3 Angels Terrace",
+            "L4 service/loading",
+            "L5 commercial / Tower B amenities and pool",
+            "L6 Lower California Plaza terrace",
+            "L7 Upper California Plaza Terrace (over Olive St)"
+          ]
+        },
+        "garage": {
+          "levels": 3,
+          "depthFt": 70,
+          "depthDatum": "below ground surface at Hill Street elevation",
+          "spaces": 750,
+          "stackers": true,
+          "structuredParkingSf": 178145
+        },
+        "openSpace": {
+          "totalSf": 56881,
+          "main": "Angels Terrace, centre between the towers",
+          "waterFeatureSf": 400
+        },
+        "totalFloorAreaSf": 1269150,
+        "far": "13:1",
+        "exportCubicYards": 334000,
+        "plans": "DEIR Figures II-3, II-8 to II-18 (pp. II-10 to II-31; images, no dimension text)"
+      },
+      "viewer": "Same two ghost towers as ghost-004 but Tower A with 63 floors (still 854 ft) and a shorter low wing beside the upper Angels Flight track (two stories below the upper station, ending about 125 ft from California Plaza). Draw the garage as a box below grade to about 70 ft under Hill Street level (about 215 ft above sea level if measured from the 285 ft Hill/4th grade; our arithmetic). A toggle between ghost-004 and ghost-005 would show the changes.",
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Landing Draft EIR, Jan 2021, Section II Project Description (p. II-8)",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "Tower A would include 63 floors with a building height of up to 854 feet.",
+          "page": "II-8"
+        },
+        {
+          "type": "official",
+          "title": "Draft EIR (p. II-8) - garage",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "The subterranean garage would include 750 parking spaces with parking stacker machines to reduce the number of parking levels required.",
+          "page": "II-8"
+        },
+        {
+          "type": "official",
+          "title": "Zoning Administrator determination ZA-2018-3271-MCUP-CUX-SPPA-SPP, Feb 3, 2022, Condition 12 (p. 4)",
+          "url": "https://planning.lacity.gov/pdiscaseinfo/document/MjIyMTE0/1823a02c-5d95-4003-95c4-258347c32f18/pdd/archive",
+          "accessed": "2026-10-12",
+          "excerpt": "two-tower mixed use development over three levels of subterranean parking, featuring a 63-floor, 854-foot in height Tower A",
+          "page": "4"
+        },
+        {
+          "type": "official",
+          "title": "Draft EIR (p. II-27) - Tower A at Angels Flight",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "the northwest end of Tower A would be set back approximately 125 feet from California Plaza",
+          "page": "II-27"
+        },
+        {
+          "type": "official",
+          "title": "Draft EIR, Table II-1 (p. II-9)",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "Does not include 178,145 sf of structured parking (not considered floor area under LAMC §12.03).",
+          "page": "II-9"
+        },
+        {
+          "type": "official",
+          "title": "Draft EIR (p. II-2) - site grade",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "an elevation differential of approximately 70 feet",
+          "page": "II-2"
+        },
+        {
+          "type": "official",
+          "title": "Draft EIR (p. II-34) - export",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "It is estimated that approximately 334,000 cubic yards of export material would be hauled from the Project Site during the excavation phase.",
+          "page": "II-34"
+        },
+        {
+          "type": "official",
+          "title": "ZA determination, Feb 3, 2022 (p. 44) - Specific Plan parking finding",
+          "url": "https://planning.lacity.gov/pdiscaseinfo/document/MjIyMTE0/1823a02c-5d95-4003-95c4-258347c32f18/pdd/archive",
+          "accessed": "2026-10-12",
+          "excerpt": "The Project will include up to 750 parking spaces in a seven-level subterranean parking garage.",
+          "page": "44"
+        },
+        {
+          "type": "news",
+          "title": "Roger Vincent, Los Angeles Times, Mar 28, 2022 (Yahoo Finance)",
+          "url": "https://finance.yahoo.com/news/bet-downtown-los-angeles-huge-120055494.html",
+          "accessed": "2026-10-12",
+          "excerpt": "That total is to include 13 of the 252 apartments on-site and another 65 units at a separate location"
+        },
+        {
+          "type": "news",
+          "title": "Urbanize LA, Mar 29, 2022",
+          "url": "https://la.urbanize.city/post/la-city-officials-sign-massive-angels-landing-development",
+          "accessed": "2026-10-12",
+          "excerpt": "which would include towers rising 64 and 42 stories in height."
+        },
+        {
+          "type": "news",
+          "title": "Josh Niland, Archinect, Mar 30, 2022",
+          "url": "https://archinect.com/news/article/150304855/l-a-gives-the-o-k-to-massive-angels-landing-high-rise-development",
+          "accessed": "2026-10-12",
+          "excerpt": "dominated by two 42- and 64-story towers"
+        },
+        {
+          "type": "official",
+          "title": "Angels Landing Final EIR, May 2021, Section I Introduction (p. I-2)",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/4/Attachment/DE47ml",
+          "accessed": "2026-10-12",
+          "excerpt": "Tower A would include 63 floors with a building height of up to 854 feet.",
+          "page": "I-2"
+        },
+        {
+          "type": "official",
+          "title": "Draft EIR (p. II-16) - Tower B position",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "the shorter tower (Tower B), which is located along 4th Street and set back from the corner of Hill Street",
+          "page": "II-16"
+        },
+        {
+          "type": "official",
+          "title": "Draft EIR (p. II-26) - tower program",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "Tower B would include a 255-room hotel, 192 residential apartments",
+          "page": "II-26"
+        },
+        {
+          "type": "official",
+          "title": "Draft EIR (p. II-27) - step-down",
+          "url": "https://ceqanet.lci.ca.gov/2019039164/3/Attachment/vlDT36",
+          "accessed": "2026-10-12",
+          "excerpt": "Tower A would step down to the Terrace, two stories below the upper station of Angels Flight.",
+          "page": "II-27"
+        }
+      ],
+      "sourceFile": "Initial_Site_Narrative_TBC section 7 (lead only)"
+    },
+    {
+      "id": "ghost-006",
+      "title": "Developer selection: Angels Landing Partners (Peebles, MacFarlane, Claridge), Dec 13, 2017, $50 million offer",
+      "summary": "On December 13, 2017 the City Council adopted the committee report selecting Angels Landing Partners, LLC, a joint venture of The Peebles Corporation, MacFarlane Partners and Claridge Properties, as preferred developer of Y-1. The team had offered $50 million, above the 2017 appraisal of $45.7 million. The price was later proposed as a fixed $50 million. Press calls the project the largest by Black developers; that is a characterization, not a verified fact.",
+      "details": [
+        "Process (CLA report Dec 8, 2017, pp. 1-6): Huizar-O'Farrell motion received Sept 21, 2016 and adopted by the Council on Mar 21, 2017 (council file activity); RFQ released Apr 12, 2017 (10 responses); RFP Aug 7, 2017 to four teams; three proposals by Oct 16, 2017 (Angels Landing Development Partners, Angels Landing Partners, Onni Group); interviews and community presentation Oct 23, 2017. ALP scored 553 of 600 (Onni 543; ALDP 438) and was ranked first by five of six panelists.",
+        "Council action (Official Action, CF 14-0425-S4): Dec 13, 2017, item 53, Economic Development Committee report 'ADOPTED FORTHWITH', 14 yes and 1 absent (Englander); the council file records 'Council action final' on 12/16/2017.",
+        "Joint venture (CLA p. 6): 'a joint venture between The Peebles Corporation, MacFarlane Partners, and Claridge Properties'. The CLA describes Peebles as 'one of the largest minority-owned real estate development companies in the nation', MacFarlane as minority-owned, and ALP as 'a 100 percent minority-owned development entity' (p. 7).",
+        "Price (CLA pp. 7-8): purchase price offered $50 million against the 2017 appraisal of $45.7 million; the final price would still depend on an updated appraisal. The CLA report of Apr 12, 2021 says the ENA set the price at the appraised value or $50 million, whichever was greater. In January 2020 the developer asked for a fixed $50 million, and the City sought a First Amendment to the Option Agreement to fix it.",
+        "Cost (CLA p. 8): about $1.2 billion to acquire and develop (70 percent debt, 30 percent equity). Later developer and press figures: $1.6 billion (LA Times 2022) and $2 billion (MacFarlane Partners release, Feb 9, 2021).",
+        "The 'largest' framing (claim): Archinect (Mar 30, 2022) says the project 'is being hailed as the largest ever by a Black-owned development firm' without saying who hailed it. City News Service / FOX 11 (Mar 29, 2022) states, without attribution, that it 'will be... the tallest in the U.S. developed by Black developers'. The Real Deal (Jan 2025) writes it 'would have been among the largest African-American-led developments in the city's history'. The LA Times calls Peebles and MacFarlane 'among the country's best-known Black developers'. The developers' Feb 2021 release calls them 'Two acclaimed African American developers' but makes no 'largest' claim. No primary statement by a named speaker making the 'largest' claim was found.",
+        "Later partnership history (Claridge's exit, the Section 3.10(a) 'and' clause, the March 11, 2025 tentative ruling) is fully covered in lit-002 and lit-003 and is not repeated here."
+      ],
+      "topic": "Unbuilt Schemes",
+      "date": "2017-12-13",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2017-04-12",
+        "end": "2017-12-13"
+      },
+      "conflicts": [
+        {
+          "note": "Selection date: the tentative ruling in lit-002 says 10/2017 (panel result); the Council adopted the selection on Dec 13, 2017 (Official Action; CLA 2021). Both are right at different steps.",
+          "sources": [
+            1,
+            4
+          ]
+        },
+        {
+          "note": "Motion date: the draft narrative says Huizar's motion was introduced in March 2016; the council file shows it received Sept 21, 2016, and the CLA report says it was 'introduced' on March 21, 2017 (the date of the Council's action on it). The entry follows the council file.",
+          "sources": [
+            0,
+            9
+          ]
+        },
+        {
+          "note": "Project cost: $1.2 billion (CLA 2017), $2 billion (developer release 2021), $1.6 billion (LA Times 2022). Different dates and scopes; not reconciled.",
+          "sources": [
+            3,
+            7,
+            8
+          ]
+        }
+      ],
+      "geometry": null,
+      "sources": [
+        {
+          "type": "official",
+          "title": "Report of the Chief Legislative Analyst 17-12-1126, Dec 8, 2017 (p. 1)",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_12-08-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "On March 21, 2017, Motion (Huizar-O’Farrell, C.F. 14-0425-S4, Attachment A) was introduced",
+          "page": "1"
+        },
+        {
+          "type": "official",
+          "title": "Official Action of the Los Angeles City Council, CF 14-0425-S4, Dec 13, 2017",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_CA_12-16-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "ECONOMIC DEVELOPMENT COMMITTEE REPORT - ADOPTED FORTHWITH",
+          "page": "1"
+        },
+        {
+          "type": "official",
+          "title": "CLA report, Dec 8, 2017 (p. 6) - joint venture",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_12-08-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Landing Partners, LLC (ALP), is a joint venture between The Peebles Corporation, MacFarlane Partners, and Claridge Properties.",
+          "page": "6"
+        },
+        {
+          "type": "official",
+          "title": "CLA report, Dec 8, 2017 (p. 8) - price and cost",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_12-08-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "Although ALP has offered to purchase the Angels Landing Site for $50 million, which exceeds the current appraised value of $45.7 million",
+          "page": "8"
+        },
+        {
+          "type": "official",
+          "title": "Report of the Chief Legislative Analyst 21-04-0303, Apr 12, 2021 (p. 1)",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_04-12-2021.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "On December 13, 2017, the City Council approved the selection of Angels Landing Partners (Developer) as the preferred developer of the Property",
+          "page": "1"
+        },
+        {
+          "type": "official",
+          "title": "CLA report, Apr 12, 2021 (p. 1) - fixed price",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_04-12-2021.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "In January 2020, the Developer requested that the City pursue an amendment to the Option Agreement to establish a fixed purchase price of $50 million.",
+          "page": "1"
+        },
+        {
+          "type": "news",
+          "title": "Josh Niland, Archinect, Mar 30, 2022",
+          "url": "https://archinect.com/news/article/150304855/l-a-gives-the-o-k-to-massive-angels-landing-high-rise-development",
+          "accessed": "2026-10-12",
+          "excerpt": "is being hailed as the largest ever by a Black-owned development firm"
+        },
+        {
+          "type": "secondary",
+          "title": "MacFarlane Partners press release, Feb 9, 2021",
+          "url": "https://www.macfarlanepartners.com/2021/02/noted-african-american-developers-advance-plans-for-angels-landing-a-twin-tower-hotel-project-in-the-heart-of-downtown-l-a/",
+          "accessed": "2026-10-12",
+          "excerpt": "their $2 billion, twin-tower luxury hotel project in downtown L.A.’s Bunker Hill neighborhood"
+        },
+        {
+          "type": "news",
+          "title": "Roger Vincent, Los Angeles Times, Mar 28, 2022 (Yahoo Finance)",
+          "url": "https://finance.yahoo.com/news/bet-downtown-los-angeles-huge-120055494.html",
+          "accessed": "2026-10-12",
+          "excerpt": "are among the country's best-known Black developers, won a competitive bidding process in 2017"
+        },
+        {
+          "type": "official",
+          "title": "Council File 14-0425-S4 record",
+          "url": "https://cityclerk.lacity.org/lacityclerkconnect/index.cfm?fa=ccfi.viewrecord&cfnumber=14-0425-S4",
+          "accessed": "2026-10-12",
+          "excerpt": "Motion (Huizar - OFarrell) 9-21-16"
+        },
+        {
+          "type": "news",
+          "title": "City News Service, FOX 11, Mar 29, 2022",
+          "url": "https://www.foxla.com/news/downtown-la-angels-landing-project-advances",
+          "accessed": "2026-10-12",
+          "excerpt": "The project will be the third-tallest in Los Angeles and the tallest in the U.S. developed by Black developers."
+        },
+        {
+          "type": "news",
+          "title": "The Real Deal, Jan 17, 2025",
+          "url": "https://therealdeal.com/la/2025/01/17/city-of-los-angeles-faces-lawsuit-for-angels-landing-project/",
+          "accessed": "2026-10-12",
+          "excerpt": "which would have been among the largest African-American-led developments in the city’s history"
+        },
+        {
+          "type": "official",
+          "title": "CLA report, Dec 8, 2017 (p. 6) - RFP scores",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_rpt_CLA_12-08-2017.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "ALP received 553 out of 600 points total and were ranked first by five out of the six review panelists.",
+          "page": "6"
+        }
+      ],
+      "sourceFile": "Initial_Site_Narrative_TBC section 7 (lead only)"
     }
   ]
 }

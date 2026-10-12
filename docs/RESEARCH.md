@@ -65,6 +65,9 @@ These rules apply to everyone who edits the file, people and Claude sessions ali
   `area:Bunker Hill`, `area:Grand Avenue` for districts. Numbered object names (`Tree_0042` …) are never used.
 - **`timeline`**: `start` and `end` in the same date forms as `date`; `end: null` for a single moment, `"present"` for
   an ongoing state (e.g. the fence since July 2013).
+- **`viewer`** (optional): one line on how the entry could appear in the site viewer (place + time), for later use.
+- **`geometry`** (optional, unbuilt schemes): machine-readable figures for drawing a building in the viewer (floors,
+  height in ft, position as the source describes it). Only numbers a source states; nothing estimated.
 - **Source `type`**: `court`, `legal` (statutes, regulations), `official` (government, agency, board), `archival`,
   `news`, `secondary` (books, encyclopaedias, blogs), `social` (posts and comments), `analysis` (our own files).
 
