@@ -59,6 +59,7 @@ const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getP
 // into the new ones as uColorMix goes 0 -> 1 over --t-out
 const COLOR_MIX = { value: 1 };
 let mixAnim = 0;
+let animAt = -1e9;   // last frame of a fade (colours, selection, Highlight people): adaptGlass waits for them to end
 function crossFade() {
   const t0 = performance.now(), dur = tms("--t-out");
   COLOR_MIX.value = 0;
@@ -66,7 +67,7 @@ function crossFade() {
   const step = (now) => {
     const k = dur ? Math.min((now - t0) / dur, 1) : 1;
     COLOR_MIX.value = k * k * (3 - 2 * k);
-    invalidate();
+    invalidate(); animAt = now;
     if (k < 1) mixAnim = requestAnimationFrame(step);
   };
   mixAnim = requestAnimationFrame(step);
@@ -96,7 +97,7 @@ function setWhiteCloud(on) {
     const dur = tms("--t-out"), k = dur ? Math.min((now - t0) / dur, 1) : 1, e = k * k * (3 - 2 * k);
     FOCUS.value = from + (to - from) * e;
     pop?.highlight(FOCUS.value);   // people grow with it
-    invalidate();
+    invalidate(); animAt = now;
     if (k < 1) focusAnim = requestAnimationFrame(step);
     else if (!on) for (const m of focusMats) if (!m.userData.alwaysTransparent) { m.transparent = false; m.needsUpdate = true; }
   };
@@ -504,6 +505,10 @@ async function loadLidar() {
   }
   const objCount = new Uint32Array(objNames.length);
   for (let i = 0; i < n; i++) objCount[obj[i]]++;
+  // per object: the chunks holding its points, so a click looks at a few chunks instead of all 9M points (user, 2026-10-12:
+  // the highlight and label came late; selecting took ~100 ms of scanning)
+  const objParts = Array.from({ length: objNames.length }, () => []), stamp = new Int32Array(objNames.length).fill(-1);
+  parts.forEach((p, j) => { for (let i = 0; i < p.n; i++) { const k = p.ob[i]; if (stamp[k] !== j) { stamp[k] = j; objParts[k].push(j); } } });
   // per object: its entity (index into ENTITIES.entities, -1 = none); per entity: its objects
   const objEntity = new Int32Array(objNames.length).fill(-1), entityObjs = new Map();
   const entIndex = new Map((ENTITIES?.entities ?? []).map((e, i) => [e, i]));
@@ -511,7 +516,7 @@ async function loadLidar() {
     const e = entityOfName.get(nm);
     if (e) { const i = entIndex.get(e); objEntity[k] = i; (entityObjs.get(i) ?? entityObjs.set(i, []).get(i)).push(k); }
   });
-  lidar = { parts, material, objNames, objLayers, objCount, objEntity, entityObjs, count: n,
+  lidar = { parts, material, objNames, objLayers, objCount, objEntity, entityObjs, objParts, litParts: new Set(), count: n,
             // by layer only (user, 2026-10-10: the Color menu is gone); ?color=height / class / intensity / object still
             // works for checking the data
             how: urlq.get("color") ?? "layer", selected: -1, selMask: new Uint8Array(objNames.length) };
@@ -526,6 +531,7 @@ async function loadLidar() {
 // only on where the camera is, never on whether it is moving, so nothing pops when a drag or zoom stops; counts also ease
 // towards their target over a few frames. A total cap protects slow machines.
 let LOD_PX = cfg.lidar.lodPixels ?? 1.2, LOD_CAP = cfg.lidar.pointCap ?? 6e6;
+let lodGap = LOD_PX;   // the on-screen gap the cap needed last frame (start of the next search)
 const LOD_EASE = 0.25;
 const LOD_KEEP = cfg.lidar.lodKeepDensity ?? 0.8, LOD_RHO0 = cfg.lidar.lodRefDensity ?? 1.0;   // see loadLidar
 const _c = new THREE.Vector3();
@@ -542,9 +548,18 @@ function updateLod() {
     chunks.push([p, p.userData.part.q, (focal / d) ** 2]);                 // returns per m2 the screen shows at a 1 px gap
   }
   const count = (px) => { let s = 0; for (const [, q, a] of chunks) s += below(q, a / (px * px)); return s; };
-  // over the cap: widen the allowed on-screen gap (binary search) instead of thinning everything, so near chunks stay complete
+  // over the cap: widen the allowed on-screen gap (binary search) instead of thinning everything, so near chunks stay complete.
+  // The search starts from the last frame's gap (the view changes little between frames): ~6 counts instead of 21, each a
+  // pass over all chunks (2.2 -> ~0.6 ms a frame, measured 2026-10-12 with 1,430 chunks), to 0.5 % of the gap.
   let px = LOD_PX;
-  if (count(px) > LOD_CAP) { let lo = LOD_PX, hi = 64; for (let it = 0; it < 20; it++) { const mid = (lo + hi) / 2; if (count(mid) > LOD_CAP) lo = mid; else hi = mid; } px = hi; }
+  if (count(px) > LOD_CAP) {
+    let lo = Math.max(LOD_PX, lodGap / 1.05), hi = Math.max(lo * 1.05, lodGap * 1.05);
+    while (lo > LOD_PX && count(lo) <= LOD_CAP) { hi = lo; lo = Math.max(LOD_PX, lo / 1.25); }
+    while (hi < 64 && count(hi) > LOD_CAP) { lo = hi; hi = Math.min(64, hi * 1.25); }
+    while (hi / lo > 1.005) { const mid = Math.sqrt(lo * hi); if (count(mid) > LOD_CAP) lo = mid; else hi = mid; }
+    px = hi;
+  }
+  lodGap = px;
   let moving = false;
   for (const [p, q, a] of chunks) {
     const n = q.length, target = Math.max(1, below(q, a / (px * px)));
@@ -607,28 +622,39 @@ function paintCloud(how = lidar.how) {
   invalidate();
 }
 // the selection lights the clicked object, or all objects of its entity (a whole building); shift + click adds.
-// Only the marks of points whose state changes are written; the highlight eases in / out over --t-out.
+// Only the chunks holding the new or the last selection are visited, and only the marks of points whose state changes are
+// written. The highlight eases in / out with the label: over --t-in on the CSS "ease" curve (user, 2026-10-12: in step
+// with the label; it used --t-out with a slow-starting curve and lagged behind).
+const cssEase = (x) => {   // cubic-bezier(.25, .1, .25, 1): solve the curve's x(t) = x by bisection, return y(t)
+  const bz = (t, p1, p2) => 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t;
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 20; i++) { const m = (lo + hi) / 2; if (bz(m, 0.25, 0.25) < x) lo = m; else hi = m; }
+  return bz((lo + hi) / 2, 0.1, 1);
+};
 function paintSelection() {
   if (!lidar) return;
-  const mask = lidar.selMask;
+  const mask = lidar.selMask, touched = new Set(lidar.litParts);
   mask.fill(0);
-  for (const s of selection) for (const k of s.objs) mask[k] = 1;
-  for (const pts of lidarGroup.children) {
-    const part = pts.userData.part, a = pts.geometry.attributes.aSel, v = a.array, ob = part.ob;
-    let changed = false;
+  for (const s of selection) for (const k of s.objs) { mask[k] = 1; for (const j of lidar.objParts[k]) touched.add(j); }
+  lidar.litParts.clear();
+  for (const j of touched) {
+    const pts = lidarGroup.children[j], part = pts.userData.part, a = pts.geometry.attributes.aSel, v = a.array, ob = part.ob;
+    let changed = false, lit = false;
     for (let i = 0; i < part.n; i++) {
       const was = v[i] >= 2, is = mask[ob[i]] === 1, nv = is ? (was ? 3 : 2) : was ? 1 : 0;
       if (nv !== v[i]) { v[i] = nv; changed = true; }
+      if (nv) lit = true;
     }
     if (changed) a.needsUpdate = true;
+    if (lit) lidar.litParts.add(j);
   }
-  const t0 = performance.now(), dur = tms("--t-out");
+  const t0 = performance.now(), dur = tms("--t-in");
   SEL_K.value = 0;
   cancelAnimationFrame(selAnim);
   const step = (now) => {
     const k = dur ? Math.min((now - t0) / dur, 1) : 1;
-    SEL_K.value = k * k * (3 - 2 * k);
-    invalidate();
+    SEL_K.value = cssEase(k);
+    invalidate(); animAt = now;
     if (k < 1) selAnim = requestAnimationFrame(step);
   };
   selAnim = requestAnimationFrame(step);
@@ -791,23 +817,24 @@ renderViews();
 // ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------
 let pop = null;
 const PICK_PX = 6;   // a click or hover this close to a person (screen px) means the person
+const PICK_LIDAR_PX = 5;   // a click this close to a LiDAR point (screen px) picks it (pickLidar)
 // hover with Alt held: the person an Alt + click would select is drawn bigger and the cursor turns into a pointer
 let hoverAt = null;
 renderer.domElement.addEventListener("pointermove", (e) => {
   if (!pop?.visible || e.buttons) return;
   if (!hoverAt) requestAnimationFrame(() => {
-    const i = hoverAt.alt ? pop.nearest(hoverAt.x, hoverAt.y, PICK_PX) : -1;
+    const i = hoverAt.alt ? pop.nearest(hoverAt.x, hoverAt.y, PICK_PX, hoverAt.shift) : -1;
     pop.hover(i);
     renderer.domElement.style.cursor = i >= 0 ? "pointer" : "";
     hoverAt = null; invalidate();
   });
-  hoverAt = { x: e.clientX, y: e.clientY, alt: e.altKey };
+  hoverAt = { x: e.clientX, y: e.clientY, alt: e.altKey, shift: e.shiftKey };
 });
 // pressing / releasing Alt with the mouse still: show / hide the marker at once
 for (const ev of ["keydown", "keyup"]) addEventListener(ev, (e) => {
   if (e.key !== "Alt" || !pop?.visible || !lastHover) return;
   e.preventDefault();
-  const i = ev === "keydown" ? pop.nearest(lastHover.x, lastHover.y, PICK_PX) : -1;
+  const i = ev === "keydown" ? pop.nearest(lastHover.x, lastHover.y, PICK_PX, e.shiftKey) : -1;
   pop.hover(i); renderer.domElement.style.cursor = i >= 0 ? "pointer" : ""; invalidate();
 });
 let lastHover = null;
@@ -819,7 +846,8 @@ $("#popOn").onchange = async (e) => {
     e.target.disabled = true;
     status("Loading population…");
     const { createPopulation } = await import("./population.js");
-    pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag });
+    pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag,
+      onDrop: (i) => { popSelecting = true; deselect(`pop:${i}`); popSelecting = false; } });   // Shift + Alt + click took i out
     status("");
     e.target.disabled = false;
   }
@@ -832,9 +860,10 @@ $("#popOn").onchange = async (e) => {
 $("#popWhite").onchange = (e) => setWhiteCloud(e.target.checked && $("#popOn").checked);
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
-// a clicked person's modeled day (population.js story()) as a floating tag that follows them
+// a clicked person's modeled day (population.js story()) as a floating tag that follows them. how: "only" (Alt + click),
+// "add" (Shift + Alt + click: one more label), "refresh" (same person, new day: the label's text only)
 let popSelecting = false;
-function personTag(html, pos) {
+function personTag(html, pos, i, how = "only") {
   const d = document.createElement("div"); d.innerHTML = html;
   const h2 = d.querySelector("h2"), num = h2?.querySelector("span")?.textContent || "";
   const title = (h2?.firstChild?.textContent || "Person").trim();
@@ -845,8 +874,10 @@ function personTag(html, pos) {
     const [time, ...rest] = x.textContent.split(" "); rows.push([time, rest.join(" ")]);
   }
   const note = d.querySelector(".note")?.textContent || "";
+  const key = `pop:${i}`, build = () => tagHTML(`Modeled person ${num}`, title, day, rows, note);
+  if (how === "refresh") { const s = selection.find((x) => x.key === key); if (s) { s.build = build; fillTag(s); invalidate(); } return; }
   popSelecting = true;
-  select(`pop:${num}`, { centre: pos, topY: pos.y, height: 0 }, () => tagHTML(`Modeled person ${num}`, title, day, rows, note), [], false);
+  select(key, { centre: pos, topY: pos.y, height: 0 }, build, [], how === "add");
   popSelecting = false;
 }
 
@@ -859,7 +890,9 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
   ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
   // Alt + click picks the person within PICK_PX on screen (user, 2026-10-09: a plain click is for buildings / points)
-  if (pop?.visible && e.altKey) { if (pop.pickIndex(pop.nearest(e.clientX, e.clientY, PICK_PX))) return; }
+  // Shift + Alt + click adds the person (any person, also the faded ones) or takes them out (user, 2026-10-12)
+  // (no one near: nothing happens, rather than adding the ground or a building to the selection)
+  if (pop?.visible && e.altKey) { if (pop.pickIndex(pop.nearest(e.clientX, e.clientY, PICK_PX, e.shiftKey), e.shiftKey) || e.shiftKey) return; }
   const visible = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
   const add = e.shiftKey;     // shift + click: add to / take out of the selection
   const layerOf = (o) => { for (; o; o = o.parent) if (o.userData.layer) return o.userData.layer; };
@@ -875,9 +908,15 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   select(`m:${node.uuid}`, a, objectTag(node, hit.point, null), [], add);
 
   // LiDAR: the clicked point's object label -> its entity or object; highlight all its points
+  // The click takes the nearest drawn point within PICK_LIDAR_PX on screen (at least 0.6 m), so a click between the
+  // points of a thinned, far building still finds it (user, 2026-10-12: clicks on buildings were often missed; the old
+  // fixed 0.6 m is less than a pixel gap seen from far away). Where a facade has no returns (glass) the click still
+  // goes through to what is behind.
   function pickLidar() {
-    ray.params.Points.threshold = 0.6;
-    const hit = ray.intersectObjects(lidarGroup.children.filter((p) => p.visible), false)[0];
+    const perPx = (d) => (2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) / innerHeight;
+    const tol = (d) => Math.max(0.6, perPx(d) * PICK_LIDAR_PX);
+    ray.params.Points.threshold = tol(camera.position.distanceTo(controls.target) * 2);
+    const hit = ray.intersectObjects(lidarGroup.children.filter((p) => p.visible), false).find((h) => h.distanceToRay <= tol(h.distance));
     if (!hit) return add ? undefined : hideInfo();
     const id = hit.object.userData.part.ob[hit.index], name = lidar.objNames[id];
     const node = model.getObjectByName(name) || { name: name === "_other" ? "Unassigned LiDAR points" : name,
@@ -913,14 +952,16 @@ let detailsOpen = false;   // Details start closed on every new label (user, 202
 // centre, top, height above ground and plan radius of a set of LiDAR objects
 function anchorOf(objSet) {
   let maxY = -1e9, minY = 1e9, sx = 0, sz = 0, n = 0;
-  for (const p of lidar.parts) for (let i = 0; i < p.n; i++) if (objSet.has(p.ob[i])) {
+  const js = new Set(); for (const k of objSet) for (const j of lidar.objParts[k]) js.add(j);   // only the chunks holding them
+  const ps = [...js].map((j) => lidar.parts[j]);
+  for (const p of ps) for (let i = 0; i < p.n; i++) if (objSet.has(p.ob[i])) {
     const y = p.pos[3 * i + 1]; if (y > maxY) maxY = y; if (y < minY) minY = y;
     sx += p.pos[3 * i]; sz += p.pos[3 * i + 2]; n++;
   }
   if (!n) return null;
   // height = height above ground of the highest points (LiDAR hag): right on slopes too (Angels Flight)
   let hagTop = -1e9;
-  for (const p of lidar.parts) if (p.hag) for (let i = 0; i < p.n; i++) if (objSet.has(p.ob[i]) && p.pos[3 * i + 1] > maxY - 1.5) hagTop = Math.max(hagTop, p.hag[i] * 0.1);
+  for (const p of ps) if (p.hag) for (let i = 0; i < p.n; i++) if (objSet.has(p.ob[i]) && p.pos[3 * i + 1] > maxY - 1.5) hagTop = Math.max(hagTop, p.hag[i] * 0.1);
   const height = hagTop > -1e8 ? hagTop : maxY - minY;
   return { centre: new THREE.Vector3(sx / n, (Math.max(minY, maxY - height) + maxY) / 2, sz / n), topY: maxY, height };
 }
@@ -968,7 +1009,7 @@ function fadeAway(s) {
 function deselect(key) {
   const i = selection.findIndex((s) => s.key === key); if (i < 0) return;
   const [s] = selection.splice(i, 1); fadeAway(s);
-  if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection();
+  if (s.key.startsWith("pop:") && !popSelecting) pop?.deselectPerson(+s.key.slice(4));
   if (lidar && mode === "cloud") paintSelection();
   invalidate();
 }
@@ -1160,8 +1201,10 @@ const glassEls = ["#ui", "#info", "#hint"].map((q) => $(q));
 let glassBuf = new Uint8Array(0);
 function adaptGlass(now) {
   // reading pixels back stalls the GPU pipeline (100+ ms frames during a view change), so only when the camera is still
-  // ... and not while the population plays (the picture changes every frame; checked again once it stops)
-  if (tween || pop?.state.playing || now - lastMove < GLASS_SETTLE || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
+  // ... and not while the population plays (the picture changes every frame; checked again once it stops), nor during a
+  // fade (user, 2026-10-12: turning People off stuttered twice: two 100-180 ms read-backs in the 0.5 s fade-out)
+  if (tween || pop?.state.playing || pop?.state.fading || now - animAt < GLASS_SETTLE || now - lastMove < GLASS_SETTLE
+      || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
   glassAt = now; glassPending = false;
   const gl = renderer.getContext(), cv = renderer.domElement, sx = cv.width / cv.clientWidth, sy = cv.height / cv.clientHeight;
   for (const el of glassEls) {
