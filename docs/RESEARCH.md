@@ -69,7 +69,8 @@ These rules apply to everyone who edits the file, people and Claude sessions ali
 - **`geometry`** (optional, unbuilt schemes): machine-readable figures for drawing a building in the viewer (floors,
   height in ft, position as the source describes it). Only numbers a source states; nothing estimated.
 - **Source `type`**: `court`, `legal` (statutes, regulations), `official` (government, agency, board), `archival`,
-  `news`, `secondary` (books, encyclopaedias, blogs), `social` (posts and comments), `analysis` (our own files).
+  `news`, `press` (press releases by companies or groups: first-party), `secondary` (books, encyclopaedias, blogs),
+  `social` (posts and comments), `analysis` (our own files).
 
 ## 3. Media entries (topic `Media`)
 

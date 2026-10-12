@@ -8381,6 +8381,2104 @@
         }
       ],
       "sourceFile": "Initial_Site_Narrative_TBC section 7 (lead only)"
+    },
+    {
+      "id": "media-p01",
+      "title": "CRA on building an interim park on Y-1",
+      "summary": "A CRA project manager said the agency judged an interim public green space on the parcel worth paying for until it was developed.",
+      "details": [
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2004-09-06",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2004-09-06",
+        "end": null
+      },
+      "media": {
+        "quote": "We've decided it's worth the public investment to give the community a usable, efficient public green space until the parcel is developed",
+        "translation": null,
+        "speaker": "Kaveh Samsamy",
+        "role": "CRA project manager",
+        "venue": "Los Angeles Downtown News, \"CRA Plans Park Near Angels Flight\"",
+        "said": "2004-09-06",
+        "subject": "Bunker Hill history"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "CRA Plans Park Near Angels Flight (Los Angeles Downtown News, Sep 6, 2004)",
+          "url": "https://www.ladowntownnews.com/news/cra-plans-park-near-angels-flight/article_f1e0a4cb-9665-5dcb-bc14-4e599fad6a74.html",
+          "accessed": "2026-10-12",
+          "excerpt": "We've decided it's worth the public investment to give the community a usable, efficient public green space until the parcel is developed"
+        }
+      ]
+    },
+    {
+      "id": "media-p02",
+      "title": "CRA on using goats to clear Angels Knoll",
+      "summary": "The CRA chief said hiring goats to clear brush on Angels Knoll was cheaper than usual clearance and environmentally friendly.",
+      "details": [
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2008-09-15",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2008-09-15",
+        "end": null
+      },
+      "media": {
+        "quote": "This is going to cost us less than what we typically would pay for clearance of brush and it's environmentally friendly",
+        "translation": null,
+        "speaker": "Cecilia Estolano",
+        "role": "CEO, Community Redevelopment Agency (CRA)",
+        "venue": "Los Angeles Downtown News, \"Amazing Grazing\"",
+        "said": "2008-09-15",
+        "subject": "Bunker Hill history"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Amazing Grazing (Los Angeles Downtown News, Sep 15, 2008)",
+          "url": "https://www.ladowntownnews.com/news/amazing-grazing/article_87f3c3cc-f569-51fb-8ae9-50b97cf1c0c6.html",
+          "accessed": "2026-10-12",
+          "excerpt": "This is going to cost us less than what we typically would pay for clearance of brush and it's environmentally friendly"
+        }
+      ]
+    },
+    {
+      "id": "media-p03",
+      "title": "Successor agency explains the 2013 fence",
+      "summary": "The CRA successor agency said in a statement that the fence would protect the property's value until its sale under the state-approved property plan.",
+      "details": [
+        "The article attributes the statement to the agency, with Padilla as spokesman; the full statement document was not opened (reported in the article)."
+      ],
+      "topic": "Media",
+      "date": "2013-08-09",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-08-09",
+        "end": null
+      },
+      "media": {
+        "quote": "The fencing will enable the asset’s value to be maintained pending the property’s eventual disposition under a State Department of Finance approved Long Range Property Management Plan",
+        "translation": null,
+        "speaker": "Ackley Padilla (agency statement)",
+        "role": "spokesman, CRA successor agency",
+        "venue": "Los Angeles Downtown News, \"CRA Fences Off Plaza to Curb Loitering\"",
+        "said": "2013-08-09",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "CRA Fences Off Plaza to Curb Loitering (Los Angeles Downtown News, Aug 9, 2013)",
+          "url": "https://www.ladowntownnews.com/news/cra-fences-off-plaza-to-curb-loitering/article_8d52f172-0112-11e3-8e6d-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The fencing will enable the asset’s value to be maintained pending the property’s eventual disposition under a State Department of Finance approved Long Range Property Management Plan"
+        }
+      ]
+    },
+    {
+      "id": "media-p04",
+      "title": "Grand Central Market owner supports the fence",
+      "summary": "A neighbouring business owner said the fence had solved a problem at the plaza, while describing her outreach to homeless service providers.",
+      "details": [],
+      "topic": "Media",
+      "date": "2013-08-09",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1",
+        "entity:E013"
+      ],
+      "timeline": {
+        "start": "2013-08-09",
+        "end": null
+      },
+      "media": {
+        "quote": "It did solve a problem",
+        "translation": null,
+        "speaker": "Adele Yellin",
+        "role": "owner, Grand Central Market",
+        "venue": "Los Angeles Downtown News, \"CRA Fences Off Plaza to Curb Loitering\"",
+        "said": "2013-08-09",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "CRA Fences Off Plaza to Curb Loitering (Los Angeles Downtown News, Aug 9, 2013)",
+          "url": "https://www.ladowntownnews.com/news/cra-fences-off-plaza-to-curb-loitering/article_8d52f172-0112-11e3-8e6d-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "It did solve a problem"
+        }
+      ]
+    },
+    {
+      "id": "media-p05",
+      "title": "Bunker Hill worker questions the fence",
+      "summary": "A worker who uses the steps by Angels Flight said the people in the plaza were not causing harm and that the fence was ugly.",
+      "details": [],
+      "topic": "Media",
+      "date": "2013-08-09",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-08-09",
+        "end": null
+      },
+      "media": {
+        "quote": "A lot of homeless people were there every morning, but they weren’t hurting anyone",
+        "translation": null,
+        "speaker": "Valeria Villa",
+        "role": "Bunker Hill worker (as named in the article)",
+        "venue": "Los Angeles Downtown News, \"CRA Fences Off Plaza to Curb Loitering\"",
+        "said": "2013-08-09",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "CRA Fences Off Plaza to Curb Loitering (Los Angeles Downtown News, Aug 9, 2013)",
+          "url": "https://www.ladowntownnews.com/news/cra-fences-off-plaza-to-curb-loitering/article_8d52f172-0112-11e3-8e6d-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "A lot of homeless people were there every morning, but they weren’t hurting anyone"
+        }
+      ]
+    },
+    {
+      "id": "media-p06",
+      "title": "Bunker Hill worker on the fenced plaza",
+      "summary": "A second worker said the plaza was now clean but no longer usable.",
+      "details": [],
+      "topic": "Media",
+      "date": "2013-08-09",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-08-09",
+        "end": null
+      },
+      "media": {
+        "quote": "Yes, now it’s clean, but you can’t go inside",
+        "translation": null,
+        "speaker": "Ryan Guiboa",
+        "role": "Bunker Hill worker (as named in the article)",
+        "venue": "Los Angeles Downtown News, \"CRA Fences Off Plaza to Curb Loitering\"",
+        "said": "2013-08-09",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "CRA Fences Off Plaza to Curb Loitering (Los Angeles Downtown News, Aug 9, 2013)",
+          "url": "https://www.ladowntownnews.com/news/cra-fences-off-plaza-to-curb-loitering/article_8d52f172-0112-11e3-8e6d-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Yes, now it’s clean, but you can’t go inside"
+        }
+      ]
+    },
+    {
+      "id": "media-p07",
+      "title": "Downtown News editorial condemns the fence",
+      "summary": "The paper's editorial called the fencing of Angels Knoll and the Fourth and Hill plaza a badly judged decision that cut off public space.",
+      "details": [
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2013-08-19",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-08-19",
+        "end": null
+      },
+      "media": {
+        "quote": "one of the clumsiest and most foolhardy moves in years: the erecting of chain link fences that cut off public space",
+        "translation": null,
+        "speaker": "Los Angeles Downtown News editorial board",
+        "role": "newspaper editorial",
+        "venue": "\"Fencing Fourth and Hill and Angels Knoll Was a Dumb Decision\"",
+        "said": "2013-08-19",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Fencing Fourth and Hill and Angels Knoll Was a Dumb Decision (Los Angeles Downtown News editorial, Aug 19, 2013)",
+          "url": "https://www.ladowntownnews.com/opinion/fencing-fourth-and-hill-and-angels-knoll-was-a-dumb-decision/article_cb0a66c4-06c3-11e3-bc14-0019bb2963f4.html",
+          "accessed": "2026-10-12",
+          "excerpt": "one of the clumsiest and most foolhardy moves in years: the erecting of chain link fences that cut off public space"
+        }
+      ]
+    },
+    {
+      "id": "media-p08",
+      "title": "Petition organizer on campaigning to reopen the park",
+      "summary": "The organizer of a petition to reopen Angels Knoll said the petition and a Facebook page were meant to show decision makers the support for reopening.",
+      "details": [
+        "Quote is from an email to the paper, as the article reports; it is shortened at the end (the sentence continues). The article also quotes the petition calling the site a \"beautiful and beloved park in the heart of urban Downtown.\"",
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2013-09-17",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-09-17",
+        "end": null
+      },
+      "media": {
+        "quote": "I thought that a petition and a Facebook page would be a good way to show the decision makers behind the closure",
+        "translation": null,
+        "speaker": "Chris Yamashita",
+        "role": "petition organizer (as named in the article)",
+        "venue": "Los Angeles Downtown News, \"Petition Aims to Reopen Angels Knoll\" (email to the paper)",
+        "said": "2013-09-17",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Petition Aims to Reopen Angels Knoll (Los Angeles Downtown News, Sep 17, 2013)",
+          "url": "https://www.ladowntownnews.com/news/petition-aims-to-reopen-angels-knoll/article_baecc20c-1cc4-11e3-8386-001a4bcf887a.html",
+          "accessed": "2026-10-12",
+          "excerpt": "I thought that a petition and a Facebook page would be a good way to show the decision makers behind the closure"
+        }
+      ]
+    },
+    {
+      "id": "media-p09",
+      "title": "Huizar on the condition of the closed site",
+      "summary": "The district councilmember said public frustration with the state of the fenced property was justified and that the city was asking the state to maintain it better.",
+      "details": [],
+      "topic": "Media",
+      "date": "2014-09-29",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2014-09-29",
+        "end": null
+      },
+      "media": {
+        "quote": "The public is right to be upset with the condition of this property",
+        "translation": null,
+        "speaker": "José Huizar",
+        "role": "Los Angeles City Councilmember, CD14",
+        "venue": "Los Angeles Downtown News, \"Downtowners Displeased as Closure of Park and Plaza Passes One-Year Mark\"",
+        "said": "2014-09-29",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Downtowners Displeased as Closure of Park and Plaza Passes One-Year Mark (Los Angeles Downtown News, Sep 29, 2014)",
+          "url": "https://www.ladowntownnews.com/news/downtowners-displeased-as-closure-of-park-and-plaza-passes-one-year-mark/article_658bc416-45c2-11e4-ba3b-a758fa060392.html",
+          "accessed": "2026-10-12",
+          "excerpt": "The public is right to be upset with the condition of this property"
+        }
+      ]
+    },
+    {
+      "id": "media-p10",
+      "title": "City staff on the cost of keeping a park",
+      "summary": "A city administrative official said the land value pointed to a large development and that keeping it a park would need subsidy the city did not have.",
+      "details": [],
+      "topic": "Media",
+      "date": "2014-09-29",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2014-09-29",
+        "end": null
+      },
+      "media": {
+        "quote": "It would probably have to be subsidized with money we don’t have if it’s to remain a park.",
+        "translation": null,
+        "speaker": "Josh Rohmer",
+        "role": "principal project coordinator, City Administrative Office",
+        "venue": "Los Angeles Downtown News, \"Downtowners Displeased as Closure of Park and Plaza Passes One-Year Mark\"",
+        "said": "2014-09-29",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Downtowners Displeased as Closure of Park and Plaza Passes One-Year Mark (Los Angeles Downtown News, Sep 29, 2014)",
+          "url": "https://www.ladowntownnews.com/news/downtowners-displeased-as-closure-of-park-and-plaza-passes-one-year-mark/article_658bc416-45c2-11e4-ba3b-a758fa060392.html",
+          "accessed": "2026-10-12",
+          "excerpt": "It would probably have to be subsidized with money we don’t have if it’s to remain a park."
+        }
+      ]
+    },
+    {
+      "id": "media-p11",
+      "title": "Angelus Plaza staff hope some green space stays",
+      "summary": "A staff member of the neighbouring senior housing complex said residents valued the park and hoped at least part of it would remain green.",
+      "details": [],
+      "topic": "Media",
+      "date": "2014-09-29",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1",
+        "entity:E004"
+      ],
+      "timeline": {
+        "start": "2014-09-29",
+        "end": null
+      },
+      "media": {
+        "quote": "I would like to see that green space, or at least some of it remain.",
+        "translation": null,
+        "speaker": "Jeffrey Winston",
+        "role": "community relations coordinator, Angelus Plaza senior housing",
+        "venue": "Los Angeles Downtown News, \"Downtowners Displeased as Closure of Park and Plaza Passes One-Year Mark\"",
+        "said": "2014-09-29",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Downtowners Displeased as Closure of Park and Plaza Passes One-Year Mark (Los Angeles Downtown News, Sep 29, 2014)",
+          "url": "https://www.ladowntownnews.com/news/downtowners-displeased-as-closure-of-park-and-plaza-passes-one-year-mark/article_658bc416-45c2-11e4-ba3b-a758fa060392.html",
+          "accessed": "2026-10-12",
+          "excerpt": "I would like to see that green space, or at least some of it remain."
+        }
+      ]
+    },
+    {
+      "id": "media-p12",
+      "title": "Business group head weighs reopening against cost",
+      "summary": "The head of the Downtown BID and Central City Association said green space was needed but reopening a future development site could be a financial burden.",
+      "details": [
+        "\"[reopening]\" is the newspaper's bracketed insertion; quote shortened at the end (it continues \"on the city or the BID\")."
+      ],
+      "topic": "Media",
+      "date": "2015-04-07",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2015-04-07",
+        "end": null
+      },
+      "media": {
+        "quote": "Obviously we need as much green space as we can get, but this is a future development site and [reopening] it may be a financial burden",
+        "translation": null,
+        "speaker": "Carol Schatz",
+        "role": "president, Downtown Center BID and Central City Association",
+        "venue": "Los Angeles Downtown News, \"Public Plaza and Park Likely to Remain Shuttered for Years\"",
+        "said": "2015-04-07",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Public Plaza and Park Likely to Remain Shuttered for Years (Los Angeles Downtown News, Apr 7, 2015)",
+          "url": "https://www.ladowntownnews.com/news/public-plaza-and-park-likely-to-remain-shuttered-for-years/article_ad7eb0c6-dc8a-11e4-b0cc-f75ab4ffac12.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Obviously we need as much green space as we can get, but this is a future development site and [reopening] it may be a financial burden"
+        }
+      ]
+    },
+    {
+      "id": "media-p13",
+      "title": "Huizar on what should be built on Y-1",
+      "summary": "The councilmember wrote that a mixed-use high-rise linking Hill Street and California Plaza, with some public open or green space, would be best.",
+      "details": [
+        "Written in an email, as the article reports."
+      ],
+      "topic": "Media",
+      "date": "2015-04-07",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2015-04-07",
+        "end": null
+      },
+      "media": {
+        "quote": "some sort of mixed-use high-rise development that provides linkage between Hill Street and California Plaza, as well as some public open or green space component, would be optimum",
+        "translation": null,
+        "speaker": "José Huizar",
+        "role": "Los Angeles City Councilmember, CD14",
+        "venue": "Los Angeles Downtown News, \"Public Plaza and Park Likely to Remain Shuttered for Years\" (email to the paper)",
+        "said": "2015-04-07",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Public Plaza and Park Likely to Remain Shuttered for Years (Los Angeles Downtown News, Apr 7, 2015)",
+          "url": "https://www.ladowntownnews.com/news/public-plaza-and-park-likely-to-remain-shuttered-for-years/article_ad7eb0c6-dc8a-11e4-b0cc-f75ab4ffac12.html",
+          "accessed": "2026-10-12",
+          "excerpt": "some sort of mixed-use high-rise development that provides linkage between Hill Street and California Plaza, as well as some public open or green space component, would be optimum"
+        }
+      ]
+    },
+    {
+      "id": "media-p14",
+      "title": "Huizar motion to solicit developers for Y-1",
+      "summary": "Huizar's motion called development of Parcel Y-1 a major economic opportunity and asked city staff to issue a request for proposals.",
+      "details": [
+        "Quote begins mid-sentence (\"Development of the Bunker Hill Parcel Y-1 presents...\"). The PDF text layer reads \"Y-l\" (OCR), so the quote starts after that word.",
+        "Date from the clerk file name and stamp; Urbanize LA (Sep 22, 2016) reported the motion was submitted \"yesterday\".",
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2016-09-21",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2016-09-21",
+        "end": null
+      },
+      "media": {
+        "quote": "presents a major opportunity for the City to maximize the economic growth and potential of Downtown Los Angeles and beyond",
+        "translation": null,
+        "speaker": "José Huizar",
+        "role": "Los Angeles City Councilmember, CD14 (mover)",
+        "venue": "City Council motion, Council File 14-0425-S4",
+        "said": "2016-09-21",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "official",
+          "title": "Motion, Council File 14-0425-S4, presented by Councilmember Jose Huizar (Sep 21, 2016)",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-s4_mot_09-21-2016.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "presents a major opportunity for the City to maximize the economic growth and potential of Downtown Los Angeles and beyond"
+        }
+      ]
+    },
+    {
+      "id": "media-p15",
+      "title": "Magazine on the fenced park",
+      "summary": "A magazine article described the fenced-off park as an unreachable patch of green amid concrete.",
+      "details": [
+        "Date from page metadata (published 2017-08-01 03:49 UTC, i.e. evening of Jul 31 in Los Angeles); byline not confirmed in the saved page text."
+      ],
+      "topic": "Media",
+      "date": "2017-08-01",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2017-08-01",
+        "end": null
+      },
+      "media": {
+        "quote": "a tantalizing and out-of-reach spot of green in a vast expanse of concrete",
+        "translation": null,
+        "speaker": "Los Angeles Magazine (article text)",
+        "role": "magazine",
+        "venue": "\"Angels Flight Deserves a More Uplifting Home\"",
+        "said": "2017-08-01",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Angels Flight Deserves a More Uplifting Home (Los Angeles Magazine, 2017)",
+          "url": "https://lamag.com/urbandevelopment/angels-flight-area/",
+          "accessed": "2026-10-12",
+          "excerpt": "a tantalizing and out-of-reach spot of green in a vast expanse of concrete"
+        }
+      ]
+    },
+    {
+      "id": "media-p16",
+      "title": "Downtown News editorial on the closed park as Angels Flight reopens",
+      "summary": "The paper's editorial contrasted the reopened funicular with four years of the park being closed.",
+      "details": [],
+      "topic": "Media",
+      "date": "2017-09-11",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1",
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "2017-09-11",
+        "end": null
+      },
+      "media": {
+        "quote": "For four years there has been no access to one of the few green spaces in Downtown Los Angeles.",
+        "translation": null,
+        "speaker": "Los Angeles Downtown News editorial board",
+        "role": "newspaper editorial",
+        "venue": "\"An Open Railway, A Closed Park\"",
+        "said": "2017-09-11",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "An Open Railway, A Closed Park (Los Angeles Downtown News editorial, Sep 11, 2017)",
+          "url": "https://www.ladowntownnews.com/opinion/an-open-railway-a-closed-park/article_58d4b4f4-94e7-11e7-b981-27be6d9d4a98.html",
+          "accessed": "2026-10-12",
+          "excerpt": "For four years there has been no access to one of the few green spaces in Downtown Los Angeles."
+        }
+      ]
+    },
+    {
+      "id": "media-p17",
+      "title": "Peebles on winning the Y-1 development rights",
+      "summary": "On the selection of his team, Peebles said the project was a chance to transform the skyline and widen access to career and business opportunities.",
+      "details": [
+        "First-party company press release; quote shortened at the end (the sentence continues)."
+      ],
+      "topic": "Media",
+      "date": "2017-12-21",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2017-12-21",
+        "end": null
+      },
+      "media": {
+        "quote": "Our team is inspired by the great opportunity to transform the Los Angeles skyline with our iconic building",
+        "translation": null,
+        "speaker": "Don Peebles",
+        "role": "chairman and CEO, Peebles Corporation (Angels Landing Partners)",
+        "venue": "MacFarlane Partners press release on the city's selection of Angels Landing Partners",
+        "said": "2017-12-21",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "press",
+          "title": "Minority group to build tallest residential building in Western U.S. as part of a $1.2 billion development in DTLA (MacFarlane Partners press release, Dec 21, 2017)",
+          "url": "https://www.macfarlanepartners.com/2017/12/minority-group-to-build-tallest-residential-building-in-western-u-s-as-part-of-a-1-2-billion-development-in-dtla/",
+          "accessed": "2026-10-12",
+          "excerpt": "Our team is inspired by the great opportunity to transform the Los Angeles skyline with our iconic building"
+        }
+      ]
+    },
+    {
+      "id": "media-p18",
+      "title": "MacFarlane on the selection and his Downtown record",
+      "summary": "MacFarlane thanked the city and cited his firm's Downtown investments and its working relationship with Councilmember Huizar.",
+      "details": [
+        "First-party company press release."
+      ],
+      "topic": "Media",
+      "date": "2017-12-21",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2017-12-21",
+        "end": null
+      },
+      "media": {
+        "quote": "Having invested in properties in downtown Los Angeles for the past 15 years, we are firm believers in DTLA",
+        "translation": null,
+        "speaker": "Victor MacFarlane",
+        "role": "chairman and CEO, MacFarlane Partners (Angels Landing Partners)",
+        "venue": "MacFarlane Partners press release on the city's selection of Angels Landing Partners",
+        "said": "2017-12-21",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "press",
+          "title": "Minority group to build tallest residential building in Western U.S. as part of a $1.2 billion development in DTLA (MacFarlane Partners press release, Dec 21, 2017)",
+          "url": "https://www.macfarlanepartners.com/2017/12/minority-group-to-build-tallest-residential-building-in-western-u-s-as-part-of-a-1-2-billion-development-in-dtla/",
+          "accessed": "2026-10-12",
+          "excerpt": "Having invested in properties in downtown Los Angeles for the past 15 years, we are firm believers in DTLA"
+        }
+      ]
+    },
+    {
+      "id": "media-p19",
+      "title": "Huizar on what the city wants from Angels Landing",
+      "summary": "Huizar said the city would oversee the project to make sure it included Downtown needs such as hotels, schools and open space.",
+      "details": [
+        "Second-hand: a statement reported by Bisnow; the original statement was not found. Quote begins mid-sentence (\"By overseeing the development of Angel’s Landing, the City of Los Angeles is doing all we can to maximize this development and...\")."
+      ],
+      "topic": "Media",
+      "date": "2018-01-08",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2018-01-08",
+        "end": null
+      },
+      "media": {
+        "quote": "make sure some of Downtown Los Angeles’ greatest needs, such as hotels, schools and open space, are included in this project",
+        "translation": null,
+        "speaker": "José Huizar",
+        "role": "Los Angeles City Councilmember, CD14",
+        "venue": "Bisnow, \"Joint Venture To Develop Angels Landing Site In Los Angeles\" (statement)",
+        "said": "2018-01-08",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Joint Venture To Develop Angels Landing Site In Los Angeles (Bisnow, Jan 8, 2018)",
+          "url": "https://www.bisnow.com/news/los-angeles/mixed-use/in-heaven-joint-venture-wins-right-to-develop-angels-flight-site-in-los-angeles-83323",
+          "accessed": "2026-10-12",
+          "excerpt": "make sure some of Downtown Los Angeles’ greatest needs, such as hotels, schools and open space, are included in this project"
+        }
+      ]
+    },
+    {
+      "id": "media-p20",
+      "title": "Central City Association supports Angels Landing",
+      "summary": "The downtown business association backed the project for its housing, hotels, jobs and links between Bunker Hill and the Historic Core.",
+      "details": [
+        "Letter date not shown in the Final EIR text; the Final EIR is dated May 2021. The letter also says CCA supports the project \"wholeheartedly\".",
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2021",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2021",
+        "end": null
+      },
+      "media": {
+        "quote": "It will serve as a capstone for Bunker Hill and connect it to the Historic Core community with a series of functional pedestrian linkages",
+        "translation": null,
+        "speaker": "Central City Association of Los Angeles (Jessica Lall, President & CEO; Michael Shilstone, Director of Economic Development)",
+        "role": "business advocacy group",
+        "venue": "Comment Letter No. 5 on the Angels Landing Draft EIR, reproduced in the Final EIR",
+        "said": "2021",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Landing Final EIR (May 2021), II. Responses to Comments (CEQAnet SCH 2019039164)",
+          "url": "https://files.ceqanet.opr.ca.gov/250151-4/attachment/UfTy7uTHYdp6qDItmQwqUux7-zYGEosw2v1Q8eU0HiLTRu6Ng5tZ-r3NiLMkzaaOxoFzbZvfaj9owRTn0",
+          "accessed": "2026-10-12",
+          "excerpt": "It will serve as a capstone for Bunker Hill and connect it to the Historic Core community with a series of functional pedestrian linkages"
+        }
+      ]
+    },
+    {
+      "id": "media-p21",
+      "title": "Angels Flight Railway Foundation supports Angels Landing",
+      "summary": "The foundation running Angels Flight backed the project, citing promised community benefits and ongoing coordination on the shared boundary.",
+      "details": [
+        "\"AF\" = Angels Flight Railway Foundation, \"AL\" = Angels Landing Partners (the letter's abbreviations). Letter date not shown in the Final EIR text (dated May 2021).",
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2021",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1",
+        "entity:E005"
+      ],
+      "timeline": {
+        "start": "2021",
+        "end": null
+      },
+      "media": {
+        "quote": "Therefore, based on the above and the ongoing coordination between AF and AL, we support the Angels Landing project and urge the City to approve it.",
+        "translation": null,
+        "speaker": "Angels Flight Railway Foundation (John H. Welborne; Hal Bastian, President)",
+        "role": "nonprofit steward of Angels Flight, next-door neighbour",
+        "venue": "Comment Letter No. 4 on the Angels Landing Draft EIR, reproduced in the Final EIR",
+        "said": "2021",
+        "subject": "Angels Flight"
+      },
+      "sources": [
+        {
+          "type": "official",
+          "title": "Angels Landing Final EIR (May 2021), II. Responses to Comments (CEQAnet SCH 2019039164)",
+          "url": "https://files.ceqanet.opr.ca.gov/250151-4/attachment/UfTy7uTHYdp6qDItmQwqUux7-zYGEosw2v1Q8eU0HiLTRu6Ng5tZ-r3NiLMkzaaOxoFzbZvfaj9owRTn0",
+          "accessed": "2026-10-12",
+          "excerpt": "Therefore, based on the above and the ongoing coordination between AF and AL, we support the Angels Landing project and urge the City to approve it."
+        }
+      ]
+    },
+    {
+      "id": "media-p22",
+      "title": "Peebles on the entitlement approval",
+      "summary": "After the city approved the entitlements, Peebles described the project as a bet on Downtown Los Angeles.",
+      "details": [],
+      "topic": "Media",
+      "date": "2022-03-29",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2022-03-29",
+        "end": null
+      },
+      "media": {
+        "quote": "This is a bet on downtown Los Angeles",
+        "translation": null,
+        "speaker": "Don Peebles",
+        "role": "chairman and CEO, Peebles Corporation",
+        "venue": "The Real Deal, \"Developers tout approvals for $1.6B Angels Landing\"",
+        "said": "2022-03-29",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Developers tout approvals for $1.6B Angels Landing (The Real Deal, Mar 29, 2022)",
+          "url": "https://therealdeal.com/la/2022/03/29/developers-tout-approvals-for-1-6b-angels-landing",
+          "accessed": "2026-10-12",
+          "excerpt": "This is a bet on downtown Los Angeles"
+        }
+      ]
+    },
+    {
+      "id": "media-p23",
+      "title": "Hotel workers union backs Angels Landing",
+      "summary": "The hotel workers union leader praised the project as an example of the city steering development to benefit residents.",
+      "details": [
+        "Probably second-hand: EURweb reprints statements that appear to come from the developers' announcement; the original release was not found. EURweb is an entertainment/news site (medium confidence)."
+      ],
+      "topic": "Media",
+      "date": "2022-04-07",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2022-04-07",
+        "end": null
+      },
+      "media": {
+        "quote": "Angels Landing is the latest example of how the City of Los Angeles can direct development to lift up its citizens",
+        "translation": null,
+        "speaker": "Kurt Petersen",
+        "role": "co-president, UNITE HERE Local 11 (hotel workers union)",
+        "venue": "EURweb, \"Developers to Expand Minority Job Opportunities\"",
+        "said": "2022-04-07",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Developers to Expand Minority Job Opportunities (EURweb, Apr 7, 2022)",
+          "url": "https://eurweb.com/developers-to-expand-minority-job-opportunities/",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Landing is the latest example of how the City of Los Angeles can direct development to lift up its citizens"
+        }
+      ]
+    },
+    {
+      "id": "media-p24",
+      "title": "Developer's attorney objects to repurchase terms",
+      "summary": "The developer's lawyer argued that after spending over $11 million on CEQA and entitlements, a city repurchase at less than fair market value would be unfair.",
+      "details": [
+        "Letter dated June 24, 2022; uploaded as public comment June 27, 2022."
+      ],
+      "topic": "Media",
+      "date": "2022-06-24",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2022-06-24",
+        "end": null
+      },
+      "media": {
+        "quote": "It would be unjust to strip that investment from ALP.",
+        "translation": null,
+        "speaker": "James E. Pugh, Esq. (Sheppard Mullin, for Angels Landing Partners, LLC)",
+        "role": "developer's attorney",
+        "venue": "Letter to the Economic Development & Jobs Committee (Jun 24, 2022), public comment in Council File 14-0425-S4",
+        "said": "2022-06-24",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "official",
+          "title": "Communication from Public, James E. Pugh, Esq., Council File 14-0425-S4 (submitted Jun 27, 2022)",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_PC_AB_06-27-2022.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "It would be unjust to strip that investment from ALP."
+        }
+      ]
+    },
+    {
+      "id": "media-p25",
+      "title": "Preservation group asks for a park instead of Angels Landing",
+      "summary": "The group urged that projects linked to former councilmember Huizar be reconsidered and said a city park would be better than the scaled-down tower.",
+      "details": [
+        "Quote shortened at the end. The comment also raises Huizar-era corruption trials; those are the group's claims.",
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2022-06-28",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2022-06-28",
+        "end": null
+      },
+      "media": {
+        "quote": "We think that Angels Knoll would be better if made into a city park instead of moving forward as a much smaller high rise development",
+        "translation": null,
+        "speaker": "Kim Cooper & Richard Schave / Pershing Square Restoration Society",
+        "role": "preservation group (public comment)",
+        "venue": "Communication from Public, Council File 14-0425-S4",
+        "said": "2022-06-28",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "official",
+          "title": "Communication from Public, Kim Cooper & Richard Schave / Pershing Square Restoration Society, Council File 14-0425-S4 (submitted Jun 28, 2022)",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_PC_AB_06-28-2022.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "We think that Angels Knoll would be better if made into a city park instead of moving forward as a much smaller high rise development"
+        }
+      ]
+    },
+    {
+      "id": "media-p26",
+      "title": "Housing advocates oppose a high-end project",
+      "summary": "A comment for AHF and allied groups said a high-end project on the site would worsen gentrification amid the homelessness crisis, and raised traffic and air quality.",
+      "details": [
+        "Name given exactly as on the document.",
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2022-07-01",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2022-07-01",
+        "end": null
+      },
+      "media": {
+        "quote": "we are concerned at the using of this property for yet another high end development that will worsen the gentrification effects",
+        "translation": null,
+        "speaker": "Miki Jackson for AHF/HHR/HHF",
+        "role": "advocacy organisation (public comment)",
+        "venue": "Communication from Public, Council File 14-0425-S4",
+        "said": "2022-07-01",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "official",
+          "title": "Communication from Public, Miki Jackson, Council File 14-0425-S4 (submitted Jul 1, 2022)",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_PC_AB_07-01-2022.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "we are concerned at the using of this property for yet another high end development that will worsen the gentrification effects"
+        }
+      ]
+    },
+    {
+      "id": "media-p27",
+      "title": "Developers refuse to work with de León",
+      "summary": "After the leaked City Hall audio, the developers wrote that they could not continue working with their district councilmember and called for his resignation.",
+      "details": [
+        "Second-hand: the letter itself was not found; quoted by Commercial Observer (Oct 17, 2022) and Bisnow. Letter date Oct. 14 from Bisnow (Oct 19, 2022). Quote shortened at the end."
+      ],
+      "topic": "Media",
+      "date": "2022-10-14",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2022-10-14",
+        "end": null
+      },
+      "media": {
+        "quote": "We cannot, in good conscience, go forward and work with Council Member Kevin de León on the Angels Landing project",
+        "translation": null,
+        "speaker": "Don Peebles and Victor MacFarlane (letter)",
+        "role": "developers, Angels Landing Partners",
+        "venue": "Letter to the City Council President, as quoted by Commercial Observer",
+        "said": "2022-10-14",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Angels Landing Developers: 'We Can No Longer Work With' De León After Audio Scandal (Commercial Observer, Oct 17, 2022)",
+          "url": "https://commercialobserver.com/2022/10/la-angels-landing-peebles-macfarlane-de-leon-scandal/",
+          "accessed": "2026-10-12",
+          "excerpt": "We cannot, in good conscience, go forward and work with Council Member Kevin de León on the Angels Landing project"
+        }
+      ]
+    },
+    {
+      "id": "media-p28",
+      "title": "MacFarlane on cutting ties with de León",
+      "summary": "MacFarlane told The Real Deal the developers would no longer deal with Councilmember de León.",
+      "details": [
+        "The sentence continues \"So we are not going to interface with Kevin de León, period.\" This is the developers' accusation; de León's office rejected their account (see next entry)."
+      ],
+      "topic": "Media",
+      "date": "2022-10-18",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2022-10-18",
+        "end": null
+      },
+      "media": {
+        "quote": "We don’t deal with racists",
+        "translation": null,
+        "speaker": "Victor MacFarlane",
+        "role": "CEO, MacFarlane Partners",
+        "venue": "The Real Deal, \"Peebles, MacFarlane: LA City Council's racism has impeded Angels Landing project\"",
+        "said": "2022-10-18",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Peebles, MacFarlane: LA City Council's racism has impeded Angels Landing project (The Real Deal, Oct 18, 2022)",
+          "url": "https://therealdeal.com/la/2022/10/18/peebles-macfarlane-la-city-councils-racism-has-impeded-angels-landing-project/",
+          "accessed": "2026-10-12",
+          "excerpt": "We don’t deal with racists"
+        }
+      ]
+    },
+    {
+      "id": "media-p29",
+      "title": "De León's office blames the developers for delays",
+      "summary": "De León's spokesman said the delays came from the developers failing to provide a proposal that met city and redevelopment-agency standards.",
+      "details": [
+        "Second-hand: Bisnow quotes a statement Brown gave to The Real Deal; the TRD version was not found in the TRD article saved today. Partial quote as Bisnow prints it."
+      ],
+      "topic": "Media",
+      "date": "2022-10-19",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2022-10-19",
+        "end": null
+      },
+      "media": {
+        "quote": "inability to provide a proposal that meets the standards of the City of Los Angeles and the California Redevelopment Agency",
+        "translation": null,
+        "speaker": "Pete Brown",
+        "role": "communications director for Councilmember Kevin de León",
+        "venue": "Bisnow, \"Angels Landing Developers Say They Can't Work With de León After Racist Leak\" (statement to The Real Deal)",
+        "said": "2022-10-19",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Angels Landing Developers Say They Can't Work With de León After Racist Leak (Bisnow, Oct 19, 2022)",
+          "url": "https://www.bisnow.com/news/los-angeles/construction-development/angels-landing-kevin-de-leon-115931",
+          "accessed": "2026-10-12",
+          "excerpt": "inability to provide a proposal that meets the standards of the City of Los Angeles and the California Redevelopment Agency"
+        }
+      ]
+    },
+    {
+      "id": "media-p30",
+      "title": "Esotouric campaigns for a park on Y-1",
+      "summary": "The preservation group asked the councilmember to reopen Angels Knoll and argued the parcel should become a park named for Leo and Helen Politi.",
+      "details": [
+        "Post dated Sep 19, 2024 on the page (metadata 2024-09-19 05:10 UTC). The companion post of Sep 24, 2024 (https://esotouric.substack.com/p/angelsknoll2) is signed \"Kim & Richard\". Advocacy blog (social)."
+      ],
+      "topic": "Media",
+      "date": "2024-09-19",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2024-09-19",
+        "end": null
+      },
+      "media": {
+        "quote": "we’re convinced the best use of “Parcel Y-1” is what everyone already thinks it is: as a park!",
+        "translation": null,
+        "speaker": "Esotouric (Kim Cooper and Richard Schave)",
+        "role": "preservation / tour group",
+        "venue": "Esotouric's Secret Los Angeles (Substack), \"Ask Councilmember Kevin de Leon to Re-open Angels Knoll Park\"",
+        "said": "2024-09-19",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Ask Councilmember Kevin de Leon to Re-open Angels Knoll Park (Esotouric's Secret Los Angeles, Substack, Sep 19, 2024, with later updates)",
+          "url": "https://esotouric.substack.com/p/angelsknoll",
+          "accessed": "2026-10-12",
+          "excerpt": "we’re convinced the best use of “Parcel Y-1” is what everyone already thinks it is: as a park!"
+        }
+      ]
+    },
+    {
+      "id": "media-p31",
+      "title": "De León seeks to keep the city's option on Y-1",
+      "summary": "De León's motion asked the Mayor to pursue a 36-month extension of the city's option so it could keep overseeing development of the site.",
+      "details": [
+        "Date from the clerk stamp (SEP 20 2024); clerk file name 9-23-24.",
+        "Quote matches the page text apart from line breaks in the source."
+      ],
+      "topic": "Media",
+      "date": "2024-09-20",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2024-09-20",
+        "end": null
+      },
+      "media": {
+        "quote": "as one of the last prominent publicly-owned vacant properties in Downtown Los Angeles, it is crucial that the City maintain its ability to oversee the development of the site",
+        "translation": null,
+        "speaker": "Kevin de León",
+        "role": "Los Angeles City Councilmember, CD14 (mover)",
+        "venue": "City Council motion to extend the Y-1 option, Council File 14-0425-S4",
+        "said": "2024-09-20",
+        "subject": "Surplus land and housing"
+      },
+      "sources": [
+        {
+          "type": "official",
+          "title": "Motion, Council File 14-0425-S4, presented by Councilmember Kevin de León (stamped Sep 20, 2024)",
+          "url": "https://cityclerk.lacity.org/onlinedocs/2014/14-0425-s4_misc_9-23-24.pdf",
+          "accessed": "2026-10-12",
+          "excerpt": "as one of the last prominent publicly-owned vacant properties in Downtown Los Angeles, it is crucial that the City maintain its ability to oversee the development of the site"
+        }
+      ]
+    },
+    {
+      "id": "media-p32",
+      "title": "Peebles disputes the city's grounds for termination",
+      "summary": "After suing, Peebles told The Real Deal the city wrongly treated the ownership change as a breach and had no right to terminate.",
+      "details": [
+        "Said \"Wednesday\" before the Jan 17, 2025 article (likely Jan 15, 2025; exact day not stated as a date)."
+      ],
+      "topic": "Media",
+      "date": "2025-01",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-01",
+        "end": null
+      },
+      "media": {
+        "quote": "The city tried to say it was a breach of our development agreement, which it was not",
+        "translation": null,
+        "speaker": "Don Peebles",
+        "role": "CEO, Peebles Corporation",
+        "venue": "The Real Deal, \"Peebles, MacFarlane entity sues city for thwarting $1.6B Angels Landing project\"",
+        "said": "2025-01",
+        "subject": "Termination and lawsuits"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Peebles, MacFarlane entity sues city for thwarting $1.6B Angels Landing project (The Real Deal, Jan 17, 2025)",
+          "url": "https://therealdeal.com/la/2025/01/17/city-of-los-angeles-faces-lawsuit-for-angels-landing-project/",
+          "accessed": "2026-10-12",
+          "excerpt": "The city tried to say it was a breach of our development agreement, which it was not"
+        }
+      ]
+    },
+    {
+      "id": "media-p33",
+      "title": "Peebles on why Angels Landing ended",
+      "summary": "Peebles said the case for the project, which relied on Downtown office workers and hotel guests, disappeared with Covid.",
+      "details": [],
+      "topic": "Media",
+      "date": "2025-11-21",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-11-21",
+        "end": null
+      },
+      "media": {
+        "quote": "The reason for us to develop Angels Landing went away during Covid, and it hasn't come back",
+        "translation": null,
+        "speaker": "Don Peebles",
+        "role": "CEO, Peebles Corporation",
+        "venue": "Bisnow, \"Downtown's Former Angels Landing Site Could Be Headed To Auction\"",
+        "said": "2025-11-21",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Downtown's Former Angels Landing Site Could Be Headed To Auction (Bisnow, Nov 21, 2025)",
+          "url": "https://www.bisnow.com/los-angeles/news/construction-development/downtowns-former-angels-landing-site-could-be-on-the-auction-block-soon-132018",
+          "accessed": "2026-10-12",
+          "excerpt": "The reason for us to develop Angels Landing went away during Covid, and it hasn't come back"
+        }
+      ]
+    },
+    {
+      "id": "media-p34",
+      "title": "Peebles on bidding for Y-1 at auction",
+      "summary": "Peebles said he might look at the site if it goes to public auction after the affordable-housing offer period, but not to build soon.",
+      "details": [
+        "The same article reports, without a direct quote, that Better Angels CIO André Bueno felt affordable housing below tower scale would not be the best use of the site."
+      ],
+      "topic": "Media",
+      "date": "2025-11-21",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-11-21",
+        "end": null
+      },
+      "media": {
+        "quote": "They'll auction it off to the highest bidder, and we'll look at it at that point",
+        "translation": null,
+        "speaker": "Don Peebles",
+        "role": "CEO, Peebles Corporation",
+        "venue": "Bisnow, \"Downtown's Former Angels Landing Site Could Be Headed To Auction\"",
+        "said": "2025-11-21",
+        "subject": "Surplus land and housing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Downtown's Former Angels Landing Site Could Be Headed To Auction (Bisnow, Nov 21, 2025)",
+          "url": "https://www.bisnow.com/los-angeles/news/construction-development/downtowns-former-angels-landing-site-could-be-on-the-auction-block-soon-132018",
+          "accessed": "2026-10-12",
+          "excerpt": "They'll auction it off to the highest bidder, and we'll look at it at that point"
+        }
+      ]
+    },
+    {
+      "id": "media-p35",
+      "title": "Esotouric renews call to open the park",
+      "summary": "In a 2026 update the group again asked for the park, which it calls Leo & Helen Politi Park, to be opened.",
+      "details": [
+        "Quote begins mid-sentence. Advocacy blog (social)."
+      ],
+      "topic": "Media",
+      "date": "2026-06",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2026-06",
+        "end": null
+      },
+      "media": {
+        "quote": "the last undeveloped plot on Bunker Hill, Angels Knoll AKA Leo & Helen Politi Park. Open it up!",
+        "translation": null,
+        "speaker": "Esotouric",
+        "role": "preservation / tour group",
+        "venue": "Esotouric's Secret Los Angeles (Substack), campaign page, \"Update June 2026\"",
+        "said": "2026-06",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Ask Councilmember Kevin de Leon to Re-open Angels Knoll Park (Esotouric's Secret Los Angeles, Substack, Sep 19, 2024, with later updates)",
+          "url": "https://esotouric.substack.com/p/angelsknoll",
+          "accessed": "2026-10-12",
+          "excerpt": "the last undeveloped plot on Bunker Hill, Angels Knoll AKA Leo & Helen Politi Park. Open it up!"
+        }
+      ]
+    },
+    {
+      "id": "media-p36",
+      "title": "ASLA competition frames Angels Knoll as closed open space",
+      "summary": "Announcing its 2026 student and emerging-professional competition, ASLA described Angels Knoll as visible but currently inaccessible open space.",
+      "details": [],
+      "topic": "Media",
+      "date": "2026-09-08",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2026-09-08",
+        "end": null
+      },
+      "media": {
+        "quote": "a small but highly visible and currently inaccessible open space on Bunker Hill",
+        "translation": null,
+        "speaker": "American Society of Landscape Architects (ASLA)",
+        "role": "professional association",
+        "venue": "ASLA, \"Reimagining Angel's Knoll: Celebrating the 2026 Emerging Professionals Design Competition Winners\"",
+        "said": "2026-09-08",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "secondary",
+          "title": "Reimagining Angel's Knoll: Celebrating the 2026 Emerging Professionals Design Competition Winners (ASLA, Sep 8, 2026)",
+          "url": "https://www.asla.org/news-insights/land/(clone)-reimagining-angel-s-knoll-celebrating-the-2026-emerging-professionals-design-competition",
+          "accessed": "2026-10-12",
+          "excerpt": "a small but highly visible and currently inaccessible open space on Bunker Hill"
+        }
+      ]
+    },
+    {
+      "id": "media-s01",
+      "title": "Call for a taller signature tower at Angels Landing",
+      "summary": "Reacting to the three finalist designs, the user asks for more height and a new signature tower for Los Angeles.",
+      "topic": "Media",
+      "date": "2017-10-24",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2017-10-24",
+        "end": null
+      },
+      "media": {
+        "quote": "Needs more height, time for LA to embrace its bigness.",
+        "translation": null,
+        "speaker": "SkyscraperPage user NYguy",
+        "role": "forum user",
+        "venue": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+        "said": "2017-10-24",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+          "url": "https://skyscraperpage.com/forum/showthread.php?p=7963744#post7963744",
+          "accessed": "2026-10-12",
+          "excerpt": "Needs more height, time for LA to embrace its bigness."
+        }
+      ]
+    },
+    {
+      "id": "media-s02",
+      "title": "Criticism of the MacFarlane/Handel plaza design",
+      "summary": "The user questions the preference for the MacFarlane/Handel proposal, saying its plaza repeats problems of the older Bunker Hill redevelopment, and prefers the Onni scheme.",
+      "details": [
+        "The post writes \"Omni\" for the Onni proposal."
+      ],
+      "topic": "Media",
+      "date": "2017-10-26",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2017-10-26",
+        "end": null
+      },
+      "media": {
+        "quote": "The plaza looks to be just perpetuating the same problems that the older Bunker Hill development.",
+        "translation": null,
+        "speaker": "SkyscraperPage user ozone",
+        "role": "forum user",
+        "venue": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+        "said": "2017-10-26",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+          "url": "https://skyscraperpage.com/forum/showthread.php?p=7966290#post7966290",
+          "accessed": "2026-10-12",
+          "excerpt": "The plaza looks to be just perpetuating the same problems that the older Bunker Hill development."
+        }
+      ]
+    },
+    {
+      "id": "media-s03",
+      "title": "Support for Angels Landing despite the height cut",
+      "summary": "After renderings of the scaled-back scheme were posted, the user says the project is still significant for Los Angeles and the height reduction matters little to them.",
+      "topic": "Media",
+      "date": "2019-04-10",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2019-04-10",
+        "end": null
+      },
+      "media": {
+        "quote": "This is still huge for LA, don't care much about the height reduction honestly.",
+        "translation": null,
+        "speaker": "SkyscraperPage user Zapatan",
+        "role": "forum user",
+        "venue": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+        "said": "2019-04-10",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+          "url": "https://skyscraperpage.com/forum/showthread.php?p=8536237#post8536237",
+          "accessed": "2026-10-12",
+          "excerpt": "This is still huge for LA, don't care much about the height reduction honestly."
+        }
+      ]
+    },
+    {
+      "id": "media-s04",
+      "title": "City Hall blamed for blocking Angels Landing",
+      "summary": "Responding to news of the developers' lawsuit, the user recalls the developers' public complaints of obstruction and says they expected the city to block the project.",
+      "topic": "Media",
+      "date": "2025-01-21",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-01-21",
+        "end": null
+      },
+      "media": {
+        "quote": "I figured it was only a matter of time before the City figured out a way to block the project completely if the developers didn't pull out first.",
+        "translation": null,
+        "speaker": "SkyscraperPage user caligrad",
+        "role": "forum user",
+        "venue": "LOS ANGELES | Politics, Economics, and Business Development (SkyscraperPage Forum)",
+        "said": "2025-01-21",
+        "subject": "Termination and lawsuits"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "LOS ANGELES | Politics, Economics, and Business Development (SkyscraperPage Forum)",
+          "url": "https://skyscraperpage.com/forum/showthread.php?p=10354224#post10354224",
+          "accessed": "2026-10-12",
+          "excerpt": "I figured it was only a matter of time before the City figured out a way to block the project completely if the developers didn't pull out first."
+        }
+      ]
+    },
+    {
+      "id": "media-s05",
+      "title": "Doubt that the city blocked Angels Landing on purpose",
+      "summary": "The user doubts the city wanted to stop downtown development and suggests it may have lost confidence in the developer, or that economic conditions were the cause, while saying they do not know.",
+      "topic": "Media",
+      "date": "2025-01-25",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-01-25",
+        "end": null
+      },
+      "media": {
+        "quote": "I think it's more likely that the city lost confidence in a developer that wouldn't be able to execute the project successfully.",
+        "translation": null,
+        "speaker": "SkyscraperPage user FromSD",
+        "role": "forum user",
+        "venue": "LOS ANGELES | Politics, Economics, and Business Development (SkyscraperPage Forum)",
+        "said": "2025-01-25",
+        "subject": "Termination and lawsuits"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "LOS ANGELES | Politics, Economics, and Business Development (SkyscraperPage Forum)",
+          "url": "https://skyscraperpage.com/forum/showthread.php?p=10357828#post10357828",
+          "accessed": "2026-10-12",
+          "excerpt": "I think it's more likely that the city lost confidence in a developer that wouldn't be able to execute the project successfully."
+        }
+      ]
+    },
+    {
+      "id": "media-s06",
+      "title": "End of Angels Landing called an embarrassment for the city",
+      "summary": "Linking an Urbanize LA report that the site is being offered again, the user calls the project's end a severe example of city dysfunction.",
+      "details": [
+        "The post says \"Angel's Flight project\"; in context (thread and linked article) it refers to Angels Landing."
+      ],
+      "topic": "Media",
+      "date": "2025-10-22",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-10-22",
+        "end": null
+      },
+      "media": {
+        "quote": "The death of the Angel's Flight project has to be one of the most embarrassing examples of Los Angeles executive dysfunction in recent memory.",
+        "translation": null,
+        "speaker": "SkyscraperPage user Illithid Dude",
+        "role": "forum user",
+        "venue": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+        "said": "2025-10-22",
+        "subject": "Termination and lawsuits"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+          "url": "https://skyscraperpage.com/forum/showthread.php?p=10501054#post10501054",
+          "accessed": "2026-10-12",
+          "excerpt": "The death of the Angel's Flight project has to be one of the most embarrassing examples of Los Angeles executive dysfunction in recent memory."
+        }
+      ]
+    },
+    {
+      "id": "media-s07",
+      "title": "Reply: no reason for embarrassment over a failed proposal",
+      "summary": "Replying to the previous post, the user rejects the idea that the failure of a pre-pandemic proposal is embarrassing for the city.",
+      "topic": "Media",
+      "date": "2025-10-23",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-10-23",
+        "end": null
+      },
+      "media": {
+        "quote": "I see no good reason for anyone in Los Angeles to feel \"embarrassed\" or \"humiliated\" because a pre-pandemic proposal won't get built.",
+        "translation": null,
+        "speaker": "SkyscraperPage user craigs",
+        "role": "forum user",
+        "venue": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+        "said": "2025-10-23",
+        "subject": "Termination and lawsuits"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+          "url": "https://skyscraperpage.com/forum/showthread.php?p=10501115#post10501115",
+          "accessed": "2026-10-12",
+          "excerpt": "I see no good reason for anyone in Los Angeles to feel \"embarrassed\" or \"humiliated\" because a pre-pandemic proposal won't get built."
+        }
+      ]
+    },
+    {
+      "id": "media-s08",
+      "title": "The economy, not only the city, seen as the obstacle",
+      "summary": "The user accepts that the city seems to have mishandled the process but doubts construction would have started in the current economy anyway.",
+      "topic": "Media",
+      "date": "2025-10-23",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-10-23",
+        "end": null
+      },
+      "media": {
+        "quote": "I highly doubt that even if everything went smoothly with the city process and this project was fully approved that we would see construction break ground in this economy.",
+        "translation": null,
+        "speaker": "SkyscraperPage user 38 Geary",
+        "role": "forum user",
+        "venue": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+        "said": "2025-10-23",
+        "subject": "Termination and lawsuits"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "LOS ANGELES | Angels Landing Towers | 854 & 542 FT | 64 & 48 FLOORS (SkyscraperPage Forum)",
+          "url": "https://skyscraperpage.com/forum/showthread.php?p=10501376#post10501376",
+          "accessed": "2026-10-12",
+          "excerpt": "I highly doubt that even if everything went smoothly with the city process and this project was fully approved that we would see construction break ground in this economy."
+        }
+      ]
+    },
+    {
+      "id": "media-s09",
+      "title": "Pre-redevelopment buildings and streets on the Angels Knoll block",
+      "summary": "In a long post of historical maps and photographs of the block before redevelopment, the user notes that Clay Street once ran through the site.",
+      "topic": "Media",
+      "date": "2013-08-12",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-08-12",
+        "end": null
+      },
+      "media": {
+        "quote": "I have a whole bunch of stuff to add about Clay Street between 4th and 3rd, as it ran right through Angel's Knoll, but that will have to wait!",
+        "translation": null,
+        "speaker": "SkyscraperPage user Beaudry",
+        "role": "forum user",
+        "venue": "noirish Los Angeles, page 804 (SkyscraperPage Forum)",
+        "said": "2013-08-12",
+        "subject": "Bunker Hill history"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "noirish Los Angeles, page 804 (SkyscraperPage Forum)",
+          "url": "https://skyscraperpage.com/forum/showthread.php?p=6229263#post6229263",
+          "accessed": "2026-10-12",
+          "excerpt": "I have a whole bunch of stuff to add about Clay Street between 4th and 3rd, as it ran right through Angel's Knoll, but that will have to wait!"
+        }
+      ]
+    },
+    {
+      "id": "media-s10",
+      "title": "Visitor finds Angels Knoll fenced and closed",
+      "summary": "A visitor reports finding the park fenced, with a closed-to-the-public sign, on two visits, and asks whether it is being remodeled.",
+      "topic": "Media",
+      "date": "2013-08-03",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-08-03",
+        "end": null
+      },
+      "media": {
+        "quote": "There were fence around it and a sign indicating that it’s closed to the public.",
+        "translation": null,
+        "speaker": "onecoolthingeveryweekend.com commenter Anna",
+        "role": "commenter",
+        "venue": "Angels Knoll aka The Park From 500 Days Of Summer (currently closed), comments (One Cool Thing Every Weekend blog)",
+        "said": "2013-08-03",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Angels Knoll aka The Park From 500 Days Of Summer (currently closed), comments (One Cool Thing Every Weekend blog)",
+          "url": "https://onecoolthingeveryweekend.com/2013/06/18/angels-knoll-aka-the-park-from-500-days-of-summer/#comment-2731",
+          "accessed": "2026-10-12",
+          "excerpt": "There were fence around it and a sign indicating that it’s closed to the public."
+        }
+      ]
+    },
+    {
+      "id": "media-s11",
+      "title": "Petition to reopen Angels Knoll",
+      "summary": "A commenter says they started an online petition and a Facebook group to get the park reopened.",
+      "topic": "Media",
+      "date": "2013-08-18",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-08-18",
+        "end": null
+      },
+      "media": {
+        "quote": "I started a petition to get the park re-opened.",
+        "translation": null,
+        "speaker": "onecoolthingeveryweekend.com commenter Chris",
+        "role": "commenter",
+        "venue": "Angels Knoll aka The Park From 500 Days Of Summer (currently closed), comments (One Cool Thing Every Weekend blog)",
+        "said": "2013-08-18",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Angels Knoll aka The Park From 500 Days Of Summer (currently closed), comments (One Cool Thing Every Weekend blog)",
+          "url": "https://onecoolthingeveryweekend.com/2013/06/18/angels-knoll-aka-the-park-from-500-days-of-summer/#comment-3241",
+          "accessed": "2026-10-12",
+          "excerpt": "I started a petition to get the park re-opened."
+        }
+      ]
+    },
+    {
+      "id": "media-s12",
+      "title": "City budget and the closure of Angels Knoll",
+      "summary": "Reacting to news of the closure, the commenter finds it depressing that Los Angeles cannot afford to keep a park open.",
+      "details": [
+        "Date from the comment timestamp, which the page gives in UTC (August 28 2013, 08:40 UTC)."
+      ],
+      "topic": "Media",
+      "date": "2013-08-28",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-08-28",
+        "end": null
+      },
+      "media": {
+        "quote": "A city like LA not having enough money to keep it's parks (or a park) open is pretty depressing.",
+        "translation": null,
+        "speaker": "LiveJournal user flightbyzephyr",
+        "role": "commenter",
+        "venue": "Iconic 500 Days of Summer Bench Closed to Public, comments (ohnotheydidnt, LiveJournal)",
+        "said": "2013-08-28",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Iconic 500 Days of Summer Bench Closed to Public, comments (ohnotheydidnt, LiveJournal)",
+          "url": "https://ohnotheydidnt.livejournal.com/80977866.html?thread=14338563786#t14338563786",
+          "accessed": "2026-10-12",
+          "excerpt": "A city like LA not having enough money to keep it's parks (or a park) open is pretty depressing."
+        }
+      ]
+    },
+    {
+      "id": "media-s13",
+      "title": "Regret that the whole park, not just the bench, closed",
+      "summary": "After realising the whole park had closed, the commenter calls it sad and says there should be more parks.",
+      "details": [
+        "Date from the comment timestamp, which the page gives in UTC (August 28 2013, 04:16 UTC)."
+      ],
+      "topic": "Media",
+      "date": "2013-08-28",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2013-08-28",
+        "end": null
+      },
+      "media": {
+        "quote": "Which in itself is kinda sad too parks are great and there should be more of them!.",
+        "translation": null,
+        "speaker": "LiveJournal user alienjive",
+        "role": "commenter",
+        "venue": "Iconic 500 Days of Summer Bench Closed to Public, comments (ohnotheydidnt, LiveJournal)",
+        "said": "2013-08-28",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Iconic 500 Days of Summer Bench Closed to Public, comments (ohnotheydidnt, LiveJournal)",
+          "url": "https://ohnotheydidnt.livejournal.com/80977866.html?thread=14337970378#t14337970378",
+          "accessed": "2026-10-12",
+          "excerpt": "Which in itself is kinda sad too parks are great and there should be more of them!."
+        }
+      ]
+    },
+    {
+      "id": "media-s14",
+      "title": "Memory of goats grazing the hill in the 1970s",
+      "summary": "A commenter recalls goats keeping the vegetation down on the hill in the mid-1970s, before the skyscrapers.",
+      "details": [
+        "YouTube shows only a relative date (\"3 years ago (edited)\"), so said is null. The comment was edited."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "I remember in the mid 1970s - before all the skyscrapers - there were goats on that hill keeping the vegetation in check.",
+        "translation": null,
+        "speaker": "YouTube @Rob789-2",
+        "role": "commenter",
+        "venue": "Comments on YouTube video \"Angel's Knoll Park\" (uploaded by @mediaxpuppet)",
+        "said": null,
+        "subject": "Bunker Hill history"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Comments on YouTube video \"Angel's Knoll Park\" (uploaded by @mediaxpuppet)",
+          "url": "https://www.youtube.com/watch?v=cY6t2nbzvEw&lc=Ugy6eXR190SHadtGDo14AaABAg",
+          "accessed": "2026-10-12",
+          "excerpt": "I remember in the mid 1970s - before all the skyscrapers - there were goats on that hill keeping the vegetation in check."
+        }
+      ]
+    },
+    {
+      "id": "media-s15",
+      "title": "Support for more green space",
+      "summary": "On a video asking for the park to reopen, a commenter says the city needs more green spaces.",
+      "details": [
+        "YouTube shows only a relative date (\"2 years ago\"), so said is null."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "We definitely need more green spaces.",
+        "translation": null,
+        "speaker": "YouTube @Peter_Bazinet",
+        "role": "commenter",
+        "venue": "Comments on YouTube video \"Ask Councilmember Kevin de Leon to Re-open Angels Knoll Park!\" (uploaded by @esotouric)",
+        "said": null,
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Comments on YouTube video \"Ask Councilmember Kevin de Leon to Re-open Angels Knoll Park!\" (uploaded by @esotouric)",
+          "url": "https://www.youtube.com/watch?v=INzctxrjITM&lc=UgzvW9Uc826ICHolEFF4AaABAg",
+          "accessed": "2026-10-12",
+          "excerpt": "We definitely need more green spaces."
+        }
+      ]
+    },
+    {
+      "id": "media-s16",
+      "title": "Question whether the site will stay a park after the deadline",
+      "summary": "A commenter asks for updates and whether the city will take over the property and keep it as a park now that the deadline has passed.",
+      "details": [
+        "YouTube shows only a relative date (\"4 months ago\"), so said is null."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "The expiration was a while back, will the city reclaim this property and ensure it remains a park?",
+        "translation": null,
+        "speaker": "YouTube @Itsdannyfields",
+        "role": "commenter",
+        "venue": "Comments on YouTube video \"Ask Councilmember Kevin de Leon to Re-open Angels Knoll Park!\" (uploaded by @esotouric)",
+        "said": null,
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Comments on YouTube video \"Ask Councilmember Kevin de Leon to Re-open Angels Knoll Park!\" (uploaded by @esotouric)",
+          "url": "https://www.youtube.com/watch?v=INzctxrjITM&lc=UgxSHzztzZIB8S1WZ9t4AaABAg",
+          "accessed": "2026-10-12",
+          "excerpt": "The expiration was a while back, will the city reclaim this property and ensure it remains a park?"
+        }
+      ]
+    },
+    {
+      "id": "media-s17",
+      "title": "Complaint about the closed park's condition",
+      "summary": "A commenter says the park now looks bad; the comment adds \"as of 2022\".",
+      "details": [
+        "YouTube shows only a relative date (\"4 years ago\"); the comment itself says \"as of 2022\", but said is left null."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "Is so sad how awful this park looks",
+        "translation": null,
+        "speaker": "YouTube @Tacticalnightwach",
+        "role": "commenter",
+        "venue": "Comments on YouTube video \"Angels Knoll Park\" (uploaded by @CreativeDiner)",
+        "said": null,
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Comments on YouTube video \"Angels Knoll Park\" (uploaded by @CreativeDiner)",
+          "url": "https://www.youtube.com/watch?v=pqZ2b2FLqRI&lc=Ugxu_TMyCcCHthjNWTx4AaABAg",
+          "accessed": "2026-10-12",
+          "excerpt": "Is so sad how awful this park looks"
+        }
+      ]
+    },
+    {
+      "id": "media-s18",
+      "title": "Night visit: the former park described as empty and wasted",
+      "summary": "The uploader's description traces the site from the Bunker Hill clearance and the cancelled Cal Plaza III tower to the short-lived park, and calls it empty and wasted while it waits for redevelopment.",
+      "details": [
+        "Channel display name \"erik em\"; said is the video publish date."
+      ],
+      "topic": "Media",
+      "date": "2023-09-21",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2023-09-21",
+        "end": null
+      },
+      "media": {
+        "quote": "This site will one day be redeveloped, but in the mean time sits empty and squandered.",
+        "translation": null,
+        "speaker": "YouTube @mediaxpuppet",
+        "role": "video uploader",
+        "venue": "YouTube video \"Angel's Knoll Park\" (description)",
+        "said": "2023-09-21",
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "YouTube video \"Angel's Knoll Park\" (description)",
+          "url": "https://www.youtube.com/watch?v=cY6t2nbzvEw",
+          "accessed": "2026-10-12",
+          "excerpt": "This site will one day be redeveloped, but in the mean time sits empty and squandered."
+        }
+      ]
+    },
+    {
+      "id": "media-s19",
+      "title": "\"Save the Knoll\": 2016 video urges keeping the site a park",
+      "summary": "The description says the park had been closed since July 2013, notes the site's development value, and urges viewers to contact officials to keep it as a park.",
+      "details": [
+        "said is the video publish date."
+      ],
+      "topic": "Media",
+      "date": "2016-06-19",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2016-06-19",
+        "end": null
+      },
+      "media": {
+        "quote": "there is a movement to keep the spot active as a park.",
+        "translation": null,
+        "speaker": "YouTube @UrbanSharkProductions",
+        "role": "video uploader",
+        "venue": "YouTube video \"Abandoned 500 Days of Summer Filming Location - Angel's Knoll/Flight Park\" (description)",
+        "said": "2016-06-19",
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "YouTube video \"Abandoned 500 Days of Summer Filming Location - Angel's Knoll/Flight Park\" (description)",
+          "url": "https://www.youtube.com/watch?v=lAbqSgzPkC8",
+          "accessed": "2026-10-12",
+          "excerpt": "there is a movement to keep the spot active as a park."
+        }
+      ]
     }
   ]
 }
