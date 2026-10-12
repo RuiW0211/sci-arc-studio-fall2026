@@ -59,6 +59,7 @@ const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getP
 // into the new ones as uColorMix goes 0 -> 1 over --t-out
 const COLOR_MIX = { value: 1 };
 let mixAnim = 0;
+let animAt = -1e9;   // last frame of a fade (colours, selection, Highlight people): adaptGlass waits for them to end
 function crossFade() {
   const t0 = performance.now(), dur = tms("--t-out");
   COLOR_MIX.value = 0;
@@ -66,7 +67,7 @@ function crossFade() {
   const step = (now) => {
     const k = dur ? Math.min((now - t0) / dur, 1) : 1;
     COLOR_MIX.value = k * k * (3 - 2 * k);
-    invalidate();
+    invalidate(); animAt = now;
     if (k < 1) mixAnim = requestAnimationFrame(step);
   };
   mixAnim = requestAnimationFrame(step);
@@ -96,7 +97,7 @@ function setWhiteCloud(on) {
     const dur = tms("--t-out"), k = dur ? Math.min((now - t0) / dur, 1) : 1, e = k * k * (3 - 2 * k);
     FOCUS.value = from + (to - from) * e;
     pop?.highlight(FOCUS.value);   // people grow with it
-    invalidate();
+    invalidate(); animAt = now;
     if (k < 1) focusAnim = requestAnimationFrame(step);
     else if (!on) for (const m of focusMats) if (!m.userData.alwaysTransparent) { m.transparent = false; m.needsUpdate = true; }
   };
@@ -653,7 +654,7 @@ function paintSelection() {
   const step = (now) => {
     const k = dur ? Math.min((now - t0) / dur, 1) : 1;
     SEL_K.value = cssEase(k);
-    invalidate();
+    invalidate(); animAt = now;
     if (k < 1) selAnim = requestAnimationFrame(step);
   };
   selAnim = requestAnimationFrame(step);
@@ -822,18 +823,18 @@ let hoverAt = null;
 renderer.domElement.addEventListener("pointermove", (e) => {
   if (!pop?.visible || e.buttons) return;
   if (!hoverAt) requestAnimationFrame(() => {
-    const i = hoverAt.alt ? pop.nearest(hoverAt.x, hoverAt.y, PICK_PX) : -1;
+    const i = hoverAt.alt ? pop.nearest(hoverAt.x, hoverAt.y, PICK_PX, hoverAt.shift) : -1;
     pop.hover(i);
     renderer.domElement.style.cursor = i >= 0 ? "pointer" : "";
     hoverAt = null; invalidate();
   });
-  hoverAt = { x: e.clientX, y: e.clientY, alt: e.altKey };
+  hoverAt = { x: e.clientX, y: e.clientY, alt: e.altKey, shift: e.shiftKey };
 });
 // pressing / releasing Alt with the mouse still: show / hide the marker at once
 for (const ev of ["keydown", "keyup"]) addEventListener(ev, (e) => {
   if (e.key !== "Alt" || !pop?.visible || !lastHover) return;
   e.preventDefault();
-  const i = ev === "keydown" ? pop.nearest(lastHover.x, lastHover.y, PICK_PX) : -1;
+  const i = ev === "keydown" ? pop.nearest(lastHover.x, lastHover.y, PICK_PX, e.shiftKey) : -1;
   pop.hover(i); renderer.domElement.style.cursor = i >= 0 ? "pointer" : ""; invalidate();
 });
 let lastHover = null;
@@ -845,7 +846,8 @@ $("#popOn").onchange = async (e) => {
     e.target.disabled = true;
     status("Loading population…");
     const { createPopulation } = await import("./population.js");
-    pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag });
+    pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag,
+      onDrop: (i) => { popSelecting = true; deselect(`pop:${i}`); popSelecting = false; } });   // Shift + Alt + click took i out
     status("");
     e.target.disabled = false;
   }
@@ -858,9 +860,10 @@ $("#popOn").onchange = async (e) => {
 $("#popWhite").onchange = (e) => setWhiteCloud(e.target.checked && $("#popOn").checked);
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
-// a clicked person's modeled day (population.js story()) as a floating tag that follows them
+// a clicked person's modeled day (population.js story()) as a floating tag that follows them. how: "only" (Alt + click),
+// "add" (Shift + Alt + click: one more label), "refresh" (same person, new day: the label's text only)
 let popSelecting = false;
-function personTag(html, pos) {
+function personTag(html, pos, i, how = "only") {
   const d = document.createElement("div"); d.innerHTML = html;
   const h2 = d.querySelector("h2"), num = h2?.querySelector("span")?.textContent || "";
   const title = (h2?.firstChild?.textContent || "Person").trim();
@@ -871,8 +874,10 @@ function personTag(html, pos) {
     const [time, ...rest] = x.textContent.split(" "); rows.push([time, rest.join(" ")]);
   }
   const note = d.querySelector(".note")?.textContent || "";
+  const key = `pop:${i}`, build = () => tagHTML(`Modeled person ${num}`, title, day, rows, note);
+  if (how === "refresh") { const s = selection.find((x) => x.key === key); if (s) { s.build = build; fillTag(s); invalidate(); } return; }
   popSelecting = true;
-  select(`pop:${num}`, { centre: pos, topY: pos.y, height: 0 }, () => tagHTML(`Modeled person ${num}`, title, day, rows, note), [], false);
+  select(key, { centre: pos, topY: pos.y, height: 0 }, build, [], how === "add");
   popSelecting = false;
 }
 
@@ -885,7 +890,9 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
   ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
   // Alt + click picks the person within PICK_PX on screen (user, 2026-10-09: a plain click is for buildings / points)
-  if (pop?.visible && e.altKey) { if (pop.pickIndex(pop.nearest(e.clientX, e.clientY, PICK_PX))) return; }
+  // Shift + Alt + click adds the person (any person, also the faded ones) or takes them out (user, 2026-10-12)
+  // (no one near: nothing happens, rather than adding the ground or a building to the selection)
+  if (pop?.visible && e.altKey) { if (pop.pickIndex(pop.nearest(e.clientX, e.clientY, PICK_PX, e.shiftKey), e.shiftKey) || e.shiftKey) return; }
   const visible = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
   const add = e.shiftKey;     // shift + click: add to / take out of the selection
   const layerOf = (o) => { for (; o; o = o.parent) if (o.userData.layer) return o.userData.layer; };
@@ -1002,7 +1009,7 @@ function fadeAway(s) {
 function deselect(key) {
   const i = selection.findIndex((s) => s.key === key); if (i < 0) return;
   const [s] = selection.splice(i, 1); fadeAway(s);
-  if (s.key.startsWith("pop:") && !popSelecting) pop?.clearSelection();
+  if (s.key.startsWith("pop:") && !popSelecting) pop?.deselectPerson(+s.key.slice(4));
   if (lidar && mode === "cloud") paintSelection();
   invalidate();
 }
@@ -1194,8 +1201,10 @@ const glassEls = ["#ui", "#info", "#hint"].map((q) => $(q));
 let glassBuf = new Uint8Array(0);
 function adaptGlass(now) {
   // reading pixels back stalls the GPU pipeline (100+ ms frames during a view change), so only when the camera is still
-  // ... and not while the population plays (the picture changes every frame; checked again once it stops)
-  if (tween || pop?.state.playing || now - lastMove < GLASS_SETTLE || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
+  // ... and not while the population plays (the picture changes every frame; checked again once it stops), nor during a
+  // fade (user, 2026-10-12: turning People off stuttered twice: two 100-180 ms read-backs in the 0.5 s fade-out)
+  if (tween || pop?.state.playing || pop?.state.fading || now - animAt < GLASS_SETTLE || now - lastMove < GLASS_SETTLE
+      || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
   glassAt = now; glassPending = false;
   const gl = renderer.getContext(), cv = renderer.domElement, sx = cv.width / cv.clientWidth, sy = cv.height / cv.clientHeight;
   for (const el of glassEls) {

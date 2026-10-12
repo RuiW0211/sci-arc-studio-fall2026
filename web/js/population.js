@@ -17,7 +17,7 @@ function hash(a, b) {
 }
 const hhmm = (s) => { const m = Math.floor(s / 60) % 1440; return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`; };
 
-export async function createPopulation({ cfg, scene, camera, renderer, layers, thinning, onInfo, onStatus }) {
+export async function createPopulation({ cfg, scene, camera, renderer, layers, thinning, onInfo, onDrop, onStatus }) {
   const pc = cfg.population;
   const meta = await (await fetch(pc.meta)).json();
   const buf = await (await fetch(pc.meta.replace(/[^/]*$/, "") + meta.bin)).arrayBuffer();
@@ -190,10 +190,12 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   points.frustumCulled = false;
   points.renderOrder = 2;
   scene.add(points);
-  // the selected person: a bigger highlight point plus today's route
+  // the selected people (Alt + click one, Shift + Alt + click adds / takes out; user, 2026-10-12): a bigger highlight
+  // point each. sel = person indices in click order; st.selected = the last one, -1 when none
   const HILITE = new THREE.Color(cfg.linked?.highlight ?? "#FF3EA5");
-  const selGeo = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(3), 3));
-  selGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(HILITE.toArray()), 3));
+  const MAXSEL = 64, sel = [], selSet = new Set(), selPosOf = new Map();
+  const selGeo = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(3 * MAXSEL), 3));
+  selGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(3 * MAXSEL).map((_, k) => HILITE.toArray()[k % 3]), 3));
   const selMat = material.clone();
   selMat.uniforms = { size: { value: 2.2 }, scale: uniforms.scale, minPx: { value: 9 }, alpha: { value: 1 } };
   const selPoint = new THREE.Points(selGeo, selMat);
@@ -201,7 +203,8 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   selPoint.frustumCulled = false;
   selPoint.renderOrder = 3;
   scene.add(selPoint);
-  const selPos = new THREE.Vector3();   // the selected person, where the viewer's floating tag points (kept up to date)
+  // each selected person's position, where the viewer's floating tag points (kept up to date)
+  const posOf = (i) => selPosOf.get(i) ?? selPosOf.set(i, new THREE.Vector3(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2])).get(i);
   // the person under the cursor (within PICK_PX on screen): drawn bigger, so a click visibly means "this person"
   const hovGeo = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(3), 3));
   hovGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(HILITE.toArray()), 3));
@@ -213,12 +216,12 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   let hovered = -1;
   const _p = new THREE.Vector3();
   /** The shown person nearest to a screen point (client px), if within maxPx; else -1. */
-  function nearestOnScreen(cx, cy, maxPx) {
+  function nearestOnScreen(cx, cy, maxPx, any = false) {
     const r = renderer.domElement.getBoundingClientRect(), w = r.width, h = r.height;
     let best = -1, bd = maxPx * maxPx;
-    const dim = st.selected >= 0;    // while one person is isolated, only they and the bright others count
+    const dim = sel.length > 0 && !any;   // while people are isolated only they count, unless adding (any: Shift held)
     for (let i = 0; i < A; i++) {
-      if (pos[3 * i + 1] <= OFF / 2 || (dim && i !== st.selected) || !drawn(i)) continue;
+      if (pos[3 * i + 1] <= OFF / 2 || (dim && !selSet.has(i)) || !drawn(i)) continue;
       _p.set(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]).project(camera);
       if (_p.z > 1 || _p.z < -1) continue;
       const dx = (_p.x + 1) / 2 * w + r.left - cx, dy = (1 - _p.y) / 2 * h + r.top - cy, d = dx * dx + dy * dy;
@@ -248,22 +251,25 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const WALL_H = 2.4, GLOW_W = 1.4;
 
   // trails while playing: every moving person draws a short light wall behind them, in their type colour,
-  // fading out over the last `tail` simulated seconds (longer at faster speeds)
+  // fading out over the last `tail` simulated seconds (longer at faster speeds). With a person selected, everyone else's
+  // trail fades with them (to isolateAlpha) and the selected person keeps a full one (user, 2026-10-12: the trails went
+  // away on a selection; only the recent stretch is drawn, never the whole modeled route, see select())
   const MAXT = pc.maxTrails ?? 8000, TS = 6;  // people with a trail, segments per trail
-  const tP = new Float32Array(MAXT * TS * 6 * 3), tC = new Float32Array(MAXT * TS * 6 * 3), tT = new Float32Array(MAXT * TS * 6), tA = new Float32Array(MAXT * TS * 6);
+  const tP = new Float32Array(MAXT * TS * 6 * 3), tC = new Float32Array(MAXT * TS * 6 * 3), tT = new Float32Array(MAXT * TS * 6), tA = new Float32Array(MAXT * TS * 6), tS = new Float32Array(MAXT * TS * 6);
   const tGeo = new THREE.BufferGeometry();
   tGeo.setAttribute("position", new THREE.BufferAttribute(tP, 3).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("color", new THREE.BufferAttribute(tC, 3).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("aT", new THREE.BufferAttribute(tT, 1).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("aA", new THREE.BufferAttribute(tA, 1).setUsage(THREE.DynamicDrawUsage));
-  const trailU = { now: { value: 0 }, tail: { value: 600 }, strength: { value: pc.neonStrength ?? 1 } };
+  tGeo.setAttribute("aS", new THREE.BufferAttribute(tS, 1).setUsage(THREE.DynamicDrawUsage));   // 1 = the selected person
+  const trailU = { now: { value: 0 }, tail: { value: 600 }, strength: { value: pc.neonStrength ?? 1 }, dim: uniforms.alpha };   // people's opacity
   const trails = new THREE.Mesh(tGeo, new THREE.ShaderMaterial({
     uniforms: trailU, vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-    vertexShader: `attribute float aT; attribute float aA; varying float vT; varying float vA; varying vec3 vC;
-      void main() { vT = aT; vA = aA; vC = color; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-    fragmentShader: `uniform float now; uniform float tail; uniform float strength; varying float vT; varying float vA; varying vec3 vC;
+    vertexShader: `attribute float aT; attribute float aA; attribute float aS; varying float vT; varying float vA; varying float vS; varying vec3 vC;
+      void main() { vT = aT; vA = aA; vS = aS; vC = color; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform float now; uniform float tail; uniform float strength; uniform float dim; varying float vT; varying float vA; varying float vS; varying vec3 vC;
       void main() { float age = clamp((now - vT) / tail, 0.0, 1.0);
-        float a = pow(1.0 - vA, 1.5) * (1.0 - age) * 0.22 * strength;
+        float a = pow(1.0 - vA, 1.5) * (1.0 - age) * 0.22 * strength * (vS > 0.5 ? 1.0 : dim);
         gl_FragColor = vec4(mix(vC, vec3(1.0), 0.35 * (1.0 - age)), a); }`,
   }));
   trails.frustumCulled = false;
@@ -277,7 +283,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     let v = 0;
     for (let m = 0; m < movers.length && m < MAXT * 2; m += 2) {
       const i = movers[m], k = movers[m + 1], T0 = D.t0[k] * TU, dur = Math.max((D.t1[k] - D.t0[k]) * TU, 1);
-      const start = Math.max(T - tail, T0), c = colors[type[i]];
+      const start = Math.max(T - tail, T0), c = colors[type[i]], self = selSet.has(i) ? 1 : 0;
       along(D, i, k, (start - T0) / dur, ta);
       let tPrev = start;
       for (let s = 1; s <= TS; s++) {
@@ -287,14 +293,15 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
           const q = [[ta.x, ta.y - BODY, ta.z], [tb.x, tb.y - BODY, tb.z], [ta.x, ta.y - BODY + WALL_H, ta.z], [tb.x, tb.y - BODY + WALL_H, tb.z]];
           const qt = [tPrev, tn, tPrev, tn], qa = [0, 0, 1, 1];
           for (const j of [0, 1, 2, 2, 1, 3]) {
-            tP.set(q[j], 3 * v); tC[3 * v] = c.r; tC[3 * v + 1] = c.g; tC[3 * v + 2] = c.b; tT[v] = qt[j]; tA[v] = qa[j]; v++;
+            tP.set(q[j], 3 * v); tC[3 * v] = c.r; tC[3 * v + 1] = c.g; tC[3 * v + 2] = c.b; tT[v] = qt[j]; tA[v] = qa[j]; tS[v] = self; v++;
           }
         }
         ta.copy(tb); tPrev = tn;
       }
     }
     tGeo.setDrawRange(0, v);
-    for (const a of Object.values(tGeo.attributes)) a.needsUpdate = true;
+    // upload only the part in use (user, 2026-10-12: the whole ~10 MB went up every frame, ~27 ms a frame while playing)
+    for (const a of Object.values(tGeo.attributes)) { a.clearUpdateRanges(); a.addUpdateRange(0, Math.max(v, 1) * a.itemSize); a.needsUpdate = true; }
   }
 
   // Y-1 outline (scene-local [x, north, z]) for the "on Y-1" count
@@ -306,10 +313,11 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const D = days[st.day], T = st.t;
     counts.total = counts.indoors = counts.outdoors = counts.y1 = 0;
     counts.byType.fill(0);
-    const wantTrails = st.playing && st.neon && st.selected < 0 && points.visible, movers = [];
+    // trails while playing, and while a person is selected (the day pauses then, select()): the last stretch stays put
+    const wantTrails = (st.playing || sel.length > 0) && st.neon && points.visible, movers = [];
     for (let i = 0; i < A; i++) {
       const r = position(D, i, T, tmp);
-      if (wantTrails && lastTrip >= 0) movers.push(i, lastTrip);
+      if (wantTrails && lastTrip >= 0) { if (selSet.has(i)) movers.unshift(i, lastTrip); else movers.push(i, lastTrip); }   // first: never past MAXT
       if (r === 0) { pos[3 * i + 1] = OFF; continue; }
       pos[3 * i] = tmp.x; pos[3 * i + 1] = tmp.y; pos[3 * i + 2] = tmp.z;
       const w = weight[i];
@@ -320,11 +328,15 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     geo.attributes.position.needsUpdate = true;
     trails.visible = wantTrails;
     if (wantTrails) buildTrails(movers);
-    if (st.selected >= 0) {
-      const ok = position(D, st.selected, T, tmp);
-      selPoint.visible = points.visible && ok !== 0;
-      selGeo.attributes.position.array.set([tmp.x, tmp.y, tmp.z]);
-      selPos.copy(tmp);
+    if (sel.length) {
+      let m = 0;
+      for (const j of sel) {
+        if (position(D, j, T, tmp) === 0) continue;
+        posOf(j).copy(tmp);
+        if (m < MAXSEL) selGeo.attributes.position.array.set([tmp.x, tmp.y, tmp.z], 3 * m++);
+      }
+      selGeo.setDrawRange(0, m);
+      selPoint.visible = points.visible && m > 0;
       selGeo.attributes.position.needsUpdate = true;
     }
     if (hovered >= 0) {
@@ -416,16 +428,27 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     };
     alphaAnim = requestAnimationFrame(step);
   }
-  function select(i) {
-    st.selected = i;
-    // isolate the selected person: everyone else fades and loses their trail
-    fadeAlpha(i < 0 ? 1 : pc.isolateAlpha ?? 0.15);
-    material.depthWrite = i < 0;
+  // selecting a person pauses the day, so they do not run off (user, 2026-10-12); clearing the selection plays it again
+  // if it was playing before, unless Play / Pause was pressed in between
+  let resumeAfter = false;
+  // select(i): only person i; select(i, true): add i, or take i out if already selected; select(-1): nobody
+  function select(i, add = false) {
+    const before = sel.length;
+    if (i < 0) sel.length = 0;
+    else if (add) { const k = sel.indexOf(i); if (k >= 0) { sel.splice(k, 1); selPosOf.delete(i); onDrop?.(i); } else sel.push(i); }
+    else { sel.length = 0; sel.push(i); }
+    selSet.clear(); for (const j of sel) selSet.add(j);
+    for (const j of [...selPosOf.keys()]) if (!selSet.has(j)) selPosOf.delete(j);
+    if (sel.length && !before) { resumeAfter = st.playing; if (st.playing) setPlaying(false); }
+    if (!sel.length && before && resumeAfter) { resumeAfter = false; if (st.shown !== false) setPlaying(true); }
+    st.selected = sel.length ? sel[sel.length - 1] : -1;
+    // isolate the selected people: everyone else fades, their trails with them; the selected keep full trails
+    if (!before !== !sel.length) fadeAlpha(sel.length ? pc.isolateAlpha ?? 0.15 : 1);
+    material.depthWrite = !sel.length;
     st.dirty = true;
-    if (i < 0) { selPoint.visible = route.visible = false; return; }
+    if (!sel.length) { selPoint.visible = route.visible = false; return; }
     // no route line (user, 2026-10-09: a modeled shortest path drawn as a line reads as a real track)
-    onInfo(story(i), selPos);
-    st.dirty = true;
+    if (selSet.has(i)) onInfo(story(i), posOf(i), i, add ? "add" : "only");
   }
 
   // ---------- UI ----------
@@ -465,7 +488,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     r.style.setProperty("--p", `${(100 * (r.value - r.min)) / (r.max - r.min)}%`);
   }
   $("#popTime").oninput = (e) => { st.t = +e.target.value; st.dirty = true; setTimeSlider(st.t); };
-  $("#popPlay").onclick = () => setPlaying(!st.playing);
+  $("#popPlay").onclick = () => { resumeAfter = false; setPlaying(!st.playing); };
   // Weekday / Weekend: a segmented control with a sliding thumb, like Color (viewer.js moveThumb)
   function dayThumb(instant) {
     const th = $("#popDay .thumb"), on = $("#popDay button.on");
@@ -479,7 +502,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     st.day = b.dataset.d; st.dirty = true; recurve();
     document.querySelectorAll("#popDay button").forEach((x) => x.classList.toggle("on", x === b));
     dayThumb(false);
-    if (st.selected >= 0) select(st.selected);
+    for (const j of sel) onInfo(story(j), posOf(j), j, "refresh");   // the labels show the new day
   }));
   $(`#popDay button[data-d='${st.day}']`).classList.add("on");
   addEventListener("resize", () => dayThumb(true));
@@ -495,10 +518,10 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     highlight(k) { uniforms.size.value = SIZE0 + (SIZE1 - SIZE0) * k; uniforms.minPx.value = 2 + k; st.dirty = true; },
     setVisible(on) {
       st.shown = on;
-      if (on) { points.visible = true; uniforms.alpha.value = 0; fadeAlpha(st.selected >= 0 ? pc.isolateAlpha ?? 0.15 : 1); }
+      if (on) { points.visible = true; uniforms.alpha.value = 0; fadeAlpha(sel.length ? pc.isolateAlpha ?? 0.15 : 1); }
       else fadeAlpha(0, () => { if (!st.shown) points.visible = false; });   // fade out, then stop drawing
       if (!on) { hovered = -1; hovPoint.visible = false; }
-      selPoint.visible = on && st.selected >= 0;
+      selPoint.visible = on && sel.length > 0;
       route.visible = false;
       setXray(on && st.xray);
       if (!on) trails.visible = false;
@@ -517,7 +540,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     },
     // the person within maxPx of a screen point (client px), or -1 (user, 2026-10-08: screen distance, so picking a
     // person or a building behaves the same at every zoom)
-    nearest(cx, cy, maxPx) { return points.visible && st.shown !== false ? nearestOnScreen(cx, cy, maxPx) : -1; },
+    nearest(cx, cy, maxPx, any = false) { return points.visible && st.shown !== false ? nearestOnScreen(cx, cy, maxPx, any) : -1; },
     // hover marker: person index or -1
     hover(i) {
       if (i === hovered) return;
@@ -525,13 +548,14 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       if (i >= 0) { hovGeo.attributes.position.array.set(pos.subarray(3 * i, 3 * i + 3)); hovGeo.attributes.position.needsUpdate = true; hovPoint.visible = true; }
     },
     // returns true if the click selected person i (from nearest); -1 clears a selected person
-    pickIndex(i) {
-      if (i < 0) { if (st.selected >= 0) select(-1); return false; }
-      selPos.set(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]);
-      select(i);
+    // add (Shift held): add i to the selection, or take it out; nobody near with add: the selection stays
+    pickIndex(i, add = false) {
+      if (i < 0) { if (!add && sel.length) select(-1); return false; }
+      select(i, add);
       return true;
     },
-    clearSelection() { if (st.selected >= 0) select(-1); },
+    deselectPerson(i) { if (selSet.has(i)) select(i, true); },   // a closed label (viewer.js)
+    clearSelection() { if (sel.length) select(-1); },
     select,  // select(i): show person i's day (debugging / links)
   };
   onStatus?.("");
