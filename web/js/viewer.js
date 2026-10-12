@@ -19,10 +19,10 @@ const len = (m, digits = 1) => `${toUnit(m).toFixed(digits)} ${units}`;
 const ENTITIES = cfg.entities ? await fetch(cfg.entities).then((r) => (r.ok ? r.json() : null)).catch(() => null) : null;
 const entityOfName = new Map();
 for (const e of ENTITIES?.entities ?? []) for (const p of e.parts) entityOfName.set(p, e);
-// Display settings (panel section): ?px= ?keep= ?cap= ?size= override config.json "lidar" for this page only (lodPixels,
-// lodKeepDensity, pointCap, size), so settings can be tried before they go into config.json
+// Display settings (panel section): ?px= ?keep= ?cap= ?size= ?movekeep= override config.json "lidar" for this page only (lodPixels,
+// lodKeepDensity, pointCap, size, moveKeep), so settings can be tried before they go into config.json
 const urlq = new URLSearchParams(location.search);
-for (const [k, key] of [["px", "lodPixels"], ["keep", "lodKeepDensity"], ["cap", "pointCap"], ["size", "size"]])
+for (const [k, key] of [["px", "lodPixels"], ["keep", "lodKeepDensity"], ["cap", "pointCap"], ["size", "size"], ["movekeep", "moveKeep"]])
   if (urlq.has(k)) cfg.lidar[key] = +urlq.get(k);
 
 // ---------- renderer / scene / camera ----------
@@ -522,15 +522,18 @@ async function loadLidar() {
 // Each point is drawn when its priority q (random x the local density of its layer, set in loadLidar) is below the density the
 // screen can show at the chunk's distance, (focal / d)^2 / LOD_PX^2 returns per m2: a point in dense ground is kept with a
 // lower probability than one in sparse ground, so neighbouring points end up at most ~LOD_PX pixels apart everywhere and the
-// thinning has no steps at chunk borders. Chunks hold their points sorted by q, so this is a draw range. The count depends
-// only on where the camera is, never on whether it is moving, so nothing pops when a drag or zoom stops; counts also ease
+// thinning has no steps at chunk borders. Chunks hold their points sorted by q, so this is a draw range. Counts ease
 // towards their target over a few frames. A total cap protects slow machines.
+// While the camera moves (a drag, the damping after it, a fly-to) only MOVE_KEEP of each count is drawn, at once and at
+// the same point size (user, 2026-10-11: no size compensation); MOVE_HOLD ms after the last move the counts ease back to
+// full (render time is about linear in points: ~30 ms at the 6M cap, so a third cuts a moving frame to ~12 ms).
+// config.json lidar.moveKeep or ?movekeep= (1 = off).
 let LOD_PX = cfg.lidar.lodPixels ?? 1.2, LOD_CAP = cfg.lidar.pointCap ?? 6e6;
-const LOD_EASE = 0.25;
+const LOD_EASE = 0.25, MOVE_KEEP = cfg.lidar.moveKeep ?? 1 / 3, MOVE_HOLD = cfg.lidar.moveHold ?? 200;
 const LOD_KEEP = cfg.lidar.lodKeepDensity ?? 0.8, LOD_RHO0 = cfg.lidar.lodRefDensity ?? 1.0;   // see loadLidar
 const _c = new THREE.Vector3();
 const below = (q, t) => { let lo = 0, hi = q.length; while (lo < hi) { const m = (lo + hi) >> 1; if (q[m] < t) lo = m + 1; else hi = m; } return lo; };
-function updateLod() {
+function updateLod(moving) {
   if (!lidar) return false;
   const focal = renderer.domElement.height / 2 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   const chunks = [];
@@ -545,17 +548,19 @@ function updateLod() {
   // over the cap: widen the allowed on-screen gap (binary search) instead of thinning everything, so near chunks stay complete
   let px = LOD_PX;
   if (count(px) > LOD_CAP) { let lo = LOD_PX, hi = 64; for (let it = 0; it < 20; it++) { const mid = (lo + hi) / 2; if (count(mid) > LOD_CAP) lo = mid; else hi = mid; } px = hi; }
-  let moving = false;
+  let easing = false;
   for (const [p, q, a] of chunks) {
-    const n = q.length, target = Math.max(1, below(q, a / (px * px)));
+    const n = q.length, full = Math.max(1, below(q, a / (px * px)));
+    const target = moving ? Math.max(1, Math.round(full * MOVE_KEEP)) : full;
     const cur = Math.min(p.geometry.drawRange.count, n);
     if (cur === target) continue;
+    if (moving && cur > target) { p.geometry.setDrawRange(0, target); continue; }   // thin at once when the camera starts moving
     const step = (target - cur) * LOD_EASE;
     const next = Math.abs(target - cur) < 64 ? target : Math.round(cur + step);
     p.geometry.setDrawRange(0, next);
-    moving = true;
+    easing = true;
   }
-  return moving;   // true while some chunk is still easing: keep rendering
+  return easing;   // true while some chunk is still easing: keep rendering
 }
 const RAMP = [[0.18, 0.2, 0.45], [0.13, 0.55, 0.6], [0.55, 0.78, 0.35], [0.98, 0.85, 0.3], [0.85, 0.35, 0.2]];
 function ramp(t) {
@@ -1186,22 +1191,50 @@ function adaptGlass(now) {
 }
 let glassPending = false;
 setInterval(() => { if (glassPending) { dirty = true; } }, GLASS_EVERY);   // re-check once the camera stops
-renderer.setAnimationLoop((now) => {
+// ---------- motion trail (try-out, off by default): ?trail=<0..1> blends the previous frames in while the camera moves, to
+// soften the thinner cloud (MOVE_KEEP); the frame turns sharp as soon as the camera stops. Exponential average of the
+// frames (three.js AfterimagePass with a mix instead of its max, so the trail shows on light and dark backgrounds alike).
+const TRAIL = urlq.has("trail") ? Math.min(Math.max(+urlq.get("trail") || 0.6, 0), 0.95) : 0;
+let composer = null, afterimage = null;
+if (TRAIL) {
+  const [{ EffectComposer }, { RenderPass }, { AfterimagePass }, { OutputPass }] = await Promise.all([
+    import("three/addons/postprocessing/EffectComposer.js"), import("three/addons/postprocessing/RenderPass.js"),
+    import("three/addons/postprocessing/AfterimagePass.js"), import("three/addons/postprocessing/OutputPass.js")]);
+  const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+  composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(size.x, size.y, { type: THREE.HalfFloatType, samples: 4 }));
+  composer.addPass(new RenderPass(scene, camera));
+  afterimage = new AfterimagePass(0);
+  afterimage.compFsMaterial.fragmentShader = `uniform float damp; uniform sampler2D tOld, tNew; varying vec2 vUv;
+    void main() { gl_FragColor = mix(texture2D(tNew, vUv), texture2D(tOld, vUv), damp); }`;
+  afterimage.compFsMaterial.needsUpdate = true;
+  composer.addPass(afterimage);
+  composer.addPass(new OutputPass());
+  addEventListener("resize", () => composer.setSize(innerWidth, innerHeight));
+}
+let wasMoving = false, trailOn = false;
+function frame(now) {
   if (tween) { stepTween(now); dirty = true; lastMove = now; }
   if (controls.update()) { dirty = true; lastMove = now; }   // damping keeps moving the camera after the drag ends
+  const moving = MOVE_KEEP < 1 && now - lastMove < MOVE_HOLD;
+  if (moving !== wasMoving) { dirty = true; wasMoving = moving; }   // stopped: ease the counts back to full
   // LiDAR level of detail: recomputed whenever the view changed or a chunk is still easing to its target
-  if (lidar && mode === "cloud" && (dirty || lodEasing)) { lodEasing = updateLod(); if (lodEasing) dirty = true; }
+  if (lidar && mode === "cloud" && (dirty || lodEasing)) { lodEasing = updateLod(moving); if (lodEasing) dirty = true; }
   // the population plays on its own clock: draw while it plays or after one of its settings changed
   if (pop && (pop.visible || pop.state.fading)) { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing || pop.state.fading) dirty = true; }
   if (!dirty) return;
   dirty = false;
-  renderer.render(scene, camera);
+  // the trail passes cost several ms (a multisampled half-float target): only while moving; the first moving frame starts
+  // the trail afresh (damp 0), so no picture from the last move shows up
+  if (composer && moving) { afterimage.uniforms.damp.value = trailOn ? TRAIL : 0; composer.render(); trailOn = true; }
+  else { renderer.render(scene, camera); trailOn = false; }
   updateTags();
   adaptGlass(now);
-});
+}
+renderer.setAnimationLoop(frame);
 window.__viewer = {
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
   camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; },   // debugging / performance checks
+  frame, setAnimationLoop: (f) => renderer.setAnimationLoop(f),   // frame-by-frame captures: stop the loop, call frame(t)
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
