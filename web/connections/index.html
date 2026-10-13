@@ -65,17 +65,12 @@
   .blob.main i { color: var(--text); }
   /* scanning: a slider thumb on the time axis itself (user, 2026-10-12: no second line across); dragging it frames
      the entries of that time. Its readout sits to the left, clear of the years. */
-  /* upright and solid, so it is always easy to find; a little bigger under the pointer and while held (user, 2026-10-12) */
-  #thumb { position: fixed; left: 0; top: 0; width: 8px; height: 22px; margin: -11px 0 0 -4px; z-index: 3;
-    background: var(--text); border-radius: 4px; will-change: translate; touch-action: none;
-    transition: scale var(--t-feedback) ease; }
-  #thumb:hover, #thumb.drag { scale: 1.3; }   /* grows on hover; the pointer itself stays as it is */
-  #thumb::before { content: ""; position: absolute; inset: -6px -10px; }   /* a bigger target than the drawing */
-  #thumb .rd { position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%); text-align: right;
-    font: 0.68rem/1.3 var(--mono); color: var(--text); white-space: nowrap; pointer-events: none; opacity: 0;
+  /* the slider is a capsule in the scene (user, 2026-10-12: solid and 3D, as the view turns); only its readout is HTML */
+  #scanrd { position: fixed; left: 0; top: 0; z-index: 3; text-align: right; pointer-events: none; will-change: translate;
+    font: 0.68rem/1.3 var(--mono); color: var(--text); white-space: nowrap; transform: translate(-100%, -50%); opacity: 0;
     transition: opacity var(--t-feedback); }
-  #thumb.on .rd { opacity: 1; }
-  #thumb .rd b { font-size: 0.95rem; font-weight: 400; display: block; }
+  #scanrd.on { opacity: 1; }
+  #scanrd b { font-size: 0.95rem; font-weight: 400; display: block; }
   /* locking on: the frame closes in from larger (scale, not transform, which holds the position) */
   .blob { animation: lockOn var(--t-in) ease-out both; }
   @keyframes lockOn { from { opacity: 0; scale: 2.2; } to { opacity: 1; scale: 1; } }
@@ -117,7 +112,7 @@
 <body>
 <div id="view"></div>
 <div id="blobs"></div>
-<div id="thumb" aria-label="Drag to scan the time axis"><div class="rd"></div></div>
+<div id="scanrd"></div>
 <div id="labels"></div>
 <div class="over">
   <p class="eyebrow">Angels Knoll · Connections · <a href="../" class="home">home</a></p>
@@ -296,7 +291,7 @@ const years = [];
 const labelsEl = document.getElementById("labels");
 const labels = new Map();   // node index -> element
 const blobsEl = document.getElementById("blobs"), blobs = new Map();
-const thumb = document.getElementById("thumb"), scanRd = thumb.querySelector(".rd");
+const scanRd = document.getElementById("scanrd");
 function label(i) {
   if (labels.has(i)) return labels.get(i);
   const n = nodes[i], el = document.createElement("div");
@@ -389,7 +384,7 @@ function paint() {
     for (const v of [0, 1]) { lCol.set([c.r, c.g, c.b, a], 8 * k + 4 * v); }
   });
   lGeo.attributes.color.needsUpdate = true;
-  axisMat.color.copy(css.faint);
+  axisMat.color.copy(css.faint); thumbMat.color.copy(css.text);
   // which labels show: hubs always; entries when in focus
   const want = new Set(nodes.map((n, i) => isHub(n) ? i : -1).filter((i) => i >= 0));
   if (fs) fs.forEach((i) => want.add(i));
@@ -448,13 +443,13 @@ const nodeAt = (e) => {
   if (lb) return +lb.dataset.i;
   return e.target === renderer.domElement ? pick(e.clientX, e.clientY) : -1;
 };
-const onScene = (e) => e.target === renderer.domElement || (e.target.closest && e.target.closest(".lb[data-i], #thumb"));
+const onScene = (e) => e.target === renderer.domElement || (e.target.closest && e.target.closest(".lb[data-i]"));
 function rayAt(e) { ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera); }
 addEventListener("pointerdown", (e) => {
   if (!onScene(e) || e.button !== 0) return;
   down = [e.clientX, e.clientY]; controls.autoRotate = false; idleT = performance.now();
   // the axis and the strip of years beside it scan, ahead of points there (tags still drag)
-  if (e.target.closest("#thumb") || (e.target === renderer.domElement && nearAxis(e.clientX, e.clientY))) {
+  if (e.target === renderer.domElement && (onThumb(e) || nearAxis(e.clientX, e.clientY))) {
     controls.enabled = false; scanning = true; scanTo(e); e.preventDefault(); return;
   }
   const i = nodeAt(e);
@@ -468,6 +463,7 @@ addEventListener("pointerdown", (e) => {
   e.preventDefault();
 }, true);
 addEventListener("pointermove", (e) => {
+  thumbHot = e.target === renderer.domElement && onThumb(e);
   if (scanning) { scanTo(e); idleT = performance.now(); return; }
   if (drag) {
     if (!drag.moved && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 4) return;
@@ -518,6 +514,18 @@ function scanTo(e) {
   if (!ray.ray.intersectPlane(plane, hit)) return;
   scan = Math.max(yOf(t0), Math.min(yOf(t1), hit.y)); dirty = true;
   controls.autoRotate = false;
+}
+// the slider: a capsule on the axis, lit from the camera so it reads as solid from every side
+const thumbMat = new THREE.MeshLambertMaterial({ color: css.text });
+const thumbMesh = new THREE.Mesh(new THREE.CapsuleGeometry(4, 15, 8, 24), thumbMat);
+scene.add(thumbMesh, new THREE.HemisphereLight(0xffffff, 0x404040, 0.9));
+const lamp = new THREE.DirectionalLight(0xffffff, 1.1); lamp.position.set(-0.6, 1, 0.8); camera.add(lamp); scene.add(camera);
+let thumbHot = false;
+function onThumb(e) {   // on the capsule, or within a few pixels of it
+  rayAt(e);
+  if (ray.intersectObject(thumbMesh).length) return true;
+  v3.copy(thumbMesh.position).project(camera);
+  return Math.hypot((v3.x + 1) / 2 * innerWidth - e.clientX, (1 - v3.y) / 2 * innerHeight - e.clientY) < 12;
 }
 let thumbRest = yOf(t1);   // where the thumb waits: the present, or where the last scan ended
 function clearScan() { if (scan !== null) { thumbRest = scan; scan = null; dirty = true; } }
@@ -615,11 +623,14 @@ function frame(now) {
   project();
   for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
   years.forEach(([, yy], k) => placeLabel(yearEls[k], 0, yy, 0, 10, -6));
-  {   // the thumb rides the axis: at the scanned height, or resting at the present
+  {   // the slider rides the axis: at the scanned height, or resting at the present; bigger under the pointer or held
     const ys = scan !== null ? scan : thumbRest;
+    thumbMesh.position.y = ys;
+    const k = thumbHot || scanning ? 1.3 : 1;
+    thumbMesh.scale.setScalar(thumbMesh.scale.x + (k - thumbMesh.scale.x) * 0.25);
     v3.set(0, ys, 0).project(camera);
-    thumb.style.translate = `${((v3.x + 1) / 2 * innerWidth).toFixed(1)}px ${((1 - v3.y) / 2 * innerHeight).toFixed(1)}px`;
-    thumb.classList.toggle("on", scan !== null); thumb.classList.toggle("drag", scanning);
+    scanRd.style.translate = `${((v3.x + 1) / 2 * innerWidth - 14).toFixed(1)}px ${((1 - v3.y) / 2 * innerHeight).toFixed(1)}px`;
+    scanRd.classList.toggle("on", scan !== null);
     if (scan !== null) {
       const t = tOf(scan), lo = tOf(scan - SCAN_BAND), hi = tOf(scan + SCAN_BAND);
       const n = nodes.reduce((c, _, i) => c + (inScan(i) ? 1 : 0), 0);
