@@ -244,7 +244,26 @@ function pointMaterial(sizeMetres) {
 // they meet) whose points are shuffled: drawing the first k points of a chunk is then an even thinning (see updateLod).
 const LOD_CELL = cfg.lidar.lodCell ?? 120;
 const lodCell = () => LOD_CELL;
-function decodeLaz(url, meta) {
+// Prepared in the background from the home page (prerender), the browser holds back new workers until the reader
+// arrives (user, 2026-10-12: Model still had to load). Then the page downloads and decodes the file itself, in short
+// steps (laz-core.js, shared with the worker), so the cloud is ready when the reader comes; otherwise a worker does it.
+const LAZPERF = "https://cdn.jsdelivr.net/npm/laz-perf@0.0.7/lib/web/";
+const loadScript = (src) => new Promise((ok, fail) => {
+  const el = Object.assign(document.createElement("script"), { src, onload: ok, onerror: () => fail(new Error(`could not load ${src}`)) });
+  document.head.append(el);
+});
+async function decodeLaz(url, meta) {
+  const abs = new URL(url, location.href).href;   // absolute: a worker resolves relative URLs against js/
+  if (document.prerendering) {
+    const res = await fetch(abs);
+    if (!res.ok) throw new Error(`LiDAR file ${url}: HTTP ${res.status}`);
+    const file = new Uint8Array(await res.arrayBuffer());
+    await loadScript(LAZPERF + "laz-perf.js");
+    await loadScript(new URL("./laz-core.js", import.meta.url).href);
+    // yield between steps with a message, not a timer: a hidden page's timers are slowed to about one a second
+    const step = () => new Promise((r) => { const c = new MessageChannel(); c.port1.onmessage = () => r(); c.port2.postMessage(0); });
+    return self.lazDecode(file, meta, self.createLazPerf, LAZPERF, status, step);
+  }
   return new Promise((resolve, reject) => {
     const w = new Worker(new URL("./laz-worker.js", import.meta.url));
     w.onmessage = (e) => {
@@ -252,7 +271,7 @@ function decodeLaz(url, meta) {
       w.terminate();
       if (e.data.error) reject(new Error(e.data.error)); else resolve(e.data);
     };
-    w.postMessage({ url: new URL(url, location.href).href, meta });   // absolute: a worker resolves relative URLs against js/
+    w.postMessage({ url: abs, meta });
   });
 }
 async function loadLidar() {
