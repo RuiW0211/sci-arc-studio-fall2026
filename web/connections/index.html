@@ -40,6 +40,23 @@
   .lb.dim { pointer-events: none; }
   .lb.year { font: 0.62rem var(--mono); color: var(--faint); }
   .lb.dim { opacity: 0.18; }
+  /* blob tracking (user, 2026-10-12, after TouchDesigner's Blob Track): the point in focus and its neighbours get a
+     tracking frame that locks on and follows them, with a small readout; the chosen one gets a full square */
+  #blobs { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+  .blob { position: absolute; left: 0; top: 0; width: var(--s); height: var(--s); will-change: transform;
+    --k: var(--text); --l: 5px;
+    background: linear-gradient(var(--k), var(--k)) top left / var(--l) 1px, linear-gradient(var(--k), var(--k)) top left / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) top right / var(--l) 1px, linear-gradient(var(--k), var(--k)) top right / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) bottom left / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom left / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) bottom right / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom right / 1px var(--l);
+    background-repeat: no-repeat; }
+  .blob i { position: absolute; right: calc(100% + 3px); top: calc(100% - 2px); text-align: right; font: 0.56rem/1 var(--mono); color: var(--muted);
+    white-space: nowrap; font-style: normal; letter-spacing: 0.02em; }
+  .blob.main { border: 1px solid var(--k); background: none; }
+  .blob.main i { color: var(--text); }
+  /* locking on: the frame closes in from larger (scale, not transform, which holds the position) */
+  .blob { animation: lockOn var(--t-in) ease-out both; }
+  @keyframes lockOn { from { opacity: 0; scale: 2.2; } to { opacity: 1; scale: 1; } }
 
   .card { position: fixed; right: 16px; top: 16px; bottom: 64px; width: 360px; overflow: auto; background: var(--bg);
     border: 1px solid var(--line); border-radius: 3px; padding: 16px 18px; font-size: 0.85rem; z-index: 4;
@@ -77,6 +94,7 @@
 </head>
 <body>
 <div id="view"></div>
+<div id="blobs"></div>
 <div id="labels"></div>
 <div class="over">
   <p class="eyebrow">Angels Knoll · Connections · <a href="../" class="home">home</a></p>
@@ -253,6 +271,7 @@ const years = [];
 // ---- labels (HTML over the canvas) ----
 const labelsEl = document.getElementById("labels");
 const labels = new Map();   // node index -> element
+const blobsEl = document.getElementById("blobs"), blobs = new Map();
 function label(i) {
   if (labels.has(i)) return labels.get(i);
   const n = nodes[i], el = document.createElement("div");
@@ -313,6 +332,24 @@ function paint() {
     el.classList.toggle("sel", i === sel);
   }
   if (fs) fs.forEach((i) => { const el = label(i); el.style.display = ""; el.classList.remove("dim"); el.classList.toggle("sel", i === sel); });
+  // tracking frames: new ones lock on, gone ones are removed
+  const keep = fs ? [...fs].slice(0, 60) : [];
+  for (const [i, el] of blobs) if (!keep.includes(i)) { el.remove(); blobs.delete(i); }
+  for (const i of keep) {
+    let el = blobs.get(i);
+    if (!el) {
+      const n = nodes[i];
+      el = document.createElement("div");
+      el.className = "blob";
+      const read = n.type === "entry" ? `${n.id} · ${n.start ? num(n.start).toFixed(1) : "n.d."}` : `${n.type === "subject" ? "subj" : n.type === "person" ? "pers" : "org"} · ${n.deg}`;
+      el.innerHTML = `<i>${esc(read)}</i>`;
+      blobsEl.appendChild(el); blobs.set(i, el);
+    }
+    const main = i === f, s = main ? 26 : isHub(nodes[i]) ? 14 : 12 + Math.min(8, pSize[i] * 0.6);
+    el.classList.toggle("main", main); el.style.setProperty("--s", s + "px"); el.dataset.h = s / 2;
+    if (nodes[i].type === "entry" && main) el.style.setProperty("--k", `var(--${{ "open-question": "question" }[nodes[i].status] || nodes[i].status})`);
+    else el.style.removeProperty("--k");
+  }
   dirty = false;
 }
 
@@ -480,6 +517,12 @@ function frame(now) {
   project();
   for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
   years.forEach(([, yy], k) => placeLabel(yearEls[k], 0, yy, 0, 10, -6));
+  for (const [i, el] of blobs) {
+    const h = +el.dataset.h;
+    if (scr[3 * i + 2] > 1) { el.style.visibility = "hidden"; continue; }
+    el.style.visibility = "";
+    el.style.transform = `translate(${(scr[3 * i] - h).toFixed(1)}px, ${(scr[3 * i + 1] - h).toFixed(1)}px)`;
+  }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
