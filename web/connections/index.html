@@ -25,7 +25,16 @@
   .ctl button.on { color: var(--text); }
   .ctl button i { display: inline-block; width: 16px; height: 0; border-top: 1px solid currentColor; opacity: .35; }
   .ctl button.on i { opacity: 1; }
-  .ctl .hint { color: var(--faint); }
+  .ctl .hint { color: var(--faint); margin-top: 6px; }
+  .ctl .key { color: var(--muted); }
+  .ctl .key span { display: inline-flex; align-items: center; gap: 5px; }
+  .ctl .abbr { display: none; width: min(460px, calc(100vw - 32px)); max-height: 46vh; overflow: auto; margin-bottom: 10px;
+    padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; }
+  .ctl .abbr.show { display: block; }
+  .ctl .abbr dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; }
+  .ctl .abbr dt { font: 0.68rem var(--mono); color: var(--text); }
+  .ctl .abbr dd { color: var(--muted); }
+  .ctl .abbr-h { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin: 12px 0 6px; }
 
   /* labels drawn over the canvas */
   #labels { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
@@ -230,7 +239,7 @@ pGeo.setAttribute("position", new THREE.BufferAttribute(P, 3));
 const pCol = new Float32Array(N * 4), pSize = new Float32Array(N), pShape = new Float32Array(N);
 nodes.forEach((n, i) => {
   pSize[i] = n.type === "entry" ? 5 + Math.sqrt(n.deg + n.nsrc) * 1.6 : 7 + Math.sqrt(n.deg) * 1.4;
-  pShape[i] = n.type === "entry" ? (n.start ? 0 : 2) : n.type === "subject" ? 2 : 1;   // disc, square, ring
+  pShape[i] = n.type === "entry" ? (n.start ? 0 : 2) : n.type === "subject" ? 3 : 1;   // disc (dated), ring (no date), square, diamond
 });
 pGeo.setAttribute("color", new THREE.BufferAttribute(pCol, 4));
 pGeo.setAttribute("size", new THREE.BufferAttribute(pSize, 1));
@@ -247,7 +256,8 @@ const pMat = new THREE.ShaderMaterial({
     void main() { vec2 p = gl_PointCoord - 0.5; float d = length(p);
       if (vS < 0.5) { if (d > 0.5) discard; }
       else if (vS < 1.5) { if (max(abs(p.x), abs(p.y)) > 0.42) discard; }
-      else { if (d > 0.5 || d < 0.3) discard; }
+      else if (vS < 2.5) { if (d > 0.5 || d < 0.3) discard; }
+      else { if (abs(p.x) + abs(p.y) > 0.5) discard; }
       gl_FragColor = vC; }`,
 });
 scene.add(new THREE.Points(pGeo, pMat));
@@ -294,15 +304,42 @@ function label(i) {
 nodes.forEach((n, i) => { if (isHub(n)) label(i); });
 const yearEls = years.map(([y]) => { const el = document.createElement("div"); el.className = "lb year"; el.textContent = y; labelsEl.appendChild(el); return el; });
 
+const TOPIC_CODE = { "Media": "MED", "Angels Flight": "AF", "1980 Bargain & History": "1980", "Zoning & Entitlements": "ENT",
+  "Bunker Hill Before Redevelopment": "BH", "Surplus Land Act": "SLA", "Angels Knoll Park": "PARK", "Disposition & Notice": "DISP",
+  "Insights": "INS", "Litigation": "LIT", "California Plaza": "CAL", "Design Implications": "DES", "Unbuilt Schemes": "UNB",
+  "MOCA": "MOCA", "Site Conditions": "SITE", "Open Questions": "Q" };
 // ---- controls: link kinds ----
 const on = Object.fromEntries(KINDS.map((k) => [k.k, k.on]));
 const ctl = document.getElementById("ctl");
-ctl.innerHTML = `<div class="hint">Drag a point or tag to move it · drag the time axis to scan · drag space to turn · ` +
-  `<button data-reset>reset</button></div><div class="row">` +
+const ic = (shape, fill) => `<svg width="11" height="11" viewBox="0 0 11 11">${{
+  disc: `<circle cx="5.5" cy="5.5" r="4.5" style="fill:${fill}"/>`,
+  ring: `<circle cx="5.5" cy="5.5" r="3.8" style="fill:none;stroke:${fill};stroke-width:1.6"/>`,
+  square: `<rect x="1.5" y="1.5" width="8" height="8" style="fill:${fill}"/>`,
+  diamond: `<path d="M5.5 0.5 L10.5 5.5 L5.5 10.5 L0.5 5.5 Z" style="fill:${fill}"/>` }[shape]}</svg>`;
+const topicRows = Object.entries(TOPIC_CODE).map(([t, c]) => `<dt>${esc(c)}</dt><dd>${esc(t)}</dd>`).join("");
+ctl.innerHTML =
+  `<div class="abbr" id="abbr"><dl>` +
+  `<dt>park-004</dt><dd>Entry id, as in Research</dd>` +
+  `<dt>2013-07-30</dt><dd>Date as the source gives it: day, month (2001-12) or year (1867)</dd>` +
+  `<dt>n.d.</dt><dd>No date</dd><dt>src 13</dt><dd>Number of sources</dd>` +
+  `<dt>VER</dt><dd>Verified</dd><dt>UNV</dt><dd>Unverified</dd><dt>OPEN</dt><dd>Open question</dd><dt>ANL</dt><dd>Our analysis</dd>` +
+  `<dt>mention</dt><dd>Linked because one entry names the other</dd><dt>actor</dt><dd>Linked through a person or organisation named in the entry</dd>` +
+  `<dt>subject</dt><dd>Linked to a Media subject (our grouping)</dd>` +
+  `<dt>org 33</dt><dd>Organisation, with its number of links (pers: person, subj: subject)</dd>` +
+  `</dl><div class="abbr-h">Topics</div><dl>${topicRows}</dl></div>` +
+  `<div class="row key">` +
+  `<span>${ic("disc", "var(--muted)")}Entry with a date</span><span>${ic("ring", "var(--muted)")}Entry with no date</span>` +
+  `<span>${ic("square", "var(--text)")}Person or organisation</span><span>${ic("diamond", "var(--muted)")}Media subject (our grouping)</span>` +
+  `<span>${ic("disc", "var(--verified)")}Verified</span><span>${ic("disc", "var(--unverified)")}Unverified</span>` +
+  `<span>${ic("disc", "var(--question)")}Open question</span><span>${ic("disc", "var(--analysis)")}Our analysis</span>` +
+  `<span>Size: links and sources</span></div>` +
+  `<div class="hint">Drag a point or tag to move it · drag the time axis to scan · drag space to turn · ` +
+  `<button data-reset>reset</button> · <button data-abbr>abbreviations</button></div><div class="row">` +
   KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") + `</div>`;
 ctl.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.hasAttribute("data-reset")) return resetLayout();
+  if (b.hasAttribute("data-abbr")) { b.classList.toggle("on", document.getElementById("abbr").classList.toggle("show")); return; }
   on[b.dataset.k] = !on[b.dataset.k]; b.classList.toggle("on", on[b.dataset.k]); dirty = true;
 });
 
@@ -320,12 +357,9 @@ function focusSet() {
 }
 // the readout beside a tracking frame (user, 2026-10-12): the point in focus says what it is and how well it is
 // supported; a neighbour says why it is linked and when it is; a scanned entry says which topic it belongs to
-const TOPIC_CODE = { "Media": "MED", "Angels Flight": "AF", "1980 Bargain & History": "1980", "Zoning & Entitlements": "ENT",
-  "Bunker Hill Before Redevelopment": "BH", "Surplus Land Act": "SLA", "Angels Knoll Park": "PARK", "Disposition & Notice": "DISP",
-  "Insights": "INS", "Litigation": "LIT", "California Plaza": "CAL", "Design Implications": "DES", "Unbuilt Schemes": "UNB",
-  "MOCA": "MOCA", "Site Conditions": "SITE", "Open Questions": "Q" };
+
 const ST_CODE = { verified: "VER", unverified: "UNV", "open-question": "OPEN", analysis: "ANL" };
-const yr = (n) => n.start ? num(n.start).toFixed(2) : "n.d.";
+const yr = (n) => n.start || "n.d.";   // the date as the source gives it: a year, a month or a day (no false precision)
 const what = (n) => `${n.type === "subject" ? "subj" : n.type === "person" ? "pers" : "org"} ${n.deg}`;
 function readout(i, f) {
   const n = nodes[i];
@@ -579,7 +613,7 @@ function frame(now) {
     const sy = (1 - v3.y) / 2 * innerHeight;
     scanEl.style.translate = `0 ${sy.toFixed(1)}px`; scanEl.classList.add("on");
     const t = tOf(scan), lo = tOf(scan - SCAN_BAND), hi = tOf(scan + SCAN_BAND), n = blobs.size;
-    const txt = `<b>${t.toFixed(1)}</b>${Math.floor(lo)}–${Math.floor(hi)} · ${n} ${n === 1 ? "entry" : "entries"}`;
+    const txt = `<b>${Math.floor(t)}</b>${Math.floor(lo)}–${Math.floor(hi)} · ${n} ${n === 1 ? "entry" : "entries"}`;
     if (scanRd.innerHTML !== txt) scanRd.innerHTML = txt;
   } else scanEl.classList.remove("on");
   for (const [i, el] of blobs) {
