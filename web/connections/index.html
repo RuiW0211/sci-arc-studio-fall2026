@@ -63,13 +63,19 @@
     white-space: nowrap; font-style: normal; letter-spacing: 0.02em; }
   .blob.main { border: 1px solid var(--k); background: none; }
   .blob.main i { color: var(--text); }
-  /* scanning the time axis (user, 2026-10-12): a hairline across the screen at the scanned year, with a readout */
-  #scan { position: fixed; left: 0; right: 0; top: 0; height: 0; pointer-events: none; z-index: 2; opacity: 0;
+  /* scanning: a slider thumb on the time axis itself (user, 2026-10-12: no second line across); dragging it frames
+     the entries of that time. Its readout sits to the left, clear of the years. */
+  #thumb { position: fixed; left: 0; top: 0; width: 22px; height: 8px; margin: -4px 0 0 -11px; z-index: 3; cursor: ns-resize;
+    border: 1px solid var(--text); background: var(--bg); border-radius: 1px; opacity: 0.55; will-change: translate;
+    transition: opacity var(--t-feedback), background-color var(--t-feedback); touch-action: none; }
+  #thumb:hover, #thumb.on { opacity: 1; }
+  #thumb.on { background: var(--text); }
+  #thumb::before { content: ""; position: absolute; inset: -8px -6px; }   /* a bigger target than the drawing */
+  #thumb .rd { position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%); text-align: right;
+    font: 0.68rem/1.3 var(--mono); color: var(--text); white-space: nowrap; pointer-events: none; opacity: 0;
     transition: opacity var(--t-feedback); }
-  #scan.on { opacity: 1; }
-  #scan .ln { position: absolute; left: 0; right: 0; top: 0; border-top: 1px solid var(--text); opacity: 0.35; }
-  #scan .rd { position: absolute; left: 16px; top: 4px;   /* at the screen's edge, clear of the labels */ font: 0.68rem/1.3 var(--mono); color: var(--text); white-space: nowrap; }
-  #scan .rd b { font-size: 0.95rem; font-weight: 400; display: block; }
+  #thumb.on .rd { opacity: 1; }
+  #thumb .rd b { font-size: 0.95rem; font-weight: 400; display: block; }
   /* locking on: the frame closes in from larger (scale, not transform, which holds the position) */
   .blob { animation: lockOn var(--t-in) ease-out both; }
   @keyframes lockOn { from { opacity: 0; scale: 2.2; } to { opacity: 1; scale: 1; } }
@@ -111,7 +117,7 @@
 <body>
 <div id="view"></div>
 <div id="blobs"></div>
-<div id="scan"><div class="ln"></div><div class="rd"></div></div>
+<div id="thumb" aria-label="Drag to scan the time axis"><div class="rd"></div></div>
 <div id="labels"></div>
 <div class="over">
   <p class="eyebrow">Angels Knoll · Connections · <a href="../" class="home">home</a></p>
@@ -290,7 +296,7 @@ const years = [];
 const labelsEl = document.getElementById("labels");
 const labels = new Map();   // node index -> element
 const blobsEl = document.getElementById("blobs"), blobs = new Map();
-const scanEl = document.getElementById("scan"), scanRd = scanEl.querySelector(".rd");
+const thumb = document.getElementById("thumb"), scanRd = thumb.querySelector(".rd");
 function label(i) {
   if (labels.has(i)) return labels.get(i);
   const n = nodes[i], el = document.createElement("div");
@@ -333,7 +339,7 @@ ctl.innerHTML =
   `<span>${ic("disc", "var(--verified)")}Verified</span><span>${ic("disc", "var(--unverified)")}Unverified</span>` +
   `<span>${ic("disc", "var(--question)")}Open question</span><span>${ic("disc", "var(--analysis)")}Our analysis</span>` +
   `<span>Size: links and sources</span></div>` +
-  `<div class="hint">Drag a point or tag to move it · drag the time axis to scan · drag space to turn · ` +
+  `<div class="hint">Drag a point or tag to move it · drag the slider on the time axis to scan · drag space to turn · ` +
   `<button data-reset>reset</button> · <button data-abbr>abbreviations</button></div><div class="row">` +
   KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") + `</div>`;
 ctl.addEventListener("click", (e) => {
@@ -442,13 +448,13 @@ const nodeAt = (e) => {
   if (lb) return +lb.dataset.i;
   return e.target === renderer.domElement ? pick(e.clientX, e.clientY) : -1;
 };
-const onScene = (e) => e.target === renderer.domElement || (e.target.closest && e.target.closest(".lb[data-i]"));
+const onScene = (e) => e.target === renderer.domElement || (e.target.closest && e.target.closest(".lb[data-i], #thumb"));
 function rayAt(e) { ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera); }
 addEventListener("pointerdown", (e) => {
   if (!onScene(e) || e.button !== 0) return;
   down = [e.clientX, e.clientY]; controls.autoRotate = false; idleT = performance.now();
   // the axis and the strip of years beside it scan, ahead of points there (tags still drag)
-  if (e.target === renderer.domElement && nearAxis(e.clientX, e.clientY)) {
+  if (e.target.closest("#thumb") || (e.target === renderer.domElement && nearAxis(e.clientX, e.clientY))) {
     controls.enabled = false; scanning = true; scanTo(e); document.body.style.cursor = "ns-resize"; e.preventDefault(); return;
   }
   const i = nodeAt(e);
@@ -513,7 +519,8 @@ function scanTo(e) {
   scan = Math.max(yOf(t0), Math.min(yOf(t1), hit.y)); dirty = true;
   controls.autoRotate = false;
 }
-function clearScan() { if (scan !== null) { scan = null; dirty = true; } }
+let thumbRest = yOf(t1);   // where the thumb waits: the present, or where the last scan ended
+function clearScan() { if (scan !== null) { thumbRest = scan; scan = null; dirty = true; } }
 // the year at a height: yOf is increasing, so search it
 function tOf(y) { let a = t0, b = t1; for (let k = 0; k < 40; k++) { const m = (a + b) / 2; if (yOf(m) < y) a = m; else b = m; } return (a + b) / 2; }
 controls.addEventListener("start", () => { controls.autoRotate = false; });
@@ -608,14 +615,19 @@ function frame(now) {
   project();
   for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
   years.forEach(([, yy], k) => placeLabel(yearEls[k], 0, yy, 0, 10, -6));
-  if (scan !== null) {
-    v3.set(0, scan, 0).project(camera);
-    const sy = (1 - v3.y) / 2 * innerHeight;
-    scanEl.style.translate = `0 ${sy.toFixed(1)}px`; scanEl.classList.add("on");
-    const t = tOf(scan), lo = tOf(scan - SCAN_BAND), hi = tOf(scan + SCAN_BAND), n = blobs.size;
-    const txt = `<b>${Math.floor(t)}</b>${Math.floor(lo)}–${Math.floor(hi)} · ${n} ${n === 1 ? "entry" : "entries"}`;
-    if (scanRd.innerHTML !== txt) scanRd.innerHTML = txt;
-  } else scanEl.classList.remove("on");
+  {   // the thumb rides the axis: at the scanned height, or resting at the present
+    const ys = scan !== null ? scan : thumbRest;
+    v3.set(0, ys, 0).project(camera);
+    thumb.style.translate = `${((v3.x + 1) / 2 * innerWidth).toFixed(1)}px ${((1 - v3.y) / 2 * innerHeight).toFixed(1)}px`;
+    thumb.classList.toggle("on", scan !== null);
+    if (scan !== null) {
+      const t = tOf(scan), lo = tOf(scan - SCAN_BAND), hi = tOf(scan + SCAN_BAND);
+      const n = nodes.reduce((c, _, i) => c + (inScan(i) ? 1 : 0), 0);
+      const range = Math.floor(lo) === Math.floor(hi) ? "" : `${Math.floor(lo)}–${Math.floor(hi)} · `;
+      const txt = `<b>${Math.floor(t)}</b>${range}${n} ${n === 1 ? "entry" : "entries"}`;
+      if (scanRd.innerHTML !== txt) scanRd.innerHTML = txt;
+    }
+  }
   for (const [i, el] of blobs) {
     const h = +el.dataset.h;
     if (scr[3 * i + 2] > 1) { el.style.visibility = "hidden"; continue; }
