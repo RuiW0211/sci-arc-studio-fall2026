@@ -115,6 +115,26 @@
   .blob { animation: lockOn var(--t-in) ease-out both; }
   @keyframes lockOn { from { opacity: 0; scale: 2.2; } to { opacity: 1; scale: 1; } }
 
+  /* reading what the slider has found, in date order (user, 2026-10-13: Timeline's reading folded in here) */
+  .reader { position: fixed; left: 16px; top: 190px; bottom: 56px; width: 340px; overflow: auto; z-index: 4;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 14px 16px; font-size: 0.82rem;
+    opacity: 0; translate: -8px 0; pointer-events: none; transition: opacity var(--t-in) ease, translate var(--t-in) ease; }
+  .reader.show { opacity: 1; translate: 0 0; pointer-events: auto; }
+  .reader .rh { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
+    padding-bottom: 6px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+  .reader .rh b { font: 400 1.05rem var(--mono); letter-spacing: 0; color: var(--text); text-transform: none; display: block; margin-bottom: 2px; }
+  .reader ol { list-style: none; }
+  .reader li { padding: 6px 8px; margin: 0 -8px 2px; border-radius: 2px; cursor: pointer; transition: background-color var(--t-feedback); }
+  .reader li:hover, .reader li.hot { background: var(--hover); }
+  .reader .d { display: block; font: 0.64rem var(--mono); color: var(--faint); }
+  .reader .d i { font-style: normal; margin-left: 6px; }
+  .reader .t { font-weight: 600; line-height: 1.35; }
+  .reader li.vo .t { font-weight: 400; font-style: italic; color: var(--muted); }
+  .reader .w { display: block; font-size: 0.72rem; color: var(--faint); margin-top: 1px; }
+  .reader .st { font-weight: 700; font-size: 0.58rem; letter-spacing: 0.08em; }
+  .reader .st.verified { color: var(--verified); } .reader .st.unverified { color: var(--unverified); }
+  .reader .st.open-question { color: var(--question); } .reader .st.analysis { color: var(--analysis); }
+  @media (max-width: 600px) { .reader { top: auto; bottom: 56px; right: 16px; width: auto; max-height: 38vh; } }
   .card { position: fixed; right: 16px; top: 16px; bottom: 64px; width: 360px; overflow: auto; background: var(--bg);
     border: 1px solid var(--line); border-radius: 3px; padding: 16px 18px; font-size: 0.85rem; z-index: 4;
     opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity var(--t-in) ease, transform var(--t-in) ease; }
@@ -163,6 +183,7 @@
 </div>
 <div class="ctl" id="ctl"></div>
 <div class="card" id="card" role="dialog" aria-live="polite"></div>
+<div class="reader" id="reader" aria-live="polite"></div>
 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
 <script type="module">
 import * as THREE from "three";
@@ -606,8 +627,40 @@ function paint() {
     if (nodes[i].type === "entry" && main) el.style.setProperty("--k", `var(--${{ "open-question": "question" }[nodes[i].status] || nodes[i].status})`);
     else el.style.removeProperty("--k");
   }
+  renderReader();
   dirty = false;
 }
+// the reader: the entries the slider frames, oldest first; events as titles, what people said as their words
+const reader = document.getElementById("reader");
+let readerKey = "";
+function renderReader() {
+  const ids = scan !== null ? nodes.map((n, i) => i).filter(inScan) : [];
+  ids.sort((a, b) => (nodes[a].start || "").localeCompare(nodes[b].start || "") || nodes[a].id.localeCompare(nodes[b].id));
+  const key = ids.join(",");
+  reader.classList.toggle("show", ids.length > 0 && !(innerWidth <= 600 && card.classList.contains("show")));
+  if (key === readerKey) return;
+  readerKey = key;
+  if (!ids.length) return;
+  const lo = nodes[ids[0]].start.slice(0, 4), hi = nodes[ids[ids.length - 1]].start.slice(0, 4);
+  reader.innerHTML = `<div class="rh"><b>${lo === hi ? lo : lo + "–" + hi}</b>${ids.length} ${ids.length === 1 ? "entry" : "entries"}, by date</div><ol>` +
+    ids.map((i) => {
+      const n = nodes[i], f = finding.get(n.id), m = f?.media;
+      const st = `<i class="st ${esc(n.status)}">${esc(ST_CODE[n.status] || n.status)}</i>`;
+      if (m) {
+        let q = m.translation || m.quote || n.title;
+        if (q.length > 170) q = q.slice(0, 167).replace(/\s+\S*$/, "") + "…";
+        return `<li class="vo" data-i="${i}"><span class="d">${esc(n.start)}${st}</span><span class="t">“${esc(q)}”</span><span class="w">${esc(m.speaker || "")}</span></li>`;
+      }
+      return `<li data-i="${i}"><span class="d">${esc(n.start)} · ${esc(TOPIC_CODE[n.topic] || n.topic)}${st}</span><span class="t">${esc(n.title)}</span></li>`;
+    }).join("") + `</ol>`;
+  reader.scrollTop = 0;
+}
+reader.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (li) { nav = null; select(+li.dataset.i, true); } });
+reader.addEventListener("pointerover", (e) => {   // pointing at a line lights its point in the view
+  const li = e.target.closest("li[data-i]"), i = li ? +li.dataset.i : -1;
+  if (i !== hover && sel < 0) { hover = i; dirty = true; }
+});
+reader.addEventListener("pointerleave", () => { if (hover >= 0 && sel < 0) { hover = -1; dirty = true; } });
 
 // ---- picking: nearest node on screen ----
 const v3 = new THREE.Vector3();
@@ -901,7 +954,9 @@ function frame(now) {
   }
   // with the card open, the view slides so the chosen point is not under it (right on wide screens, bottom on phones)
   const wide = innerWidth > 600, showCard = card.classList.contains("show");
-  const ox = showCard && wide ? (card.offsetWidth + 16) / 2 : 0, oy = showCard && !wide ? card.offsetHeight / 2 : 0;
+  const showReader = reader.classList.contains("show");   // the reader on the left pushes the view the other way
+  const ox = (showCard && wide ? (card.offsetWidth + 16) / 2 : 0) - (showReader && wide ? (reader.offsetWidth + 16) / 2 : 0);
+  const oy = (showCard && !wide ? card.offsetHeight / 2 : 0) + (showReader && !wide ? reader.offsetHeight / 2 : 0);
   offX += (ox - offX) * 0.12; offY += (oy - offY) * 0.12;
   if (Math.abs(offX) > 0.5 || Math.abs(offY) > 0.5) camera.setViewOffset(innerWidth, innerHeight, offX, offY, innerWidth, innerHeight);
   else if (camera.view) camera.clearViewOffset();
