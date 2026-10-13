@@ -1,7 +1,7 @@
 # Research → site viewer: candidates
 
 Entries in `web/research/data.json` that have a place and a time and could appear in the viewer (`web/viewer.html`).
-A list only, written 2026-10-12; nothing here is built yet. Ids link to the Research page (`research/#id`); each
+A list only, written 2026-10-12; nothing here is built yet. Ids link to the Research page (`research/list/#id`); each
 entry's `viewer` field has the one-line idea, `place` the model id, `timeline` the period.
 
 ## 1. Unbuilt buildings on Y-1 (ghost towers)

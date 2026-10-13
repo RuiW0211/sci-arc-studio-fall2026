@@ -19,7 +19,7 @@ Live site: https://ruiw0211.github.io/sci-arc-studio-fall2026/
 |---|---|
 | `web/` | The public website (GitHub Pages serves this folder). `viewer.html` is the site viewer: the 2023 LiDAR point cloud, every point labelled with its building, tree, shrub or vehicle, with everyone's designs on top. |
 | `web/data/` | The point cloud (`lidar_points.laz` + `.json`, written by the Houdini pipeline). |
-| `web/research/` | The Y-1 research database: `data.json` holds every finding (sources, status, confidence); `index.html` searches and filters it. Link to one finding with `research/#<id>`. |
+| `web/research/` | The Y-1 research database. `data.json` holds every finding (sources, status, confidence). Two views: `index.html` (Network: the entries in 3D, height for date, links from `connections.json`, built by `docs/connections_build.py`) and `list/index.html` (List: search, filters, sources). Link to one finding with `research/#<id>` (Network) or `research/list/#<id>` (List). `web/connections/` and `web/timeline/` only redirect here (Timeline was removed 2026-10-13; git tag `timeline-v1` keeps it). |
 | `site-model/houdini/` | The Houdini work: the LiDAR pipeline (`tools/`), building entities (`annotations/entities.json`), the design-scene script, hand-off files for analysis layers. See its [README](site-model/houdini/README.md). |
 | `site-model/exports/` | `design_<name>.glb`: one design file per person, shown on top of the point cloud. |
 | `site-model/BACKLOG.md` | To-do list and plans (in Chinese). |

@@ -15,6 +15,8 @@
 :root {
   --bg: #ffffff; --text: #1a1a1a; --muted: #6b6b6b; --faint: #9a9a9a; --line: #e6e6e6; --hover: #f7f7f7;
   --tint: #3f51b5;
+  /* how sure an entry is (Research, Timeline) */
+  --verified: #2e7d32; --unverified: #b26a00; --question: #6b6b6b; --analysis: #3f51b5;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   /* timing, the same across the site (user, 2026-10-10; also in viewer.html): small feedback, overlays appearing,
@@ -25,16 +27,21 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark; --bg: #161616; --text: #ededed; --muted: #a0a0a0; --faint: #777777; --line: #2c2c2c; --hover: #1f1f1f;
     --tint: #9fa8da;
+    --verified: #81c784; --unverified: #ffb74d; --question: #a0a0a0; --analysis: #9fa8da;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark; --bg: #161616; --text: #ededed; --muted: #a0a0a0; --faint: #777777; --line: #2c2c2c; --hover: #1f1f1f;
   --tint: #9fa8da;
+  --verified: #81c784; --unverified: #ffb74d; --question: #a0a0a0; --analysis: #9fa8da;
 }
 
 /* moving between the site's pages cross-fades (View Transitions; browsers without it simply change page) */
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .5s; animation-timing-function: ease; }
+/* behind the two pictures being cross-faded, the page colour, not the browser's white: a picture with see-through
+   parts (the Network's 3D view) otherwise let light through mid-fade (user, 2026-10-13: dark, light, dark) */
+::view-transition { background: var(--bg); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 /* short pages keep the scrollbar's room, so every page's column lines up; the page colour reaches the window edges */
@@ -44,7 +51,10 @@ a { color: inherit; }
 code { font: 0.8rem var(--mono); }
 
 /* one column, the same on every page */
-.container { max-width: 760px; margin: 0 auto; padding: 48px 16px 64px; }
+.container { max-width: 760px; margin: 0; padding: 48px 16px 64px; }
+/* the column sits at the left on every page, not in the middle (user, 2026-10-13: so the Network's view has the
+   middle of the screen); wider screens give it a wider margin */
+@media (min-width: 900px) { .container { max-width: 840px; padding-left: 40px; padding-right: 40px; } }
 
 /* header: eyebrow (link home + authors), title, one-line subtitle, hairline */
 .header { padding-bottom: 32px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
@@ -52,6 +62,12 @@ code { font: 0.8rem var(--mono); }
 .home { color: inherit; }   /* "home" in the eyebrow, underlined like the viewer's */
 .header h1 { font-size: 2.4rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 12px; }
 .subtitle { color: var(--muted); max-width: 520px; }
+/* switching between the views of one page (Research: Network, List), under the title */
+.views { display: flex; gap: 14px; font-size: 0.8rem; margin: -4px 0 12px; }
+.views a { color: var(--muted); text-decoration: none; padding-bottom: 1px; border-bottom: 1px solid transparent;
+  transition: color var(--t-feedback), border-color var(--t-feedback); }
+.views a:hover { color: var(--text); }
+.views a.on { color: var(--text); border-bottom-color: currentColor; }
 
 /* small uppercase label over a group (Research topics, home entries, Methods contents) */
 .label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
