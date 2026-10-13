@@ -32,8 +32,8 @@
   .wrap { overflow-x: auto; }
   /* parts of the text are filled in from the data files: the page under the header fades in once, when they are
      in, instead of text and tables popping in (user, 2026-10-12; same as Research) */
-  main > :not(.header) { transition: opacity var(--t-in) ease; }
-  body:not(.ready) main > :not(.header) { opacity: 0; }
+  main { transition: opacity var(--t-in) ease; }
+  body:not(.ready) main { opacity: 0; }   /* header and text together (user, 2026-10-13) */
 </style>
 </head>
 <body>

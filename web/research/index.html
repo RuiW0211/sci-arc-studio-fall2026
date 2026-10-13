@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Y-1 Research Database</title>
 <link rel="stylesheet" href="../site.css">
+<script>
+  // the data (about 650 KB) starts loading at once, alongside the search library, not after it (user, 2026-10-13:
+  // the title showed first and the entries came in late)
+  window.__research = fetch('data.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+</script>
 <script src="../theme.js"></script>
 <style>
 /* colours (status colours included), header, type scale, footer and the theme button come from ../site.css */
@@ -146,8 +151,8 @@
 
 /* everything under the header is drawn from data.json: it fades in once, when drawn, instead of popping in piece by
    piece (current status, counts, findings; user, 2026-10-12) */
-main > :not(.header) { transition: opacity var(--t-in) ease; }
-body:not(.ready) main > :not(.header) { opacity: 0; }
+main { transition: opacity var(--t-in) ease; }
+body:not(.ready) main { opacity: 0; }   /* header and entries together, not the title first */
 
 .about { font-size: 0.85rem; color: var(--muted); margin: -8px 0 20px; }
 .about a { color: var(--muted); }
@@ -245,7 +250,7 @@ body:not(.ready) main > :not(.header) { opacity: 0; }
 
     <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js"></script>
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js" onload="window.__lunrReady && window.__lunrReady()"></script>
 <script>
 const TOPIC_ORDER = [
     'Disposition & Notice',
@@ -286,19 +291,20 @@ let lunrIdx = null;
 document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
     try {
-        const response = await fetch('data.json');
-        const data = await response.json();
+        const data = await window.__research;
         allFindings = data.findings.sort(compareFindings);
         byId = new Map(allFindings.map(f => [f.id, f]));
         current = data.current || null;
         renderCurrent();
         initFilters();
-        buildIndex();
         attachListeners();
         applyFilters();
         openFromHash();
         requestAnimationFrame(() => document.body.classList.add('ready'));
         window.addEventListener('hashchange', openFromHash);
+        // the search index is built once the page is shown, when the browser is idle
+        const later = window.requestIdleCallback || ((f) => setTimeout(f, 200));
+        if (window.lunr) later(ensureIndex); else window.__lunrReady = () => later(ensureIndex);
     } catch (error) {
         console.error('Error loading data:', error);
         document.getElementById('resultsContainer').innerHTML =
@@ -405,7 +411,13 @@ function buildIndex() {
     });
 }
 
+function ensureIndex() { if (!lunrIdx && window.lunr) buildIndex(); return !!lunrIdx; }
+
 function searchIds(query) {
+    if (!ensureIndex()) {   // the library has not arrived yet: plain text match
+        const q = query.toLowerCase();
+        return new Set(allFindings.filter(f => JSON.stringify(f).toLowerCase().includes(q)).map(f => f.id));
+    }
     try {
         return new Set(lunrIdx.search(query).map(r => r.ref));
     } catch (e) {
