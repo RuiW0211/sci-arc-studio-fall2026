@@ -168,6 +168,11 @@
 .attribution b { color: var(--text); font-weight: 600; }
 .subject-tag { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
 
+/* everything under the header is drawn from data.json: it fades in once, when drawn, instead of popping in piece by
+   piece (current status, counts, findings; user, 2026-10-12) */
+main > :not(.header) { transition: opacity var(--t-in) ease; }
+body:not(.ready) main > :not(.header) { opacity: 0; }
+
 .about { font-size: 0.85rem; color: var(--muted); margin: -8px 0 20px; }
 .about a { color: var(--muted); }
 
@@ -316,11 +321,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         attachListeners();
         applyFilters();
         openFromHash();
+        requestAnimationFrame(() => document.body.classList.add('ready'));
         window.addEventListener('hashchange', openFromHash);
     } catch (error) {
         console.error('Error loading data:', error);
         document.getElementById('resultsContainer').innerHTML =
             '<p class="no-results">Could not load data.json. Open the site through a local server (python3 web/serve.py).</p>';
+        document.body.classList.add('ready');
     }
 });
 
