@@ -61,6 +61,9 @@
   .lb.entry { color: var(--text); max-width: 200px; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg); }
   .lb.entry.sel { background: var(--c); color: var(--bg); padding: 2px 5px; border-radius: 2px; text-shadow: none; max-width: 300px; }
   .lb[data-i] { pointer-events: auto; cursor: grab; }
+  /* while the slider is held, nothing else reacts to the pointer and the pointer keeps its look (user, 2026-10-12) */
+  body.scanning, body.scanning * { cursor: default !important; }
+  body.scanning .lb[data-i] { pointer-events: none; }
   .lb.dim { pointer-events: none; }
   .lb.year { font: 0.62rem var(--mono); color: var(--faint); }
   .lb.dim { opacity: 0.18; }
@@ -484,7 +487,7 @@ addEventListener("pointerdown", (e) => {
   down = [e.clientX, e.clientY]; controls.autoRotate = false; idleT = performance.now();
   // the axis and the strip of years beside it scan, ahead of points there (tags still drag)
   if (e.target === renderer.domElement && (onThumb(e) || nearAxis(e.clientX, e.clientY))) {
-    controls.enabled = false; scanning = true; scanTo(e); e.preventDefault(); return;
+    controls.enabled = false; scanning = true; document.body.classList.add("scanning"); scanTo(e); e.preventDefault(); return;
   }
   const i = nodeAt(e);
   if (i < 0) return;
@@ -519,7 +522,7 @@ addEventListener("pointermove", (e) => {
 });
 addEventListener("pointerup", (e) => {
   idleT = performance.now();
-  if (scanning) { scanning = false; controls.enabled = true; down = null; return; }   // the scan stays until a click on empty space
+  if (scanning) { scanning = false; document.body.classList.remove("scanning"); controls.enabled = true; down = null; return; }   // the scan stays until a click on empty space
   if (drag) {
     const { i, moved } = drag;
     drag = null; controls.enabled = true; document.body.style.cursor = hover >= 0 ? "grab" : "";
