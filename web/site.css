@@ -52,8 +52,12 @@ code { font: 0.8rem var(--mono); }
 
 .footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 0.8rem; color: var(--faint); }
 
+/* the scrollbar takes the page's colours, so it fades with them instead of jumping when color-scheme flips */
+html { scrollbar-color: var(--line) var(--bg); }
 /* switching light / dark eases the colours (theme.js sets .theme-anim for the length of the change) */
-.theme-anim, .theme-anim * { transition: background-color var(--t-out) ease, color var(--t-out) ease, border-color var(--t-out) ease !important; }
+.theme-anim, .theme-anim *, .theme-anim *::before, .theme-anim *::after {
+  transition: background-color var(--t-out) ease, color var(--t-out) ease, border-color var(--t-out) ease,
+    scrollbar-color var(--t-out) ease, outline-color var(--t-out) ease !important; }
 /* hover underlines (home link, entry titles) come in with the small-feedback time; other links keep theirs */
 .home, .entry-title, .finding-title { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent;
   transition: text-decoration-color var(--t-feedback); }
