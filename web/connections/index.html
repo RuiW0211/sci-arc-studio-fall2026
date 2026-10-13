@@ -521,6 +521,7 @@ const thumbMesh = new THREE.Mesh(new THREE.CapsuleGeometry(4, 15, 8, 24), thumbM
 scene.add(thumbMesh, new THREE.HemisphereLight(0xffffff, 0x404040, 0.9));
 const lamp = new THREE.DirectionalLight(0xffffff, 1.1); lamp.position.set(-0.6, 1, 0.8); camera.add(lamp); scene.add(camera);
 let thumbHot = false;
+const thumbTw = { from: 1, to: 1, t: 0, ms: (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--t-feedback")) || 0.2) * 1000 };
 function onThumb(e) {   // on the capsule, or within a few pixels of it
   rayAt(e);
   if (ray.intersectObject(thumbMesh).length) return true;
@@ -626,8 +627,11 @@ function frame(now) {
   {   // the slider rides the axis: at the scanned height, or resting at the present; bigger under the pointer or held
     const ys = scan !== null ? scan : thumbRest;
     thumbMesh.position.y = ys;
+    // grow / shrink over --t-feedback with ease-in-out, whatever the screen's frame rate (user, 2026-10-12: not a jump)
     const k = thumbHot || scanning ? 1.3 : 1;
-    thumbMesh.scale.setScalar(thumbMesh.scale.x + (k - thumbMesh.scale.x) * 0.25);
+    if (k !== thumbTw.to) Object.assign(thumbTw, { from: thumbMesh.scale.x, to: k, t: now });
+    const u = Math.min(1, (now - thumbTw.t) / thumbTw.ms), e = u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
+    thumbMesh.scale.setScalar(thumbTw.from + (thumbTw.to - thumbTw.from) * e);
     v3.set(0, ys, 0).project(camera);
     scanRd.style.translate = `${((v3.x + 1) / 2 * innerWidth - 14).toFixed(1)}px ${((1 - v3.y) / 2 * innerHeight).toFixed(1)}px`;
     scanRd.classList.toggle("on", scan !== null);
