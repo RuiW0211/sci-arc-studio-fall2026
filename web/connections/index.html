@@ -332,7 +332,29 @@ arcs();
 const lGeo = new THREE.BufferGeometry();
 lGeo.setAttribute("position", new THREE.BufferAttribute(lPos, 3));
 lGeo.setAttribute("color", new THREE.BufferAttribute(lCol, 4));
-const lines = new THREE.LineSegments(lGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
+// along each arc: its place (0 at one end, 1 at the other) and whether a pulse runs on it, and which way
+const lAlong = new Float32Array(links.length * SEG * 2), lFlow = new Float32Array(links.length * SEG * 2);
+for (let k = 0; k < links.length; k++) for (let s2 = 0; s2 < SEG; s2++) {
+  lAlong[(k * SEG + s2) * 2] = s2 / SEG; lAlong[(k * SEG + s2) * 2 + 1] = (s2 + 1) / SEG;
+}
+lGeo.setAttribute("along", new THREE.BufferAttribute(lAlong, 1));
+lGeo.setAttribute("flow", new THREE.BufferAttribute(lFlow, 1));
+// arcs fade with distance, like the points (user, 2026-10-13); the arcs of the point in focus carry a faint pulse that
+// leaves it for its neighbours, again and again (after the coding-session video the user sent)
+const lineMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false,
+  uniforms: { time: { value: 0 } },
+  vertexShader: `attribute vec4 color; attribute float along; attribute float flow; varying vec4 vC; varying float vS; varying float vF;
+    void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
+      vC = color; vC.a *= clamp(1.35 - (-mv.z) / 4200.0, 0.3, 1.0);
+      vF = abs(flow); vS = flow > 0.0 ? along : 1.0 - along; }`,
+  fragmentShader: `uniform float time; varying vec4 vC; varying float vS; varying float vF;
+    void main() { float g = 0.0;
+      if (vF > 0.5) { float head = mod(time, 2.0) / 1.2; float d = head - vS;
+        if (d >= 0.0 && d < 0.16) g = pow(1.0 - d / 0.16, 2.0); }
+      gl_FragColor = vec4(vC.rgb, min(1.0, vC.a + g * 0.75)); }`,
+});
+const lines = new THREE.LineSegments(lGeo, lineMat);
 scene.add(lines);
 
 // the time axis and its years
@@ -462,7 +484,7 @@ function readout(i, f) {
 const TOP_HUBS = nodes.map((n, i) => i).filter((i) => isHub(nodes[i])).sort((a, b) => nodes[b].deg - nodes[a].deg).slice(0, 12);
 // focus changes fade (user, 2026-10-12): points and links ease to their new colour and alpha, labels and frames fade
 const pT = new Float32Array(N * 4), lT = new Float32Array(links.length * SEG * 8);
-let eased = false, easing = false, lastNow = 0;
+let eased = false, easing = false, lastNow = 0, flowDirty = false;
 const FADE_MS = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--t-in")) || 0.3) * 1000;
 function easeColours(now) {
   const dt = Math.min(0.1, (now - (lastNow || now)) / 1000); lastNow = now;
@@ -495,10 +517,14 @@ function paint() {
   links.forEach((l, k) => {
     const kind = KINDS.find((x) => x.k === l.kind);
     let a = on[l.kind] ? kind.a * (FAINT_HUB[l.a] || FAINT_HUB[l.b] || 1) : 0;
-    if (fs && a) a = (f >= 0 ? (l.i === f || l.j === f) : (fs.has(l.i) && fs.has(l.j))) ? Math.min(1, kind.a * 2.2 + 0.3) : a * 0.12;
+    const touches = f >= 0 && (l.i === f || l.j === f);
+    if (fs && a) a = (f >= 0 ? touches : (fs.has(l.i) && fs.has(l.j))) ? Math.min(0.62, kind.a * 1.5 + 0.25) : a * 0.12;
+    const fl = touches && a ? (l.i === f ? 1 : -1) : 0;   // from the point in focus outward
+    if (lFlow[k * SEG * 2] !== fl) { lFlow.fill(fl, k * SEG * 2, (k + 1) * SEG * 2); flowDirty = true; }
     const c = css.text;
     for (let v = 0; v < SEG * 2; v++) { const o = (k * SEG * 2 + v) * 4; lT[o] = c.r; lT[o + 1] = c.g; lT[o + 2] = c.b; lT[o + 3] = a; }
   });
+  if (flowDirty) { lGeo.attributes.flow.needsUpdate = true; flowDirty = false; }
   if (!eased) { pCol.set(pT); lCol.set(lT); eased = true; pGeo.attributes.color.needsUpdate = lGeo.attributes.color.needsUpdate = true; }
   easing = true;
   axisMat.color.copy(css.faint); thumbMat.color.copy(css.text);
@@ -833,6 +859,7 @@ function frame(now) {
   controls.update(frameDt);   // in seconds, so the turn is as fast on any screen's frame rate
   if (dirty) paint();
   easeColours(now);
+  lineMat.uniforms.time.value = now / 1000;
   renderer.render(scene, camera);
   project();
   for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
