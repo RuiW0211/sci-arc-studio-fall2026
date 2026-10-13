@@ -39,6 +39,9 @@
 /* moving between the site's pages cross-fades (View Transitions; browsers without it simply change page) */
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .5s; animation-timing-function: ease; }
+/* behind the two pictures being cross-faded, the page colour, not the browser's white: a picture with see-through
+   parts (the Network's 3D view) otherwise let light through mid-fade (user, 2026-10-13: dark, light, dark) */
+::view-transition { background: var(--bg); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 /* short pages keep the scrollbar's room, so every page's column lines up; the page colour reaches the window edges */

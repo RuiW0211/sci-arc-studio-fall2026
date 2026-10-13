@@ -159,7 +159,7 @@ body:not(.ready) main { opacity: 0; }   /* header and entries together, not the 
 .about a { color: var(--muted); }
 
 /* current statuses, at the top */
-.current { margin: 0 0 28px; border-top: 1px solid var(--line); }
+.current { margin: 0 0 28px; }   /* no line of its own: the header's line is right above (user, 2026-10-13: two lines) */
 .current h2 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
     padding: 12px 0 4px; }
 .current dl { display: grid; grid-template-columns: 11rem 1fr; gap: 6px 16px; font-size: 0.9rem; }
