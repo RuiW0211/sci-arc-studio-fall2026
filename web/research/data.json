@@ -10479,6 +10479,848 @@
           "excerpt": "there is a movement to keep the spot active as a park."
         }
       ]
+    },
+    {
+      "id": "media-r01",
+      "title": "A commenter asks why the station still shows the closed park",
+      "summary": "The poster notes that Pershing Square Metro station still shows Angels Knoll as a place to visit, years after it was fenced.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.'. The page showed it as posted '3 years ago' (about 2023); no exact date was recorded.",
+        "Post title; its photo shows a station panel labelled 'Angels Knoll Garden'. Worth checking on site whether the panel is still there."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1",
+        "entity:E009"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.",
+        "translation": null,
+        "speaker": "Reddit u/imnowherebenice",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.'",
+        "said": null,
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/17maz0t/",
+          "accessed": "2026-10-12",
+          "excerpt": "Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot."
+        }
+      ]
+    },
+    {
+      "id": "media-r02",
+      "title": "The poster on nearly a decade of closure",
+      "summary": "Told that a large project had been approved for the site, the original poster complains that it has stayed closed and empty for almost ten years.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.'. The page showed it as posted '3 years ago' (about 2023); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "But holy crap it's been sitting closed off and empty for almost a decade now. Do something already.",
+        "translation": null,
+        "speaker": "Reddit u/imnowherebenice",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.'",
+        "said": null,
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/17maz0t/",
+          "accessed": "2026-10-12",
+          "excerpt": "But holy crap it's been sitting closed off and empty for almost a decade now. Do something already."
+        }
+      ]
+    },
+    {
+      "id": "media-r03",
+      "title": "A commenter assumes a developer owns the site",
+      "summary": "A commenter believed a developer had bought and fenced the land; it is still owned by CRA/LA (see disp-001).",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.'. The page showed it as posted '3 years ago' (about 2023); no exact date was recorded.",
+        "Public perception of ownership; compare disp-001, park-004."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "I thought a developer bought it and fenced it off.",
+        "translation": null,
+        "speaker": "Reddit u/erictmo",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.'",
+        "said": null,
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/17maz0t/",
+          "accessed": "2026-10-12",
+          "excerpt": "I thought a developer bought it and fenced it off."
+        }
+      ]
+    },
+    {
+      "id": "media-r04",
+      "title": "A commenter doubts the approved towers will be built soon",
+      "summary": "Replying to news that a large project had been approved, a commenter expects interest rates to delay it.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.'. The page showed it as posted '3 years ago' (about 2023); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "With interest rates where they are right now, unlikely anytime soon.",
+        "translation": null,
+        "speaker": "Reddit u/CrispyVibes",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.'",
+        "said": null,
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Will the Angels Knoll fence ever be taken down? Pershing Square station still shows it as a tourist spot.' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/17maz0t/",
+          "accessed": "2026-10-12",
+          "excerpt": "With interest rates where they are right now, unlikely anytime soon."
+        }
+      ]
+    },
+    {
+      "id": "media-r05",
+      "title": "A commenter recalls the park as the unbuilt third California Plaza tower",
+      "summary": "A commenter describes the park as a stand-in for the never-built Three California Plaza (see plaza-006, ghost-001).",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/dtla, 'Angel's Knoll park and bench locked up behind fence, in order to \"enable the asset's value to be maintained.\"'. The page showed it as posted '13 years ago' (about 2013); no exact date was recorded.",
+        "The same commenter first said the park had been sold to a private developer, then corrected it: the CRA had passed it to its successor. Thread matched to post id 1k43do by its title."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "It was always a temporary park that was suppose to be Cal Plaza 3. But the building never materialized because of the economy in the early 90s.",
+        "translation": null,
+        "speaker": "Reddit u/djm19",
+        "role": "commenter",
+        "venue": "r/dtla, 'Angel's Knoll park and bench locked up behind fence, in order to \"enable the asset's value to be maintained.\"'",
+        "said": null,
+        "subject": "Bunker Hill history"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/dtla, 'Angel's Knoll park and bench locked up behind fence, in order to \"enable the asset's value to be maintained.\"' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/dtla/comments/1k43do/",
+          "accessed": "2026-10-12",
+          "excerpt": "It was always a temporary park that was suppose to be Cal Plaza 3. But the building never materialized because of the economy in the early 90s."
+        }
+      ]
+    },
+    {
+      "id": "media-r06",
+      "title": "A commenter on office vacancy and the third tower",
+      "summary": "At the time of the 2013 closure a commenter judged a Three California Plaza tower unlikely because of downtown office vacancy.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/dtla, 'Angel's Knoll park and bench locked up behind fence, in order to \"enable the asset's value to be maintained.\"'. The page showed it as posted '13 years ago' (about 2013); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "There is such a high amount of office space vacancy downtown that it's highly unlikely a developer will sign on to build the desired Cal Plaza 3 tower …",
+        "translation": null,
+        "speaker": "Reddit u/asafoetida",
+        "role": "commenter",
+        "venue": "r/dtla, 'Angel's Knoll park and bench locked up behind fence, in order to \"enable the asset's value to be maintained.\"'",
+        "said": null,
+        "subject": "Bunker Hill history"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/dtla, 'Angel's Knoll park and bench locked up behind fence, in order to \"enable the asset's value to be maintained.\"' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/dtla/comments/1k43do/",
+          "accessed": "2026-10-12",
+          "excerpt": "There is such a high amount of office space vacancy downtown that it's highly unlikely a developer will sign on to build the desired Cal Plaza 3 tower …"
+        }
+      ]
+    },
+    {
+      "id": "media-r07",
+      "title": "A poster frames the 2013 fencing as keeping people out of the park",
+      "summary": "Post title at the time of the 2013 closure, mocking the 'loitering' reason (see park-004).",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Angel's Knoll park downtown fenced off to curb people from enjoying the park, AKA \"loitering\". [Crosspost: /r/dtla]'. The page showed it as posted '13 years ago' (about 2013); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "Angel's Knoll park downtown fenced off to curb people from enjoying the park, AKA \"loitering\".",
+        "translation": null,
+        "speaker": "Reddit u/riffic",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Angel's Knoll park downtown fenced off to curb people from enjoying the park, AKA \"loitering\". [Crosspost: /r/dtla]'",
+        "said": null,
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Angel's Knoll park downtown fenced off to curb people from enjoying the park, AKA \"loitering\". [Crosspost: /r/dtla]' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/1k43jq/",
+          "accessed": "2026-10-12",
+          "excerpt": "Angel's Knoll park downtown fenced off to curb people from enjoying the park, AKA \"loitering\"."
+        }
+      ]
+    },
+    {
+      "id": "media-r08",
+      "title": "A commenter separates the Hill Street plaza from the park",
+      "summary": "Replying to a comment that welcomed the closure, the original poster says the lower plaza was unpleasant but the park itself was good.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'CRA Fences Off Angel's Knoll and Hill Street Plaza in DTLA'. The page showed it as posted '13 years ago' (about 2013); no exact date was recorded.",
+        "The comment it replies to (welcoming the closure, citing needles and drug use) is not quoted: its user name is not legible in the PDF and it contains profanity."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "I think the plaza was gross but Angel's Knoll was really nice!",
+        "translation": null,
+        "speaker": "Reddit u/chashiineriiya",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'CRA Fences Off Angel's Knoll and Hill Street Plaza in DTLA'",
+        "said": null,
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'CRA Fences Off Angel's Knoll and Hill Street Plaza in DTLA' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/1kbk02/",
+          "accessed": "2026-10-12",
+          "excerpt": "I think the plaza was gross but Angel's Knoll was really nice!"
+        }
+      ]
+    },
+    {
+      "id": "media-r09",
+      "title": "A Bunker Hill worker on losing the Angels Flight shortcut",
+      "summary": "A commenter who works on top of Bunker Hill says that with Angels Flight closed (2013-2017, see af-008) they go down to Grand Central Market and Broadway less, and climb back up on foot.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Downtowners Displeased as Closure of Angels Knoll Park and Plaza Passes One-Year Mark'. The page showed it as posted '12 years ago' (about 2014); no exact date was recorded.",
+        "Account deleted, so the speaker is shown as [deleted]. Relevant to pedestrian movement between Bunker Hill and Hill St (population model)."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "entity:E005",
+        "entity:E013",
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "Angels Flight had been a wonderful shortcut. Now, I don't hit the GCM or Broadway as much and when I do, I walk a grueling uphill climb.",
+        "translation": null,
+        "speaker": "Reddit [deleted]",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Downtowners Displeased as Closure of Angels Knoll Park and Plaza Passes One-Year Mark'",
+        "said": null,
+        "subject": "Angels Flight"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Downtowners Displeased as Closure of Angels Knoll Park and Plaza Passes One-Year Mark' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/2i0edk/",
+          "accessed": "2026-10-12",
+          "excerpt": "Angels Flight had been a wonderful shortcut. Now, I don't hit the GCM or Broadway as much and when I do, I walk a grueling uphill climb."
+        }
+      ]
+    },
+    {
+      "id": "media-r10",
+      "title": "A poster wants to film at the closed park",
+      "summary": "The post asks whether the park is still closed, wanting to use it as a film location; a reply linked the April 2015 Downtown News report.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Angel's Knoll, is it still closed? Is it for good?'. The page showed it as posted '12 years ago' (about 2014); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "We wanna film a vid and Angel's Knoll seems perfect.",
+        "translation": null,
+        "speaker": "Reddit u/strik3r2k8",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Angel's Knoll, is it still closed? Is it for good?'",
+        "said": null,
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Angel's Knoll, is it still closed? Is it for good?' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/32aeqk/",
+          "accessed": "2026-10-12",
+          "excerpt": "We wanna film a vid and Angel's Knoll seems perfect."
+        }
+      ]
+    },
+    {
+      "id": "media-r11",
+      "title": "A commenter on who owns the site",
+      "summary": "A commenter believes the land is state property; it is owned by CRA/LA, the state-created successor agency (disp-001).",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Angel's Knoll, is it still closed? Is it for good?'. The page showed it as posted '12 years ago' (about 2014); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "Apparently it's a state owned property, not the city's.",
+        "translation": null,
+        "speaker": "Reddit [deleted]",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Angel's Knoll, is it still closed? Is it for good?'",
+        "said": null,
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Angel's Knoll, is it still closed? Is it for good?' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/32aeqk/",
+          "accessed": "2026-10-12",
+          "excerpt": "Apparently it's a state owned property, not the city's."
+        }
+      ]
+    },
+    {
+      "id": "media-r12",
+      "title": "A visitor doubts the site works as a park",
+      "summary": "A commenter who had visited says the park was in poor condition and partly fenced, and that it does not 'count' as green space.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA'. The page showed it as posted '10 years ago' (about 2016); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "having visited the park a few times, it doesn't seem very park-like...the grass was dead, there were homeless people sprawled out everywhere, and it was fenced off in the middle.",
+        "translation": null,
+        "speaker": "Reddit u/mike937",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA'",
+        "said": null,
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/5406i7/",
+          "accessed": "2026-10-12",
+          "excerpt": "having visited the park a few times, it doesn't seem very park-like...the grass was dead, there were homeless people sprawled out everywhere, and it was fenced off in the middle."
+        }
+      ]
+    },
+    {
+      "id": "media-r13",
+      "title": "A commenter on the slope",
+      "summary": "A commenter finds the slope too steep for a usable park.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA'. The page showed it as posted '10 years ago' (about 2016); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "Yeah, it is too hilly to really be usable.",
+        "translation": null,
+        "speaker": "Reddit [deleted]",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA'",
+        "said": null,
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/5406i7/",
+          "accessed": "2026-10-12",
+          "excerpt": "Yeah, it is too hilly to really be usable."
+        }
+      ]
+    },
+    {
+      "id": "media-r14",
+      "title": "A commenter favours selling to developers",
+      "summary": "A commenter argues the city cannot keep public space in good order and should sell the land for a tower.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA'. The page showed it as posted '10 years ago' (about 2016); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "they might as well sell it to developers and let them throw up a skyscraper and use the money to do something useful.",
+        "translation": null,
+        "speaker": "Reddit [deleted]",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA'",
+        "said": null,
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/5406i7/",
+          "accessed": "2026-10-12",
+          "excerpt": "they might as well sell it to developers and let them throw up a skyscraper and use the money to do something useful."
+        }
+      ]
+    },
+    {
+      "id": "media-r15",
+      "title": "A commenter on the film's fans",
+      "summary": "A commenter expects fans of (500) Days of Summer to object to development (see park-003).",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA'. The page showed it as posted '10 years ago' (about 2016); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "Fans of 500 Days of Summer aren't going to be to happy.",
+        "translation": null,
+        "speaker": "Reddit u/TheHamitron",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA'",
+        "said": null,
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'City soliciting developers for Angel's Knoll site in DTLA' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/5406i7/",
+          "accessed": "2026-10-12",
+          "excerpt": "Fans of 500 Days of Summer aren't going to be to happy."
+        }
+      ]
+    },
+    {
+      "id": "media-r16",
+      "title": "A commenter wants a school",
+      "summary": "Replying that the site was slated for Angels Landing, a commenter says downtown needs space for a school (the 2017-2018 scheme included a charter school, see ghost-002, ghost-003).",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Will Angels Knoll ever be reopened?'. The page showed it as posted '8 years ago' (about 2018); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "Looks nice and we need space for a school down here",
+        "translation": null,
+        "speaker": "Reddit [deleted]",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Will Angels Knoll ever be reopened?'",
+        "said": null,
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Will Angels Knoll ever be reopened?' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/9m8szu/",
+          "accessed": "2026-10-12",
+          "excerpt": "Looks nice and we need space for a school down here"
+        }
+      ]
+    },
+    {
+      "id": "media-r17",
+      "title": "A commenter prefers building on parking lots over the park",
+      "summary": "A commenter regrets losing green space when parking lots could be built on instead.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Will Angels Knoll ever be reopened?'. The page showed it as posted '8 years ago' (about 2018); no exact date was recorded.",
+        "This comment falls on a page break in the PDF; its wording was read from Rui's screenshot of the same page."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "That's a shame. We have plenty of parking lots and garages we could build on, but not a lot of greenspace.",
+        "translation": null,
+        "speaker": "Reddit u/scotchmist930",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Will Angels Knoll ever be reopened?'",
+        "said": null,
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Will Angels Knoll ever be reopened?' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/9m8szu/",
+          "accessed": "2026-10-12",
+          "excerpt": "That's a shame. We have plenty of parking lots and garages we could build on, but not a lot of greenspace."
+        }
+      ]
+    },
+    {
+      "id": "media-r18",
+      "title": "A passer-by found the gate open",
+      "summary": "A commenter reports the gate open one evening and people going in to the benches.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Will Angels Knoll ever be reopened?'. The page showed it as posted '8 years ago' (about 2018); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "By sheer coincidence, I walked by Friday night and the gate was unlocked and open for some reason. People were walking right up to the benches.",
+        "translation": null,
+        "speaker": "Reddit u/lionclues",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Will Angels Knoll ever be reopened?'",
+        "said": null,
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Will Angels Knoll ever be reopened?' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/9m8szu/",
+          "accessed": "2026-10-12",
+          "excerpt": "By sheer coincidence, I walked by Friday night and the gate was unlocked and open for some reason. People were walking right up to the benches."
+        }
+      ]
+    },
+    {
+      "id": "media-r19",
+      "title": "A commenter says the fence is not enforced",
+      "summary": "A commenter says people climb the fence and are tolerated unless they litter or sleep there.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngeles, 'Will Angels Knoll ever be reopened?'. The page showed it as posted '8 years ago' (about 2018); no exact date was recorded."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "You can climb over the fence. No one seems to care as long as you aren't trashing the place or using it to sleep.",
+        "translation": null,
+        "speaker": "Reddit u/moose098",
+        "role": "commenter",
+        "venue": "r/LosAngeles, 'Will Angels Knoll ever be reopened?'",
+        "said": null,
+        "subject": "Angels Knoll closure"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngeles, 'Will Angels Knoll ever be reopened?' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngeles/comments/9m8szu/",
+          "accessed": "2026-10-12",
+          "excerpt": "You can climb over the fence. No one seems to care as long as you aren't trashing the place or using it to sleep."
+        }
+      ]
+    },
+    {
+      "id": "media-r20",
+      "title": "Esotouric's account argues for a city park instead of Angels Landing",
+      "summary": "Esotouric (a preservation tour group) posts on the City Council hearing of a Chief Legislative Analyst report and argues for a park.",
+      "details": [
+        "Transcribed from a PDF of the Reddit page that Rui saved on 2026-10-12 (the PDF's text layer is not extractable, so the quote was read from the rendered page). Claude cannot open reddit.com (blocked by the app), so the page itself was not re-checked by Claude. Thread: r/LosAngelesPreserved, 'Angels Landing / Angels Knoll development updates!'. The page showed it as posted '4 years ago' (about 2022); no exact date was recorded.",
+        "The post also says the CLA report set out a $50M city purchase from the CRA successor and resale in December 2022, and that Victor MacFarlane was no longer a signatory; these are the poster's claims. Compare the 2022 council-file comments by Cooper & Schave (media-p) and ent-007."
+      ],
+      "topic": "Media",
+      "date": null,
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": null,
+      "media": {
+        "quote": "We think that Angels Knoll would be better if made into a city park instead of moving forward as a much smaller high rise development with fewer affordable units",
+        "translation": null,
+        "speaker": "Reddit u/esotouric_tours",
+        "role": "advocacy group",
+        "venue": "r/LosAngelesPreserved, 'Angels Landing / Angels Knoll development updates!'",
+        "said": null,
+        "subject": "Reopening the park"
+      },
+      "sources": [
+        {
+          "type": "social",
+          "title": "Reddit: r/LosAngelesPreserved, 'Angels Landing / Angels Knoll development updates!' (PDF saved by Rui, 2026-10-12)",
+          "url": "https://www.reddit.com/r/LosAngelesPreserved/comments/vmwqbi/",
+          "accessed": "2026-10-12",
+          "excerpt": "We think that Angels Knoll would be better if made into a city park instead of moving forward as a much smaller high rise development with fewer affordable units"
+        }
+      ]
+    },
+    {
+      "id": "media-p37",
+      "title": "Oversight board vice chair: the site should be a maximum development",
+      "summary": "In 2015 the vice chair of the board overseeing CRA/LA's property plan said whoever buys the site should build to the full entitlement.",
+      "details": [
+        "Lead: a Reddit commenter (r/LosAngeles 32aeqk) linked this article; Claude opened it on 2026-10-12 and checked the wording.",
+        "LA Downtown News, Eddie Kim, 'Public Plaza and Park Likely to Remain Shuttered for Years', April 7, 2015."
+      ],
+      "topic": "Media",
+      "date": "2015-04-07",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2015-04-07",
+        "end": null
+      },
+      "media": {
+        "quote": "There's already a lot of entitlements on that site, so whomever pays for the site has to understand it should be a maximum development",
+        "translation": null,
+        "speaker": "Hamid Behdad",
+        "role": "developer; vice chairman of the board overseeing the CRA successor agency's property plan",
+        "venue": "LA Downtown News, April 7, 2015",
+        "said": "2015-04-07",
+        "subject": "Angels Landing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "LA Downtown News: Public Plaza and Park Likely to Remain Shuttered for Years (Apr 7, 2015)",
+          "url": "https://www.ladowntownnews.com/news/public-plaza-and-park-likely-to-remain-shuttered-for-years/article_ad7eb0c6-dc8a-11e4-b0cc-f75ab4ffac12.html",
+          "accessed": "2026-10-12",
+          "excerpt": "There's already a lot of entitlements on that site, so whomever pays for the site has to understand it should be a maximum development"
+        }
+      ]
+    },
+    {
+      "id": "media-p38",
+      "title": "City staff in 2015: the site could be steered to affordable housing",
+      "summary": "In 2015 a city coordinator said a councilmember could direct the site to affordable housing; ten years later the Surplus Land Act points the land that way (sla-002, disp-003).",
+      "details": [
+        "Lead: a Reddit commenter (r/LosAngeles 32aeqk) linked this article; Claude opened it on 2026-10-12 and checked the wording.",
+        "LA Downtown News, Eddie Kim, 'Public Plaza and Park Likely to Remain Shuttered for Years', April 7, 2015."
+      ],
+      "topic": "Media",
+      "date": "2015-04-07",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2015-04-07",
+        "end": null
+      },
+      "media": {
+        "quote": "Hypothetically, a councilmember could suggest the site is best for affordable housing.",
+        "translation": null,
+        "speaker": "Josh Rohmer",
+        "role": "principal project coordinator, City Administrative Office",
+        "venue": "LA Downtown News, April 7, 2015",
+        "said": "2015-04-07",
+        "subject": "Surplus land and housing"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "LA Downtown News: Public Plaza and Park Likely to Remain Shuttered for Years (Apr 7, 2015)",
+          "url": "https://www.ladowntownnews.com/news/public-plaza-and-park-likely-to-remain-shuttered-for-years/article_ad7eb0c6-dc8a-11e4-b0cc-f75ab4ffac12.html",
+          "accessed": "2026-10-12",
+          "excerpt": "Hypothetically, a councilmember could suggest the site is best for affordable housing."
+        }
+      ]
+    },
+    {
+      "id": "hist-009",
+      "title": "Y-1 land acquired in 1961 for $2.7 million (per CRA reports, as reported)",
+      "summary": "LA Downtown News reported in 2015 that the land was originally acquired in 1961 for $2.7 million, citing CRA reports, and that early reviews put its value 'north of $20 million'.",
+      "details": [
+        "Lead: a Reddit commenter (r/LosAngeles 32aeqk) linked this article; Claude opened it on 2026-10-12 and checked the wording.",
+        "The CRA reports themselves were not seen; the figure is as reported by the newspaper.",
+        "Same article: value estimate 'north of $20 million' (Josh Rohmer, City Administrative Office); the site was once to hold a third California Plaza tower (see plaza-006)."
+      ],
+      "topic": "1980 Bargain & History",
+      "date": "1961",
+      "kind": "fact",
+      "status": "verified",
+      "confidence": "medium",
+      "lastVerified": "2026-10-12",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "1961",
+        "end": null
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "LA Downtown News: Public Plaza and Park Likely to Remain Shuttered for Years (Apr 7, 2015)",
+          "url": "https://www.ladowntownnews.com/news/public-plaza-and-park-likely-to-remain-shuttered-for-years/article_ad7eb0c6-dc8a-11e4-b0cc-f75ab4ffac12.html",
+          "accessed": "2026-10-12",
+          "excerpt": "It was originally acquired in 1961 for $2.7 million, according to CRA reports."
+        }
+      ]
     }
   ]
 }
