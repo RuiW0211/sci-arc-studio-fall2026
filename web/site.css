@@ -15,6 +15,8 @@
 :root {
   --bg: #ffffff; --text: #1a1a1a; --muted: #6b6b6b; --faint: #9a9a9a; --line: #e6e6e6; --hover: #f7f7f7;
   --tint: #3f51b5;
+  /* how sure an entry is (Research, Timeline) */
+  --verified: #2e7d32; --unverified: #b26a00; --question: #6b6b6b; --analysis: #3f51b5;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   /* timing, the same across the site (user, 2026-10-10; also in viewer.html): small feedback, overlays appearing,
@@ -25,11 +27,13 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark; --bg: #161616; --text: #ededed; --muted: #a0a0a0; --faint: #777777; --line: #2c2c2c; --hover: #1f1f1f;
     --tint: #9fa8da;
+    --verified: #81c784; --unverified: #ffb74d; --question: #a0a0a0; --analysis: #9fa8da;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark; --bg: #161616; --text: #ededed; --muted: #a0a0a0; --faint: #777777; --line: #2c2c2c; --hover: #1f1f1f;
   --tint: #9fa8da;
+  --verified: #81c784; --unverified: #ffb74d; --question: #a0a0a0; --analysis: #9fa8da;
 }
 
 /* moving between the site's pages cross-fades (View Transitions; browsers without it simply change page) */

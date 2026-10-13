@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timeline · Angels Knoll</title>
+<link rel="stylesheet" href="../site.css">
+<script src="../theme.js"></script>
+<style>
+  /* Timeline only; header, colours and type scale come from site.css. Drawn from ../research/data.json: every entry
+     with a timeline start is placed at its date (user, 2026-10-12). Events on the right, what people said (Media) on
+     the left, as in a procedural-sequence drawing; the periods are our own grouping. */
+  .wide { max-width: 1160px; margin: 0 auto; padding: 0 16px 64px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-size: 0.8rem; margin-bottom: 28px; }
+  .tools button { font: inherit; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent;
+    transition: color var(--t-feedback), text-decoration-color var(--t-feedback); }
+  .tools button:hover { color: var(--text); }
+  .tools button.on { color: var(--text); text-decoration-color: currentColor; }
+  .tools .sep { color: var(--line); }
+  .key, .tools { max-width: 728px; margin-left: auto; margin-right: auto; }
+  .key { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; }
+  .key svg { vertical-align: -2px; margin-right: 5px; }
+
+  .tl { position: relative; }
+  .tl svg.lines { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+  .tl .lab { position: absolute; font-size: 0.8rem; line-height: 1.35; cursor: pointer;
+    transition: opacity var(--t-feedback), color var(--t-feedback); }
+  .tl .lab .d { display: block; font: 0.68rem var(--mono); color: var(--faint); letter-spacing: 0.02em; }
+  .tl .lab.ev .t { font-weight: 600; }
+  .tl .lab.vo { color: var(--muted); }
+  .tl .lab.vo .q { font-style: italic; }
+  .tl .lab.vo .w { display: block; font-size: 0.7rem; color: var(--faint); }
+  .tl .lab.left { text-align: right; }
+  .tl .lab:hover, .tl .lab.hot { color: var(--text); }
+  .tl .lab.sel .t, .tl .lab.sel .q { text-decoration: underline; text-underline-offset: 3px; }
+  .tl .era { position: absolute; left: 0; right: 0; display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); pointer-events: none; }
+  .tl .era .n { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 4px;
+    border-radius: 13px; background: var(--text); color: var(--bg); font: 700 0.7rem var(--font); letter-spacing: 0; }
+  .tl .era .y { font-weight: 400; letter-spacing: 0.04em; }
+  .tl .tick { position: absolute; font: 0.68rem var(--mono); color: var(--faint); transform: translateY(-50%); pointer-events: none; }
+  /* dimmed by the topic filter */
+  .tl .off { opacity: 0.12; }
+
+  /* svg parts */
+  .tl .axis { stroke: var(--text); stroke-width: 1; }
+  .tl .eraline { stroke: var(--line); stroke-dasharray: 3 4; }
+  .tl .tickline { stroke: var(--faint); }
+  .tl .lead { stroke: var(--faint); stroke-width: 0.75; fill: none; transition: stroke var(--t-feedback), opacity var(--t-feedback); }
+  .tl .span { stroke-width: 2; stroke-linecap: butt; opacity: 0.4; transition: opacity var(--t-feedback); }
+  .tl .span.hot, .tl .span.sel { opacity: 1; }
+  .tl .span.off { opacity: 0.06; }
+  .tl .dot { stroke-width: 1.25; transition: opacity var(--t-feedback); }
+  .tl .hit { fill: transparent; pointer-events: all; cursor: pointer; }
+  .tl .hot.lead, .tl .sel.lead { stroke: var(--text); stroke-width: 1.25; }
+  .tl .s-verified { stroke: var(--verified); fill: var(--verified); }
+  .tl .s-unverified { stroke: var(--unverified); fill: var(--bg); }
+  .tl .s-open-question { stroke: var(--question); fill: var(--bg); stroke-dasharray: 2 2; }
+  .tl .s-analysis { stroke: var(--analysis); fill: var(--bg); }
+  .tl .span.s-verified, .tl .span.s-unverified, .tl .span.s-open-question, .tl .span.s-analysis { fill: none; stroke-dasharray: none; }
+  .tl .vo-mark { fill: var(--text); stroke: none; }
+  .tl .today { stroke: var(--text); stroke-width: 1; }
+
+  /* the card of the chosen entry */
+  .card { position: fixed; right: 16px; bottom: 64px; width: 360px; max-height: 60vh; overflow: auto; background: var(--bg);
+    border: 1px solid var(--line); border-radius: 3px; padding: 16px 18px; font-size: 0.85rem; z-index: 5;
+    opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity var(--t-in) ease, transform var(--t-in) ease; }
+  .card.show { opacity: 1; transform: none; pointer-events: auto; }
+  .card .meta { font: 0.68rem var(--mono); color: var(--faint); margin-bottom: 6px; }
+  .card h3 { font-size: 1rem; line-height: 1.35; margin-bottom: 8px; }
+  .card p { color: var(--muted); margin-bottom: 10px; }
+  .card blockquote { font-style: italic; margin-bottom: 8px; }
+  .card .st { font-weight: 700; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .card .st.verified { color: var(--verified); } .card .st.unverified { color: var(--unverified); }
+  .card .st.open-question { color: var(--question); } .card .st.analysis { color: var(--analysis); }
+  .card .x { position: absolute; top: 8px; right: 10px; background: none; border: 0; color: var(--faint); font-size: 1.1rem; cursor: pointer; }
+  .card a { color: var(--text); }
+
+  main > :not(.header), .wide { transition: opacity var(--t-in) ease; }
+  body:not(.ready) main > :not(.header), body:not(.ready) .wide { opacity: 0; }
+  @media (max-width: 600px) { .card { left: 16px; right: 16px; width: auto; bottom: 60px; } }
+</style>
+</head>
+<body>
+<main class="container" style="padding-bottom: 0">
+  <header class="header">
+    <p class="eyebrow">Angels Knoll · Timeline · <a href="../" class="home">home</a></p>
+    <h1>Timeline</h1>
+    <p class="subtitle">What happened to Parcel Y-1, and what people said, by date.</p>
+  </header>
+</main>
+<div class="wide">
+  <div class="key" id="key"></div>
+  <div class="tools" id="tools"></div>
+  <div class="tl" id="tl"></div>
+  <p class="note" id="note" style="margin-top: 40px"></p>
+</div>
+<div class="card" id="card" role="dialog" aria-live="polite"></div>
+<button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
+<script>
+(async function () {
+  // Periods: our own grouping, each starting at the date of a dated entry (named in `from`)
+  const ERAS = [
+    { n: "I", name: "Victorian hill", from: "bh-002" },
+    { n: "II", name: "Urban renewal and clearance", from: "bh-006" },
+    { n: "III", name: "California Plaza and MOCA", from: "hist-001" },
+    { n: "IV", name: "Interim park", from: "park-001" },
+    { n: "V", name: "Fenced", from: "park-004" },
+    { n: "VI", name: "Angels Landing", from: "ghost-006" },
+    { n: "VII", name: "Termination and surplus land", from: "lit-002" },
+  ];
+  const STATUS = { verified: "Verified", unverified: "Unverified", "open-question": "Open question", analysis: "Analysis" };
+  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const tl = document.getElementById("tl"), card = document.getElementById("card");
+
+  let db;
+  try { db = await (await fetch("../research/data.json")).json(); }
+  catch (e) {
+    tl.innerHTML = '<p class="note">Could not load the research data. Open the site through a local server (python web/serve.py).</p>';
+    document.body.classList.add("ready"); return;
+  }
+  const today = db.current?.asOf || new Date().toISOString().slice(0, 10);
+  // a date as a number of years; "present" is the date of the status box
+  const num = (d) => {
+    if (!d || d === "present") d = today;
+    const [y, m, dd] = d.split("-").map(Number);
+    return y + ((m || 1) - 1) / 12 + ((dd || 1) - 1) / 365;
+  };
+  const fmt = (d) => {
+    if (!d) return "";
+    if (d === "present") return "present";
+    const [y, m, dd] = d.split("-");
+    return !m ? y : !dd ? `${MON[+m - 1]} ${y}` : `${MON[+m - 1]} ${+dd}, ${y}`;
+  };
+
+  const all = db.findings;
+  const byId = new Map(all.map((f) => [f.id, f]));
+  const items = all.filter((f) => f.timeline?.start).map((f) => {
+    const end = f.timeline.end && f.timeline.end !== f.timeline.start ? f.timeline.end : null;
+    return { f, id: f.id, voice: f.topic === "Media", t: num(f.timeline.start), t1: end ? num(end) : null,
+      start: f.timeline.start, end, nsrc: (f.sources || []).length };
+  }).sort((a, b) => a.t - b.t || a.id.localeCompare(b.id));
+  const eras = ERAS.map((e) => ({ ...e, t: num(byId.get(e.from).timeline.start), start: byId.get(e.from).timeline.start }));
+  eras.forEach((e, i) => { e.t1 = i + 1 < eras.length ? eras[i + 1].t : num(today); });
+  const eraOf = (t) => { let k = 0; eras.forEach((e, i) => { if (t >= e.t) k = i; }); return k; };
+  items.forEach((it) => { it.era = eraOf(it.t); });
+  // spans (events that lasted), in lanes beside the axis; voices never span
+  const laneEnd = [];
+  for (const it of items.filter((i) => i.t1 && !i.voice)) {
+    let k = laneEnd.findIndex((end) => end < it.t);
+    if (k === -1) { k = laneEnd.length; laneEnd.push(0); }
+    laneEnd[k] = it.t1; it.lane = k;
+  }
+
+  // key and filters
+  document.getElementById("key").innerHTML =
+    `<span>${keyDot("s-verified")}Verified event</span><span>${keyDot("s-unverified")}Unverified</span>` +
+    `<span>${keyDot("s-open-question")}Open question</span>` +
+    `<span><svg width="12" height="12"><rect x="3" y="3" width="6" height="6" style="fill:var(--text)"/></svg>What someone said (Media)</span>` +
+    `<span><svg width="12" height="12"><line x1="6" y1="0" x2="6" y2="12" style="stroke:var(--verified);stroke-width:2.5"/></svg>How long it lasted</span>` +
+    `<span>Dot size: number of sources</span>`;
+  function keyDot(cls) {
+    const c = { "s-verified": ["var(--verified)", "var(--verified)", ""], "s-unverified": ["var(--unverified)", "var(--bg)", ""],
+      "s-open-question": ["var(--question)", "var(--bg)", "2 2"] }[cls];
+    return `<svg width="12" height="12"><circle cx="6" cy="6" r="4" style="stroke:${c[0]};fill:${c[1]};stroke-width:1.25;stroke-dasharray:${c[2] || "none"}"/></svg>`;
+  }
+  const topics = [...new Set(items.filter((i) => !i.voice).map((i) => i.f.topic))];
+  let topic = "all";
+  const tools = document.getElementById("tools");
+  tools.innerHTML = `<button data-t="all" class="on">All</button><span class="sep">|</span>` +
+    topics.map((t) => `<button data-t="${esc(t)}">${esc(t)}</button>`).join("") +
+    `<span class="sep">|</span><button data-t="Media">What people said</button>`;
+  tools.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    topic = topic === b.dataset.t ? "all" : b.dataset.t;
+    tools.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.t === topic));
+    applyFilter();
+  });
+
+  const undated = all.length - items.length;
+  document.getElementById("note").innerHTML =
+    `${items.length} of ${all.length} entries have a date and are shown; the other ${undated} (rules, open questions, our analysis, ` +
+    `undated comments) are in <a href="../research/">Research</a>. The periods are our own grouping. As of ${fmt(today)}.`;
+
+  // ---- layout ----
+  let lastW = 0, sel = null;
+  function layout() {
+    const W = tl.clientWidth; if (W === lastW) return; lastW = W;
+    const one = W < 760;                         // phones: one column, voices among the events
+    const ax = one ? 22 : Math.round(W * 0.46);  // x of the axis
+    const spanRight = ax + 7 + laneEnd.length * 4;
+    const evX = Math.max(one ? 40 : ax + 52, spanRight + 24);
+    const LW = one ? W - evX - 4 : Math.min(360, W - evX - 8), RW = Math.min(300, ax - 70);
+    const voX = ax - 40 - RW;   // label x (left edge); voices end at ax - 40   // label x (left edge; voices end at ax - 40)
+    tl.innerHTML = "";
+
+    // labels first, to measure their heights
+    for (const it of items) {
+      const el = document.createElement("div");
+      const left = it.voice && !one;
+      el.className = `lab ${it.voice ? "vo" : "ev"}${left ? " left" : ""}`;
+      el.dataset.id = it.id;
+      const date = fmt(it.start) + (it.end ? ` – ${fmt(it.end)}` : "");
+      if (it.voice) {
+        const m = it.f.media || {};
+        let q = m.translation || m.quote || it.f.title;
+        if (q.length > 110) q = q.slice(0, 107).replace(/\s+\S*$/, "") + "…";
+        el.innerHTML = `<span class="d">${esc(date)}</span><span class="q">“${esc(q)}”</span><span class="w">${esc(m.speaker || "")}</span>`;
+      } else {
+        el.innerHTML = `<span class="d">${esc(date)}</span><span class="t">${esc(it.f.title)}</span>`;
+      }
+      el.style.width = (left ? RW : LW) + "px";
+      el.style.left = (left ? voX : evX) + "px";
+      tl.appendChild(el);
+      it.el = el; it.h = el.offsetHeight; it.col = left ? "L" : "R";
+    }
+
+    // y of each period: room for its labels (the fuller column), spread between rank and date, so a busy month
+    // fans out while the long quiet decades stay short
+    const GAP = 10, HEAD = 56;
+    let y = 0;
+    const pts = [];                                   // (t, y) points: dates to page y, for dots, spans and ticks
+    eras.forEach((e, k) => {
+      const its = items.filter((i) => i.era === k);
+      const need = Math.max(...["L", "R"].map((c) => its.filter((i) => i.col === c).reduce((s, i) => s + i.h + GAP, 0)), 60);
+      let H = need * 1.08;
+      for (let pass = 0; pass < 4; pass++) {
+        const y0 = y + HEAD;
+        its.forEach((it, r) => {
+          const fr = 0.5 * ((it.t - e.t) / (e.t1 - e.t || 1)) + 0.5 * ((r + 0.5) / its.length);
+          it.y = y0 + fr * H;
+        });
+        // labels: at their dot, pushed down where they would overlap
+        let over = 0;
+        for (const c of ["L", "R"]) {
+          let bottom = y0 - 4;
+          for (const it of its.filter((i) => i.col === c)) {
+            it.ly = Math.max(it.y - 8, bottom + GAP);
+            bottom = it.ly + it.h;
+          }
+          over = Math.max(over, bottom - (y0 + H));
+        }
+        if (over <= 0) break;
+        H += over + 8;
+      }
+      e.y = y; e.y0 = y + HEAD; e.H = H;
+      pts.push([e.t, y + HEAD]);
+      its.forEach((it) => pts.push([it.t, it.y]));
+      pts.push([e.t1, y + HEAD + H]);
+      y += HEAD + H + 12;
+    });
+    const Ht = y;
+    tl.style.height = Ht + "px";
+    pts.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const yAt = (t) => {   // piecewise linear through the points
+      if (t <= pts[0][0]) return pts[0][1];
+      for (let i = 1; i < pts.length; i++) if (pts[i][0] >= t) {
+        const [t0, y0] = pts[i - 1], [t1, y1] = pts[i];
+        return t1 === t0 ? y1 : y0 + ((t - t0) / (t1 - t0)) * (y1 - y0);
+      }
+      return pts[pts.length - 1][1];
+    };
+
+    for (const it of items) it.el.style.top = it.ly + "px";
+
+    // svg: axis, periods, ticks, spans, dots, leaders
+    const S = [];
+    const top = eras[0].y0, bot = yAt(num(today));
+    S.push(`<line class="axis" x1="${ax}" y1="${top}" x2="${ax}" y2="${bot}" />`);
+    // periods
+    for (const e of eras) {
+      S.push(`<line class="eraline" x1="0" y1="${e.y + 18}" x2="${W}" y2="${e.y + 18}" />`);
+      const div = document.createElement("div");
+      div.className = "era"; div.style.top = (e.y + 5) + "px";
+      if (one) { div.style.justifyContent = "flex-start"; }
+      const end = e === eras[eras.length - 1] ? "present" : String(Math.floor(e.t1));
+      div.innerHTML = `<span class="n">${e.n}</span><span>${esc(e.name)}</span><span class="y">${Math.floor(e.t)}–${end}</span>`;
+      if (!one) div.style.paddingLeft = (ax + 14) + "px";
+      if (!one) div.style.justifyContent = "flex-start";
+      div.style.background = "var(--bg)"; div.style.right = "auto";
+      tl.appendChild(div);
+    }
+    // year ticks: each period's start, then round years with room
+    let lastTick = -1e9;
+    for (let yr = 1860; yr <= Math.floor(num(today)); yr++) {
+      const ty = yAt(yr);
+      if (yr < Math.floor(eras[0].t)) continue;
+      const round = yr % 10 === 0 ? 1 : yr % 5 === 0 ? 2 : 3;
+      const room = ty - lastTick;
+      if ((round === 1 && room > 26) || (round === 2 && room > 40) || (round === 3 && room > 70)) {
+        S.push(`<line class="tickline" x1="${ax - 4}" y1="${ty}" x2="${ax}" y2="${ty}" />`);
+        const tk = document.createElement("div");
+        tk.className = "tick"; tk.textContent = yr; tk.style.top = ty + "px";
+        if (one) { tk.style.left = "0"; tk.style.display = "none"; }
+        else { tk.style.right = (W - ax + 8) + "px"; }
+        tl.appendChild(tk);
+        lastTick = ty;
+      }
+    }
+    // today
+    S.push(`<line class="today" x1="${ax - 10}" y1="${bot}" x2="${ax + 10}" y2="${bot}" />`);
+    // spans, in lanes beside the axis (events right, voices never span)
+    for (const it of items.filter((i) => i.lane !== undefined)) {
+      const sx = ax + 7 + it.lane * 4;
+      S.push(`<line class="span s-${it.f.status}" data-id="${it.id}" x1="${sx}" y1="${it.y}" x2="${sx}" y2="${yAt(it.t1)}" />`);
+    }
+    const evX2 = evX;
+    // leaders and marks
+    for (const it of items) {
+      const ly = it.ly + 8;
+      if (it.col === "R") {
+        const x2 = evX2 - 6, xm = Math.max(spanRight + 6, x2 - 22);
+        S.push(`<polyline class="lead" data-id="${it.id}" points="${ax},${it.y} ${xm},${it.y} ${x2},${ly}" />`);
+      } else {
+        const x2 = voX + RW + 6, xm = Math.min(ax - 14, x2 + 22);
+        S.push(`<polyline class="lead" data-id="${it.id}" points="${ax - 9},${it.y} ${xm},${it.y} ${x2},${ly}" />`);
+      }
+    }
+    for (const it of items) {
+      if (it.voice) {
+        const x = one ? ax : ax - 9;
+        S.push(`<rect class="vo-mark" data-id="${it.id}" x="${x - 2.5}" y="${it.y - 2.5}" width="5" height="5" />`);
+      } else {
+        const r = 2.5 + Math.sqrt(it.nsrc) * 1.3;
+        S.push(`<circle class="dot s-${it.f.status}" data-id="${it.id}" cx="${ax}" cy="${it.y}" r="${r.toFixed(1)}" />`);
+      }
+      S.push(`<circle class="hit" data-id="${it.id}" cx="${it.voice && !one ? ax - 9 : ax}" cy="${it.y}" r="8" />`);
+    }
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "lines"); svg.setAttribute("width", W); svg.setAttribute("height", Ht);
+    svg.innerHTML = S.join("");
+    tl.prepend(svg);
+    applyFilter();
+    if (sel) mark(sel, "sel", true);
+  }
+
+  // ---- interaction ----
+  const parts = (id) => tl.querySelectorAll(`[data-id="${CSS.escape(id)}"]`);
+  function mark(id, cls, on) { parts(id).forEach((p) => p.classList.toggle(cls, on)); }
+  function applyFilter() {
+    for (const it of items) {
+      const on = topic === "all" || it.f.topic === topic;
+      parts(it.id).forEach((p) => p.classList.toggle("off", !on));
+    }
+  }
+  let hot = null;
+  tl.addEventListener("pointerover", (e) => {
+    const p = e.target.closest("[data-id]"); const id = p?.dataset.id || null;
+    if (id === hot) return;
+    if (hot) mark(hot, "hot", false);
+    hot = id; if (hot) mark(hot, "hot", true);
+  });
+  tl.addEventListener("pointerleave", () => { if (hot) mark(hot, "hot", false); hot = null; });
+  tl.addEventListener("click", (e) => {
+    const p = e.target.closest("[data-id]"); if (!p) return;
+    open(p.dataset.id);
+  });
+  function open(id) {
+    if (sel) mark(sel, "sel", false);
+    sel = id; mark(id, "sel", true);
+    const f = byId.get(id), it = items.find((i) => i.id === id), m = f.media;
+    const date = fmt(it.start) + (it.end ? ` – ${fmt(it.end)}` : "");
+    card.innerHTML = `<button class="x" aria-label="Close">×</button>` +
+      `<div class="meta">${esc(date)} · ${esc(f.topic)} · <span class="st ${esc(f.status)}">${esc(STATUS[f.status] || f.status)}</span></div>` +
+      `<h3>${esc(f.title)}</h3>` +
+      (m ? `<blockquote>“${esc(m.translation || m.quote)}”</blockquote><p>${esc(m.speaker)}${m.role ? ", " + esc(m.role) : ""}. ${esc(m.venue || "")}</p>` : "") +
+      `<p>${esc(f.summary)}</p>` +
+      `<div class="meta">${f.sources.length} source${f.sources.length === 1 ? "" : "s"} · <a href="../research/#${encodeURIComponent(id)}">open in Research</a></div>`;
+    card.classList.add("show");
+    history.replaceState(null, "", "#" + id);
+  }
+  function close() { card.classList.remove("show"); if (sel) mark(sel, "sel", false); sel = null; history.replaceState(null, "", location.pathname); }
+  card.addEventListener("click", (e) => { if (e.target.closest(".x")) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+  layout();
+  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(layout, 120); });
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h && items.some((i) => i.id === h)) {
+    open(h);
+    const el = items.find((i) => i.id === h).el;
+    setTimeout(() => scrollTo(0, el.getBoundingClientRect().top + scrollY - innerHeight / 3), 0);
+  }
+  requestAnimationFrame(() => document.body.classList.add("ready"));
+})();
+</script>
+</body>
+</html>
