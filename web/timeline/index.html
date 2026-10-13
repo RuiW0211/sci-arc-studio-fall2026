@@ -33,7 +33,14 @@
   .tl .lab.vo .w { display: block; font-size: 0.7rem; color: var(--faint); }
   .tl .lab.left { text-align: right; }
   .tl .lab:hover, .tl .lab.hot { color: var(--text); }
-  .tl .lab.sel .t, .tl .lab.sel .q { text-decoration: underline; text-underline-offset: 3px; }
+  .tl .lab.sel .q { text-decoration: underline; text-underline-offset: 3px; }
+  /* events: on hover / when chosen, a block of the entry's status colour behind the text (user, 2026-10-12);
+     the padding is taken back by the margin, so the text does not move */
+  .tl .lab.ev { padding: 2px 6px 3px; margin: -2px -6px 0; border-radius: 2px;
+    transition: background-color var(--t-feedback), color var(--t-feedback), opacity var(--t-feedback); }
+  .tl .lab.ev .d { transition: color var(--t-feedback); }
+  .tl .lab.ev:hover, .tl .lab.ev.hot, .tl .lab.ev.sel { background: var(--c); color: var(--bg); }
+  .tl .lab.ev:hover .d, .tl .lab.ev.hot .d, .tl .lab.ev.sel .d { color: var(--bg); }
   .tl .era { position: absolute; left: 0; right: 0; display: flex; justify-content: flex-end; align-items: center; gap: 10px;
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); pointer-events: none; }
   .tl .era .n { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 4px;
@@ -202,6 +209,7 @@
       const left = it.voice && !one;
       el.className = `lab ${it.voice ? "vo" : "ev"}${left ? " left" : ""}`;
       el.dataset.id = it.id;
+      el.style.setProperty("--c", `var(--${{ "open-question": "question" }[it.f.status] || it.f.status})`);
       const date = fmt(it.start) + (it.end ? ` – ${fmt(it.end)}` : "");
       if (it.voice) {
         const m = it.f.media || {};
@@ -211,7 +219,7 @@
       } else {
         el.innerHTML = `<span class="d">${esc(date)}</span><span class="t">${esc(it.f.title)}</span>`;
       }
-      el.style.width = (left ? RW : LW) + "px";
+      if (left) el.style.width = RW + "px"; else el.style.maxWidth = (LW + 12) + "px";   // events: the block fits the text
       el.style.left = (left ? voX : evX) + "px";
       tl.appendChild(el);
       it.el = el; it.h = el.offsetHeight; it.col = left ? "L" : "R";
