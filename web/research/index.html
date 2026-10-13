@@ -14,17 +14,13 @@
   html, body { height: 100%; overflow: hidden; }
   #view { position: fixed; inset: 0; touch-action: none; }
   #view canvas { display: block; }
-  .over { position: fixed; left: 16px; top: 16px; max-width: 420px; pointer-events: none; z-index: 3; }
-  .over .eyebrow { margin-bottom: 8px; pointer-events: auto; }
-  .over h1 { font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; }
-  .over .subtitle { font-size: 0.85rem; }
-  /* the two views of Research, the same on both pages */
-  .views { display: flex; gap: 14px; font-size: 0.8rem; margin: 2px 0 8px; pointer-events: auto; }
-  .views a { color: var(--muted); text-decoration: none; padding-bottom: 1px; border-bottom: 1px solid transparent;
-    transition: color var(--t-feedback), border-color var(--t-feedback); }
-  .views a:hover { color: var(--text); }
-  .views a.on { color: var(--text); border-bottom-color: currentColor; }
-  .search { margin-top: 12px; pointer-events: auto; width: min(320px, calc(100vw - 32px)); }
+  /* the header sits where it sits on List and Methods: the site's column and header (site.css), over the view */
+  .over { position: fixed; top: 0; left: 0; right: 0; pointer-events: none; z-index: 3; }
+  .over .container { padding-bottom: 0; }
+  .over .header { margin-bottom: 16px; }
+  .over .eyebrow a, .over .views { pointer-events: auto; }
+
+  .search { pointer-events: auto; width: min(320px, calc(100vw - 32px)); }
   .search input { width: 100%; font: 0.8rem var(--font); color: var(--text); background: var(--bg); border: 1px solid var(--line);
     border-radius: 3px; padding: 6px 9px; outline: none; transition: border-color var(--t-feedback); }
   .search input:focus { border-color: var(--muted); }
@@ -146,8 +142,6 @@
   #view, .over, .ctl { transition: opacity var(--t-out) ease; }
   body:not(.ready) #view, body:not(.ready) .ctl, body:not(.ready) #labels { opacity: 0; }
   @media (max-width: 600px) {
-    .over h1 { font-size: 1.3rem; }
-    .over .subtitle { display: none; }
     .card { left: 16px; right: 16px; width: auto; top: auto; max-height: 55vh; bottom: 60px; }
   }
 </style>
@@ -161,14 +155,16 @@
 <div id="blobs"></div>
 <div id="scanrd"></div>
 <div id="labels"></div>
-<div class="over">
-  <p class="eyebrow">Angels Knoll · Research · <a href="../" class="home">home</a></p>
-  <h1>Research</h1>
-  <p class="views"><a href="./" class="on" aria-current="page">Network</a><a href="list/">List</a></p>
-  <p class="subtitle">How the research entries are linked. Up is later in time.</p>
+<div class="over"><div class="container">
+  <header class="header">
+    <p class="eyebrow">Angels Knoll · Research · <a href="../" class="home">home</a></p>
+    <h1>Research</h1>
+    <p class="views"><a href="./" class="on" aria-current="page">Network</a><a href="list/">List</a></p>
+    <p class="subtitle">How the research entries are linked. Up is later in time.</p>
+  </header>
   <div class="search"><input id="q" type="search" placeholder="Search people, places, entries" autocomplete="off" spellcheck="false">
     <ul id="qres"></ul></div>
-</div>
+</div></div>
 <div class="ctl" id="ctl"></div>
 <div class="card" id="card" role="dialog" aria-live="polite"></div>
 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
@@ -892,7 +888,10 @@ function placeLabel(el, x, y, z, dx = 8, dy = -6) {
   el.style.visibility = "";
   el.style.transform = `translate(${((v3.x + 1) / 2 * innerWidth + dx).toFixed(1)}px, ${((1 - v3.y) / 2 * innerHeight + dy).toFixed(1)}px)`;
 }
-let offX = 0, offY = 0;
+let offX = 0, offY = 0, headBottom = 0;
+const headEl = document.querySelector(".over .search");
+function measureHead() { headBottom = headEl.getBoundingClientRect().bottom; }
+measureHead(); addEventListener("resize", measureHead);
 let frameLast = 0, frameDt = 1 / 60;
 function frame(now) {
   frameDt = frameLast ? Math.min(0.1, (now - frameLast) / 1000) : 1 / 60; frameLast = now;
@@ -908,7 +907,9 @@ function frame(now) {
   }
   // with the card open, the view slides so the chosen point is not under it (right on wide screens, bottom on phones)
   const wide = innerWidth > 600, showCard = card.classList.contains("show");
-  const ox = showCard && wide ? (card.offsetWidth + 16) / 2 : 0, oy = showCard && !wide ? card.offsetHeight / 2 : 0;
+  const ox = showCard && wide ? (card.offsetWidth + 16) / 2 : 0;
+  // the view's middle sits below the header (as tall as on List and Methods), not behind it
+  const oy = (showCard && !wide ? card.offsetHeight / 2 : 0) - headBottom / 2;
   offX += (ox - offX) * 0.12; offY += (oy - offY) * 0.12;
   if (Math.abs(offX) > 0.5 || Math.abs(offY) > 0.5) camera.setViewOffset(innerWidth, innerHeight, offX, offY, innerWidth, innerHeight);
   else if (camera.view) camera.clearViewOffset();
