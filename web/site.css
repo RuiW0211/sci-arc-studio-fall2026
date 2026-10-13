@@ -45,8 +45,7 @@ code { font: 0.8rem var(--mono); }
 /* header: eyebrow (link home + authors), title, one-line subtitle, hairline */
 .header { padding-bottom: 32px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
 .eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 12px; }
-.home { color: inherit; text-decoration: none; }
-.home:hover { text-decoration-color: currentColor; }
+.home { color: inherit; }   /* "home" in the eyebrow, underlined like the viewer's */
 .header h1 { font-size: 2.4rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 12px; }
 .subtitle { color: var(--muted); max-width: 520px; }
 
@@ -73,8 +72,8 @@ html { scrollbar-color: var(--line) var(--bg); }
     --faint var(--t-out) ease, --line var(--t-out) ease, --hover var(--t-out) ease, --tint var(--t-out) ease,
     --verified var(--t-out) ease, --unverified var(--t-out) ease, --question var(--t-out) ease,
     --analysis var(--t-out) ease !important; }
-/* hover underlines (home link, entry titles) come in with the small-feedback time; other links keep theirs */
-.home, .entry-title, .finding-title { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent;
+/* hover underlines (entry titles) come in with the small-feedback time; other links keep theirs */
+.entry-title, .finding-title { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent;
   transition: text-decoration-color var(--t-feedback); }
 
 .theme-toggle { position: fixed; right: 16px; bottom: 16px; width: 36px; height: 36px; font-size: 1rem; color: var(--text);
