@@ -399,9 +399,12 @@ scene.add(lines);
 // the time axis and its years
 const years = [];
 {
-  const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, yOf(t0) - 20, 0), new THREE.Vector3(0, yOf(t1) + 20, 0)]);
+  // many points, so it can ripple where the drop passes
+  var AX_N = 260, axY0 = yOf(t0) - 20, axY1 = yOf(t1) + 20, axPos = new Float32Array(AX_N * 3);
+  for (let k = 0; k < AX_N; k++) axPos[3 * k + 1] = axY0 + (axY1 - axY0) * k / (AX_N - 1);
+  var axGeo = new THREE.BufferGeometry(); axGeo.setAttribute("position", new THREE.BufferAttribute(axPos, 3));
   var axisMat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.5 });
-  scene.add(new THREE.Line(g, axisMat));
+  scene.add(new THREE.Line(axGeo, axisMat));
   let last = -1e9;
   for (let y = Math.ceil(t0); y <= Math.floor(t1); y++) {
     const yy = yOf(y), round = y % 50 === 0 ? 1 : y % 10 === 0 ? 2 : y % 5 === 0 ? 3 : 4;
@@ -566,7 +569,7 @@ function paint() {
   if (flowDirty) { lGeo.attributes.flow.needsUpdate = true; flowDirty = false; }
   if (!eased) { pCol.set(pT); lCol.set(lT); eased = true; pGeo.attributes.color.needsUpdate = lGeo.attributes.color.needsUpdate = true; }
   easing = true;
-  axisMat.color.copy(css.faint); thumbMat.color.copy(css.text);
+  axisMat.color.copy(css.faint); dropMat.uniforms.rim.value.copy(css.text);
   // which labels show: hubs always; entries when in focus
   const want = new Set(TOP_HUBS);   // at rest only the most linked tags; the rest come in with focus
   if (fs) fs.forEach((i) => want.add(i));
@@ -703,20 +706,44 @@ function scanTo(e) {
   scan = Math.max(yOf(t0), Math.min(yOf(t1), hit.y)); dirty = true;
   controls.autoRotate = false;
 }
-// the slider: a capsule on the axis, lit from the camera so it reads as solid from every side
-const thumbMat = new THREE.MeshLambertMaterial({ color: css.text });
-const thumbMesh = new THREE.Mesh(new THREE.CapsuleGeometry(4, 15, 8, 24), thumbMat);
-scene.add(thumbMesh, new THREE.HemisphereLight(0xffffff, 0x404040, 0.9));
-const lamp = new THREE.DirectionalLight(0xffffff, 1.1); lamp.position.set(-0.6, 1, 0.8); camera.add(lamp); scene.add(camera);
+// the slider is a drop of liquid glass on the axis (user, 2026-10-13: like dragging a drop along it). The scene is
+// drawn to a texture, then a lens pass draws it to the screen: inside the drop the picture is magnified and pressed
+// towards the rim, with a little colour fringing, a thin bright rim and a highlight. Dragged fast it stretches along
+// the axis and wobbles back when let go; the axis ripples behind it.
+const rt = new THREE.WebGLRenderTarget(1, 1, { samples: 4 });
+const post = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const dropMat = new THREE.ShaderMaterial({
+  depthTest: false, depthWrite: false,
+  uniforms: { tScene: { value: rt.texture }, res: { value: new THREE.Vector2(1, 1) }, center: { value: new THREE.Vector2() },
+    radius: { value: 14 }, stretch: { value: new THREE.Vector2(1, 1) }, rim: { value: css.text.clone() } },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: `uniform sampler2D tScene; uniform vec2 res, center, stretch; uniform float radius; uniform vec3 rim; varying vec2 vUv;
+    void main() {
+      vec4 base = texture2D(tScene, vUv);
+      vec2 p = gl_FragCoord.xy - center, q = p / (radius * stretch);
+      float d = length(q);
+      if (d > 1.0) { gl_FragColor = base; return; }
+      float h = sqrt(1.0 - d * d);
+      vec2 off = p * (0.55 + 0.45 * d * d);            // magnified in the middle, pressed together at the rim
+      vec4 cg = texture2D(tScene, (center + off) / res);
+      float cr = texture2D(tScene, (center + off * 1.04) / res).r, cb = texture2D(tScene, (center + off * 0.96) / res).b;
+      vec4 c = vec4(cr, cg.g, cb, cg.a);
+      float edge = smoothstep(0.78, 1.0, d) * 0.5;      // the rim
+      float spec = smoothstep(0.32, 0.0, length(q - vec2(-0.38, 0.42))) * 0.7;   // the highlight, upper left
+      float body = 0.05 * h;                            // the glass itself, barely
+      float k = edge + spec + body;
+      vec4 g = vec4(min(c.rgb + rim * k, vec3(1.0)), min(c.a + k, 1.0));
+      gl_FragColor = mix(base, g, smoothstep(1.0, 0.94, d));
+    }`,
+});
+post.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), dropMat));
+const drop = { r: 13, sx: 0, sy: 0, prevSy: null, w: 0, wv: 0, ripple: 0 };
 let thumbHot = false;
 const thumbTw = { from: 1, to: 1, cur: 1, t: 0, ms: (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--t-feedback")) || 0.2) * 1000 };
-function onThumb(e) {   // on the capsule, or within a few pixels of it
-  rayAt(e);
-  if (ray.intersectObject(thumbMesh).length) return true;
-  v3.copy(thumbMesh.position).project(camera);
-  return Math.hypot((v3.x + 1) / 2 * innerWidth - e.clientX, (1 - v3.y) / 2 * innerHeight - e.clientY) < 22;
+function onThumb(e) {   // on the drop, or within a few pixels of it
+  return Math.hypot(drop.sx - e.clientX, drop.sy - e.clientY) < drop.r * thumbTw.cur + 10;
 }
-let thumbRest = yOf(t1);   // where the thumb waits: the present, or where the last scan ended
+let thumbRest = yOf(t1), axDirty = false;   // where the thumb waits: the present, or where the last scan ended
 function clearScan() { if (scan !== null) { thumbRest = scan; scan = null; dirty = true; } }
 // the year at a height: yOf is increasing, so search it
 function tOf(y) { let a = t0, b = t1; for (let k = 0; k < 40; k++) { const m = (a + b) / 2; if (yOf(m) < y) a = m; else b = m; } return (a + b) / 2; }
@@ -860,6 +887,9 @@ addEventListener("keydown", (e) => {
 // ---- frame ----
 function resize() {
   renderer.setSize(innerWidth, innerHeight);
+  const pr = renderer.getPixelRatio();
+  rt.setSize(Math.round(innerWidth * pr), Math.round(innerHeight * pr));
+  dropMat.uniforms.res.value.set(Math.round(innerWidth * pr), Math.round(innerHeight * pr));
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
   pMat.uniforms.scale.value = innerHeight * renderer.getPixelRatio() * 1.4;   // grew with the farther camera
 }
@@ -899,25 +929,46 @@ function frame(now) {
   if (dirty) paint();
   easeColours(now);
   lineMat.uniforms.time.value = now / 1000;
-  renderer.render(scene, camera);
+  renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene, camera);
+  renderer.setRenderTarget(null); renderer.render(post, postCam);
   project();
   for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
-  years.forEach(([, yy], k) => placeLabel(yearEls[k], 0, yy, 0, 10, -6));
+  years.forEach(([, yy], k) => {
+    placeLabel(yearEls[k], 0, yy, 0, 10, -6);
+    v3.set(0, yy, 0).project(camera);
+    const d = Math.hypot((v3.x + 1) / 2 * innerWidth - drop.sx, (1 - v3.y) / 2 * innerHeight - drop.sy);
+    yearEls[k].style.opacity = Math.max(0, Math.min(1, (d - drop.r * 1.6) / 22)).toFixed(2);
+  });
   {   // the slider rides the axis: at the scanned height, or resting at the present; bigger under the pointer or held
     const ys = scan !== null ? scan : thumbRest;
-    thumbMesh.position.y = ys;
     // grow / shrink over --t-feedback with ease-in-out, whatever the screen's frame rate (user, 2026-10-12: not a jump)
     const k = thumbHot || scanning ? 1.3 : 1;
     if (k !== thumbTw.to) Object.assign(thumbTw, { from: thumbTw.cur, to: k, t: now });
     const u = Math.min(1, (now - thumbTw.t) / thumbTw.ms), e = u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
-    // never smaller on screen than about 34 px tall, however far the camera is
-    const camD = camera.position.distanceTo(thumbMesh.position);
-    const pxPerUnit = innerHeight / (2 * camD * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
-    const floor = Math.max(1, 22 / (23 * pxPerUnit));   // the capsule is 23 units tall
     thumbTw.cur = thumbTw.from + (thumbTw.to - thumbTw.from) * e;
-    thumbMesh.scale.setScalar(thumbTw.cur * floor);
     v3.set(0, ys, 0).project(camera);
-    scanRd.style.translate = `${((v3.x + 1) / 2 * innerWidth - 14).toFixed(1)}px ${((1 - v3.y) / 2 * innerHeight).toFixed(1)}px`;
+    drop.sx = (v3.x + 1) / 2 * innerWidth; drop.sy = (1 - v3.y) / 2 * innerHeight;
+    // stretch with the speed of the drag; a damped spring, so it wobbles back when let go
+    const vy = drop.prevSy === null ? 0 : (drop.sy - drop.prevSy) / frameDt; drop.prevSy = drop.sy;
+    const want = scanning ? Math.min(1, Math.abs(vy) / 1100) : 0;
+    drop.wv += (-170 * (drop.w - want) - 11 * drop.wv) * frameDt; drop.w += drop.wv * frameDt;
+    drop.ripple = Math.max(drop.ripple * Math.exp(-frameDt * 2.5), scanning ? Math.min(1, Math.abs(vy) / 700) : 0);
+    const pr = renderer.getPixelRatio(), R = drop.r * thumbTw.cur;
+    dropMat.uniforms.center.value.set(drop.sx * pr, (innerHeight - drop.sy) * pr);
+    dropMat.uniforms.radius.value = R * pr;
+    dropMat.uniforms.stretch.value.set(1 - 0.28 * drop.w, 1 + 0.5 * drop.w);
+    // the axis ripples sideways (across the screen) behind a moving drop, and settles
+    if (drop.ripple > 0.005 || axDirty) {
+      const right = v3.setFromMatrixColumn(camera.matrixWorld, 0);
+      for (let k = 0; k < AX_N; k++) {
+        const y = axPos[3 * k + 1], dy = y - ys;
+        const o = drop.ripple * 7 * Math.sin(dy * 0.09 - now * 0.014) * Math.exp(-Math.abs(dy) / 70);
+        axPos[3 * k] = right.x * o; axPos[3 * k + 2] = right.z * o;
+      }
+      axGeo.attributes.position.needsUpdate = true; axDirty = drop.ripple > 0.005;
+    }
+    v3.set(0, ys, 0).project(camera);
+    scanRd.style.translate = `${((v3.x + 1) / 2 * innerWidth - R - 10).toFixed(1)}px ${((1 - v3.y) / 2 * innerHeight).toFixed(1)}px`;
     scanRd.classList.toggle("on", scan !== null);
     if (scan !== null) {
       const t = tOf(scan), lo = tOf(scan - SCAN_BAND), hi = tOf(scan + SCAN_BAND);
