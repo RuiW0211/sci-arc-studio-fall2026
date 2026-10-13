@@ -65,8 +65,13 @@
   body.scanning, body.scanning * { cursor: default !important; }
   body.scanning .lb[data-i] { pointer-events: none; }
   .lb.dim { pointer-events: none; }
+  .lb .rd { display: block; font: 0.56rem/1.25 var(--mono); letter-spacing: 0.02em; font-weight: 400; text-transform: none; font-style: normal; opacity: 0.7; }
+  .lb .rd:empty { display: none; }
+  .lb .tt { display: block; overflow: hidden; text-overflow: ellipsis; }
   .lb.year { font: 0.62rem var(--mono); color: var(--faint); }
   .lb.dim { opacity: 0.18; }
+  #leadsvg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: visible; }
+  #leaders { fill: none; stroke: var(--faint); stroke-width: 0.75; }
   /* blob tracking (user, 2026-10-12, after TouchDesigner's Blob Track): the point in focus and its neighbours get a
      tracking frame that locks on and follows them, with a small readout; the chosen one gets a full square */
   #blobs { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
@@ -77,7 +82,7 @@
       linear-gradient(var(--k), var(--k)) bottom left / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom left / 1px var(--l),
       linear-gradient(var(--k), var(--k)) bottom right / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom right / 1px var(--l);
     background-repeat: no-repeat; }
-  .blob i { position: absolute; right: calc(100% + 3px); top: calc(100% - 2px); text-align: right; font: 0.56rem/1 var(--mono); color: var(--muted);
+  .blob i { display: none; position: absolute; right: calc(100% + 3px); top: calc(100% - 2px); text-align: right; font: 0.56rem/1 var(--mono); color: var(--muted);
     white-space: nowrap; font-style: normal; letter-spacing: 0.02em; }
   .blob.main { border: 1px solid var(--k); background: none; }
   .blob.main i { color: var(--text); }
@@ -131,6 +136,7 @@
 <div id="view"></div>
 <div id="blobs"></div>
 <div id="scanrd"></div>
+<svg id="leadsvg" aria-hidden="true"><path id="leaders" /></svg>
 <div id="labels"></div>
 <div class="over">
   <p class="eyebrow">Angels Knoll · Connections · <a href="../" class="home">home</a></p>
@@ -178,7 +184,7 @@ links.forEach((l, li) => { adj[l.i].push(li); adj[l.j].push(li); });
 const isHub = (n) => n.type !== "entry";
 
 // ---- layout: height is time for dated entries; a seeded force layout for the rest, computed once ----
-const H = 640;
+const H = 1100;   // taller than first drawn (640), so the years and the entries of one year sit further apart (user, 2026-10-12)
 const dated = nodes.filter((n) => n.type === "entry" && n.start).map((n) => num(n.start)).sort((a, b) => a - b);
 const t0 = dated[0], t1 = Math.max(dated[dated.length - 1], num(data.asOf || "2026-10-12"));
 function yOf(t) {     // part linear, mostly by rank: the quiet decades stay short, the busy years open up
@@ -190,14 +196,14 @@ function yOf(t) {     // part linear, mostly by rank: the quiet decades stay sho
 const P = new Float32Array(N * 3), V = new Float32Array(N * 3), fixY = new Array(N).fill(null);
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 nodes.forEach((n, i) => {
-  const a = rnd() * Math.PI * 2, r = 40 + rnd() * 140;
+  const a = rnd() * Math.PI * 2, r = 80 + rnd() * 260;
   P[3 * i] = Math.cos(a) * r; P[3 * i + 2] = Math.sin(a) * r;
   if (n.type === "entry" && n.start) { fixY[i] = yOf(num(n.start)); P[3 * i + 1] = fixY[i]; }
   else P[3 * i + 1] = (rnd() - 0.5) * H * 0.6;
   n.deg = adj[i].filter((li) => links[li].kind !== "source").length;
 });
 const layoutLinks = links.filter((l) => l.kind !== "source");
-const SPRING = { mention: [34, 0.06], actor: [52, 0.03], subject: [40, 0.05] };
+const SPRING = { mention: [55, 0.06], actor: [85, 0.03], subject: [65, 0.05] };   // lengths grew with the taller axis
 // one step of the forces; pinned nodes (dragged or dropped) stay where they are
 const pinned = new Set();
 function tick(cool) {
@@ -205,8 +211,8 @@ function tick(cool) {
   for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
     let dx = P[3 * i] - P[3 * j], dy = P[3 * i + 1] - P[3 * j + 1], dz = P[3 * i + 2] - P[3 * j + 2];
     let d2 = dx * dx + dy * dy + dz * dz + 1;
-    if (d2 > 160000) continue;
-    const f = Math.min(1400 / d2, 4), d = Math.sqrt(d2);
+    if (d2 > 360000) continue;
+    const f = Math.min(4000 / d2, 6), d = Math.sqrt(d2);
     dx *= f / d; dy *= f / d; dz *= f / d;
     V[3 * i] += dx; V[3 * i + 1] += dy; V[3 * i + 2] += dz; V[3 * j] -= dx; V[3 * j + 1] -= dy; V[3 * j + 2] -= dz;
   }
@@ -220,8 +226,8 @@ function tick(cool) {
   for (let i = 0; i < N; i++) {
     if (pinned.has(i)) continue;
     const n = nodes[i], x = P[3 * i], z = P[3 * i + 2], r = Math.hypot(x, z) + 0.01;
-    V[3 * i] -= x * 0.004; V[3 * i + 2] -= z * 0.004;                     // toward the time axis
-    if (n.type === "entry" && !n.start && r < 210) { V[3 * i] += x / r * 1.5; V[3 * i + 2] += z / r * 1.5; }   // undated: an outer shell
+    V[3 * i] -= x * 0.0025; V[3 * i + 2] -= z * 0.0025;                     // toward the time axis
+    if (n.type === "entry" && !n.start && r < 360) { V[3 * i] += x / r * 1.5; V[3 * i + 2] += z / r * 1.5; }   // undated: an outer shell
     for (let c = 0; c < 3; c++) P[3 * i + c] += Math.max(-8, Math.min(8, V[3 * i + c])) * cool;
     if (fixY[i] !== null) P[3 * i + 1] = fixY[i];
     else P[3 * i + 1] = Math.max(-H / 2 - 40, Math.min(H / 2 + 40, P[3 * i + 1]));
@@ -237,11 +243,11 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 view.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
-camera.position.set(1060, 140, 1060);
+camera.position.set(1500, 200, 1500);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
 controls.autoRotate = true; controls.autoRotateSpeed = 0.35;
-controls.minDistance = 120; controls.maxDistance = 2600;
+controls.minDistance = 120; controls.maxDistance = 3600;
 
 // colours from the page's variables (they ease when the theme changes)
 const css = {};
@@ -270,7 +276,7 @@ const pMat = new THREE.ShaderMaterial({
     uniform float scale;
     void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
       gl_PointSize = size * scale / -mv.z; vC = color; vS = shape;
-      vC.a *= clamp(1.35 - (-mv.z) / 2200.0, 0.35, 1.0); }`,
+      vC.a *= clamp(1.35 - (-mv.z) / 3000.0, 0.35, 1.0); }`,
   fragmentShader: `varying vec4 vC; varying float vS;
     void main() { vec2 p = gl_PointCoord - 0.5; float d = length(p);
       if (vS < 0.5) { if (d > 0.5) discard; }
@@ -314,7 +320,7 @@ function label(i) {
   if (labels.has(i)) return labels.get(i);
   const n = nodes[i], el = document.createElement("div");
   el.className = "lb " + (n.type === "entry" ? "entry" : n.type === "subject" ? "subject" : "hub " + n.type);
-  el.textContent = n.title;
+  el.innerHTML = `<span class="tt">${esc(n.title)}</span><span class="rd"></span>`;
   if (n.type === "entry") el.style.setProperty("--c", `var(--${{ "open-question": "question" }[n.status] || n.status})`);
   el.dataset.i = i;
   labelsEl.appendChild(el); labels.set(i, el);
@@ -383,7 +389,7 @@ ctl.addEventListener("click", (e) => {
 
 // ---- state, colouring ----
 let hover = -1, sel = -1, dirty = true, scan = null;   // scan: world height of the scan line, or null
-const SCAN_BAND = 16;   // world units either side of the scan line (the axis is ${H} tall)
+const SCAN_BAND = H * 0.025;   // world units either side of the scan line
 function inScan(i) { return scan !== null && fixY[i] !== null && Math.abs(fixY[i] - scan) <= SCAN_BAND; }
 function focusSet() {
   const f = sel >= 0 ? sel : hover;
@@ -432,6 +438,10 @@ function paint() {
     el.classList.toggle("sel", i === sel);
   }
   if (fs) fs.forEach((i) => { const el = label(i); el.style.display = ""; el.classList.remove("dim"); el.classList.toggle("sel", i === sel); });
+  for (const [i, el] of labels) {   // readouts only on labels in focus
+    const rd = el.querySelector(".rd");
+    if ((!fs || !fs.has(i)) && rd.textContent) { rd.textContent = ""; el._w = 0; }
+  }
   // tracking frames: new ones lock on, gone ones are removed
   const keep = fs ? [...fs].slice(0, 60) : [];
   for (const [i, el] of blobs) if (!keep.includes(i)) { el.remove(); blobs.delete(i); }
@@ -442,8 +452,9 @@ function paint() {
       el.className = "blob"; el.innerHTML = "<i></i>";
       blobsEl.appendChild(el); blobs.set(i, el);
     }
-    const r = readout(i, f);
-    if (el.firstChild.textContent !== r) el.firstChild.textContent = r;
+    // the readout goes under the point's title, so it makes room with the labels (user, 2026-10-12: they collided)
+    const lb = label(i), r = readout(i, f), rd = lb.querySelector(".rd");
+    if (rd.textContent !== r) { rd.textContent = r; lb._w = 0; }
     const main = i === f, s = main ? 26 : isHub(nodes[i]) ? 14 : 12 + Math.min(8, pSize[i] * 0.6);
     el.classList.toggle("main", main); el.style.setProperty("--s", s + "px"); el.dataset.h = s / 2;
     if (nodes[i].type === "entry" && main) el.style.setProperty("--k", `var(--${{ "open-question": "question" }[nodes[i].status] || nodes[i].status})`);
@@ -630,6 +641,44 @@ addEventListener("resize", resize); resize();
 const root = document.documentElement;
 new MutationObserver(() => { readColours(); dirty = true; }).observe(root, { attributes: true, attributeFilter: ["data-theme", "class"] });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { readColours(); dirty = true; });
+// labels make room for each other (user, 2026-10-12: titles piled up while scanning): each sits by its point, and
+// where it would cover a label already placed it moves down, with a thin leader back to its point (as on Timeline).
+// Labels in focus are placed first; the rest keep their place. Moves ease, so turning the view does not flicker.
+const leadersEl = document.getElementById("leaders");
+function placeLabels() {
+  const fs = focusSet(), shown = [];
+  for (const [i, el] of labels) {
+    if (el.style.display === "none") continue;
+    if (scr[3 * i + 2] > 1) { el.style.visibility = "hidden"; continue; }
+    el.style.visibility = "";
+    if (!el._w) { el._w = el.offsetWidth; el._h = el.offsetHeight; }
+    const hub = isHub(nodes[i]);
+    shown.push({ i, el, x: scr[3 * i] + (hub ? 7 : 8), y: scr[3 * i + 1] + (hub ? -8 : -7), ax: scr[3 * i], ay: scr[3 * i + 1],
+      f: fs ? fs.has(i) : true });
+  }
+  const order = shown.filter((l) => l.f).sort((a, b) => a.y - b.y);
+  const placed = [], paths = [];
+  for (const l of order) {
+    let y = l.y;
+    for (let pass = 0; pass < 40; pass++) {
+      const hit = placed.find((o) => l.x < o.x + o.w + 4 && l.x + l.el._w + 4 > o.x && y < o.y + o.h + 2 && y + l.el._h + 2 > o.y);
+      if (!hit) break;
+      y = hit.y + hit.h + 2;
+    }
+    placed.push({ x: l.x, y, w: l.el._w, h: l.el._h });
+    l.ty = y;
+  }
+  for (const l of shown) {
+    const ty = l.ty ?? l.y;
+    const el = l.el;
+    el._oy = el._oy === undefined ? ty - l.y : el._oy + (ty - l.y - el._oy) * 0.3;   // offset from its own spot, eased
+    const yy = l.y + el._oy;
+    el.style.transform = `translate(${l.x.toFixed(1)}px, ${yy.toFixed(1)}px)`;
+    if (el._oy > 6 && l.f) paths.push(`M${l.ax.toFixed(1)} ${l.ay.toFixed(1)}L${(l.x - 3).toFixed(1)} ${(yy + el._h / 2).toFixed(1)}`);
+  }
+  const d = paths.join("");
+  if (leadersEl.getAttribute("d") !== d) leadersEl.setAttribute("d", d);
+}
 function placeLabel(el, x, y, z, dx = 8, dy = -6) {
   v3.set(x, y, z).project(camera);
   if (v3.z > 1) { el.style.visibility = "hidden"; return; }
@@ -659,7 +708,7 @@ function frame(now) {
   if (dirty) paint();
   renderer.render(scene, camera);
   project();
-  for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
+  placeLabels();
   years.forEach(([, yy], k) => placeLabel(yearEls[k], 0, yy, 0, 10, -6));
   {   // the slider rides the axis: at the scanned height, or resting at the present; bigger under the pointer or held
     const ys = scan !== null ? scan : thumbRest;
