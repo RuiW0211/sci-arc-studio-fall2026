@@ -51,7 +51,10 @@ a { color: inherit; }
 code { font: 0.8rem var(--mono); }
 
 /* one column, the same on every page */
-.container { max-width: 760px; margin: 0 auto; padding: 48px 16px 64px; }
+.container { max-width: 760px; margin: 0; padding: 48px 16px 64px; }
+/* the column sits at the left on every page, not in the middle (user, 2026-10-13: so the Network's view has the
+   middle of the screen); wider screens give it a wider margin */
+@media (min-width: 900px) { .container { max-width: 840px; padding-left: 40px; padding-right: 40px; } }
 
 /* header: eyebrow (link home + authors), title, one-line subtitle, hairline */
 .header { padding-bottom: 32px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }

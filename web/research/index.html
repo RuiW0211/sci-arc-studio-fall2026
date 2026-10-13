@@ -15,7 +15,7 @@
   #view { position: fixed; inset: 0; touch-action: none; }
   #view canvas { display: block; }
   /* the header sits where it sits on List and Methods: the site's column and header (site.css), over the view */
-  .over { position: fixed; top: 0; left: 0; right: 0; pointer-events: none; z-index: 3; }
+  .over { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 3; }
   .over .container { padding-bottom: 0; }
   .over .header { margin-bottom: 16px; }
   .over .eyebrow a, .over .views { pointer-events: auto; }
@@ -265,7 +265,7 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 view.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
-camera.position.set(2050, 260, 2050);
+camera.position.set(1780, 225, 1780);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
 controls.zoomToCursor = true;   // the wheel zooms towards the pointer, not the middle of the view (user, 2026-10-13)
@@ -804,7 +804,7 @@ function focusOn(i) {
   const dir = camera.position.clone().sub(controls.target).normalize();
   flyTo(c, c.clone().add(dir.multiplyScalar(dist)));
 }
-const HOME = { t: new THREE.Vector3(0, 0, 0), p: new THREE.Vector3(2050, 260, 2050) };
+const HOME = { t: new THREE.Vector3(0, 0, 0), p: new THREE.Vector3(1780, 225, 1780) };
 const VIEWS = {   // side: time reads best; top: links read best (user, 2026-10-13: these two only); overview: double-click
   side: () => flyTo(HOME.t.clone(), new THREE.Vector3().setFromSphericalCoords(HOME.p.length(), Math.PI / 2, currentTheta())),
   top: () => flyTo(HOME.t.clone(), new THREE.Vector3().setFromSphericalCoords(HOME.p.length() * 0.9, 0.06, currentTheta())),
@@ -888,10 +888,7 @@ function placeLabel(el, x, y, z, dx = 8, dy = -6) {
   el.style.visibility = "";
   el.style.transform = `translate(${((v3.x + 1) / 2 * innerWidth + dx).toFixed(1)}px, ${((1 - v3.y) / 2 * innerHeight + dy).toFixed(1)}px)`;
 }
-let offX = 0, offY = 0, headBottom = 0;
-const headEl = document.querySelector(".over .search");
-function measureHead() { headBottom = headEl.getBoundingClientRect().bottom; }
-measureHead(); addEventListener("resize", measureHead);
+let offX = 0, offY = 0;
 let frameLast = 0, frameDt = 1 / 60;
 function frame(now) {
   frameDt = frameLast ? Math.min(0.1, (now - frameLast) / 1000) : 1 / 60; frameLast = now;
@@ -908,8 +905,7 @@ function frame(now) {
   // with the card open, the view slides so the chosen point is not under it (right on wide screens, bottom on phones)
   const wide = innerWidth > 600, showCard = card.classList.contains("show");
   const ox = showCard && wide ? (card.offsetWidth + 16) / 2 : 0;
-  // the view's middle sits below the header (as tall as on List and Methods), not behind it
-  const oy = (showCard && !wide ? card.offsetHeight / 2 : 0) - headBottom / 2;
+  const oy = showCard && !wide ? card.offsetHeight / 2 : 0;   // the header sits at the left now: the view keeps the middle
   offX += (ox - offX) * 0.12; offY += (oy - offY) * 0.12;
   if (Math.abs(offX) > 0.5 || Math.abs(offY) > 0.5) camera.setViewOffset(innerWidth, innerHeight, offX, offY, innerWidth, innerHeight);
   else if (camera.view) camera.clearViewOffset();
