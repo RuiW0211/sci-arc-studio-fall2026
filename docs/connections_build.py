@@ -49,11 +49,20 @@ ACTORS = [
     ("cca_assoc", "Central City Association", "org", "Downtown business group", r"Central City Association"),
     ("afrf", "Angels Flight Railway Foundation", "org", "Angels Flight Railway Foundation", r"Angels Flight Railway Foundation"),
     ("esotouric", "Esotouric", "org", "Esotouric (Kim Cooper, Richard Schave)", r"Esotouric|Kim Cooper|Richard Schave"),
+    ("psrs", "Pershing Square Restoration Society", "org", "Preservation group (Kim Cooper, Richard Schave)",
+     r"Pershing Square Restoration Society"),
+    ("handel", "Handel Architects", "org", "Architects of Angels Landing", r"Handel"),
+    ("beacon", "Beacon Capital Partners", "org", "Owner of the land under One California Plaza (2016)", r"Beacon Capital"),
+    ("cadillac", "Cadillac Fairview", "org", "Bunker Hill Associates partner", r"Cadillac Fairview"),
     # people
     ("peebles", "Don Peebles", "person", "The Peebles Corporation, ALP lead", r"Peebles"),
     ("macfarlane", "Victor MacFarlane", "person", "MacFarlane Partners, ALP member", r"MacFarlane"),
     ("huizar", "José Huizar", "person", "Councilmember, District 14 (to 2020)", r"Huizar"),
     ("deleon", "Kevin de León", "person", "Councilmember, District 14 (2020-2024)", r"de Le[oó]n"),
+    ("jurado", "Ysabel Jurado", "person", "Councilmember, District 14 (from Dec 2024)", r"Jurado"),
+    ("ofarrell", "Mitch O'Farrell", "person", "Councilmember, District 13 (to 2022)", r"O'Farrell"),
+    ("garcetti", "Eric Garcetti", "person", "Mayor of Los Angeles (2013-2022)", r"Garcetti"),
+    ("bass", "Karen Bass", "person", "Mayor of Los Angeles (from Dec 2022)", r"Karen Bass"),
     ("estolano", "Cecilia Estolano", "person", "CRA chief executive (2006-2010)", r"Estolano"),
     ("fruin", "Judge Fruin", "person", "LA Superior Court judge in 24STCV32173", r"(?i)\bfruin\b"),
     ("erickson", "Arthur Erickson", "person", "Architect, California Plaza master plan", r"Erickson"),
@@ -69,6 +78,7 @@ ACTORS = [
 EXCLUDE = {
     ("plaza-001", "city"): "names an unrelated court case, Bunker Hill Associates v. City of Los Angeles (1982)",
     ("park-001", "esotouric"): "lists Esotouric among the sites we searched",
+    ("media-p25", "esotouric"): "said as the Pershing Square Restoration Society, not as Esotouric (same two people)",
 }
 
 ID_RE = re.compile(r"\b[a-z]+-[a-z]?\d{2,3}\b")

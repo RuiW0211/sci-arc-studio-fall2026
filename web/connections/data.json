@@ -1941,6 +1941,30 @@
    "note": "Esotouric (Kim Cooper, Richard Schave)"
   },
   {
+   "id": "actor:psrs",
+   "type": "org",
+   "title": "Pershing Square Restoration Society",
+   "note": "Preservation group (Kim Cooper, Richard Schave)"
+  },
+  {
+   "id": "actor:handel",
+   "type": "org",
+   "title": "Handel Architects",
+   "note": "Architects of Angels Landing"
+  },
+  {
+   "id": "actor:beacon",
+   "type": "org",
+   "title": "Beacon Capital Partners",
+   "note": "Owner of the land under One California Plaza (2016)"
+  },
+  {
+   "id": "actor:cadillac",
+   "type": "org",
+   "title": "Cadillac Fairview",
+   "note": "Bunker Hill Associates partner"
+  },
+  {
    "id": "actor:peebles",
    "type": "person",
    "title": "Don Peebles",
@@ -1963,6 +1987,30 @@
    "type": "person",
    "title": "Kevin de León",
    "note": "Councilmember, District 14 (2020-2024)"
+  },
+  {
+   "id": "actor:jurado",
+   "type": "person",
+   "title": "Ysabel Jurado",
+   "note": "Councilmember, District 14 (from Dec 2024)"
+  },
+  {
+   "id": "actor:ofarrell",
+   "type": "person",
+   "title": "Mitch O'Farrell",
+   "note": "Councilmember, District 13 (to 2022)"
+  },
+  {
+   "id": "actor:garcetti",
+   "type": "person",
+   "title": "Eric Garcetti",
+   "note": "Mayor of Los Angeles (2013-2022)"
+  },
+  {
+   "id": "actor:bass",
+   "type": "person",
+   "title": "Karen Bass",
+   "note": "Mayor of Los Angeles (from Dec 2022)"
   },
   {
    "id": "actor:estolano",
@@ -2194,6 +2242,14 @@
    "why": "As of October 12, 2026, no CRA/LA statement, board report or HCD document explains why a Notice of Availability for Y-1 has not been sent, although CRA/LA sent notices in 2026 for two other sites.",
    "field": "summary",
    "match": "HCD"
+  },
+  {
+   "a": "disp-006",
+   "b": "actor:jurado",
+   "kind": "actor",
+   "why": "CEO reported discussions between the Chief Legislative Analyst's Office and Councilmember Ysabel Jurado regarding Y-1 (content not stated).",
+   "field": "details",
+   "match": "Jurado"
   },
   {
    "a": "disp-007",
@@ -2581,6 +2637,14 @@
    "why": "The CRA chose the Bunker Hill Associates team (Metropolitan Structures and Cadillac Fairview), with Erickson as architect.",
    "field": "details",
    "match": "Metropolitan Structures"
+  },
+  {
+   "a": "hist-001",
+   "b": "actor:cadillac",
+   "kind": "actor",
+   "why": "The CRA chose the Bunker Hill Associates team (Metropolitan Structures and Cadillac Fairview), with Erickson as architect.",
+   "field": "details",
+   "match": "Cadillac Fairview"
   },
   {
    "a": "hist-002",
@@ -2992,6 +3056,14 @@
   },
   {
    "a": "moca-005",
+   "b": "actor:bass",
+   "kind": "actor",
+   "why": "- Live roster: 24 names, 3 of them ex officio (Jonathan Abbott, Mayor Karen Bass, Council President Marqueece Harris-Dawson).",
+   "field": "details",
+   "match": "Karen Bass"
+  },
+  {
+   "a": "moca-005",
    "b": "actor:abbott",
    "kind": "actor",
    "why": "- Live roster: 24 names, 3 of them ex officio (Jonathan Abbott, Mayor Karen Bass, Council President Marqueece Harris-Dawson).",
@@ -3037,6 +3109,14 @@
    "why": "Trigild receiver",
    "field": "title",
    "match": "Trigild"
+  },
+  {
+   "a": "plaza-002",
+   "b": "actor:beacon",
+   "kind": "actor",
+   "why": "Rising Realty Partners and Colony NorthStar (now DigitalBridge) bought the tower from Beacon Capital Partners in 2017 (closing 6 June 2017 per PCAD), with a $300M loan from Credit Suisse's Column Fina…",
+   "field": "details",
+   "match": "Beacon Capital"
   },
   {
    "a": "plaza-002",
@@ -3095,6 +3175,14 @@
    "match": "CIM Group"
   },
   {
+   "a": "plaza-004",
+   "b": "actor:beacon",
+   "kind": "actor",
+   "why": "…evelopment Agency, sold the land under the California Plaza towers to the towers' owners: Beacon Capital Partners (under One California Plaza, $33.43M) and CIM Group (under Two California Plaza, $70M)…",
+   "field": "summary",
+   "match": "Beacon Capital"
+  },
+  {
    "a": "plaza-005",
    "b": "actor:crala",
    "kind": "actor",
@@ -3117,6 +3205,14 @@
    "why": "…er Hill Associates limited partnership, general partner Cadillac Fairview/California) and Metropolitan Structures (Metco Properties and Metropolitan Life).…",
    "field": "summary",
    "match": "Metropolitan Structures"
+  },
+  {
+   "a": "plaza-005",
+   "b": "actor:cadillac",
+   "kind": "actor",
+   "why": "…ociates (the renamed original Bunker Hill Associates limited partnership, general partner Cadillac Fairview/California) and Metropolitan Structures (Metco Properties and Metropolitan Life).…",
+   "field": "summary",
+   "match": "Cadillac Fairview"
   },
   {
    "a": "plaza-005",
@@ -3148,6 +3244,14 @@
    "why": "One California Plaza itself is in receivership under Trigild (see plaza-002).",
    "field": "details",
    "match": "Trigild"
+  },
+  {
+   "a": "plaza-005",
+   "b": "actor:beacon",
+   "kind": "actor",
+   "why": "- Current holders: CIM Group (2Cal and its land), Beacon Capital Partners (bought the land under 1 Cal in 2016);",
+   "field": "details",
+   "match": "Beacon Capital"
   },
   {
    "a": "plaza-006",
@@ -3697,6 +3801,14 @@
    "match": "Metropolitan Structures"
   },
   {
+   "a": "q-002",
+   "b": "actor:cadillac",
+   "kind": "actor",
+   "why": "general partner Cadillac Fairview/California, Inc.) and Metropolitan Structures (Metco Properties and Metropolitan Life).",
+   "field": "details",
+   "match": "Cadillac Fairview"
+  },
+  {
    "a": "q-003",
    "b": "actor:city",
    "kind": "actor",
@@ -3915,6 +4027,14 @@
   },
   {
    "a": "af-009",
+   "b": "actor:garcetti",
+   "kind": "actor",
+   "why": "On March 1, 2017, Mayor Eric Garcetti announced an agreement under which a group led by ACS Infrastructure Development would pay for safety upgrades and operate the railway for 30 years.",
+   "field": "summary",
+   "match": "Garcetti"
+  },
+  {
+   "a": "af-009",
    "b": "actor:afrf",
    "kind": "actor",
    "why": "the group is led by ACS Infrastructure Development with the Angels Flight Railway Foundation, which owns the funicular;",
@@ -4042,6 +4162,14 @@
    "match": "Recreation and Parks"
   },
   {
+   "a": "park-005",
+   "b": "actor:garcetti",
+   "kind": "actor",
+   "why": "In 2013 Chris Yamashita started a Change.org petition asking Mayor Eric Garcetti to reopen Angels Knoll;",
+   "field": "summary",
+   "match": "Garcetti"
+  },
+  {
    "a": "park-006",
    "b": "actor:crala",
    "kind": "actor",
@@ -4096,6 +4224,14 @@
    "why": "Council action cited by Esotouric: on Sept 20, 2024 de León moved (CF 14-0425-S4) that the Mayor pursue a 36-month extension of the City's Option Agreement on Parcel Y-1, to Sept 30, 2027;",
    "field": "details",
    "match": "the City"
+  },
+  {
+   "a": "park-007",
+   "b": "actor:jurado",
+   "kind": "actor",
+   "why": "Later updates (Esotouric page): Dec 10, 2024, campaign 'still active' under new councilmember Ysabel Jurado;",
+   "field": "details",
+   "match": "Jurado"
   },
   {
    "a": "park-008",
@@ -4207,6 +4343,14 @@
    "match": "ALP"
   },
   {
+   "a": "ghost-002",
+   "b": "actor:handel",
+   "kind": "actor",
+   "why": "Architect: Handel Architects (Glenn Rescalvo, partner-in-charge) (CLA pp.",
+   "field": "details",
+   "match": "Handel"
+  },
+  {
    "a": "ghost-003",
    "b": "actor:alp",
    "kind": "actor",
@@ -4238,6 +4382,14 @@
    "match": "Angels Landing Partners"
   },
   {
+   "a": "ghost-004",
+   "b": "actor:handel",
+   "kind": "actor",
+   "why": "Design team: the IS figures credit 'Angels Landing Partners, Handel Architects LLP, 2018' (e.g.",
+   "field": "details",
+   "match": "Handel"
+  },
+  {
    "a": "ghost-005",
    "b": "ent-004",
    "kind": "mention",
@@ -4251,6 +4403,14 @@
    "why": "The DEIR figures credit 'Angels Landing Partners, Handel Architects LLP' (e.g.",
    "field": "details",
    "match": "Angels Landing Partners"
+  },
+  {
+   "a": "ghost-005",
+   "b": "actor:handel",
+   "kind": "actor",
+   "why": "Design team (press): Urbanize LA (Mar 29, 2022) says Handel Architects and Olin lead the design team;",
+   "field": "details",
+   "match": "Handel"
   },
   {
    "a": "ghost-005",
@@ -4320,6 +4480,14 @@
    "why": "1-6): Huizar-O'Farrell motion received Sept 21, 2016 and adopted by the Council on Mar 21, 2017 (council file activity);",
    "field": "details",
    "match": "Huizar"
+  },
+  {
+   "a": "ghost-006",
+   "b": "actor:ofarrell",
+   "kind": "actor",
+   "why": "1-6): Huizar-O'Farrell motion received Sept 21, 2016 and adopted by the Council on Mar 21, 2017 (council file activity);",
+   "field": "details",
+   "match": "O'Farrell"
   },
   {
    "a": "ghost-006",
@@ -4545,11 +4713,11 @@
   },
   {
    "a": "media-p25",
-   "b": "actor:esotouric",
+   "b": "actor:psrs",
    "kind": "actor",
    "why": "Said by Kim Cooper & Richard Schave / Pershing Square Restoration Society",
    "field": "speaker",
-   "match": "Kim Cooper"
+   "match": "Pershing Square Restoration Society"
   },
   {
    "a": "media-p27",
@@ -4670,6 +4838,14 @@
    "why": "Esotouric renews call to open the park",
    "field": "title",
    "match": "Esotouric"
+  },
+  {
+   "a": "media-s02",
+   "b": "actor:handel",
+   "kind": "actor",
+   "why": "Criticism of the MacFarlane/Handel plaza design",
+   "field": "title",
+   "match": "Handel"
   },
   {
    "a": "media-s02",

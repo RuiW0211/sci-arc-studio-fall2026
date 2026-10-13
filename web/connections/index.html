@@ -326,7 +326,9 @@ const ic = (shape, fill) => `<svg width="11" height="11" viewBox="0 0 11 11">${{
   diamond: `<path d="M5.5 0.5 L10.5 5.5 L5.5 10.5 L0.5 5.5 Z" style="fill:${fill}"/>` }[shape]}</svg>`;
 const topicRows = Object.entries(TOPIC_CODE).map(([t, c]) => `<dt>${esc(c)}</dt><dd>${esc(t)}</dd>`).join("");
 ctl.innerHTML =
-  `<div class="abbr" id="abbr"><dl>` +
+  `<div class="abbr" id="abbr"><div class="abbr-h" style="margin-top:0">Links shown</div><div class="row">` +
+  KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") +
+  `</div><div class="abbr-h">Abbreviations</div><dl>` +
   `<dt>park-004</dt><dd>Entry id, as in Research</dd>` +
   `<dt>2013-07-30</dt><dd>Date as the source gives it: day, month (2001-12) or year (1867)</dd>` +
   `<dt>n.d.</dt><dd>No date</dd><dt>src 13</dt><dd>Number of sources</dd>` +
@@ -345,8 +347,7 @@ ctl.innerHTML =
   `<span>${ic("disc", "var(--question)")}Open question</span><span>${ic("disc", "var(--analysis)")}Our analysis</span>` +
   `<span>Size: links and sources</span></div>` +
   `<div class="hint">Drag a point or tag to move it · drag the slider on the time axis to scan · drag space to turn · ` +
-  `<button data-reset>reset</button> · <button data-abbr>abbreviations</button></div><div class="row">` +
-  KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") + `</div>`;
+  `<button data-reset>reset</button> · <button data-abbr>links and abbreviations</button></div>`;
 ctl.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.hasAttribute("data-reset")) return resetLayout();
