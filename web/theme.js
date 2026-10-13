@@ -18,9 +18,13 @@
       var next = isDark() ? "light" : "dark";
       // ease the colours over --t-out (site.css .theme-anim), then drop the class so hovers stay quick
       var ms = parseFloat(getComputedStyle(root).getPropertyValue("--t-out")) * 1000 || 0;
+      // color-scheme can't be eased and repaints the browser's own parts (form controls, scrollbar buttons) at once,
+      // which read as a flash (user, 2026-10-12): keep the old scheme until halfway, when the page is mid-grey
+      root.style.colorScheme = getComputedStyle(root).colorScheme;
       root.classList.add("theme-anim");
       root.dataset.theme = next;
-      clearTimeout(window.__themeAnim);
+      clearTimeout(window.__themeAnim); clearTimeout(window.__themeScheme);
+      window.__themeScheme = setTimeout(function () { root.style.colorScheme = ""; }, ms / 2);
       window.__themeAnim = setTimeout(function () { root.classList.remove("theme-anim"); }, ms + 50);
       try { sessionStorage.setItem(KEY, next); } catch (e) { /* this page only */ }
     });
