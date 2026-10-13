@@ -70,8 +70,6 @@
   .lb .tt { display: block; overflow: hidden; text-overflow: ellipsis; }
   .lb.year { font: 0.62rem var(--mono); color: var(--faint); }
   .lb.dim { opacity: 0.18; }
-  #leadsvg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: visible; }
-  #leaders { fill: none; stroke: var(--faint); stroke-width: 0.75; }
   /* blob tracking (user, 2026-10-12, after TouchDesigner's Blob Track): the point in focus and its neighbours get a
      tracking frame that locks on and follows them, with a small readout; the chosen one gets a full square */
   #blobs { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
@@ -136,7 +134,6 @@
 <div id="view"></div>
 <div id="blobs"></div>
 <div id="scanrd"></div>
-<svg id="leadsvg" aria-hidden="true"><path id="leaders" /></svg>
 <div id="labels"></div>
 <div class="over">
   <p class="eyebrow">Angels Knoll · Connections · <a href="../" class="home">home</a></p>
@@ -641,44 +638,6 @@ addEventListener("resize", resize); resize();
 const root = document.documentElement;
 new MutationObserver(() => { readColours(); dirty = true; }).observe(root, { attributes: true, attributeFilter: ["data-theme", "class"] });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { readColours(); dirty = true; });
-// labels make room for each other (user, 2026-10-12: titles piled up while scanning): each sits by its point, and
-// where it would cover a label already placed it moves down, with a thin leader back to its point (as on Timeline).
-// Labels in focus are placed first; the rest keep their place. Moves ease, so turning the view does not flicker.
-const leadersEl = document.getElementById("leaders");
-function placeLabels() {
-  const fs = focusSet(), shown = [];
-  for (const [i, el] of labels) {
-    if (el.style.display === "none") continue;
-    if (scr[3 * i + 2] > 1) { el.style.visibility = "hidden"; continue; }
-    el.style.visibility = "";
-    if (!el._w) { el._w = el.offsetWidth; el._h = el.offsetHeight; }
-    const hub = isHub(nodes[i]);
-    shown.push({ i, el, x: scr[3 * i] + (hub ? 7 : 8), y: scr[3 * i + 1] + (hub ? -8 : -7), ax: scr[3 * i], ay: scr[3 * i + 1],
-      f: fs ? fs.has(i) : true });
-  }
-  const order = shown.filter((l) => l.f).sort((a, b) => a.y - b.y);
-  const placed = [], paths = [];
-  for (const l of order) {
-    let y = l.y;
-    for (let pass = 0; pass < 40; pass++) {
-      const hit = placed.find((o) => l.x < o.x + o.w + 4 && l.x + l.el._w + 4 > o.x && y < o.y + o.h + 2 && y + l.el._h + 2 > o.y);
-      if (!hit) break;
-      y = hit.y + hit.h + 2;
-    }
-    placed.push({ x: l.x, y, w: l.el._w, h: l.el._h });
-    l.ty = y;
-  }
-  for (const l of shown) {
-    const ty = l.ty ?? l.y;
-    const el = l.el;
-    el._oy = el._oy === undefined ? ty - l.y : el._oy + (ty - l.y - el._oy) * 0.3;   // offset from its own spot, eased
-    const yy = l.y + el._oy;
-    el.style.transform = `translate(${l.x.toFixed(1)}px, ${yy.toFixed(1)}px)`;
-    if (el._oy > 6 && l.f) paths.push(`M${l.ax.toFixed(1)} ${l.ay.toFixed(1)}L${(l.x - 3).toFixed(1)} ${(yy + el._h / 2).toFixed(1)}`);
-  }
-  const d = paths.join("");
-  if (leadersEl.getAttribute("d") !== d) leadersEl.setAttribute("d", d);
-}
 function placeLabel(el, x, y, z, dx = 8, dy = -6) {
   v3.set(x, y, z).project(camera);
   if (v3.z > 1) { el.style.visibility = "hidden"; return; }
@@ -708,7 +667,7 @@ function frame(now) {
   if (dirty) paint();
   renderer.render(scene, camera);
   project();
-  placeLabels();
+  for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
   years.forEach(([, yy], k) => placeLabel(yearEls[k], 0, yy, 0, 10, -6));
   {   // the slider rides the axis: at the scanned height, or resting at the present; bigger under the pointer or held
     const ys = scan !== null ? scan : thumbRest;
