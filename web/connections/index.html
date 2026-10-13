@@ -17,15 +17,29 @@
   .over .eyebrow { margin-bottom: 8px; pointer-events: auto; }
   .over h1 { font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; }
   .over .subtitle { font-size: 0.85rem; }
-  .ctl { position: fixed; left: 16px; bottom: 16px; z-index: 3; font-size: 0.75rem; color: var(--muted); max-width: calc(100% - 90px); }
-  .ctl .row { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; }
+  /* the box of the controls lets the pointer through; only its buttons and open panel take it (user, 2026-10-12: points
+     behind the controls' box could not be picked) */
+  .ctl { position: fixed; left: 16px; bottom: 16px; z-index: 3; font-size: 0.75rem; color: var(--muted); max-width: calc(100% - 90px);
+    pointer-events: none; }
+  .ctl button, .ctl .panel.show { pointer-events: auto; }
+  .ctl .bar { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; }
+  .ctl .bar [data-open]::after { content: "▴"; font-size: 0.6rem; margin-left: 4px; opacity: 0.6; }
+  .ctl .bar [data-open].on::after { content: "▾"; }
+  .ctl .bar .sep { color: var(--line); }
+  .ctl .panel { display: none; width: min(460px, calc(100vw - 32px)); max-height: 52vh; overflow: auto; margin-bottom: 10px;
+    padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; }
+  .ctl .panel.show { display: block; animation: panelIn var(--t-in) ease both; }
+  @keyframes panelIn { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+  .ctl .panel .key { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .ctl .panel dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; }
+  .ctl .panel dt { font: 0.68rem var(--mono); color: var(--text); }
+  .ctl .panel dd { color: var(--muted); }
   .ctl button { font: inherit; color: var(--faint); background: none; border: 0; padding: 0; cursor: pointer;
     display: inline-flex; align-items: center; gap: 6px; transition: color var(--t-feedback); }
   .ctl button:hover { color: var(--text); }
   .ctl button.on { color: var(--text); }
   .ctl button i { display: inline-block; width: 16px; height: 0; border-top: 1px solid currentColor; opacity: .35; }
   .ctl button.on i { opacity: 1; }
-  .ctl .hint { color: var(--faint); margin-top: 6px; }
   .ctl .key { color: var(--muted); }
   .ctl .key span { display: inline-flex; align-items: center; gap: 5px; }
   /* tag samples in the key, drawn like the tags in the view */
@@ -35,12 +49,6 @@
   .ctl .tk.subj { border: 1px solid var(--muted); color: var(--muted); font-style: italic; font-weight: 400; }
   .ctl .tk.dimk { opacity: 0.18; }
   .ctl .tk.selk { background: var(--verified); color: var(--bg); }
-  .ctl .abbr { display: none; width: min(460px, calc(100vw - 32px)); max-height: 46vh; overflow: auto; margin-bottom: 10px;
-    padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; }
-  .ctl .abbr.show { display: block; }
-  .ctl .abbr dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; }
-  .ctl .abbr dt { font: 0.68rem var(--mono); color: var(--text); }
-  .ctl .abbr dd { color: var(--muted); }
   .ctl .abbr-h { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin: 12px 0 6px; }
 
   /* labels drawn over the canvas */
@@ -325,33 +333,48 @@ const ic = (shape, fill) => `<svg width="11" height="11" viewBox="0 0 11 11">${{
   square: `<rect x="1.5" y="1.5" width="8" height="8" style="fill:${fill}"/>`,
   diamond: `<path d="M5.5 0.5 L10.5 5.5 L5.5 10.5 L0.5 5.5 Z" style="fill:${fill}"/>` }[shape]}</svg>`;
 const topicRows = Object.entries(TOPIC_CODE).map(([t, c]) => `<dt>${esc(c)}</dt><dd>${esc(t)}</dd>`).join("");
+// the controls are a bar of menus, each opening a panel above it, one at a time (user, 2026-10-12: keep the view clear)
+const panel = (id, title, body) => `<div class="panel" data-p="${id}"><div class="abbr-h" style="margin-top:0">${title}</div>${body}</div>`;
 ctl.innerHTML =
-  `<div class="abbr" id="abbr"><div class="abbr-h" style="margin-top:0">Links shown</div><div class="row">` +
-  KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") +
-  `</div><div class="abbr-h">Abbreviations</div><dl>` +
-  `<dt>park-004</dt><dd>Entry id, as in Research</dd>` +
-  `<dt>2013-07-30</dt><dd>Date as the source gives it: day, month (2001-12) or year (1867)</dd>` +
-  `<dt>n.d.</dt><dd>No date</dd><dt>src 13</dt><dd>Number of sources</dd>` +
-  `<dt>VER</dt><dd>Verified</dd><dt>UNV</dt><dd>Unverified</dd><dt>OPEN</dt><dd>Open question</dd><dt>ANL</dt><dd>Our analysis</dd>` +
-  `<dt>mention</dt><dd>Linked because one entry names the other</dd><dt>actor</dt><dd>Linked through a person or organisation named in the entry</dd>` +
-  `<dt>subject</dt><dd>Linked to a Media subject (our grouping)</dd>` +
-  `<dt>org 33</dt><dd>Organisation, with its number of links (pers: person, subj: subject)</dd>` +
-  `</dl><div class="abbr-h">Topics</div><dl>${topicRows}</dl></div>` +
-  `<div class="row key">` +
-  `<span>${ic("disc", "var(--muted)")}Entry with a date</span><span>${ic("ring", "var(--muted)")}Entry with no date</span>` +
-  `<span>${ic("square", "var(--text)")}<b class="tk hub">ORG</b><b class="tk hub">Person</b>Person or organisation</span>` +
-  `<span>${ic("diamond", "var(--muted)")}<b class="tk subj">subject</b>Media subject (our grouping)</span>` +
-  `<span><b class="tk hub dimk">ORG</b>Not linked to the point in focus</span>` +
-  `<span><b class="tk selk">Entry title</b>The chosen entry, in its status colour</span>` +
-  `<span>${ic("disc", "var(--verified)")}Verified</span><span>${ic("disc", "var(--unverified)")}Unverified</span>` +
-  `<span>${ic("disc", "var(--question)")}Open question</span><span>${ic("disc", "var(--analysis)")}Our analysis</span>` +
-  `<span>Size: links and sources</span></div>` +
-  `<div class="hint">Drag a point or tag to move it · drag the slider on the time axis to scan · drag space to turn · ` +
-  `<button data-reset>reset</button> · <button data-abbr>links and abbreviations</button></div>`;
+  panel("key", "Key",
+    `<div class="key">` +
+    `<span>${ic("disc", "var(--muted)")}Entry with a date</span><span>${ic("ring", "var(--muted)")}Entry with no date</span>` +
+    `<span>${ic("square", "var(--text)")}<b class="tk hub">ORG</b><b class="tk hub">Person</b>Person or organisation</span>` +
+    `<span>${ic("diamond", "var(--muted)")}<b class="tk subj">subject</b>Media subject (our grouping)</span>` +
+    `<span><b class="tk hub dimk">ORG</b>Not linked to the point in focus</span>` +
+    `<span><b class="tk selk">Entry title</b>The chosen entry, in its status colour</span>` +
+    `<span>${ic("disc", "var(--verified)")}Verified</span><span>${ic("disc", "var(--unverified)")}Unverified</span>` +
+    `<span>${ic("disc", "var(--question)")}Open question</span><span>${ic("disc", "var(--analysis)")}Our analysis</span>` +
+    `<span>Point size: links and sources</span><span>Height: date, later is higher</span></div>`) +
+  panel("links", "Links shown",
+    `<div class="key">` + KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") + `</div>`) +
+  panel("abbr", "Abbreviations",
+    `<dl><dt>park-004</dt><dd>Entry id, as in Research</dd>` +
+    `<dt>2013-07-30</dt><dd>Date as the source gives it: day, month (2001-12) or year (1867)</dd>` +
+    `<dt>n.d.</dt><dd>No date</dd><dt>src 13</dt><dd>Number of sources</dd>` +
+    `<dt>VER</dt><dd>Verified</dd><dt>UNV</dt><dd>Unverified</dd><dt>OPEN</dt><dd>Open question</dd><dt>ANL</dt><dd>Our analysis</dd>` +
+    `<dt>mention</dt><dd>Linked because one entry names the other</dd><dt>actor</dt><dd>Linked through a person or organisation named in the entry</dd>` +
+    `<dt>subject</dt><dd>Linked to a Media subject (our grouping)</dd>` +
+    `<dt>org 33</dt><dd>Organisation, with its number of links (pers: person, subj: subject)</dd></dl>` +
+    `<div class="abbr-h">Topics</div><dl>${topicRows}</dl>`) +
+  panel("help", "How to use",
+    `<dl><dt>drag a point or tag</dt><dd>Move it and see what it is tied to; dated entries move only sideways</dd>` +
+    `<dt>drag the slider</dt><dd>Scan the time axis; the entries of that time are framed</dd>` +
+    `<dt>drag empty space</dt><dd>Turn the view</dd><dt>scroll</dt><dd>Zoom</dd>` +
+    `<dt>click</dt><dd>Open the card of a point; click empty space or press Esc to close</dd></dl>`) +
+  `<div class="bar"><button data-open="key">Key</button><button data-open="links">Links</button>` +
+  `<button data-open="abbr">Abbreviations</button><button data-open="help">How to use</button>` +
+  `<span class="sep">·</span><button data-reset>Reset layout</button></div>`;
+let openPanel = null;
+function showPanel(id) {
+  openPanel = openPanel === id ? null : id;
+  ctl.querySelectorAll(".panel").forEach((p) => p.classList.toggle("show", p.dataset.p === openPanel));
+  ctl.querySelectorAll("[data-open]").forEach((b) => b.classList.toggle("on", b.dataset.open === openPanel));
+}
 ctl.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.hasAttribute("data-reset")) return resetLayout();
-  if (b.hasAttribute("data-abbr")) { b.classList.toggle("on", document.getElementById("abbr").classList.toggle("show")); return; }
+  if (b.dataset.open) return showPanel(b.dataset.open);
   on[b.dataset.k] = !on[b.dataset.k]; b.classList.toggle("on", on[b.dataset.k]); dirty = true;
 });
 
@@ -592,7 +615,7 @@ card.addEventListener("click", (e) => {
   if (e.target.closest(".x")) return close();
   const b = e.target.closest("button[data-i]"); if (b) select(+b.dataset.i, true);
 });
-addEventListener("keydown", (e) => { if (e.key === "Escape") { close(); clearScan(); } });
+addEventListener("keydown", (e) => { if (e.key === "Escape") { if (openPanel) showPanel(openPanel); else { close(); clearScan(); } } });
 
 // ---- frame ----
 function resize() {
