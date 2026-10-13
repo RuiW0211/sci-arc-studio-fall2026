@@ -318,6 +318,22 @@ function focusSet() {
   for (const li of adj[f]) { const l = links[li]; if (on[l.kind]) s.add(l.i === f ? l.j : l.i); }
   return s;
 }
+// the readout beside a tracking frame (user, 2026-10-12): the point in focus says what it is and how well it is
+// supported; a neighbour says why it is linked and when it is; a scanned entry says which topic it belongs to
+const TOPIC_CODE = { "Media": "MED", "Angels Flight": "AF", "1980 Bargain & History": "1980", "Zoning & Entitlements": "ENT",
+  "Bunker Hill Before Redevelopment": "BH", "Surplus Land Act": "SLA", "Angels Knoll Park": "PARK", "Disposition & Notice": "DISP",
+  "Insights": "INS", "Litigation": "LIT", "California Plaza": "CAL", "Design Implications": "DES", "Unbuilt Schemes": "UNB",
+  "MOCA": "MOCA", "Site Conditions": "SITE", "Open Questions": "Q" };
+const ST_CODE = { verified: "VER", unverified: "UNV", "open-question": "OPEN", analysis: "ANL" };
+const yr = (n) => n.start ? num(n.start).toFixed(2) : "n.d.";
+const what = (n) => `${n.type === "subject" ? "subj" : n.type === "person" ? "pers" : "org"} ${n.deg}`;
+function readout(i, f) {
+  const n = nodes[i];
+  if (f < 0) return `${n.id} · ${yr(n)} · ${TOPIC_CODE[n.topic] || n.topic}`;            // scanning
+  if (i === f) return n.type === "entry" ? `${n.id} · ${yr(n)} · src ${n.nsrc} · ${ST_CODE[n.status] || n.status}` : what(n);
+  const l = adj[f].map((li) => links[li]).find((l) => on[l.kind] && (l.i === i || l.j === i));
+  return `${l ? l.kind : ""} · ${n.type === "entry" ? yr(n) : what(n)}`;
+}
 function paint() {
   const fs = focusSet(), f = sel >= 0 ? sel : hover;
   nodes.forEach((n, i) => {
@@ -350,13 +366,12 @@ function paint() {
   for (const i of keep) {
     let el = blobs.get(i);
     if (!el) {
-      const n = nodes[i];
       el = document.createElement("div");
-      el.className = "blob";
-      const read = n.type === "entry" ? `${n.id} · ${n.start ? num(n.start).toFixed(1) : "n.d."}` : `${n.type === "subject" ? "subj" : n.type === "person" ? "pers" : "org"} · ${n.deg}`;
-      el.innerHTML = `<i>${esc(read)}</i>`;
+      el.className = "blob"; el.innerHTML = "<i></i>";
       blobsEl.appendChild(el); blobs.set(i, el);
     }
+    const r = readout(i, f);
+    if (el.firstChild.textContent !== r) el.firstChild.textContent = r;
     const main = i === f, s = main ? 26 : isHub(nodes[i]) ? 14 : 12 + Math.min(8, pSize[i] * 0.6);
     el.classList.toggle("main", main); el.style.setProperty("--s", s + "px"); el.dataset.h = s / 2;
     if (nodes[i].type === "entry" && main) el.style.setProperty("--k", `var(--${{ "open-question": "question" }[nodes[i].status] || nodes[i].status})`);
