@@ -65,11 +65,11 @@
   .blob.main i { color: var(--text); }
   /* scanning: a slider thumb on the time axis itself (user, 2026-10-12: no second line across); dragging it frames
      the entries of that time. Its readout sits to the left, clear of the years. */
-  /* upright and solid, so it is always easy to find; a little bigger while held (user, 2026-10-12) */
-  #thumb { position: fixed; left: 0; top: 0; width: 8px; height: 22px; margin: -11px 0 0 -4px; z-index: 3; cursor: ns-resize;
+  /* upright and solid, so it is always easy to find; a little bigger under the pointer and while held (user, 2026-10-12) */
+  #thumb { position: fixed; left: 0; top: 0; width: 8px; height: 22px; margin: -11px 0 0 -4px; z-index: 3;
     background: var(--text); border-radius: 4px; will-change: translate; touch-action: none;
     transition: scale var(--t-feedback) ease; }
-  #thumb.drag { scale: 1.3; }
+  #thumb:hover, #thumb.drag { scale: 1.3; }   /* grows on hover; the pointer itself stays as it is */
   #thumb::before { content: ""; position: absolute; inset: -6px -10px; }   /* a bigger target than the drawing */
   #thumb .rd { position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%); text-align: right;
     font: 0.68rem/1.3 var(--mono); color: var(--text); white-space: nowrap; pointer-events: none; opacity: 0;
@@ -455,7 +455,7 @@ addEventListener("pointerdown", (e) => {
   down = [e.clientX, e.clientY]; controls.autoRotate = false; idleT = performance.now();
   // the axis and the strip of years beside it scan, ahead of points there (tags still drag)
   if (e.target.closest("#thumb") || (e.target === renderer.domElement && nearAxis(e.clientX, e.clientY))) {
-    controls.enabled = false; scanning = true; scanTo(e); document.body.style.cursor = "ns-resize"; e.preventDefault(); return;
+    controls.enabled = false; scanning = true; scanTo(e); e.preventDefault(); return;
   }
   const i = nodeAt(e);
   if (i < 0) return;
@@ -485,7 +485,7 @@ addEventListener("pointermove", (e) => {
   const onAxis = e.target === renderer.domElement && nearAxis(e.clientX, e.clientY);
   const h = onScene(e) && !onAxis ? nodeAt(e) : -1;
   if (h !== hover) { hover = h; dirty = true; }
-  document.body.style.cursor = onAxis ? "ns-resize" : h >= 0 ? "grab" : "";
+  document.body.style.cursor = h >= 0 ? "grab" : "";
 });
 addEventListener("pointerup", (e) => {
   idleT = performance.now();
