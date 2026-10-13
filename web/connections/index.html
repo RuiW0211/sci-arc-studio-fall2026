@@ -54,7 +54,7 @@
   /* labels drawn over the canvas */
   #labels { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
   .lb { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 0.68rem; line-height: 1.2; will-change: transform;
-    transition: opacity var(--t-feedback); }
+    transition: opacity var(--t-in) ease; }
   .lb.hub { padding: 2px 5px; border-radius: 2px; background: var(--text); color: var(--bg); font-weight: 600; }
   .lb.hub.org { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.6rem; }
   .lb.subject { padding: 1px 5px; border: 1px solid var(--muted); color: var(--muted); background: var(--bg); font-style: italic; border-radius: 2px; }
@@ -70,6 +70,9 @@
   .lb .tt { display: block; overflow: hidden; text-overflow: ellipsis; }
   .lb.year { font: 0.62rem var(--mono); color: var(--faint); }
   .lb.dim { opacity: 0.18; }
+  .lb.off { opacity: 0; pointer-events: none; }
+  .blob.out { animation: blobOut var(--t-in) ease-in both; }
+  @keyframes blobOut { from { opacity: 1; } to { opacity: 0; scale: 1.4; } }
   /* blob tracking (user, 2026-10-12, after TouchDesigner's Blob Track): the point in focus and its neighbours get a
      tracking frame that locks on and follows them, with a small readout; the chosen one gets a full square */
   #blobs { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
@@ -319,7 +322,7 @@ function label(i) {
   el.className = "lb " + (n.type === "entry" ? "entry" : n.type === "subject" ? "subject" : "hub " + n.type);
   el.innerHTML = `<span class="tt">${esc(n.title)}</span><span class="rd"></span>`;
   if (n.type === "entry") el.style.setProperty("--c", `var(--${{ "open-question": "question" }[n.status] || n.status})`);
-  el.dataset.i = i;
+  el.dataset.i = i; el.classList.add("off"); el._new = true;   // born hidden, so it fades in
   labelsEl.appendChild(el); labels.set(i, el);
   return el;
 }
@@ -409,39 +412,66 @@ function readout(i, f) {
   const l = adj[f].map((li) => links[li]).find((l) => on[l.kind] && (l.i === i || l.j === i));
   return `${l ? l.kind : ""} · ${n.type === "entry" ? yr(n) : what(n)}`;
 }
+// focus changes fade (user, 2026-10-12): points and links ease to their new colour and alpha, labels and frames fade
+const pT = new Float32Array(N * 4), lT = new Float32Array(links.length * 8);
+let eased = false, easing = false, lastNow = 0;
+const FADE_MS = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--t-in")) || 0.3) * 1000;
+function easeColours(now) {
+  const dt = Math.min(0.1, (now - (lastNow || now)) / 1000); lastNow = now;
+  if (!easing) return;
+  const k = 1 - Math.exp(-dt / (FADE_MS / 3000));   // about 95% of the way in --t-in
+  let moving = false;
+  for (const [cur, tgt] of [[pCol, pT], [lCol, lT]]) for (let i = 0; i < cur.length; i++) {
+    const d = tgt[i] - cur[i];
+    if (Math.abs(d) > 0.002) { cur[i] += d * k; moving = true; } else cur[i] = tgt[i];
+  }
+  pGeo.attributes.color.needsUpdate = lGeo.attributes.color.needsUpdate = true;
+  easing = moving;
+}
+function showLabel(el, show) {   // fade a label in or out; out of sight it leaves the layout
+  clearTimeout(el._hide);
+  if (show) {
+    if (el.style.display === "none" || el._new) { el.style.display = ""; void el.offsetWidth; el._new = false; }
+    el.classList.remove("off");
+  } else if (el.style.display !== "none") {
+    el.classList.add("off");
+    el._hide = setTimeout(() => { el.style.display = "none"; }, FADE_MS);
+  }
+}
 function paint() {
   const fs = focusSet(), f = sel >= 0 ? sel : hover;
   nodes.forEach((n, i) => {
     const c = statusColour(n), a = !fs ? (n.type === "entry" ? 0.9 : 1) : fs.has(i) ? 1 : 0.12;
-    pCol[4 * i] = c.r; pCol[4 * i + 1] = c.g; pCol[4 * i + 2] = c.b; pCol[4 * i + 3] = a;
+    pT[4 * i] = c.r; pT[4 * i + 1] = c.g; pT[4 * i + 2] = c.b; pT[4 * i + 3] = a;
   });
-  pGeo.attributes.color.needsUpdate = true;
   links.forEach((l, k) => {
     const kind = KINDS.find((x) => x.k === l.kind);
     let a = on[l.kind] ? kind.a * (FAINT_HUB[l.a] || FAINT_HUB[l.b] || 1) : 0;
     if (fs && a) a = (f >= 0 ? (l.i === f || l.j === f) : (fs.has(l.i) && fs.has(l.j))) ? Math.min(1, kind.a * 2.2 + 0.3) : a * 0.12;
     const c = css.text;
-    for (const v of [0, 1]) { lCol.set([c.r, c.g, c.b, a], 8 * k + 4 * v); }
+    for (const v of [0, 1]) { lT.set([c.r, c.g, c.b, a], 8 * k + 4 * v); }
   });
-  lGeo.attributes.color.needsUpdate = true;
+  if (!eased) { pCol.set(pT); lCol.set(lT); eased = true; pGeo.attributes.color.needsUpdate = lGeo.attributes.color.needsUpdate = true; }
+  easing = true;
   axisMat.color.copy(css.faint); thumbMat.color.copy(css.text);
   // which labels show: hubs always; entries when in focus
   const want = new Set(nodes.map((n, i) => isHub(n) ? i : -1).filter((i) => i >= 0));
   if (fs) fs.forEach((i) => want.add(i));
+  if (fs) fs.forEach((i) => label(i));
   for (const [i, el] of labels) {
-    const show = want.has(i);
-    el.style.display = show ? "" : "none";
+    showLabel(el, want.has(i));
     el.classList.toggle("dim", !!fs && !fs.has(i));
     el.classList.toggle("sel", i === sel);
   }
-  if (fs) fs.forEach((i) => { const el = label(i); el.style.display = ""; el.classList.remove("dim"); el.classList.toggle("sel", i === sel); });
   for (const [i, el] of labels) {   // readouts only on labels in focus
     const rd = el.querySelector(".rd");
     if ((!fs || !fs.has(i)) && rd.textContent) { rd.textContent = ""; el._w = 0; }
   }
   // tracking frames: new ones lock on, gone ones are removed
   const keep = fs ? [...fs].slice(0, 60) : [];
-  for (const [i, el] of blobs) if (!keep.includes(i)) { el.remove(); blobs.delete(i); }
+  for (const [i, el] of blobs) if (!keep.includes(i)) {   // gone frames fade out, then leave
+    blobs.delete(i); el.classList.add("out"); setTimeout(() => el.remove(), FADE_MS);
+  }
   for (const i of keep) {
     let el = blobs.get(i);
     if (!el) {
@@ -665,6 +695,7 @@ function frame(now) {
   }
   controls.update();
   if (dirty) paint();
+  easeColours(now);
   renderer.render(scene, camera);
   project();
   for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
