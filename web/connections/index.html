@@ -264,7 +264,7 @@ const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
 camera.position.set(2050, 260, 2050);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
-controls.autoRotate = true; controls.autoRotateSpeed = 0.35;
+controls.autoRotate = true; controls.autoRotateSpeed = 0.26;   // one turn in about 3.8 minutes (was 0.35; user, 2026-10-13: a quarter slower)
 controls.minDistance = 120; controls.maxDistance = 4400;
 
 // colours from the page's variables (they ease when the theme changes)
@@ -809,7 +809,9 @@ function placeLabel(el, x, y, z, dx = 8, dy = -6) {
   el.style.transform = `translate(${((v3.x + 1) / 2 * innerWidth + dx).toFixed(1)}px, ${((1 - v3.y) / 2 * innerHeight + dy).toFixed(1)}px)`;
 }
 let offX = 0, offY = 0;
+let frameLast = 0, frameDt = 1 / 60;
 function frame(now) {
+  frameDt = frameLast ? Math.min(0.1, (now - frameLast) / 1000) : 1 / 60; frameLast = now;
   if (root.classList.contains("theme-anim")) { readColours(); dirty = true; }
   if (fly) {
     const k = Math.min(1, (now - fly.t) / 700), e = k * k * (3 - 2 * k);
@@ -828,7 +830,7 @@ function frame(now) {
     tick(heat * 0.6); syncGeo();
     if (!drag) heat *= 0.96;
   }
-  controls.update();
+  controls.update(frameDt);   // in seconds, so the turn is as fast on any screen's frame rate
   if (dirty) paint();
   easeColours(now);
   renderer.render(scene, camera);
