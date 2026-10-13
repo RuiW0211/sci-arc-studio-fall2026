@@ -28,6 +28,13 @@
   .ctl .hint { color: var(--faint); margin-top: 6px; }
   .ctl .key { color: var(--muted); }
   .ctl .key span { display: inline-flex; align-items: center; gap: 5px; }
+  /* tag samples in the key, drawn like the tags in the view */
+  .ctl .tk { font-size: 0.6rem; line-height: 1.2; padding: 1px 4px; border-radius: 2px; font-weight: 600; }
+  .ctl .tk.hub { background: var(--text); color: var(--bg); }
+  .ctl .tk.hub:first-of-type { text-transform: uppercase; letter-spacing: 0.06em; }
+  .ctl .tk.subj { border: 1px solid var(--muted); color: var(--muted); font-style: italic; font-weight: 400; }
+  .ctl .tk.dimk { opacity: 0.18; }
+  .ctl .tk.selk { background: var(--verified); color: var(--bg); }
   .ctl .abbr { display: none; width: min(460px, calc(100vw - 32px)); max-height: 46vh; overflow: auto; margin-bottom: 10px;
     padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; }
   .ctl .abbr.show { display: block; }
@@ -330,7 +337,10 @@ ctl.innerHTML =
   `</dl><div class="abbr-h">Topics</div><dl>${topicRows}</dl></div>` +
   `<div class="row key">` +
   `<span>${ic("disc", "var(--muted)")}Entry with a date</span><span>${ic("ring", "var(--muted)")}Entry with no date</span>` +
-  `<span>${ic("square", "var(--text)")}Person or organisation</span><span>${ic("diamond", "var(--muted)")}Media subject (our grouping)</span>` +
+  `<span>${ic("square", "var(--text)")}<b class="tk hub">ORG</b><b class="tk hub">Person</b>Person or organisation</span>` +
+  `<span>${ic("diamond", "var(--muted)")}<b class="tk subj">subject</b>Media subject (our grouping)</span>` +
+  `<span><b class="tk hub dimk">ORG</b>Not linked to the point in focus</span>` +
+  `<span><b class="tk selk">Entry title</b>The chosen entry, in its status colour</span>` +
   `<span>${ic("disc", "var(--verified)")}Verified</span><span>${ic("disc", "var(--unverified)")}Unverified</span>` +
   `<span>${ic("disc", "var(--question)")}Open question</span><span>${ic("disc", "var(--analysis)")}Our analysis</span>` +
   `<span>Size: links and sources</span></div>` +
