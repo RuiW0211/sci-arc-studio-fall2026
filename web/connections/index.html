@@ -214,14 +214,14 @@ function yOf(t) {     // part linear, mostly by rank: the quiet decades stay sho
 const P = new Float32Array(N * 3), V = new Float32Array(N * 3), fixY = new Array(N).fill(null);
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 nodes.forEach((n, i) => {
-  const a = rnd() * Math.PI * 2, r = 120 + rnd() * 380;
+  const a = rnd() * Math.PI * 2, r = 160 + rnd() * 520;
   P[3 * i] = Math.cos(a) * r; P[3 * i + 2] = Math.sin(a) * r;
   if (n.type === "entry" && n.start) { fixY[i] = yOf(num(n.start)); P[3 * i + 1] = fixY[i]; }
   else P[3 * i + 1] = (rnd() - 0.5) * H * 0.6;
   n.deg = adj[i].filter((li) => links[li].kind !== "source").length;
 });
 const layoutLinks = links.filter((l) => l.kind !== "source");
-const SPRING = { mention: [75, 0.05], actor: [120, 0.025], subject: [90, 0.04] };   // lengths grew with the taller axis
+const SPRING = { mention: [100, 0.05], actor: [160, 0.025], subject: [120, 0.04] };   // lengths grew with the taller axis
 // one step of the forces; pinned nodes (dragged or dropped) stay where they are
 const pinned = new Set();
 function tick(cool) {
@@ -229,8 +229,8 @@ function tick(cool) {
   for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
     let dx = P[3 * i] - P[3 * j], dy = P[3 * i + 1] - P[3 * j + 1], dz = P[3 * i + 2] - P[3 * j + 2];
     let d2 = dx * dx + dy * dy + dz * dz + 1;
-    if (d2 > 640000) continue;
-    const f = Math.min(9000 / d2, 8), d = Math.sqrt(d2);
+    if (d2 > 1000000) continue;
+    const f = Math.min(16000 / d2, 10), d = Math.sqrt(d2);
     dx *= f / d; dy *= f / d; dz *= f / d;
     V[3 * i] += dx; V[3 * i + 1] += dy; V[3 * i + 2] += dz; V[3 * j] -= dx; V[3 * j + 1] -= dy; V[3 * j + 2] -= dz;
   }
@@ -244,8 +244,8 @@ function tick(cool) {
   for (let i = 0; i < N; i++) {
     if (pinned.has(i)) continue;
     const n = nodes[i], x = P[3 * i], z = P[3 * i + 2], r = Math.hypot(x, z) + 0.01;
-    V[3 * i] -= x * 0.0016; V[3 * i + 2] -= z * 0.0016;                     // toward the time axis
-    if (n.type === "entry" && !n.start && r < 520) { V[3 * i] += x / r * 1.5; V[3 * i + 2] += z / r * 1.5; }   // undated: an outer shell
+    V[3 * i] -= x * 0.0011; V[3 * i + 2] -= z * 0.0011;                     // toward the time axis
+    if (n.type === "entry" && !n.start && r < 700) { V[3 * i] += x / r * 1.5; V[3 * i + 2] += z / r * 1.5; }   // undated: an outer shell
     for (let c = 0; c < 3; c++) P[3 * i + c] += Math.max(-8, Math.min(8, V[3 * i + c])) * cool;
     if (fixY[i] !== null) P[3 * i + 1] = fixY[i];
     else P[3 * i + 1] = Math.max(-H / 2 - 40, Math.min(H / 2 + 40, P[3 * i + 1]));
@@ -261,11 +261,11 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 view.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
-camera.position.set(1750, 230, 1750);
+camera.position.set(2050, 260, 2050);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
 controls.autoRotate = true; controls.autoRotateSpeed = 0.35;
-controls.minDistance = 120; controls.maxDistance = 3600;
+controls.minDistance = 120; controls.maxDistance = 4400;
 
 // colours from the page's variables (they ease when the theme changes)
 const css = {};
@@ -294,7 +294,7 @@ const pMat = new THREE.ShaderMaterial({
     uniform float scale;
     void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
       gl_PointSize = size * scale / -mv.z; vC = color; vS = shape;
-      vC.a *= clamp(1.35 - (-mv.z) / 3600.0, 0.35, 1.0); }`,
+      vC.a *= clamp(1.35 - (-mv.z) / 4200.0, 0.35, 1.0); }`,
   fragmentShader: `varying vec4 vC; varying float vS;
     void main() { vec2 p = gl_PointCoord - 0.5; float d = length(p);
       if (vS < 0.5) { if (d > 0.5) discard; }
@@ -306,8 +306,29 @@ const pMat = new THREE.ShaderMaterial({
 scene.add(new THREE.Points(pGeo, pMat));
 
 // links: one LineSegments object, rgba per vertex
-const lPos = new Float32Array(links.length * 6), lCol = new Float32Array(links.length * 8);
-links.forEach((l, k) => { for (let c = 0; c < 3; c++) { lPos[6 * k + c] = P[3 * l.i + c]; lPos[6 * k + 3 + c] = P[3 * l.j + c]; } });
+// links are arcs, not straight lines (user, 2026-10-13): a quadratic curve in SEG pieces, bowed away from the time
+// axis by a fifth of its length, so the arcs open outward like the strands of a sheaf
+const SEG = 12;
+const lPos = new Float32Array(links.length * SEG * 6), lCol = new Float32Array(links.length * SEG * 8);
+function arcs() {
+  for (let k = 0; k < links.length; k++) {
+    const l = links[k], a = 3 * l.i, b = 3 * l.j;
+    const ax = P[a], ay = P[a + 1], az = P[a + 2], bx = P[b], by = P[b + 1], bz = P[b + 2];
+    const mx = (ax + bx) / 2, my = (ay + by) / 2, mz = (az + bz) / 2, len = Math.hypot(bx - ax, by - ay, bz - az);
+    let ox = mx, oz = mz, r = Math.hypot(ox, oz);
+    if (r < 1) { ox = -(bz - az); oz = bx - ax; r = Math.hypot(ox, oz) || 1; }   // on the axis: bow sideways
+    const cx = mx + ox / r * len * 0.2, cy = my, cz = mz + oz / r * len * 0.2;
+    let px = ax, py = ay, pz = az;
+    for (let s2 = 1; s2 <= SEG; s2++) {
+      const t = s2 / SEG, u = 1 - t;
+      const qx = u * u * ax + 2 * u * t * cx + t * t * bx, qy = u * u * ay + 2 * u * t * cy + t * t * by, qz = u * u * az + 2 * u * t * cz + t * t * bz;
+      const o = (k * SEG + s2 - 1) * 6;
+      lPos[o] = px; lPos[o + 1] = py; lPos[o + 2] = pz; lPos[o + 3] = qx; lPos[o + 4] = qy; lPos[o + 5] = qz;
+      px = qx; py = qy; pz = qz;
+    }
+  }
+}
+arcs();
 const lGeo = new THREE.BufferGeometry();
 lGeo.setAttribute("position", new THREE.BufferAttribute(lPos, 3));
 lGeo.setAttribute("color", new THREE.BufferAttribute(lCol, 4));
@@ -440,7 +461,7 @@ function readout(i, f) {
 // the tags shown at rest (user, 2026-10-13: the centre was crowded): the 12 most linked people, organisations, subjects
 const TOP_HUBS = nodes.map((n, i) => i).filter((i) => isHub(nodes[i])).sort((a, b) => nodes[b].deg - nodes[a].deg).slice(0, 12);
 // focus changes fade (user, 2026-10-12): points and links ease to their new colour and alpha, labels and frames fade
-const pT = new Float32Array(N * 4), lT = new Float32Array(links.length * 8);
+const pT = new Float32Array(N * 4), lT = new Float32Array(links.length * SEG * 8);
 let eased = false, easing = false, lastNow = 0;
 const FADE_MS = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--t-in")) || 0.3) * 1000;
 function easeColours(now) {
@@ -476,7 +497,7 @@ function paint() {
     let a = on[l.kind] ? kind.a * (FAINT_HUB[l.a] || FAINT_HUB[l.b] || 1) : 0;
     if (fs && a) a = (f >= 0 ? (l.i === f || l.j === f) : (fs.has(l.i) && fs.has(l.j))) ? Math.min(1, kind.a * 2.2 + 0.3) : a * 0.12;
     const c = css.text;
-    for (const v of [0, 1]) { lT.set([c.r, c.g, c.b, a], 8 * k + 4 * v); }
+    for (let v = 0; v < SEG * 2; v++) { const o = (k * SEG * 2 + v) * 4; lT[o] = c.r; lT[o + 1] = c.g; lT[o + 2] = c.b; lT[o + 3] = a; }
   });
   if (!eased) { pCol.set(pT); lCol.set(lT); eased = true; pGeo.attributes.color.needsUpdate = lGeo.attributes.color.needsUpdate = true; }
   easing = true;
@@ -638,7 +659,7 @@ controls.addEventListener("start", () => { controls.autoRotate = false; });
 controls.addEventListener("end", () => { idleT = performance.now(); });
 // geometry follows the positions while the network moves
 function syncGeo() {
-  links.forEach((l, k) => { for (let c = 0; c < 3; c++) { lPos[6 * k + c] = P[3 * l.i + c]; lPos[6 * k + 3 + c] = P[3 * l.j + c]; } });
+  arcs();
   lGeo.attributes.position.needsUpdate = true; pGeo.attributes.position.needsUpdate = true;
 }
 function resetLayout() { P.set(P0); pinned.clear(); heat = 0; syncGeo(); }
@@ -705,7 +726,7 @@ function focusOn(i) {
   const dir = camera.position.clone().sub(controls.target).normalize();
   flyTo(c, c.clone().add(dir.multiplyScalar(dist)));
 }
-const HOME = { t: new THREE.Vector3(0, 0, 0), p: new THREE.Vector3(1750, 230, 1750) };
+const HOME = { t: new THREE.Vector3(0, 0, 0), p: new THREE.Vector3(2050, 260, 2050) };
 const VIEWS = {   // preset views: from the side (time reads best), from above (links read best), the opening view
   side: () => { const d = HOME.p.length(); flyTo(HOME.t.clone(), new THREE.Vector3(d * 0.98, 0, d * 0.2)); },
   top: () => { const d = HOME.p.length() * 0.9; flyTo(HOME.t.clone(), new THREE.Vector3(0.01, d, 0.01)); },
@@ -775,7 +796,7 @@ addEventListener("keydown", (e) => {
 function resize() {
   renderer.setSize(innerWidth, innerHeight);
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
-  pMat.uniforms.scale.value = innerHeight * renderer.getPixelRatio() * 1.2;   // grew with the farther camera
+  pMat.uniforms.scale.value = innerHeight * renderer.getPixelRatio() * 1.4;   // grew with the farther camera
 }
 addEventListener("resize", resize); resize();
 const root = document.documentElement;
