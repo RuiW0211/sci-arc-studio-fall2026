@@ -53,22 +53,22 @@
 
   /* labels drawn over the canvas */
   #labels { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
-  .lb { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 0.68rem; line-height: 1.2; will-change: transform;
+  .lb { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 0.78rem; line-height: 1.2; will-change: transform;
     transition: opacity var(--t-in) ease; }
   .lb.hub { padding: 2px 5px; border-radius: 2px; background: var(--text); color: var(--bg); font-weight: 600; }
-  .lb.hub.org { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.6rem; }
+  .lb.hub.org { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.68rem; }
   .lb.subject { padding: 1px 5px; border: 1px solid var(--muted); color: var(--muted); background: var(--bg); font-style: italic; border-radius: 2px; }
-  .lb.entry { color: var(--text); max-width: 200px; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg); }
+  .lb.entry { color: var(--text); max-width: 230px; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg); }
   .lb.entry.sel { background: var(--c); color: var(--bg); padding: 2px 5px; border-radius: 2px; text-shadow: none; max-width: 300px; }
   .lb[data-i] { pointer-events: auto; cursor: grab; }
   /* while the slider is held, nothing else reacts to the pointer and the pointer keeps its look (user, 2026-10-12) */
   body.scanning, body.scanning * { cursor: default !important; }
   body.scanning .lb[data-i] { pointer-events: none; }
   .lb.dim { pointer-events: none; }
-  .lb .rd { display: block; font: 0.56rem/1.25 var(--mono); letter-spacing: 0.02em; font-weight: 400; text-transform: none; font-style: normal; opacity: 0.7; }
+  .lb .rd { display: block; font: 0.64rem/1.25 var(--mono); letter-spacing: 0.02em; font-weight: 400; text-transform: none; font-style: normal; opacity: 0.7; }
   .lb .rd:empty { display: none; }
   .lb .tt { display: block; overflow: hidden; text-overflow: ellipsis; }
-  .lb.year { font: 0.62rem var(--mono); color: var(--faint); }
+  .lb.year { font: 0.7rem var(--mono); color: var(--faint); }
   .lb.dim { opacity: 0.18; }
   .lb.off { opacity: 0; pointer-events: none; }
   .blob.out { animation: blobOut var(--t-in) ease-in both; }
@@ -196,14 +196,14 @@ function yOf(t) {     // part linear, mostly by rank: the quiet decades stay sho
 const P = new Float32Array(N * 3), V = new Float32Array(N * 3), fixY = new Array(N).fill(null);
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 nodes.forEach((n, i) => {
-  const a = rnd() * Math.PI * 2, r = 80 + rnd() * 260;
+  const a = rnd() * Math.PI * 2, r = 120 + rnd() * 380;
   P[3 * i] = Math.cos(a) * r; P[3 * i + 2] = Math.sin(a) * r;
   if (n.type === "entry" && n.start) { fixY[i] = yOf(num(n.start)); P[3 * i + 1] = fixY[i]; }
   else P[3 * i + 1] = (rnd() - 0.5) * H * 0.6;
   n.deg = adj[i].filter((li) => links[li].kind !== "source").length;
 });
 const layoutLinks = links.filter((l) => l.kind !== "source");
-const SPRING = { mention: [55, 0.06], actor: [85, 0.03], subject: [65, 0.05] };   // lengths grew with the taller axis
+const SPRING = { mention: [75, 0.05], actor: [120, 0.025], subject: [90, 0.04] };   // lengths grew with the taller axis
 // one step of the forces; pinned nodes (dragged or dropped) stay where they are
 const pinned = new Set();
 function tick(cool) {
@@ -211,8 +211,8 @@ function tick(cool) {
   for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
     let dx = P[3 * i] - P[3 * j], dy = P[3 * i + 1] - P[3 * j + 1], dz = P[3 * i + 2] - P[3 * j + 2];
     let d2 = dx * dx + dy * dy + dz * dz + 1;
-    if (d2 > 360000) continue;
-    const f = Math.min(4000 / d2, 6), d = Math.sqrt(d2);
+    if (d2 > 640000) continue;
+    const f = Math.min(9000 / d2, 8), d = Math.sqrt(d2);
     dx *= f / d; dy *= f / d; dz *= f / d;
     V[3 * i] += dx; V[3 * i + 1] += dy; V[3 * i + 2] += dz; V[3 * j] -= dx; V[3 * j + 1] -= dy; V[3 * j + 2] -= dz;
   }
@@ -226,8 +226,8 @@ function tick(cool) {
   for (let i = 0; i < N; i++) {
     if (pinned.has(i)) continue;
     const n = nodes[i], x = P[3 * i], z = P[3 * i + 2], r = Math.hypot(x, z) + 0.01;
-    V[3 * i] -= x * 0.0025; V[3 * i + 2] -= z * 0.0025;                     // toward the time axis
-    if (n.type === "entry" && !n.start && r < 360) { V[3 * i] += x / r * 1.5; V[3 * i + 2] += z / r * 1.5; }   // undated: an outer shell
+    V[3 * i] -= x * 0.0016; V[3 * i + 2] -= z * 0.0016;                     // toward the time axis
+    if (n.type === "entry" && !n.start && r < 520) { V[3 * i] += x / r * 1.5; V[3 * i + 2] += z / r * 1.5; }   // undated: an outer shell
     for (let c = 0; c < 3; c++) P[3 * i + c] += Math.max(-8, Math.min(8, V[3 * i + c])) * cool;
     if (fixY[i] !== null) P[3 * i + 1] = fixY[i];
     else P[3 * i + 1] = Math.max(-H / 2 - 40, Math.min(H / 2 + 40, P[3 * i + 1]));
@@ -243,7 +243,7 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 view.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
-camera.position.set(1500, 200, 1500);
+camera.position.set(1750, 230, 1750);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
 controls.autoRotate = true; controls.autoRotateSpeed = 0.35;
@@ -276,7 +276,7 @@ const pMat = new THREE.ShaderMaterial({
     uniform float scale;
     void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
       gl_PointSize = size * scale / -mv.z; vC = color; vS = shape;
-      vC.a *= clamp(1.35 - (-mv.z) / 3000.0, 0.35, 1.0); }`,
+      vC.a *= clamp(1.35 - (-mv.z) / 3600.0, 0.35, 1.0); }`,
   fragmentShader: `varying vec4 vC; varying float vS;
     void main() { vec2 p = gl_PointCoord - 0.5; float d = length(p);
       if (vS < 0.5) { if (d > 0.5) discard; }
@@ -662,7 +662,7 @@ addEventListener("keydown", (e) => { if (e.key === "Escape") { if (openPanel) sh
 function resize() {
   renderer.setSize(innerWidth, innerHeight);
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
-  pMat.uniforms.scale.value = innerHeight * renderer.getPixelRatio() * 0.9;
+  pMat.uniforms.scale.value = innerHeight * renderer.getPixelRatio() * 1.2;   // grew with the farther camera
 }
 addEventListener("resize", resize); resize();
 const root = document.documentElement;
