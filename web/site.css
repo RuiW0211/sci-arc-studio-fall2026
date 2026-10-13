@@ -24,7 +24,10 @@
 /* short pages keep the scrollbar's room, so every page's column lines up; the page colour reaches the window edges */
 html { scrollbar-gutter: stable; background: var(--bg); }
 body { font-family: var(--font); font-size: 16px; line-height: 1.6; background: var(--bg); color: var(--text); }
-a { color: inherit; }
+/* a visited link's colour is never animated (browser privacy rule), so on the light / dark switch visited links (the
+   home page's Model / Research / Methods) jumped while the rest faded (user, 2026-10-12). The text is painted with
+   the fill colour instead, which follows the ordinary, animated colour. */
+a { color: inherit; -webkit-text-fill-color: currentColor; }
 code { font: 0.8rem var(--mono); }
 
 /* one column, the same on every page */
@@ -57,7 +60,7 @@ html { scrollbar-color: var(--line) var(--bg); }
 /* switching light / dark eases the colours (theme.js sets .theme-anim for the length of the change) */
 .theme-anim, .theme-anim *, .theme-anim *::before, .theme-anim *::after {
   transition: background-color var(--t-out) ease, color var(--t-out) ease, border-color var(--t-out) ease,
-    scrollbar-color var(--t-out) ease, outline-color var(--t-out) ease !important; }
+    scrollbar-color var(--t-out) ease, outline-color var(--t-out) ease, -webkit-text-fill-color var(--t-out) ease !important; }
 /* hover underlines (home link, entry titles) come in with the small-feedback time; other links keep theirs */
 .home, .entry-title, .finding-title { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent;
   transition: text-decoration-color var(--t-feedback); }
