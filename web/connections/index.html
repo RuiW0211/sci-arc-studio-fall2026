@@ -427,6 +427,12 @@ function label(i) {
   return el;
 }
 nodes.forEach((n, i) => { if (isHub(n)) label(i); });
+// the wheel zooms wherever the pointer is: over a tag the event would stop at the tag, so pass it on to the view
+// (user, 2026-10-13: could not zoom while over something)
+labelsEl.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  renderer.domElement.dispatchEvent(new WheelEvent("wheel", e));
+}, { passive: false });
 const yearEls = years.map(([y]) => { const el = document.createElement("div"); el.className = "lb year"; el.textContent = y; labelsEl.appendChild(el); return el; });
 
 const TOPIC_CODE = { "Media": "MED", "Angels Flight": "AF", "1980 Bargain & History": "1980", "Zoning & Entitlements": "ENT",
