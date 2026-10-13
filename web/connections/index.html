@@ -36,6 +36,8 @@
   .lb.subject { padding: 1px 5px; border: 1px solid var(--muted); color: var(--muted); background: var(--bg); font-style: italic; border-radius: 2px; }
   .lb.entry { color: var(--text); max-width: 200px; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg); }
   .lb.entry.sel { background: var(--c); color: var(--bg); padding: 2px 5px; border-radius: 2px; text-shadow: none; max-width: 300px; }
+  .lb[data-i] { pointer-events: auto; cursor: grab; }
+  .lb.dim { pointer-events: none; }
   .lb.year { font: 0.62rem var(--mono); color: var(--faint); }
   .lb.dim { opacity: 0.18; }
 
@@ -142,8 +144,9 @@ nodes.forEach((n, i) => {
 });
 const layoutLinks = links.filter((l) => l.kind !== "source");
 const SPRING = { mention: [34, 0.06], actor: [52, 0.03], subject: [40, 0.05] };
-for (let it = 0; it < 420; it++) {
-  const cool = 1 - it / 420;
+// one step of the forces; pinned nodes (dragged or dropped) stay where they are
+const pinned = new Set();
+function tick(cool) {
   V.fill(0);
   for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
     let dx = P[3 * i] - P[3 * j], dy = P[3 * i + 1] - P[3 * j + 1], dz = P[3 * i + 2] - P[3 * j + 2];
@@ -161,6 +164,7 @@ for (let it = 0; it < 420; it++) {
     V[3 * i] += dx * f; V[3 * i + 1] += dy * f; V[3 * i + 2] += dz * f; V[3 * j] -= dx * f; V[3 * j + 1] -= dy * f; V[3 * j + 2] -= dz * f;
   }
   for (let i = 0; i < N; i++) {
+    if (pinned.has(i)) continue;
     const n = nodes[i], x = P[3 * i], z = P[3 * i + 2], r = Math.hypot(x, z) + 0.01;
     V[3 * i] -= x * 0.004; V[3 * i + 2] -= z * 0.004;                     // toward the time axis
     if (n.type === "entry" && !n.start && r < 210) { V[3 * i] += x / r * 1.5; V[3 * i + 2] += z / r * 1.5; }   // undated: an outer shell
@@ -169,6 +173,8 @@ for (let it = 0; it < 420; it++) {
     else P[3 * i + 1] = Math.max(-H / 2 - 40, Math.min(H / 2 + 40, P[3 * i + 1]));
   }
 }
+for (let it = 0; it < 420; it++) tick(1 - it / 420);
+const P0 = P.slice();   // the settled layout, for Reset
 
 // ---- scene ----
 const view = document.getElementById("view");
@@ -253,6 +259,7 @@ function label(i) {
   el.className = "lb " + (n.type === "entry" ? "entry" : n.type === "subject" ? "subject" : "hub " + n.type);
   el.textContent = n.title;
   if (n.type === "entry") el.style.setProperty("--c", `var(--${{ "open-question": "question" }[n.status] || n.status})`);
+  el.dataset.i = i;
   labelsEl.appendChild(el); labels.set(i, el);
   return el;
 }
@@ -262,10 +269,12 @@ const yearEls = years.map(([y]) => { const el = document.createElement("div"); e
 // ---- controls: link kinds ----
 const on = Object.fromEntries(KINDS.map((k) => [k.k, k.on]));
 const ctl = document.getElementById("ctl");
-ctl.innerHTML = `<div class="hint">Drag to turn · scroll to zoom · click a point</div><div class="row">` +
+ctl.innerHTML = `<div class="hint">Drag a point or tag to move it · drag space to turn · scroll to zoom · ` +
+  `<button data-reset>reset</button></div><div class="row">` +
   KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") + `</div>`;
 ctl.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
+  if (b.hasAttribute("data-reset")) return resetLayout();
   on[b.dataset.k] = !on[b.dataset.k]; b.classList.toggle("on", on[b.dataset.k]); dirty = true;
 });
 
@@ -326,22 +335,67 @@ function pick(x, y) {
   }
   return best;
 }
-let down = null, idleT = 0;
-renderer.domElement.addEventListener("pointerdown", (e) => { down = [e.clientX, e.clientY]; controls.autoRotate = false; idleT = performance.now(); });
-renderer.domElement.addEventListener("pointermove", (e) => {
-  if (e.pointerType !== "mouse") return;
-  const h = pick(e.clientX, e.clientY);
-  if (h !== hover) { hover = h; dirty = true; renderer.domElement.style.cursor = h >= 0 ? "pointer" : ""; }
+// ---- pointer: drag a point or its tag to move it (user, 2026-10-12: to see what it is tied to); drag empty space
+// to turn; a click without moving selects. Dated entries move only sideways, so height stays their date. ----
+let down = null, idleT = 0, drag = null, heat = 0;
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), hit = new THREE.Vector3(), camDir = new THREE.Vector3();
+const nodeAt = (e) => {
+  const lb = e.target.closest && e.target.closest(".lb[data-i]");
+  if (lb) return +lb.dataset.i;
+  return e.target === renderer.domElement ? pick(e.clientX, e.clientY) : -1;
+};
+const onScene = (e) => e.target === renderer.domElement || (e.target.closest && e.target.closest(".lb[data-i]"));
+function rayAt(e) { ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera); }
+addEventListener("pointerdown", (e) => {
+  if (!onScene(e) || e.button !== 0) return;
+  down = [e.clientX, e.clientY]; controls.autoRotate = false; idleT = performance.now();
+  const i = nodeAt(e);
+  if (i < 0) return;
+  controls.enabled = false;   // runs before OrbitControls (capture), so the view does not turn
+  const p = new THREE.Vector3(P[3 * i], P[3 * i + 1], P[3 * i + 2]);
+  const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(camDir), p);
+  rayAt(e); ray.ray.intersectPlane(plane, hit);
+  drag = { i, plane, off: p.clone().sub(hit), moved: false };
+  hover = i; dirty = true; document.body.style.cursor = "grabbing";
+  e.preventDefault();
+}, true);
+addEventListener("pointermove", (e) => {
+  if (drag) {
+    if (!drag.moved && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 4) return;
+    drag.moved = true; pinned.add(drag.i);
+    rayAt(e);
+    if (ray.ray.intersectPlane(drag.plane, hit)) {
+      const i = drag.i; hit.add(drag.off);
+      P[3 * i] = hit.x; P[3 * i + 2] = hit.z;
+      if (fixY[i] === null) P[3 * i + 1] = hit.y;
+    }
+    heat = 1; idleT = performance.now();
+    return;
+  }
+  if (e.pointerType !== "mouse" || e.buttons) return;
+  const h = onScene(e) ? nodeAt(e) : -1;
+  if (h !== hover) { hover = h; dirty = true; document.body.style.cursor = h >= 0 ? "grab" : ""; }
 });
-renderer.domElement.addEventListener("pointerleave", () => { if (hover >= 0) { hover = -1; dirty = true; } });
-renderer.domElement.addEventListener("pointerup", (e) => {
+addEventListener("pointerup", (e) => {
   idleT = performance.now();
+  if (drag) {
+    const { i, moved } = drag;
+    drag = null; controls.enabled = true; document.body.style.cursor = hover >= 0 ? "grab" : "";
+    if (!moved) select(i, false);
+    return;
+  }
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
-  const p = pick(e.clientX, e.clientY);
-  if (p >= 0) select(p, false); else close();
+  down = null;
+  if (e.target === renderer.domElement) close();
 });
 controls.addEventListener("start", () => { controls.autoRotate = false; });
 controls.addEventListener("end", () => { idleT = performance.now(); });
+// geometry follows the positions while the network moves
+function syncGeo() {
+  links.forEach((l, k) => { for (let c = 0; c < 3; c++) { lPos[6 * k + c] = P[3 * l.i + c]; lPos[6 * k + 3 + c] = P[3 * l.j + c]; } });
+  lGeo.attributes.position.needsUpdate = true; pGeo.attributes.position.needsUpdate = true;
+}
+function resetLayout() { P.set(P0); pinned.clear(); heat = 0; syncGeo(); }
 
 // ---- the card ----
 const card = document.getElementById("card");
@@ -416,6 +470,10 @@ function frame(now) {
   if (Math.abs(offX) > 0.5 || Math.abs(offY) > 0.5) camera.setViewOffset(innerWidth, innerHeight, offX, offY, innerWidth, innerHeight);
   else if (camera.view) camera.clearViewOffset();
   if (!controls.autoRotate && sel < 0 && hover < 0 && now - idleT > 6000) controls.autoRotate = true;
+  if (heat > 0.02) {   // the network settles around a moved point
+    tick(heat * 0.6); syncGeo();
+    if (!drag) heat *= 0.96;
+  }
   controls.update();
   if (dirty) paint();
   renderer.render(scene, camera);
