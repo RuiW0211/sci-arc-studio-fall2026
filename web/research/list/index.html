@@ -153,7 +153,40 @@
 /* everything under the header is drawn from data.json: it fades in once, when drawn, instead of popping in piece by
    piece (current status, counts, findings; user, 2026-10-12) */
 main { transition: opacity var(--t-in) ease; }
-body:not(.ready) main { opacity: 0; }   /* header and entries together, not the title first */
+body:not(.ready) main { opacity: 0; }
+
+/* three columns on wide screens (user, 2026-10-13: fill the screen): search and topics | the entries | the chosen
+   entry in full. Two columns (no detail; entries open in place) on mid-size screens, one on phones. */
+.list3 { max-width: none; }
+@media (min-width: 900px) {
+  .list3 { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 0 48px; align-items: start; }
+  .list3 .side { position: sticky; top: 0; max-height: 100vh; overflow: auto; padding: 48px 4px 32px 0; margin-top: -48px; scrollbar-width: thin; }
+  .list3 .side .filters { flex-direction: column; align-items: stretch; }
+  .list3 .side .filter-select { width: 100%; }
+  .list3 .side .stats { gap: 14px 22px; }
+  .list3 .side .toc { flex-direction: column; gap: 3px; }
+  .list3 .detail { display: none; }
+}
+@media (min-width: 1200px) {
+  .list3 { grid-template-columns: 300px minmax(0, 1fr) minmax(0, 1.15fr); }
+  .list3 .detail { display: block; position: sticky; top: 0; max-height: 100vh; overflow: auto; padding: 48px 4px 48px 0;
+    margin-top: -48px; scrollbar-width: thin; }
+  .list3 .list-controls { display: none; }
+  .list3 .mid .finding.open .finding-body { display: none; }   /* in full on the right instead */
+  .list3 .mid .finding.sel .finding-title { text-decoration-color: currentColor; }
+  .list3 .mid .finding.sel { box-shadow: inset 2px 0 0 var(--text); padding-left: 12px; margin-left: -14px; transition: padding var(--t-feedback); }
+  .list3 .mid .toggle-hint { display: none; }
+  .list3 .mid .finding-summary { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #detailBody .finding-title { font-size: 1.4rem; line-height: 1.3; }
+  #detailBody .finding-body { display: block; padding-top: 4px; }
+  #detailBody .toggle-hint { display: none; }
+  #detailBody .back { font: inherit; font-size: 0.8rem; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer;
+    margin-bottom: 14px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent;
+    transition: color var(--t-feedback), text-decoration-color var(--t-feedback); }
+  #detailBody .back:hover { color: var(--text); text-decoration-color: currentColor; }
+  #detailBody { animation: detailIn var(--t-in) ease both; }
+  @keyframes detailIn { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+}   /* header and entries together, not the title first */
 
 .about { font-size: 0.85rem; color: var(--muted); margin: -8px 0 20px; }
 .about a { color: var(--muted); }
@@ -193,16 +226,14 @@ body:not(.ready) main { opacity: 0; }   /* header and entries together, not the 
 </style>
 </head>
 <body>
-<main class="container">
+<main class="container list3">
+    <aside class="side">
         <header class="header">
             <p class="eyebrow">Angels Knoll · Research · <a href="../../" class="home">home</a></p>
             <h1>Research</h1>
             <p class="views"><a href="../">Network</a><a href="./" class="on" aria-current="page">List</a></p>
             <p class="subtitle">What is known about Parcel Y-1, with sources.</p>
         </header>
-
-        <section class="current" id="currentBox" aria-label="Current status" hidden></section>
-
         <section class="search-section">
             <input type="search" id="searchInput" class="search-input" placeholder="Search findings, e.g. litigation, 54234, Goldstein" aria-label="Search findings">
             <div class="filters">
@@ -226,7 +257,6 @@ body:not(.ready) main { opacity: 0; }   /* header and entries together, not the 
                 <button id="clearBtn" class="btn">Clear</button>
             </div>
         </section>
-
         <section class="stats" aria-label="Counts">
             <div><span class="stat-number" id="totalCount">0</span><span class="stat-label">Shown</span></div>
             <div><span class="stat-number s-verified" id="verifiedCount">0</span><span class="stat-label">Verified</span></div>
@@ -234,20 +264,24 @@ body:not(.ready) main { opacity: 0; }   /* header and entries together, not the 
             <div><span class="stat-number s-question" id="questionCount">0</span><span class="stat-label">Open questions</span></div>
             <div><span class="stat-number s-analysis" id="analysisCount">0</span><span class="stat-label">Analysis</span></div>
         </section>
-
         <p class="about" id="aboutLine"></p>
         <nav class="toc" id="topicNav" aria-label="Topics"></nav>
-
+    </aside>
+    <section class="mid">
+        <div id="currentHome"><section class="current" id="currentBox" aria-label="Current status" hidden></section></div>
         <div class="list-controls">
             <button id="expandAll" class="btn btn-quiet">Expand all</button>
             <button id="collapseAll" class="btn btn-quiet">Collapse all</button>
         </div>
 
         <div id="resultsContainer"></div>
-
         <footer class="footer">
             Y-1 Research Database - Syracuse Visiting Studio - Fall 2026. How entries are checked: <a href="https://github.com/RuiW0211/sci-arc-studio-fall2026/blob/main/docs/RESEARCH.md" target="_blank" rel="noopener">verification rules</a>. Add or correct findings by editing <code>web/research/data.json</code> in a pull request. Link to one finding with <code>research/list/#id</code> here or <code>research/#id</code> in the Network, e.g. <code>#lit-005</code>.
         </footer>
+    </section>
+    <section class="detail" id="detail" aria-live="polite">
+        <div id="detailBody" hidden></div>
+    </section>
     </main>
 
     <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
@@ -298,6 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         byId = new Map(allFindings.map(f => [f.id, f]));
         current = data.current || null;
         renderCurrent();
+        placeCurrent();
         initFilters();
         attachListeners();
         applyFilters();
@@ -320,6 +355,7 @@ function openFromHash() {
     if (!id || !allFindings.some(f => f.id === id)) return;
     if (!document.querySelector(`.finding[data-id="${CSS.escape(id)}"]`)) clearFilters();
     const el = document.querySelector(`.finding[data-id="${CSS.escape(id)}"]`);
+    if (WIDE.matches) { showDetail(el); el.scrollIntoView({ block: 'nearest' }); return; }
     if (!el.classList.contains('open')) toggle(el);
     el.scrollIntoView({ block: 'start' });
 }
@@ -453,10 +489,46 @@ function attachListeners() {
     document.getElementById('collapseAll').addEventListener('click', () => setAll(false));
 }
 
+const WIDE = matchMedia('(min-width: 1200px)');
 function toggle(el) {
+    if (WIDE.matches) return showDetail(el);
     const open = el.classList.toggle('open');
     el.querySelector('.finding-head').setAttribute('aria-expanded', open);
 }
+// the right column: the chosen entry in full, or (nothing chosen) the current status
+function showDetail(el) {
+    const body = document.getElementById('detailBody');
+    document.querySelectorAll('.finding.sel').forEach(x => x.classList.remove('sel'));
+    if (!el) {
+        body.hidden = true; body.innerHTML = '';
+        placeCurrent();
+        history.replaceState(null, '', location.pathname);
+        return;
+    }
+    el.classList.add('sel');
+    const head = el.querySelector('.finding-title-row').outerHTML + (el.querySelector('.finding-summary, blockquote')?.outerHTML || '') +
+        el.querySelector('.finding-meta').outerHTML;
+    body.innerHTML = `<button class="back" type="button">Current status</button>${head}<div class="finding-body">${el.querySelector('.finding-body').innerHTML}</div>`;
+    body.hidden = false;
+    body.style.animation = 'none'; void body.offsetWidth; body.style.animation = '';
+    document.getElementById('currentBox').hidden = true;
+    document.getElementById('detail').scrollTop = 0;
+    history.replaceState(null, '', '#' + el.dataset.id);
+}
+// the status box sits on the right when that column is there, else above the entries
+function placeCurrent() {
+    const box = document.getElementById('currentBox');
+    if (!box.innerHTML) return;
+    const wide = WIDE.matches, detailOpen = !document.getElementById('detailBody').hidden;
+    (wide ? document.getElementById('detail') : document.getElementById('currentHome')).prepend(box);
+    box.hidden = wide && detailOpen;
+}
+WIDE.addEventListener('change', () => {
+    const sel = document.querySelector('.finding.sel');
+    if (!WIDE.matches && sel) { showDetail(null); if (!sel.classList.contains('open')) toggle(sel); }
+    placeCurrent();
+});
+document.addEventListener('click', e => { if (e.target.closest('#detailBody .back')) showDetail(null); });
 
 function setAll(open) {
     document.querySelectorAll('.finding').forEach(el => {
@@ -488,6 +560,9 @@ function applyFilters() {
 
     render(results, Boolean(query || topic || status || sourceType || year || kind || subject));
     updateStats(results);
+    // after a new search or filter, the entry shown on the right stays marked in the list
+    const shown = WIDE.matches && !document.getElementById('detailBody').hidden && decodeURIComponent(location.hash.slice(1));
+    if (shown) document.querySelector(`.finding[data-id="${CSS.escape(shown)}"]`)?.classList.add('sel');
 }
 
 function render(findings, filtered) {
