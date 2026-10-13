@@ -3,636 +3,965 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Y-1 Research Database</title>
+<title>Research · Angels Knoll</title>
 <link rel="stylesheet" href="../site.css">
-<script>
-  // the data (about 650 KB) starts loading at once, alongside the search library, not after it (user, 2026-10-13:
-  // the title showed first and the entries came in late)
-  window.__research = fetch('data.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
-</script>
 <script src="../theme.js"></script>
 <style>
-/* colours (status colours included), header, type scale, footer and the theme button come from ../site.css */
+  /* Research, Network view (was Connections; user, 2026-10-13: Research is one entry with two views, Network and
+     List). Colours and type come from site.css. A 3D network of the research entries (connections.json, built by
+     docs/connections_build.py): height is time (user, 2026-10-12), the other two directions are free. Only links
+     that are in the data are drawn; each one says why. */
+  html, body { height: 100%; overflow: hidden; }
+  #view { position: fixed; inset: 0; touch-action: none; }
+  #view canvas { display: block; }
+  .over { position: fixed; left: 16px; top: 16px; max-width: 420px; pointer-events: none; z-index: 3; }
+  .over .eyebrow { margin-bottom: 8px; pointer-events: auto; }
+  .over h1 { font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .over .subtitle { font-size: 0.85rem; }
+  /* the two views of Research, the same on both pages */
+  .views { display: flex; gap: 14px; font-size: 0.8rem; margin: 2px 0 8px; pointer-events: auto; }
+  .views a { color: var(--muted); text-decoration: none; padding-bottom: 1px; border-bottom: 1px solid transparent;
+    transition: color var(--t-feedback), border-color var(--t-feedback); }
+  .views a:hover { color: var(--text); }
+  .views a.on { color: var(--text); border-bottom-color: currentColor; }
+  .search { margin-top: 12px; pointer-events: auto; width: min(320px, calc(100vw - 32px)); }
+  .search input { width: 100%; font: 0.8rem var(--font); color: var(--text); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 3px; padding: 6px 9px; outline: none; transition: border-color var(--t-feedback); }
+  .search input:focus { border-color: var(--muted); }
+  .search ul { list-style: none; margin-top: 4px; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; }
+  .search ul:empty { display: none; }
+  .search li { padding: 5px 9px; font-size: 0.78rem; cursor: pointer; display: flex; gap: 8px; align-items: baseline; }
+  .search li.on, .search li:hover { background: var(--hover); }
+  .search li small { font: 0.62rem var(--mono); color: var(--faint); flex: none; }
+  .search li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* the mini timeline in the card of a person, organisation or subject */
+  .card .mini { width: 100%; height: 44px; display: block; margin: 4px 0 2px; overflow: visible; }
+  .card .mini line { stroke: var(--line); }
+  .card .mini circle { cursor: pointer; transition: r var(--t-feedback); }
+  .card .mini circle:hover { r: 5; }
+  .card .mini text { font: 0.6rem var(--mono); fill: var(--faint); }
+  /* the box of the controls lets the pointer through; only its buttons and open panel take it (user, 2026-10-12: points
+     behind the controls' box could not be picked) */
+  .ctl { position: fixed; left: 16px; bottom: 16px; z-index: 3; font-size: 0.75rem; color: var(--muted); max-width: calc(100% - 90px);
+    pointer-events: none; }
+  .ctl button, .ctl .panel.show { pointer-events: auto; }
+  .ctl .bar { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; }
+  .ctl .bar [data-open]::after { content: "▴"; font-size: 0.6rem; margin-left: 4px; opacity: 0.6; }
+  .ctl .bar [data-open].on::after { content: "▾"; }
+  .ctl .bar .sep { color: var(--line); }
+  .ctl .panel { display: none; width: min(460px, calc(100vw - 32px)); max-height: 52vh; overflow: auto; margin-bottom: 10px;
+    padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; }
+  .ctl .panel.show { display: block; animation: panelIn var(--t-in) ease both; }
+  @keyframes panelIn { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+  .ctl .panel .key { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .ctl .panel dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; }
+  .ctl .panel dt { font: 0.68rem var(--mono); color: var(--text); }
+  .ctl .panel dd { color: var(--muted); }
+  .ctl button { font: inherit; color: var(--faint); background: none; border: 0; padding: 0; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; transition: color var(--t-feedback); }
+  .ctl button:hover { color: var(--text); }
+  .ctl button.on { color: var(--text); }
+  .ctl button i { display: inline-block; width: 16px; height: 0; border-top: 1px solid currentColor; opacity: .35; }
+  .ctl button.on i { opacity: 1; }
+  .ctl .key { color: var(--muted); }
+  .ctl .key span { display: inline-flex; align-items: center; gap: 5px; }
+  /* tag samples in the key, drawn like the tags in the view */
+  .ctl .tk { font-size: 0.6rem; line-height: 1.2; padding: 1px 4px; border-radius: 2px; font-weight: 600; }
+  .ctl .tk.hub { background: var(--text); color: var(--bg); }
+  .ctl .tk.hub:first-of-type { text-transform: uppercase; letter-spacing: 0.06em; }
+  .ctl .tk.subj { border: 1px solid var(--muted); color: var(--muted); font-style: italic; font-weight: 400; }
+  .ctl .tk.dimk { opacity: 0.18; }
+  .ctl .tk.selk { background: var(--verified); color: var(--bg); }
+  .ctl .abbr-h { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin: 12px 0 6px; }
 
-/* Header, modeled on ruyf26.samlay.xyz */
+  /* labels drawn over the canvas */
+  #labels { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+  .lb { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 0.78rem; line-height: 1.2; will-change: transform;
+    transition: opacity var(--t-in) ease; }
+  .lb.hub { padding: 2px 5px; border-radius: 2px; background: var(--text); color: var(--bg); font-weight: 600; }
+  .lb.hub.org { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.68rem; }
+  .lb.subject { padding: 1px 5px; border: 1px solid var(--muted); color: var(--muted); background: var(--bg); font-style: italic; border-radius: 2px; }
+  .lb.entry { color: var(--text); max-width: 230px; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg); }
+  .lb.entry.sel { background: var(--c); color: var(--bg); padding: 2px 5px; border-radius: 2px; text-shadow: none; max-width: 300px; }
+  .lb[data-i] { pointer-events: auto; cursor: grab; }
+  /* while the slider is held, nothing else reacts to the pointer and the pointer keeps its look (user, 2026-10-12) */
+  body.scanning, body.scanning * { cursor: default !important; }
+  body.scanning .lb[data-i] { pointer-events: none; }
+  .lb.dim { pointer-events: none; }
+  .lb .rd { display: block; font: 0.64rem/1.25 var(--mono); letter-spacing: 0.02em; font-weight: 400; text-transform: none; font-style: normal; opacity: 0.7; }
+  .lb .rd:empty { display: none; }
+  .lb .tt { display: block; overflow: hidden; text-overflow: ellipsis; }
+  .lb.year { font: 0.7rem var(--mono); color: var(--faint); }
+  .lb.dim { opacity: 0.18; }
+  .lb.off { opacity: 0; pointer-events: none; }
+  .blob.out { animation: blobOut var(--t-in) ease-in both; }
+  @keyframes blobOut { from { opacity: 1; } to { opacity: 0; scale: 1.4; } }
+  /* blob tracking (user, 2026-10-12, after TouchDesigner's Blob Track): the point in focus and its neighbours get a
+     tracking frame that locks on and follows them, with a small readout; the chosen one gets a full square */
+  #blobs { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+  .blob { position: absolute; left: 0; top: 0; width: var(--s); height: var(--s); will-change: translate;
+    --k: var(--text); --l: 5px;
+    background: linear-gradient(var(--k), var(--k)) top left / var(--l) 1px, linear-gradient(var(--k), var(--k)) top left / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) top right / var(--l) 1px, linear-gradient(var(--k), var(--k)) top right / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) bottom left / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom left / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) bottom right / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom right / 1px var(--l);
+    background-repeat: no-repeat; }
+  .blob i { display: none; position: absolute; right: calc(100% + 3px); top: calc(100% - 2px); text-align: right; font: 0.56rem/1 var(--mono); color: var(--muted);
+    white-space: nowrap; font-style: normal; letter-spacing: 0.02em; }
+  .blob.main { border: 1px solid var(--k); background: none; }
+  .blob.main i { color: var(--text); }
+  /* scanning: a slider thumb on the time axis itself (user, 2026-10-12: no second line across); dragging it frames
+     the entries of that time. Its readout sits to the left, clear of the years. */
+  /* the slider is a capsule in the scene (user, 2026-10-12: solid and 3D, as the view turns); only its readout is HTML */
+  #scanrd { position: fixed; left: 0; top: 0; z-index: 3; text-align: right; pointer-events: none; will-change: translate;
+    font: 0.68rem/1.3 var(--mono); color: var(--text); white-space: nowrap; transform: translate(-100%, -50%); opacity: 0;
+    transition: opacity var(--t-feedback); }
+  #scanrd.on { opacity: 1; }
+  #scanrd b { font-size: 0.95rem; font-weight: 400; display: block; }
+  /* locking on: the frame closes in from larger (scale, not transform, which holds the position) */
+  .blob { animation: lockOn var(--t-in) ease-out both; }
+  @keyframes lockOn { from { opacity: 0; scale: 2.2; } to { opacity: 1; scale: 1; } }
 
-/* Search */
-.search-section { margin-bottom: 24px; }
-.search-input {
-    width: 100%;
-    padding: 12px 14px;
-    font: inherit;
-    font-size: 1rem;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    margin-bottom: 12px;
-}
-.search-input:focus, .filter-select:focus, .btn:focus-visible, .finding-head:focus-visible {
-    outline: 2px solid var(--text);
-    outline-offset: 1px;
-}
-.filters { display: flex; flex-wrap: wrap; gap: 8px; }
-.filter-select, .btn {
-    font: inherit;
-    font-size: 0.85rem;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    padding: 6px 10px;
-    cursor: pointer;
-}
-.btn:hover, .filter-select:hover { border-color: var(--muted); }
-.btn-quiet { border-color: transparent; color: var(--muted); padding: 4px 6px; }
-.btn-quiet:hover { color: var(--text); border-color: transparent; }
+  .card { position: fixed; right: 16px; top: 16px; bottom: 64px; width: 360px; overflow: auto; background: var(--bg);
+    border: 1px solid var(--line); border-radius: 3px; padding: 16px 18px; font-size: 0.85rem; z-index: 4;
+    opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity var(--t-in) ease, transform var(--t-in) ease; }
+  .card.show { opacity: 1; transform: none; pointer-events: auto; }
+  .card .meta { font: 0.68rem var(--mono); color: var(--faint); margin-bottom: 6px; }
+  .card h3 { font-size: 1rem; line-height: 1.35; margin-bottom: 8px; padding-right: 16px; }
+  .card p { color: var(--muted); margin-bottom: 10px; }
+  .card .st { font-weight: 700; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .card .st.verified { color: var(--verified); } .card .st.unverified { color: var(--unverified); }
+  .card .st.open-question { color: var(--question); } .card .st.analysis { color: var(--analysis); }
+  .card .x { position: absolute; top: 8px; right: 10px; background: none; border: 0; color: var(--faint); font-size: 1.1rem; cursor: pointer; }
+  .card a { color: var(--text); }
+  .card h4 { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
+    margin: 16px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+  .card ul { list-style: none; }
+  .card li { margin-bottom: 9px; }
+  .card li button { font: inherit; font-weight: 600; color: var(--text); background: none; border: 0; padding: 0; text-align: left; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent; transition: text-decoration-color var(--t-feedback); }
+  .card li button:hover { text-decoration-color: currentColor; }
+  .card li .why { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
 
-/* Stats */
-.stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 28px;
-    padding: 16px 0;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 8px;
-}
-.stats > div { display: flex; flex-direction: column; }
-.stat-number { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
-.stat-label { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
-.s-verified { color: var(--verified); }
-.s-unverified { color: var(--unverified); }
-.s-question { color: var(--question); }
-.s-analysis { color: var(--analysis); }
-
-.list-controls { display: flex; justify-content: flex-end; gap: 4px; margin-bottom: 8px; }
-
-/* Topic groups */
-.topic-group { margin-top: 32px; }
-.topic-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--faint);
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--line);
-}
-.topic-count { font-weight: 400; margin-left: 6px; }
-
-/* Findings */
-.finding { border-bottom: 1px solid var(--line); }
-.finding-head { padding: 20px 0; cursor: pointer; }
-.finding-head:hover .finding-title { text-decoration-color: currentColor; }
-.finding-title-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 6px; }
-.finding-title { font-size: 1.15rem; line-height: 1.35; font-weight: 700; }
-.finding-summary { color: var(--muted); font-size: 0.95rem; }
-.finding-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 0.8rem; color: var(--faint); }
-.toggle-hint { margin-left: auto; color: var(--muted); }
-.toggle-hint::after { content: " +"; }
-.finding.open .toggle-hint::after { content: " \2212"; }
-
-.badge {
-    flex-shrink: 0;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 2px 6px;
-    border: 1px solid currentColor;
-    border-radius: 2px;
-}
-.badge-verified { color: var(--verified); }
-.badge-unverified { color: var(--unverified); }
-.badge-open-question { color: var(--question); }
-.badge-analysis { color: var(--analysis); }
-
-.finding-body { display: none; padding: 0 0 24px; font-size: 0.95rem; }
-.finding.open .finding-body { display: block; }
-.finding-body p { margin-bottom: 12px; }
-.detail-list { margin: 0 0 12px 20px; }
-.detail-list li { margin-bottom: 6px; }
-
-.finding-sources { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
-.finding-sources h4 {
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--faint);
-    margin-bottom: 6px;
-}
-.finding-sources ul { list-style: none; }
-.finding-sources li { font-size: 0.85rem; margin-bottom: 4px; }
-.finding-sources a { color: var(--text); }
-.source-type { color: var(--faint); font-size: 0.75rem; }
-.source-file { margin-top: 10px; font-size: 0.75rem; color: var(--faint); }
-
-.no-results { padding: 48px 0; text-align: center; color: var(--muted); }
-
-/* kind (fact / claim / analysis), checked date, disagreement marker */
-.kind { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
-.kind-claim { color: var(--unverified); }
-.kind-analysis { color: var(--analysis); }
-.disagree { color: var(--unverified); }
-.disagree::before { content: "\25CB  "; }
-.finding-conflicts { margin: 4px 0 16px; padding: 10px 12px; border-left: 2px solid var(--unverified); background: var(--hover); }
-.finding-conflicts h4, .finding-sources h4 { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; }
-.finding-conflicts p { font-size: 0.88rem; margin-bottom: 6px; }
-.source-excerpt { display: block; color: var(--muted); font-size: 0.8rem; margin: 2px 0 6px 0; }
-.source-excerpt::before { content: "\201C"; } .source-excerpt::after { content: "\201D"; }
-
-/* Media: the statement itself, then who said it, where and when */
-.quote { margin: 4px 0 8px; padding-left: 14px; border-left: 2px solid var(--line); font-size: 1.05rem; line-height: 1.5; }
-.quote-translation { display: block; color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
-.attribution { font-size: 0.85rem; color: var(--muted); }
-.attribution b { color: var(--text); font-weight: 600; }
-.subject-tag { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
-
-/* everything under the header is drawn from data.json: it fades in once, when drawn, instead of popping in piece by
-   piece (current status, counts, findings; user, 2026-10-12) */
-main { transition: opacity var(--t-in) ease; }
-body:not(.ready) main { opacity: 0; }   /* header and entries together, not the title first */
-
-.about { font-size: 0.85rem; color: var(--muted); margin: -8px 0 20px; }
-.about a { color: var(--muted); }
-
-/* current statuses, at the top */
-.current { margin: 0 0 28px; border-top: 1px solid var(--line); }
-.current h2 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
-    padding: 12px 0 4px; }
-.current dl { display: grid; grid-template-columns: 11rem 1fr; gap: 6px 16px; font-size: 0.9rem; }
-.current dt { color: var(--muted); }
-.current dd .xref { font-size: 0.75rem; color: var(--faint); margin-left: 4px; }
-@media (max-width: 600px) { .current dl { grid-template-columns: 1fr; gap: 0; } .current dd { margin-bottom: 8px; } }
-
-/* topic contents */
-.toc { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.8rem; margin: 0 0 8px; }
-.toc a { color: var(--muted); text-decoration: none; }
-.toc a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
-.toc .n { color: var(--faint); margin-left: 3px; }
-
-/* links between entries ("see af-008") */
-.xref { color: inherit; text-underline-offset: 2px; }
-
-/* Media, grouped by subject */
-.subject-title { font-size: 0.8rem; font-weight: 700; color: var(--muted); margin: 22px 0 0; padding-bottom: 4px; }
-.subject-title .topic-count { color: var(--faint); }
-.via { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
-
-
-
-@media (max-width: 600px) {
-    .container { padding-top: 32px; }
-    .header h1 { font-size: 1.9rem; }
-    .stats { gap: 18px; }
-    .finding-title-row { flex-direction: column; gap: 6px; }
-}
-
+  #view, .over, .ctl { transition: opacity var(--t-out) ease; }
+  body:not(.ready) #view, body:not(.ready) .ctl, body:not(.ready) #labels { opacity: 0; }
+  @media (max-width: 600px) {
+    .over h1 { font-size: 1.3rem; }
+    .over .subtitle { display: none; }
+    .card { left: 16px; right: 16px; width: auto; top: auto; max-height: 55vh; bottom: 60px; }
+  }
 </style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
 </head>
 <body>
-<main class="container">
-        <header class="header">
-            <p class="eyebrow">Angels Knoll · Research · <a href="../" class="home">home</a></p>
-            <h1>Y-1 Research Database</h1>
-            <p class="subtitle">What is known about Parcel Y-1, with sources.</p>
-        </header>
+<div id="view"></div>
+<div id="blobs"></div>
+<div id="scanrd"></div>
+<div id="labels"></div>
+<div class="over">
+  <p class="eyebrow">Angels Knoll · Research · <a href="../" class="home">home</a></p>
+  <h1>Research</h1>
+  <p class="views"><a href="./" class="on" aria-current="page">Network</a><a href="list/">List</a></p>
+  <p class="subtitle">How the research entries are linked. Up is later in time.</p>
+  <div class="search"><input id="q" type="search" placeholder="Search people, places, entries" autocomplete="off" spellcheck="false">
+    <ul id="qres"></ul></div>
+</div>
+<div class="ctl" id="ctl"></div>
+<div class="card" id="card" role="dialog" aria-live="polite"></div>
+<button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-        <section class="current" id="currentBox" aria-label="Current status" hidden></section>
-
-        <section class="search-section">
-            <input type="search" id="searchInput" class="search-input" placeholder="Search findings, e.g. litigation, 54234, Goldstein" aria-label="Search findings">
-            <div class="filters">
-                <select id="topicFilter" class="filter-select" aria-label="Topic"><option value="">All topics</option></select>
-                <select id="statusFilter" class="filter-select" aria-label="Status">
-                    <option value="">All statuses</option>
-                    <option value="verified">Verified</option>
-                    <option value="unverified">Unverified</option>
-                    <option value="open-question">Open question</option>
-                    <option value="analysis">Analysis</option>
-                </select>
-                <select id="kindFilter" class="filter-select" aria-label="Kind">
-                    <option value="">Facts, claims and analysis</option>
-                    <option value="fact">Facts</option>
-                    <option value="claim">Claims and statements</option>
-                    <option value="analysis">Our analysis</option>
-                </select>
-                <select id="subjectFilter" class="filter-select" aria-label="Media subject"><option value="">All Media subjects</option></select>
-                <select id="sourceFilter" class="filter-select" aria-label="Source type"><option value="">All source types</option></select>
-                <select id="yearFilter" class="filter-select" aria-label="Year"><option value="">All years</option></select>
-                <button id="clearBtn" class="btn">Clear</button>
-            </div>
-        </section>
-
-        <section class="stats" aria-label="Counts">
-            <div><span class="stat-number" id="totalCount">0</span><span class="stat-label">Shown</span></div>
-            <div><span class="stat-number s-verified" id="verifiedCount">0</span><span class="stat-label">Verified</span></div>
-            <div><span class="stat-number s-unverified" id="unverifiedCount">0</span><span class="stat-label">Unverified</span></div>
-            <div><span class="stat-number s-question" id="questionCount">0</span><span class="stat-label">Open questions</span></div>
-            <div><span class="stat-number s-analysis" id="analysisCount">0</span><span class="stat-label">Analysis</span></div>
-        </section>
-
-        <p class="about" id="aboutLine"></p>
-        <nav class="toc" id="topicNav" aria-label="Topics"></nav>
-
-        <div class="list-controls">
-            <button id="expandAll" class="btn btn-quiet">Expand all</button>
-            <button id="collapseAll" class="btn btn-quiet">Collapse all</button>
-        </div>
-
-        <div id="resultsContainer"></div>
-
-        <footer class="footer">
-            Y-1 Research Database - Syracuse Visiting Studio - Fall 2026. How entries are checked: <a href="https://github.com/RuiW0211/sci-arc-studio-fall2026/blob/main/docs/RESEARCH.md" target="_blank" rel="noopener">verification rules</a>. Add or correct findings by editing <code>web/research/data.json</code> in a pull request. Link to one finding with <code>research/#id</code>, e.g. <code>#lit-005</code>.
-        </footer>
-    </main>
-
-    <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
-
-    <script async src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js" onload="window.__lunrReady && window.__lunrReady()"></script>
-<script>
-const TOPIC_ORDER = [
-    'Disposition & Notice',
-    'Litigation',
-    'Surplus Land Act',
-    'Zoning & Entitlements',
-    'Unbuilt Schemes',
-    'Angels Knoll Park',
-    'Angels Flight',
-    'MOCA',
-    '1980 Bargain & History',
-    'California Plaza',
-    'Bunker Hill Before Redevelopment',
-    'Site Conditions',
-    'Media',
-    'Insights',
-    'Design Implications',
-    'Open Questions'
+const STATUS = { verified: "Verified", unverified: "Unverified", "open-question": "Open question", analysis: "Analysis" };
+const KINDS = [   // drawn in this order; source is off at first (user, 2026-10-12)
+  { k: "mention", label: "Mentions another entry", on: true, a: 0.6 },
+  { k: "actor", label: "Names a person or organisation", on: true, a: 0.28 },
+  { k: "subject", label: "Media subject (our grouping)", on: true, a: 0.22 },
+  { k: "source", label: "Same source", on: false, a: 0.1 },
 ];
-
-const STATUS_LABELS = {
-    'verified': 'Verified',
-    'unverified': 'Unverified',
-    'open-question': 'Open question',
-    'analysis': 'Analysis'
+const FAINT_HUB = { "actor:city": 0.3 };   // the City is in 50 entries: kept, drawn fainter (user, 2026-10-12)
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const fmt = (d) => {
+  if (!d) return ""; if (d === "present") return "present";
+  const [y, m, dd] = d.split("-");
+  return !m ? y : !dd ? `${MON[+m - 1]} ${y}` : `${MON[+m - 1]} ${+dd}, ${y}`;
 };
-const KIND_LABELS = { fact: 'Fact', claim: 'Claim', analysis: 'Our analysis' };
-// Media subjects, in this order on the page
-const SUBJECT_ORDER = ['Angels Knoll closure', 'Reopening the park', 'Angels Landing', 'Termination and lawsuits',
-    'Surplus land and housing', 'Angels Flight', 'MOCA and Y-1', 'Bunker Hill history'];
-let byId = new Map();
-let current = null;
-const FILTERS = ['topicFilter', 'statusFilter', 'kindFilter', 'subjectFilter', 'sourceFilter', 'yearFilter'];
+const num = (d) => { const [y, m, dd] = d.split("-").map(Number); return y + ((m || 1) - 1) / 12 + ((dd || 1) - 1) / 365; };
 
-let allFindings = [];
-let lunrIdx = null;
+let data, research;
+try {
+  [data, research] = await Promise.all([fetch("connections.json").then((r) => r.json()), fetch("data.json").then((r) => r.json())]);
+} catch (e) {
+  document.querySelector(".over .subtitle").textContent = "Could not load the data. Open the site through a local server (python web/serve.py).";
+  document.body.classList.add("ready");
+  throw e;
+}
+const finding = new Map(research.findings.map((f) => [f.id, f]));
+const nodes = data.nodes, N = nodes.length;
+const byId = new Map(nodes.map((n, i) => [n.id, i]));
+const links = data.links.map((l) => ({ ...l, i: byId.get(l.a), j: byId.get(l.b) })).filter((l) => l.i !== undefined && l.j !== undefined);
+const adj = nodes.map(() => []);
+links.forEach((l, li) => { adj[l.i].push(li); adj[l.j].push(li); });
+const isHub = (n) => n.type !== "entry";
 
-document.addEventListener('DOMContentLoaded', async () => {
-    initTheme();
-    try {
-        const data = await window.__research;
-        allFindings = data.findings.sort(compareFindings);
-        byId = new Map(allFindings.map(f => [f.id, f]));
-        current = data.current || null;
-        renderCurrent();
-        initFilters();
-        attachListeners();
-        applyFilters();
-        openFromHash();
-        requestAnimationFrame(() => document.body.classList.add('ready'));
-        window.addEventListener('hashchange', openFromHash);
-        // the search index is built once the page is shown, when the browser is idle
-        const later = window.requestIdleCallback || ((f) => setTimeout(f, 200));
-        if (window.lunr) later(ensureIndex); else window.__lunrReady = () => later(ensureIndex);
-    } catch (error) {
-        console.error('Error loading data:', error);
-        document.getElementById('resultsContainer').innerHTML =
-            '<p class="no-results">Could not load data.json. Open the site through a local server (python3 web/serve.py).</p>';
-        document.body.classList.add('ready');
+// ---- layout: height is time for dated entries; a seeded force layout for the rest, computed once ----
+const H = 1100;   // taller than first drawn (640), so the years and the entries of one year sit further apart (user, 2026-10-12)
+const dated = nodes.filter((n) => n.type === "entry" && n.start).map((n) => num(n.start)).sort((a, b) => a - b);
+const t0 = dated[0], t1 = Math.max(dated[dated.length - 1], num(data.asOf || "2026-10-12"));
+function yOf(t) {     // part linear, mostly by rank: the quiet decades stay short, the busy years open up
+  let lo = 0, hi = dated.length - 1;
+  while (lo < hi) { const m = (lo + hi) >> 1; if (dated[m] < t) lo = m + 1; else hi = m; }
+  const rank = lo / (dated.length - 1);
+  return H * (0.3 * (t - t0) / (t1 - t0) + 0.7 * rank) - H / 2;
+}
+const P = new Float32Array(N * 3), V = new Float32Array(N * 3), fixY = new Array(N).fill(null);
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+nodes.forEach((n, i) => {
+  const a = rnd() * Math.PI * 2, r = 160 + rnd() * 520;
+  P[3 * i] = Math.cos(a) * r; P[3 * i + 2] = Math.sin(a) * r;
+  if (n.type === "entry" && n.start) { fixY[i] = yOf(num(n.start)); P[3 * i + 1] = fixY[i]; }
+  else P[3 * i + 1] = (rnd() - 0.5) * H * 0.6;
+  n.deg = adj[i].filter((li) => links[li].kind !== "source").length;
+});
+const layoutLinks = links.filter((l) => l.kind !== "source");
+const SPRING = { mention: [100, 0.05], actor: [160, 0.025], subject: [120, 0.04] };   // lengths grew with the taller axis
+// one step of the forces; pinned nodes (dragged or dropped) stay where they are
+const pinned = new Set();
+function tick(cool) {
+  V.fill(0);
+  for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+    let dx = P[3 * i] - P[3 * j], dy = P[3 * i + 1] - P[3 * j + 1], dz = P[3 * i + 2] - P[3 * j + 2];
+    let d2 = dx * dx + dy * dy + dz * dz + 1;
+    if (d2 > 1000000) continue;
+    const f = Math.min(16000 / d2, 10), d = Math.sqrt(d2);
+    dx *= f / d; dy *= f / d; dz *= f / d;
+    V[3 * i] += dx; V[3 * i + 1] += dy; V[3 * i + 2] += dz; V[3 * j] -= dx; V[3 * j + 1] -= dy; V[3 * j + 2] -= dz;
+  }
+  for (const l of layoutLinks) {
+    const [len, k0] = SPRING[l.kind], k = k0 * (FAINT_HUB[l.a] || FAINT_HUB[l.b] || 1);
+    const i = l.i, j = l.j;
+    const dx = P[3 * j] - P[3 * i], dy = P[3 * j + 1] - P[3 * i + 1], dz = P[3 * j + 2] - P[3 * i + 2];
+    const d = Math.sqrt(dx * dx + dy * dy + dz * dz) + 0.01, f = k * (d - len) / d;
+    V[3 * i] += dx * f; V[3 * i + 1] += dy * f; V[3 * i + 2] += dz * f; V[3 * j] -= dx * f; V[3 * j + 1] -= dy * f; V[3 * j + 2] -= dz * f;
+  }
+  for (let i = 0; i < N; i++) {
+    if (pinned.has(i)) continue;
+    const n = nodes[i], x = P[3 * i], z = P[3 * i + 2], r = Math.hypot(x, z) + 0.01;
+    V[3 * i] -= x * 0.0011; V[3 * i + 2] -= z * 0.0011;                     // toward the time axis
+    if (n.type === "entry" && !n.start && r < 700) { V[3 * i] += x / r * 1.5; V[3 * i + 2] += z / r * 1.5; }   // undated: an outer shell
+    for (let c = 0; c < 3; c++) P[3 * i + c] += Math.max(-8, Math.min(8, V[3 * i + c])) * cool;
+    if (fixY[i] !== null) P[3 * i + 1] = fixY[i];
+    else P[3 * i + 1] = Math.max(-H / 2 - 40, Math.min(H / 2 + 40, P[3 * i + 1]));
+  }
+}
+for (let it = 0; it < 420; it++) tick(1 - it / 420);
+const P0 = P.slice();   // the settled layout, for Reset
+
+// ---- scene ----
+const view = document.getElementById("view");
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+view.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
+camera.position.set(2050, 260, 2050);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.zoomToCursor = true;   // the wheel zooms towards the pointer, not the middle of the view (user, 2026-10-13)
+controls.autoRotate = true; controls.autoRotateSpeed = 0.26;   // one turn in about 3.8 minutes (was 0.35; user, 2026-10-13: a quarter slower)
+controls.minDistance = 120; controls.maxDistance = 4400;
+
+// colours from the page's variables (they ease when the theme changes)
+const css = {};
+function readColours() {
+  const s = getComputedStyle(document.documentElement);
+  for (const v of ["bg", "text", "muted", "faint", "line", "verified", "unverified", "question", "analysis"]) css[v] = new THREE.Color(s.getPropertyValue("--" + v).trim() || "#888");
+}
+readColours();
+const statusColour = (n) => n.type === "entry" ? css[{ "open-question": "question" }[n.status] || n.status] || css.muted : n.type === "subject" ? css.muted : css.text;
+
+// nodes: one Points object; size, colour, alpha and shape per node
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute("position", new THREE.BufferAttribute(P, 3));
+const pCol = new Float32Array(N * 4), pSize = new Float32Array(N), pShape = new Float32Array(N);
+nodes.forEach((n, i) => {
+  pSize[i] = n.type === "entry" ? 5 + Math.sqrt(n.deg + n.nsrc) * 1.6 : 7 + Math.sqrt(n.deg) * 1.4;
+  pShape[i] = n.type === "entry" ? (n.start ? 0 : 2) : n.type === "subject" ? 3 : 1;   // disc (dated), ring (no date), square, diamond
+});
+pGeo.setAttribute("color", new THREE.BufferAttribute(pCol, 4));
+pGeo.setAttribute("size", new THREE.BufferAttribute(pSize, 1));
+pGeo.setAttribute("shape", new THREE.BufferAttribute(pShape, 1));
+const pMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false,
+  uniforms: { scale: { value: 1 } },
+  vertexShader: `attribute float size; attribute float shape; attribute vec4 color; varying vec4 vC; varying float vS;
+    uniform float scale;
+    void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
+      gl_PointSize = size * scale / -mv.z; vC = color; vS = shape;
+      vC.a *= clamp(1.35 - (-mv.z) / 4200.0, 0.35, 1.0); }`,
+  fragmentShader: `varying vec4 vC; varying float vS;
+    void main() { vec2 p = gl_PointCoord - 0.5; float d = length(p);
+      if (vS < 0.5) { if (d > 0.5) discard; }
+      else if (vS < 1.5) { if (max(abs(p.x), abs(p.y)) > 0.42) discard; }
+      else if (vS < 2.5) { if (d > 0.5 || d < 0.3) discard; }
+      else { if (abs(p.x) + abs(p.y) > 0.5) discard; }
+      gl_FragColor = vC; }`,
+});
+scene.add(new THREE.Points(pGeo, pMat));
+
+// links: one LineSegments object, rgba per vertex
+// links are curves (user, 2026-10-13: freer, more graceful than one fixed bow). Links of a person, organisation or
+// subject leave it together, towards the middle of everything it is tied to, and part only further out, so each
+// reads as a sheaf; links between two entries each get their own bow, turned and sized by a fixed seed. Cubic curves
+// in SEG pieces.
+const SEG = 14;
+const lPos = new Float32Array(links.length * SEG * 6), lCol = new Float32Array(links.length * SEG * 8);
+const linkSeed = links.map((l, k) => { const x = Math.sin((k + 1) * 12.9898) * 43758.5453; return x - Math.floor(x); });
+const hubMid = new Float32Array(N * 3);   // per node: the mean position of its neighbours (bundles leave towards it)
+function arcs() {
+  hubMid.fill(0);
+  const cnt = new Uint16Array(N);
+  for (const l of links) {
+    if (l.kind === "source") continue;
+    for (const [h, o] of [[l.i, l.j], [l.j, l.i]]) {
+      hubMid[3 * h] += P[3 * o]; hubMid[3 * h + 1] += P[3 * o + 1]; hubMid[3 * h + 2] += P[3 * o + 2]; cnt[h]++;
     }
+  }
+  for (let i = 0; i < N; i++) if (cnt[i]) for (let c = 0; c < 3; c++) hubMid[3 * i + c] /= cnt[i];
+  const A = [0, 0, 0], B = [0, 0, 0], C1 = [0, 0, 0], C2 = [0, 0, 0];
+  for (let k = 0; k < links.length; k++) {
+    const l = links[k], r = linkSeed[k];
+    for (let c = 0; c < 3; c++) { A[c] = P[3 * l.i + c]; B[c] = P[3 * l.j + c]; }
+    const len = Math.hypot(B[0] - A[0], B[1] - A[1], B[2] - A[2]) || 1;
+    const hubA = isHub(nodes[l.i]), hubB = isHub(nodes[l.j]);
+    if (hubA || hubB) {
+      // the bundle: from the hub towards the middle of its neighbours, then into the entry
+      const h = hubA ? l.i : l.j, H = hubA ? A : B, E = hubA ? B : A;
+      let dx = hubMid[3 * h] - H[0], dy = hubMid[3 * h + 1] - H[1], dz = hubMid[3 * h + 2] - H[2];
+      const dl = Math.hypot(dx, dy, dz) || 1; dx /= dl; dy /= dl; dz /= dl;
+      const reach = len * (0.42 + 0.12 * r);
+      const CH = [H[0] + dx * reach, H[1] + dy * reach, H[2] + dz * reach];
+      // near the entry: come in from the side of the hub's sheaf, a little off the straight line (seeded)
+      const tw = (r - 0.5) * 0.25 * len;
+      const CE = [E[0] + (CH[0] - E[0]) * 0.35 - dz * tw, E[1] + (CH[1] - E[1]) * 0.35, E[2] + (CH[2] - E[2]) * 0.35 + dx * tw];
+      if (hubA) { C1.splice(0, 3, ...CH); C2.splice(0, 3, ...CE); } else { C1.splice(0, 3, ...CE); C2.splice(0, 3, ...CH); }
+    } else {
+      // entry to entry: a bow turned up to about 70 degrees from "away from the axis", 10-30% of the length
+      const mx = (A[0] + B[0]) / 2, mz = (A[2] + B[2]) / 2;
+      let ox = mx, oz = mz, rr = Math.hypot(ox, oz);
+      if (rr < 1) { ox = -(B[2] - A[2]); oz = B[0] - A[0]; rr = Math.hypot(ox, oz) || 1; }
+      ox /= rr; oz /= rr;
+      const ang = (r - 0.5) * 2.4, ca = Math.cos(ang), sa = Math.sin(ang);
+      const bx = ox * ca * 1, by = sa, bz = oz * ca;   // turned partly upward or downward
+      const amt = len * (0.1 + 0.2 * ((r * 7.31) % 1));
+      for (let c = 0; c < 3; c++) {
+        const bow = [bx, by, bz][c] * amt;
+        C1[c] = A[c] + (B[c] - A[c]) / 3 + bow; C2[c] = A[c] + (B[c] - A[c]) * 2 / 3 + bow;
+      }
+    }
+    let px = A[0], py = A[1], pz = A[2];
+    for (let s2 = 1; s2 <= SEG; s2++) {
+      const t = s2 / SEG, u = 1 - t, w0 = u * u * u, w1 = 3 * u * u * t, w2 = 3 * u * t * t, w3 = t * t * t;
+      const qx = w0 * A[0] + w1 * C1[0] + w2 * C2[0] + w3 * B[0];
+      const qy = w0 * A[1] + w1 * C1[1] + w2 * C2[1] + w3 * B[1];
+      const qz = w0 * A[2] + w1 * C1[2] + w2 * C2[2] + w3 * B[2];
+      const o = (k * SEG + s2 - 1) * 6;
+      lPos[o] = px; lPos[o + 1] = py; lPos[o + 2] = pz; lPos[o + 3] = qx; lPos[o + 4] = qy; lPos[o + 5] = qz;
+      px = qx; py = qy; pz = qz;
+    }
+  }
+}
+arcs();
+const lGeo = new THREE.BufferGeometry();
+lGeo.setAttribute("position", new THREE.BufferAttribute(lPos, 3));
+lGeo.setAttribute("color", new THREE.BufferAttribute(lCol, 4));
+// along each arc: its place (0 at one end, 1 at the other) and whether a pulse runs on it, and which way
+const lAlong = new Float32Array(links.length * SEG * 2), lFlow = new Float32Array(links.length * SEG * 2);
+for (let k = 0; k < links.length; k++) for (let s2 = 0; s2 < SEG; s2++) {
+  lAlong[(k * SEG + s2) * 2] = s2 / SEG; lAlong[(k * SEG + s2) * 2 + 1] = (s2 + 1) / SEG;
+}
+lGeo.setAttribute("along", new THREE.BufferAttribute(lAlong, 1));
+lGeo.setAttribute("flow", new THREE.BufferAttribute(lFlow, 1));
+// arcs fade with distance, like the points (user, 2026-10-13); the arcs of the point in focus carry a faint pulse that
+// leaves it for its neighbours, again and again (after the coding-session video the user sent)
+const lineMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false,
+  uniforms: { time: { value: 0 } },
+  vertexShader: `attribute vec4 color; attribute float along; attribute float flow; varying vec4 vC; varying float vS; varying float vF;
+    void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
+      vC = color; vC.a *= clamp(1.35 - (-mv.z) / 4200.0, 0.3, 1.0);
+      vF = abs(flow); vS = flow > 0.0 ? along : 1.0 - along; }`,
+  fragmentShader: `uniform float time; varying vec4 vC; varying float vS; varying float vF;
+    void main() { float g = 0.0;
+      if (vF > 0.5) { float head = mod(time, 2.0) / 1.2; float d = head - vS;
+        if (d >= 0.0 && d < 0.16) g = pow(1.0 - d / 0.16, 2.0); }
+      gl_FragColor = vec4(vC.rgb, min(1.0, vC.a + g * 0.75)); }`,
+});
+const lines = new THREE.LineSegments(lGeo, lineMat);
+scene.add(lines);
+
+// the time axis and its years
+const years = [];
+{
+  const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, yOf(t0) - 20, 0), new THREE.Vector3(0, yOf(t1) + 20, 0)]);
+  var axisMat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.5 });
+  scene.add(new THREE.Line(g, axisMat));
+  let last = -1e9;
+  for (let y = Math.ceil(t0); y <= Math.floor(t1); y++) {
+    const yy = yOf(y), round = y % 50 === 0 ? 1 : y % 10 === 0 ? 2 : y % 5 === 0 ? 3 : 4;
+    if ((round <= 2 && yy - last > 16) || (round === 3 && yy - last > 26) || (round === 4 && yy - last > 44)) { years.push([y, yy]); last = yy; }
+  }
+  const tg = new THREE.BufferGeometry().setFromPoints(years.flatMap(([, yy]) => [new THREE.Vector3(-6, yy, 0), new THREE.Vector3(6, yy, 0)]));
+  scene.add(new THREE.LineSegments(tg, axisMat));
+}
+
+// ---- labels (HTML over the canvas) ----
+const labelsEl = document.getElementById("labels");
+const labels = new Map();   // node index -> element
+const blobsEl = document.getElementById("blobs"), blobs = new Map();
+const scanRd = document.getElementById("scanrd");
+function label(i) {
+  if (labels.has(i)) return labels.get(i);
+  const n = nodes[i], el = document.createElement("div");
+  el.className = "lb " + (n.type === "entry" ? "entry" : n.type === "subject" ? "subject" : "hub " + n.type);
+  el.innerHTML = `<span class="tt">${esc(n.title)}</span><span class="rd"></span>`;
+  if (n.type === "entry") el.style.setProperty("--c", `var(--${{ "open-question": "question" }[n.status] || n.status})`);
+  el.dataset.i = i; el.classList.add("off"); el._new = true;   // born hidden, so it fades in
+  labelsEl.appendChild(el); labels.set(i, el);
+  return el;
+}
+nodes.forEach((n, i) => { if (isHub(n)) label(i); });
+// the wheel zooms wherever the pointer is: over a tag the event would stop at the tag, so pass it on to the view
+// (user, 2026-10-13: could not zoom while over something)
+labelsEl.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  renderer.domElement.dispatchEvent(new WheelEvent("wheel", e));
+}, { passive: false });
+const yearEls = years.map(([y]) => { const el = document.createElement("div"); el.className = "lb year"; el.textContent = y; labelsEl.appendChild(el); return el; });
+
+const TOPIC_CODE = { "Media": "MED", "Angels Flight": "AF", "1980 Bargain & History": "1980", "Zoning & Entitlements": "ENT",
+  "Bunker Hill Before Redevelopment": "BH", "Surplus Land Act": "SLA", "Angels Knoll Park": "PARK", "Disposition & Notice": "DISP",
+  "Insights": "INS", "Litigation": "LIT", "California Plaza": "CAL", "Design Implications": "DES", "Unbuilt Schemes": "UNB",
+  "MOCA": "MOCA", "Site Conditions": "SITE", "Open Questions": "Q" };
+// ---- controls: link kinds ----
+const on = Object.fromEntries(KINDS.map((k) => [k.k, k.on]));
+const ctl = document.getElementById("ctl");
+const ic = (shape, fill) => `<svg width="11" height="11" viewBox="0 0 11 11">${{
+  disc: `<circle cx="5.5" cy="5.5" r="4.5" style="fill:${fill}"/>`,
+  ring: `<circle cx="5.5" cy="5.5" r="3.8" style="fill:none;stroke:${fill};stroke-width:1.6"/>`,
+  square: `<rect x="1.5" y="1.5" width="8" height="8" style="fill:${fill}"/>`,
+  diamond: `<path d="M5.5 0.5 L10.5 5.5 L5.5 10.5 L0.5 5.5 Z" style="fill:${fill}"/>` }[shape]}</svg>`;
+const topicRows = Object.entries(TOPIC_CODE).map(([t, c]) => `<dt>${esc(c)}</dt><dd>${esc(t)}</dd>`).join("");
+// the controls are a bar of menus, each opening a panel above it, one at a time (user, 2026-10-12: keep the view clear)
+const panel = (id, title, body) => `<div class="panel" data-p="${id}"><div class="abbr-h" style="margin-top:0">${title}</div>${body}</div>`;
+ctl.innerHTML =
+  panel("key", "Key",
+    `<div class="key">` +
+    `<span>${ic("disc", "var(--muted)")}Entry with a date</span><span>${ic("ring", "var(--muted)")}Entry with no date</span>` +
+    `<span>${ic("square", "var(--text)")}<b class="tk hub">ORG</b><b class="tk hub">Person</b>Person or organisation</span>` +
+    `<span>${ic("diamond", "var(--muted)")}<b class="tk subj">subject</b>Media subject (our grouping)</span>` +
+    `<span><b class="tk hub dimk">ORG</b>Not linked to the point in focus</span>` +
+    `<span><b class="tk selk">Entry title</b>The chosen entry, in its status colour</span>` +
+    `<span>${ic("disc", "var(--verified)")}Verified</span><span>${ic("disc", "var(--unverified)")}Unverified</span>` +
+    `<span>${ic("disc", "var(--question)")}Open question</span><span>${ic("disc", "var(--analysis)")}Our analysis</span>` +
+    `<span>Point size: links and sources</span><span>Height: date, later is higher</span></div>`) +
+  panel("links", "Links shown",
+    `<div class="key">` + KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") + `</div>`) +
+  panel("abbr", "Abbreviations",
+    `<dl><dt>park-004</dt><dd>Entry id, as in Research</dd>` +
+    `<dt>2013-07-30</dt><dd>Date as the source gives it: day, month (2001-12) or year (1867)</dd>` +
+    `<dt>n.d.</dt><dd>No date</dd><dt>src 13</dt><dd>Number of sources</dd>` +
+    `<dt>VER</dt><dd>Verified</dd><dt>UNV</dt><dd>Unverified</dd><dt>OPEN</dt><dd>Open question</dd><dt>ANL</dt><dd>Our analysis</dd>` +
+    `<dt>mention</dt><dd>Linked because one entry names the other</dd><dt>actor</dt><dd>Linked through a person or organisation named in the entry</dd>` +
+    `<dt>subject</dt><dd>Linked to a Media subject (our grouping)</dd>` +
+    `<dt>org 33</dt><dd>Organisation, with its number of links (pers: person, subj: subject)</dd></dl>` +
+    `<div class="abbr-h">Topics</div><dl>${topicRows}</dl>`) +
+  panel("view", "View",
+    `<div class="key"><button data-view="side">Side</button><button data-view="top">Top</button></div>`) +
+  panel("help", "How to use",
+    `<dl><dt>drag a point or tag</dt><dd>Move it and see what it is tied to; dated entries move only sideways</dd>` +
+    `<dt>drag the slider</dt><dd>Scan the time axis; the entries of that time are framed</dd>` +
+    `<dt>drag empty space</dt><dd>Turn the view</dd><dt>scroll</dt><dd>Zoom</dd>` +
+    `<dt>click</dt><dd>Open the card of a point; click empty space or press Esc to close</dd>` +
+    `<dt>double-click</dt><dd>Fly to a point and its neighbours; on empty space, back to the opening view</dd>` +
+    `<dt>search</dt><dd>Type a name, a place or an entry id; Enter opens the first match</dd>` +
+    `<dt>← →</dt><dd>Walk the chosen point's neighbours, by date</dd><dt>↑ ↓</dt><dd>Move the slider a year later or earlier</dd></dl>`) +
+  `<div class="bar"><button data-open="key">Key</button><button data-open="links">Links</button>` +
+  `<button data-open="view">View</button><button data-open="abbr">Abbreviations</button><button data-open="help">How to use</button>` +
+  `<span class="sep">·</span><button data-reset>Reset layout</button></div>`;
+let openPanel = null;
+function showPanel(id) {
+  openPanel = openPanel === id ? null : id;
+  ctl.querySelectorAll(".panel").forEach((p) => p.classList.toggle("show", p.dataset.p === openPanel));
+  ctl.querySelectorAll("[data-open]").forEach((b) => b.classList.toggle("on", b.dataset.open === openPanel));
+}
+ctl.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.hasAttribute("data-reset")) return resetLayout();
+  if (b.dataset.open) return showPanel(b.dataset.open);
+  if (b.dataset.view) return VIEWS[b.dataset.view]();
+  on[b.dataset.k] = !on[b.dataset.k]; b.classList.toggle("on", on[b.dataset.k]); dirty = true;
 });
 
-function openFromHash() {
-    const id = decodeURIComponent(location.hash.slice(1));
-    if (!id || !allFindings.some(f => f.id === id)) return;
-    if (!document.querySelector(`.finding[data-id="${CSS.escape(id)}"]`)) clearFilters();
-    const el = document.querySelector(`.finding[data-id="${CSS.escape(id)}"]`);
-    if (!el.classList.contains('open')) toggle(el);
-    el.scrollIntoView({ block: 'start' });
+// ---- state, colouring ----
+let hover = -1, sel = -1, dirty = true, scan = null;   // scan: world height of the scan line, or null
+const SCAN_BAND = H * 0.025;   // world units either side of the scan line
+function inScan(i) { return scan !== null && fixY[i] !== null && Math.abs(fixY[i] - scan) <= SCAN_BAND; }
+function focusSet() {
+  const f = sel >= 0 ? sel : hover;
+  if (f < 0 && scan !== null) return new Set(nodes.map((n, i) => i).filter(inScan));
+  if (f < 0) return null;
+  const s = new Set([f]);
+  for (const li of adj[f]) { const l = links[li]; if (on[l.kind]) s.add(l.i === f ? l.j : l.i); }
+  return s;
 }
+// the readout beside a tracking frame (user, 2026-10-12): the point in focus says what it is and how well it is
+// supported; a neighbour says why it is linked and when it is; a scanned entry says which topic it belongs to
 
-function topicRank(topic) {
-    const i = TOPIC_ORDER.indexOf(topic);
-    return i === -1 ? TOPIC_ORDER.length : i;
+const ST_CODE = { verified: "VER", unverified: "UNV", "open-question": "OPEN", analysis: "ANL" };
+const yr = (n) => n.start || "n.d.";   // the date as the source gives it: a year, a month or a day (no false precision)
+const what = (n) => `${n.type === "subject" ? "subj" : n.type === "person" ? "pers" : "org"} ${n.deg}`;
+function readout(i, f) {
+  const n = nodes[i];
+  if (f < 0) return `${n.id} · ${yr(n)} · ${TOPIC_CODE[n.topic] || n.topic}`;            // scanning
+  if (i === f) return n.type === "entry" ? `${n.id} · ${yr(n)} · src ${n.nsrc} · ${ST_CODE[n.status] || n.status}` : what(n);
+  const l = adj[f].map((li) => links[li]).find((l) => on[l.kind] && (l.i === i || l.j === i));
+  return `${l ? l.kind : ""} · ${n.type === "entry" ? yr(n) : what(n)}`;
 }
-
-function subjectRank(f) {
-    const i = SUBJECT_ORDER.indexOf(f.media && f.media.subject);
-    return i === -1 ? SUBJECT_ORDER.length : i;
+// the tags shown at rest (user, 2026-10-13: the centre was crowded): the 12 most linked people, organisations, subjects
+const TOP_HUBS = nodes.map((n, i) => i).filter((i) => isHub(nodes[i])).sort((a, b) => nodes[b].deg - nodes[a].deg).slice(0, 12);
+// focus changes fade (user, 2026-10-12): points and links ease to their new colour and alpha, labels and frames fade
+const pT = new Float32Array(N * 4), lT = new Float32Array(links.length * SEG * 8);
+let eased = false, easing = false, lastNow = 0, flowDirty = false;
+const FADE_MS = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--t-in")) || 0.3) * 1000;
+function easeColours(now) {
+  const dt = Math.min(0.1, (now - (lastNow || now)) / 1000); lastNow = now;
+  if (!easing) return;
+  const k = 1 - Math.exp(-dt / (FADE_MS / 3000));   // about 95% of the way in --t-in
+  let moving = false;
+  for (const [cur, tgt] of [[pCol, pT], [lCol, lT]]) for (let i = 0; i < cur.length; i++) {
+    const d = tgt[i] - cur[i];
+    if (Math.abs(d) > 0.002) { cur[i] += d * k; moving = true; } else cur[i] = tgt[i];
+  }
+  pGeo.attributes.color.needsUpdate = lGeo.attributes.color.needsUpdate = true;
+  easing = moving;
 }
-
-function compareFindings(a, b) {
-    const t = topicRank(a.topic) - topicRank(b.topic);
-    if (t !== 0) return t;
-    if (a.media && b.media) {          // Media: by subject, then by when it was said
-        const s = subjectRank(a) - subjectRank(b);
-        if (s !== 0) return s;
+function showLabel(el, show) {   // fade a label in or out; out of sight it leaves the layout
+  clearTimeout(el._hide);
+  if (show) {
+    if (el.style.display === "none" || el._new) { el.style.display = ""; void el.offsetWidth; el._new = false; }
+    el.classList.remove("off");
+  } else if (el.style.display !== "none") {
+    el.classList.add("off");
+    el._hide = setTimeout(() => { el.style.display = "none"; }, FADE_MS);
+  }
+}
+function paint() {
+  const fs = focusSet(), f = sel >= 0 ? sel : hover;
+  nodes.forEach((n, i) => {
+    const c = statusColour(n), a = !fs ? (n.type === "entry" ? 0.9 : 1) : fs.has(i) ? 1 : 0.12;
+    pT[4 * i] = c.r; pT[4 * i + 1] = c.g; pT[4 * i + 2] = c.b; pT[4 * i + 3] = a;
+  });
+  links.forEach((l, k) => {
+    const kind = KINDS.find((x) => x.k === l.kind);
+    let a = on[l.kind] ? kind.a * (FAINT_HUB[l.a] || FAINT_HUB[l.b] || 1) : 0;
+    const touches = f >= 0 && (l.i === f || l.j === f);
+    if (fs && a) a = (f >= 0 ? touches : (fs.has(l.i) && fs.has(l.j))) ? Math.min(0.62, kind.a * 1.5 + 0.25) : a * 0.12;
+    const fl = touches && a ? (l.i === f ? 1 : -1) : 0;   // from the point in focus outward
+    if (lFlow[k * SEG * 2] !== fl) { lFlow.fill(fl, k * SEG * 2, (k + 1) * SEG * 2); flowDirty = true; }
+    const c = css.text;
+    for (let v = 0; v < SEG * 2; v++) { const o = (k * SEG * 2 + v) * 4; lT[o] = c.r; lT[o + 1] = c.g; lT[o + 2] = c.b; lT[o + 3] = a; }
+  });
+  if (flowDirty) { lGeo.attributes.flow.needsUpdate = true; flowDirty = false; }
+  if (!eased) { pCol.set(pT); lCol.set(lT); eased = true; pGeo.attributes.color.needsUpdate = lGeo.attributes.color.needsUpdate = true; }
+  easing = true;
+  axisMat.color.copy(css.faint); thumbMat.color.copy(css.text);
+  // which labels show: hubs always; entries when in focus
+  const want = new Set(TOP_HUBS);   // at rest only the most linked tags; the rest come in with focus
+  if (fs) fs.forEach((i) => want.add(i));
+  if (fs) fs.forEach((i) => label(i));
+  for (const [i, el] of labels) {
+    showLabel(el, want.has(i));
+    el.classList.toggle("dim", !!fs && !fs.has(i));
+    el.classList.toggle("sel", i === sel);
+  }
+  for (const [i, el] of labels) {   // readouts only on labels in focus
+    const rd = el.querySelector(".rd");
+    if ((!fs || !fs.has(i)) && rd.textContent) { rd.textContent = ""; el._w = 0; }
+  }
+  // tracking frames: new ones lock on, gone ones are removed
+  const keep = fs ? [...fs].slice(0, 60) : [];
+  for (const [i, el] of blobs) if (!keep.includes(i)) {   // gone frames fade out, then leave
+    blobs.delete(i); el.classList.add("out"); setTimeout(() => el.remove(), FADE_MS);
+  }
+  for (const i of keep) {
+    let el = blobs.get(i);
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "blob"; el.innerHTML = "<i></i>";
+      blobsEl.appendChild(el); blobs.set(i, el);
     }
-    return (a.date || '9999').localeCompare(b.date || '9999');
+    // the readout goes under the point's title, so it makes room with the labels (user, 2026-10-12: they collided)
+    const lb = label(i), r = readout(i, f), rd = lb.querySelector(".rd");
+    if (rd.textContent !== r) { rd.textContent = r; lb._w = 0; }
+    const main = i === f, s = main ? 26 : isHub(nodes[i]) ? 14 : 12 + Math.min(8, pSize[i] * 0.6);
+    el.classList.toggle("main", main); el.style.setProperty("--s", s + "px"); el.dataset.h = s / 2;
+    if (nodes[i].type === "entry" && main) el.style.setProperty("--k", `var(--${{ "open-question": "question" }[nodes[i].status] || nodes[i].status})`);
+    else el.style.removeProperty("--k");
+  }
+  dirty = false;
 }
 
-// the statuses that change, at the top: each line points to the entries it restates
-function renderCurrent() {
-    const box = document.getElementById('currentBox');
-    if (!current || !(current.items || []).length) return;
-    const rows = current.items.map(it => {
-        const refs = (it.ids || []).filter(i => byId.has(i)).map(i => `<a class="xref" href="#${esc(i)}">${esc(i)}</a>`).join(' ');
-        return `<dt>${esc(it.label)}</dt><dd>${esc(it.text)}${refs ? ` <span class="xref">${refs}</span>` : ''}</dd>`;
-    }).join('');
-    box.innerHTML = `<h2>Current status, as of ${formatDate(current.asOf)}</h2><dl>${rows}</dl>`;
-    box.hidden = false;
+// ---- picking: nearest node on screen ----
+const v3 = new THREE.Vector3();
+const scr = new Float32Array(N * 3);   // x, y, depth (view z) per node, each frame
+function project() {
+  const w = innerWidth, h = innerHeight;
+  for (let i = 0; i < N; i++) {
+    v3.set(P[3 * i], P[3 * i + 1], P[3 * i + 2]).project(camera);
+    scr[3 * i] = (v3.x + 1) / 2 * w; scr[3 * i + 1] = (1 - v3.y) / 2 * h; scr[3 * i + 2] = v3.z;
+  }
 }
-
-const slug = t => 'topic-' + String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
-// "see af-008", "disp-003": links to the entry, when it exists
-const ID_RE = /\b(?:(?:disp|lit|sla|ent|moca|hist|plaza|ins|des|site|q|bh|af|park|ghost)-\d{3}|media-[prs]\d{2})\b/g;
-function linkify(escaped) {
-    return escaped.replace(ID_RE, id => byId.has(id) ? `<a class="xref" href="#${id}">${id}</a>` : id);
+function pick(x, y) {
+  let best = -1, bd = 14 * 14;
+  for (let i = 0; i < N; i++) {
+    if (scr[3 * i + 2] > 1) continue;
+    const dx = scr[3 * i] - x, dy = scr[3 * i + 1] - y, d = dx * dx + dy * dy;
+    if (d < bd) { bd = d; best = i; }
+  }
+  return best;
 }
-
-function initFilters() {
-    const topics = [...new Set(allFindings.map(f => f.topic))].sort((a, b) => topicRank(a) - topicRank(b));
-    const topicSelect = document.getElementById('topicFilter');
-    topics.forEach(topic => topicSelect.add(new Option(topic, topic)));
-
-    const sourceTypes = [...new Set(allFindings.flatMap(f => (f.sources || []).map(s => s.type)).filter(Boolean))].sort();
-    const sourceSelect = document.getElementById('sourceFilter');
-    sourceTypes.forEach(type => sourceSelect.add(new Option(type, type)));
-
-    const years = allFindings.map(f => f.date && f.date.slice(0, 4)).filter(Boolean);
-    const yearSelect = document.getElementById('yearFilter');
-    [...new Set(years)].sort().forEach(y => yearSelect.add(new Option(y, y)));
-
-    const subjects = [...new Set(allFindings.map(f => f.media && f.media.subject).filter(Boolean))].sort();
-    const subjectSelect = document.getElementById('subjectFilter');
-    subjects.forEach(s => subjectSelect.add(new Option(s, s)));
-
-    // when the entries were last checked against their sources
-    const checked = allFindings.map(f => f.lastVerified).filter(Boolean).sort();
-    if (checked.length) {
-        const last = checked[checked.length - 1];
-        const all = checked.length === allFindings.length && checked[0] === last;
-        document.getElementById('aboutLine').textContent = all
-            ? `All ${allFindings.length} entries were checked against their sources on ${formatDate(last)}. Statuses that change (litigation, notices, appointments) are as of that date.`
-            : `${checked.length} of ${allFindings.length} entries checked against their sources, most recently on ${formatDate(last)}.`;
+// ---- pointer: drag a point or its tag to move it (user, 2026-10-12: to see what it is tied to); drag empty space
+// to turn; a click without moving selects. Dated entries move only sideways, so height stays their date. ----
+let down = null, idleT = 0, drag = null, heat = 0;
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), hit = new THREE.Vector3(), camDir = new THREE.Vector3();
+const nodeAt = (e) => {
+  const lb = e.target.closest && e.target.closest(".lb[data-i]");
+  if (lb) return +lb.dataset.i;
+  return e.target === renderer.domElement ? pick(e.clientX, e.clientY) : -1;
+};
+const onScene = (e) => e.target === renderer.domElement || (e.target.closest && e.target.closest(".lb[data-i]"));
+function rayAt(e) { ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera); }
+addEventListener("pointerdown", (e) => {
+  if (!onScene(e) || e.button !== 0) return;
+  down = [e.clientX, e.clientY]; controls.autoRotate = false; idleT = performance.now();
+  // the axis and the strip of years beside it scan, ahead of points there (tags still drag)
+  if (e.target === renderer.domElement && (onThumb(e) || nearAxis(e.clientX, e.clientY))) {
+    controls.enabled = false; scanning = true; document.body.classList.add("scanning"); scanTo(e); e.preventDefault(); return;
+  }
+  const i = nodeAt(e);
+  if (i < 0) return;
+  controls.enabled = false;   // runs before OrbitControls (capture), so the view does not turn
+  const p = new THREE.Vector3(P[3 * i], P[3 * i + 1], P[3 * i + 2]);
+  const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(camDir), p);
+  rayAt(e); ray.ray.intersectPlane(plane, hit);
+  drag = { i, plane, off: p.clone().sub(hit), moved: false };
+  hover = i; dirty = true; document.body.style.cursor = "grabbing";
+  e.preventDefault();
+}, true);
+addEventListener("pointermove", (e) => {
+  thumbHot = e.target === renderer.domElement && onThumb(e);
+  if (scanning) { scanTo(e); idleT = performance.now(); return; }
+  if (drag) {
+    if (!drag.moved && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 4) return;
+    drag.moved = true; pinned.add(drag.i);
+    rayAt(e);
+    if (ray.ray.intersectPlane(drag.plane, hit)) {
+      const i = drag.i; hit.add(drag.off);
+      P[3 * i] = hit.x; P[3 * i + 2] = hit.z;
+      if (fixY[i] === null) P[3 * i + 1] = hit.y;
     }
+    heat = 1; idleT = performance.now();
+    return;
+  }
+  if (e.pointerType !== "mouse" || e.buttons) return;
+  const onAxis = e.target === renderer.domElement && nearAxis(e.clientX, e.clientY);
+  const h = onScene(e) && !onAxis ? nodeAt(e) : -1;
+  if (h !== hover) { hover = h; dirty = true; }
+  document.body.style.cursor = h >= 0 ? "grab" : "";
+});
+addEventListener("pointerup", (e) => {
+  idleT = performance.now();
+  if (scanning) { scanning = false; document.body.classList.remove("scanning"); controls.enabled = true; down = null; return; }   // the scan stays until a click on empty space
+  if (drag) {
+    const { i, moved } = drag;
+    drag = null; controls.enabled = true; document.body.style.cursor = hover >= 0 ? "grab" : "";
+    if (!moved) select(i, false);
+    return;
+  }
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+  down = null;
+  if (e.target === renderer.domElement) { close(); clearScan(); }
+});
+// the time axis on screen, and the height under the pointer
+let scanning = false;
+const axTop = new THREE.Vector3(), axBot = new THREE.Vector3();
+function nearAxis(x, y) {
+  axTop.set(0, yOf(t1), 0).project(camera); axBot.set(0, yOf(t0), 0).project(camera);
+  const ax = (axTop.x + 1) / 2 * innerWidth, ay = (1 - axTop.y) / 2 * innerHeight;
+  const bx = (axBot.x + 1) / 2 * innerWidth, by = (1 - axBot.y) / 2 * innerHeight;
+  const dx = bx - ax, dy = by - ay, k = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)));
+  const ox = x - (ax + k * dx), oy = y - (ay + k * dy);
+  return Math.hypot(ox, oy) < 6 || (ox > 0 && ox < 46 && Math.abs(oy) < 30);   // on the line, or over its years
 }
-
-function buildIndex() {
-    lunrIdx = lunr(function () {
-        this.ref('id');
-        this.field('title', { boost: 10 });
-        this.field('summary', { boost: 3 });
-        this.field('body');
-        this.field('topic');
-        this.field('sources');
-        allFindings.forEach(f => {
-            this.add({
-                id: f.id,
-                title: f.title,
-                summary: f.summary || '',
-                body: [...(f.details || []), ...(f.media ? [f.media.quote, f.media.translation, f.media.speaker, f.media.role, f.media.venue, f.media.subject] : [])].filter(Boolean).join(' '),
-                topic: f.topic,
-                sources: (f.sources || []).map(s => s.title).join(' ')
-            });
-        });
-    });
+function scanTo(e) {
+  rayAt(e);
+  camera.getWorldDirection(camDir); camDir.y = 0; camDir.normalize();
+  const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camDir, new THREE.Vector3(0, 0, 0));
+  if (!ray.ray.intersectPlane(plane, hit)) return;
+  scan = Math.max(yOf(t0), Math.min(yOf(t1), hit.y)); dirty = true;
+  controls.autoRotate = false;
 }
+// the slider: a capsule on the axis, lit from the camera so it reads as solid from every side
+const thumbMat = new THREE.MeshLambertMaterial({ color: css.text });
+const thumbMesh = new THREE.Mesh(new THREE.CapsuleGeometry(4, 15, 8, 24), thumbMat);
+scene.add(thumbMesh, new THREE.HemisphereLight(0xffffff, 0x404040, 0.9));
+const lamp = new THREE.DirectionalLight(0xffffff, 1.1); lamp.position.set(-0.6, 1, 0.8); camera.add(lamp); scene.add(camera);
+let thumbHot = false;
+const thumbTw = { from: 1, to: 1, cur: 1, t: 0, ms: (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--t-feedback")) || 0.2) * 1000 };
+function onThumb(e) {   // on the capsule, or within a few pixels of it
+  rayAt(e);
+  if (ray.intersectObject(thumbMesh).length) return true;
+  v3.copy(thumbMesh.position).project(camera);
+  return Math.hypot((v3.x + 1) / 2 * innerWidth - e.clientX, (1 - v3.y) / 2 * innerHeight - e.clientY) < 22;
+}
+let thumbRest = yOf(t1);   // where the thumb waits: the present, or where the last scan ended
+function clearScan() { if (scan !== null) { thumbRest = scan; scan = null; dirty = true; } }
+// the year at a height: yOf is increasing, so search it
+function tOf(y) { let a = t0, b = t1; for (let k = 0; k < 40; k++) { const m = (a + b) / 2; if (yOf(m) < y) a = m; else b = m; } return (a + b) / 2; }
+controls.addEventListener("start", () => { controls.autoRotate = false; });
+controls.addEventListener("end", () => { idleT = performance.now(); });
+// geometry follows the positions while the network moves
+function syncGeo() {
+  arcs();
+  lGeo.attributes.position.needsUpdate = true; pGeo.attributes.position.needsUpdate = true;
+}
+function resetLayout() { P.set(P0); pinned.clear(); heat = 0; syncGeo(); }
 
-function ensureIndex() { if (!lunrIdx && window.lunr) buildIndex(); return !!lunrIdx; }
-
-function searchIds(query) {
-    if (!ensureIndex()) {   // the library has not arrived yet: plain text match
-        const q = query.toLowerCase();
-        return new Set(allFindings.filter(f => JSON.stringify(f).toLowerCase().includes(q)).map(f => f.id));
+// ---- the card ----
+const card = document.getElementById("card");
+const KIND_TITLE = { mention: "Mentions", actor: "People and organisations", subject: "Subject", source: "Same source" };
+let fly = null;
+function select(i, flyTo) {
+  sel = i; dirty = true; controls.autoRotate = false; idleT = performance.now();
+  const n = nodes[i], f = finding.get(n.id);
+  let h = `<button class="x" aria-label="Close">×</button>`;
+  if (n.type === "entry") {
+    const date = n.start ? fmt(n.start) + (n.end && n.end !== n.start ? ` – ${fmt(n.end)}` : "") : "no date";
+    h += `<div class="meta">${esc(date)} · ${esc(n.topic)} · <span class="st ${esc(n.status)}">${esc(STATUS[n.status] || n.status)}</span></div>` +
+      `<h3>${esc(n.title)}</h3><p>${esc(f?.summary)}</p>` +
+      `<div class="meta"><a href="list/#${encodeURIComponent(n.id)}">open in List, with sources</a></div>`;
+  } else {
+    h += `<div class="meta">${n.type === "subject" ? "Subject · our grouping" : n.type === "person" ? "Person" : "Organisation"}</div>` +
+      `<h3>${esc(n.title)}</h3><p>${esc(n.note)}</p>` + miniTimeline(i);
+  }
+  for (const kind of KINDS) {
+    const ls = adj[i].map((li) => links[li]).filter((l) => l.kind === kind.k);
+    if (!ls.length) continue;
+    ls.sort((a, b) => (nodes[a.i === i ? a.j : a.i].start || "9").localeCompare(nodes[b.i === i ? b.j : b.i].start || "9"));
+    h += `<h4>${KIND_TITLE[kind.k]} (${ls.length})${on[kind.k] ? "" : " · hidden"}</h4><ul>` + ls.map((l) => {
+      const o = l.i === i ? l.j : l.i, on_ = nodes[o];
+      const why = Array.isArray(l.why) ? l.why.join("; ") + (l.n > l.why.length ? ` (+${l.n - l.why.length})` : "") : l.why;
+      return `<li><button data-i="${o}">${esc(on_.title)}</button><span class="why">${esc(why)}</span></li>`;
+    }).join("") + `</ul>`;
+  }
+  card.innerHTML = h; card.scrollTop = 0; card.classList.add("show");
+  history.replaceState(null, "", "#" + encodeURIComponent(n.id));
+  if (flyTo) focusOn(i);
+}
+// the linked dated entries of a person, organisation or subject on one line, in its own span of years
+function miniTimeline(i) {
+  const ds = adj[i].map((li) => links[li]).filter((l) => l.kind !== "source").map((l) => (l.i === i ? l.j : l.i))
+    .filter((o) => nodes[o].start).map((o) => ({ o, t: num(nodes[o].start) }));
+  if (ds.length < 2) return "";
+  const lo = Math.min(...ds.map((d) => d.t)), hi = Math.max(...ds.map((d) => d.t)), W = 320, pad = 6;
+  const x = (t) => pad + (hi === lo ? 0.5 : (t - lo) / (hi - lo)) * (W - 2 * pad);
+  const col = (n) => `var(--${{ "open-question": "question" }[n.status] || n.status})`;
+  return `<svg class="mini" viewBox="0 0 ${W} 44" aria-label="Linked entries by date">` +
+    `<line x1="${pad}" y1="16" x2="${W - pad}" y2="16" />` +
+    ds.map((d) => `<circle data-i="${d.o}" cx="${x(d.t).toFixed(1)}" cy="16" r="3.5" style="fill:${col(nodes[d.o])}"><title>${esc(nodes[d.o].start + " · " + nodes[d.o].title)}</title></circle>`).join("") +
+    `<text x="${pad}" y="36">${Math.floor(lo)}</text><text x="${W - pad}" y="36" text-anchor="end">${Math.floor(hi)}</text></svg>`;
+}
+// fly the camera to a point and frame it with its neighbours (double-click, the card's names, search, arrow keys)
+function flyTo(target, pos) {
+  const s0 = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+  const s1 = new THREE.Spherical().setFromVector3(pos.clone().sub(target));
+  let dt = s1.theta - s0.theta; dt -= Math.round(dt / (2 * Math.PI)) * 2 * Math.PI;   // the shorter way round
+  fly = { from: controls.target.clone(), to: target, s0, s1, dTheta: dt, t: performance.now() };
+  controls.autoRotate = false; idleT = performance.now();
+}
+const flySph = new THREE.Spherical();
+function focusOn(i) {
+  const c = new THREE.Vector3(P[3 * i], P[3 * i + 1], P[3 * i + 2]);
+  let r = 60;
+  for (const li of adj[i]) {
+    const l = links[li]; if (!on[l.kind]) continue;
+    const o = l.i === i ? l.j : l.i;
+    r = Math.max(r, Math.hypot(P[3 * o] - c.x, P[3 * o + 1] - c.y, P[3 * o + 2] - c.z));
+  }
+  const dist = Math.min(2600, Math.max(260, r / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.15));
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  flyTo(c, c.clone().add(dir.multiplyScalar(dist)));
+}
+const HOME = { t: new THREE.Vector3(0, 0, 0), p: new THREE.Vector3(2050, 260, 2050) };
+const VIEWS = {   // side: time reads best; top: links read best (user, 2026-10-13: these two only); overview: double-click
+  side: () => flyTo(HOME.t.clone(), new THREE.Vector3().setFromSphericalCoords(HOME.p.length(), Math.PI / 2, currentTheta())),
+  top: () => flyTo(HOME.t.clone(), new THREE.Vector3().setFromSphericalCoords(HOME.p.length() * 0.9, 0.06, currentTheta())),
+  overview: () => flyTo(HOME.t.clone(), HOME.p.clone()),
+};
+// keep the turn the view already has, so switching views only tips it up or down
+function currentTheta() { return new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target)).theta; }
+function close() {
+  if (sel < 0) return;
+  sel = -1; dirty = true; card.classList.remove("show"); history.replaceState(null, "", location.pathname);
+}
+card.addEventListener("click", (e) => {
+  if (e.target.closest(".x")) return close();
+  const b = e.target.closest("[data-i]"); if (b) { nav = null; select(+b.dataset.i, true); }
+});
+// search: names, places and entry ids; Enter or a click opens the match and flies to it
+const qEl = document.getElementById("q"), qRes = document.getElementById("qres");
+let qHits = [], qK = 0;
+function runSearch() {
+  const q = qEl.value.trim().toLowerCase();
+  // an exact id first, then people, organisations and subjects, then entries whose title starts with it, then the rest
+  qHits = !q ? [] : nodes.map((n, i) => { const t = (n.title + " " + n.id).toLowerCase(), has = t.includes(q);
+      return { i, n, s: n.id.toLowerCase() === q ? 0 : has && isHub(n) ? 1 : n.title.toLowerCase().startsWith(q) ? 2 : has ? 3 : 9 }; })
+    .filter((h) => h.s < 9).sort((a, b) => a.s - b.s || (b.n.deg - a.n.deg)).slice(0, 8);
+  qK = 0;
+  qRes.innerHTML = qHits.map((h, k) => `<li data-k="${k}" class="${k === 0 ? "on" : ""}"><small>${esc(h.n.type === "entry" ? h.n.id : h.n.type === "subject" ? "subj" : h.n.type === "person" ? "pers" : "org")}</small><span>${esc(h.n.title)}</span></li>`).join("");
+}
+function pickHit(k) { const h = qHits[k]; if (!h) return; qEl.value = ""; runSearch(); qEl.blur(); nav = null; select(h.i, true); }
+qEl.addEventListener("input", runSearch);
+qEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { pickHit(qK); e.preventDefault(); }
+  else if (e.key === "Escape") { qEl.value = ""; runSearch(); qEl.blur(); }
+  else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    if (!qHits.length) return;
+    qK = (qK + (e.key === "ArrowDown" ? 1 : -1) + qHits.length) % qHits.length;
+    qRes.querySelectorAll("li").forEach((li, k) => li.classList.toggle("on", k === qK)); e.preventDefault();
+  }
+});
+qRes.addEventListener("pointerdown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); pickHit(+li.dataset.k); } });
+// double-click a point or tag: fly to it; double-click empty space: back to the opening view
+addEventListener("dblclick", (e) => {
+  if (!onScene(e)) return;
+  const i = nodeAt(e);
+  if (i >= 0) select(i, true); else if (e.target === renderer.domElement) VIEWS.overview();
+});
+// keys: Esc closes; left / right walk the chosen point's neighbours (by date); up / down move the slider a year
+let nav = null;   // { anchor, list, k }
+addEventListener("keydown", (e) => {
+  if (e.target.closest && e.target.closest("input")) return;
+  if (e.key === "Escape") { if (openPanel) showPanel(openPanel); else { close(); clearScan(); nav = null; } return; }
+  if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && sel >= 0) {
+    if (!nav || (nav.list[nav.k] !== sel && nav.anchor !== sel)) {
+      const a = sel, list = [...new Set(adj[a].map((li) => links[li]).filter((l) => on[l.kind]).map((l) => (l.i === a ? l.j : l.i)))]
+        .sort((x, y) => (nodes[x].start || "9").localeCompare(nodes[y].start || "9"));
+      nav = { anchor: a, list, k: -1 };
     }
-    try {
-        return new Set(lunrIdx.search(query).map(r => r.ref));
-    } catch (e) {
-        // Lunr throws on stray query syntax such as a trailing ":"; fall back to wildcard terms.
-        const terms = query.split(/\s+/).filter(Boolean).map(t => t.replace(/[^\w]/g, '') + '*').join(' ');
-        return new Set(terms ? lunrIdx.search(terms).map(r => r.ref) : []);
+    if (!nav.list.length) return;
+    nav.k = (nav.k + (e.key === "ArrowRight" ? 1 : -1) + nav.list.length) % nav.list.length;
+    select(nav.list[nav.k], true); e.preventDefault(); return;
+  }
+  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+    const t = tOf(scan !== null ? scan : thumbRest) + (e.key === "ArrowUp" ? 1 : -1);
+    scan = yOf(Math.max(t0, Math.min(t1, t))); dirty = true; controls.autoRotate = false; idleT = performance.now();
+    e.preventDefault();
+  }
+});
+
+// ---- frame ----
+function resize() {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  pMat.uniforms.scale.value = innerHeight * renderer.getPixelRatio() * 1.4;   // grew with the farther camera
+}
+addEventListener("resize", resize); resize();
+const root = document.documentElement;
+new MutationObserver(() => { readColours(); dirty = true; }).observe(root, { attributes: true, attributeFilter: ["data-theme", "class"] });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { readColours(); dirty = true; });
+function placeLabel(el, x, y, z, dx = 8, dy = -6) {
+  v3.set(x, y, z).project(camera);
+  if (v3.z > 1) { el.style.visibility = "hidden"; return; }
+  el.style.visibility = "";
+  el.style.transform = `translate(${((v3.x + 1) / 2 * innerWidth + dx).toFixed(1)}px, ${((1 - v3.y) / 2 * innerHeight + dy).toFixed(1)}px)`;
+}
+let offX = 0, offY = 0;
+let frameLast = 0, frameDt = 1 / 60;
+function frame(now) {
+  frameDt = frameLast ? Math.min(0.1, (now - frameLast) / 1000) : 1 / 60; frameLast = now;
+  if (root.classList.contains("theme-anim")) { readColours(); dirty = true; }
+  if (fly) {
+    const k = Math.min(1, (now - fly.t) / 700), e = k * k * (3 - 2 * k);
+    controls.target.lerpVectors(fly.from, fly.to, e);
+    if (fly.s0) {
+      flySph.set(fly.s0.radius + (fly.s1.radius - fly.s0.radius) * e, fly.s0.phi + (fly.s1.phi - fly.s0.phi) * e, fly.s0.theta + fly.dTheta * e);
+      camera.position.setFromSpherical(flySph).add(controls.target);
     }
-}
-
-function attachListeners() {
-    let timer;
-    document.getElementById('searchInput').addEventListener('input', () => {
-        clearTimeout(timer);
-        timer = setTimeout(applyFilters, 200);
-    });
-    FILTERS.forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
-    document.getElementById('clearBtn').addEventListener('click', clearFilters);
-
-    document.getElementById('resultsContainer').addEventListener('click', e => {
-        if (e.target.closest('a')) return;
-        const head = e.target.closest('.finding-head');
-        if (head) toggle(head.closest('.finding'));
-    });
-    document.getElementById('resultsContainer').addEventListener('keydown', e => {
-        if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('finding-head')) {
-            e.preventDefault();
-            toggle(e.target.closest('.finding'));
-        }
-    });
-    document.getElementById('expandAll').addEventListener('click', () => setAll(true));
-    document.getElementById('collapseAll').addEventListener('click', () => setAll(false));
-}
-
-function toggle(el) {
-    const open = el.classList.toggle('open');
-    el.querySelector('.finding-head').setAttribute('aria-expanded', open);
-}
-
-function setAll(open) {
-    document.querySelectorAll('.finding').forEach(el => {
-        el.classList.toggle('open', open);
-        el.querySelector('.finding-head').setAttribute('aria-expanded', open);
-    });
-}
-
-function applyFilters() {
-    const query = document.getElementById('searchInput').value.trim();
-    const topic = document.getElementById('topicFilter').value;
-    const status = document.getElementById('statusFilter').value;
-    const sourceType = document.getElementById('sourceFilter').value;
-    const year = document.getElementById('yearFilter').value;
-    const kind = document.getElementById('kindFilter').value;
-    const subject = document.getElementById('subjectFilter').value;
-
-    let results = allFindings;
-    if (query) {
-        const ids = searchIds(query);
-        results = results.filter(f => ids.has(f.id));
+    if (k >= 1) fly = null;
+  }
+  // with the card open, the view slides so the chosen point is not under it (right on wide screens, bottom on phones)
+  const wide = innerWidth > 600, showCard = card.classList.contains("show");
+  const ox = showCard && wide ? (card.offsetWidth + 16) / 2 : 0, oy = showCard && !wide ? card.offsetHeight / 2 : 0;
+  offX += (ox - offX) * 0.12; offY += (oy - offY) * 0.12;
+  if (Math.abs(offX) > 0.5 || Math.abs(offY) > 0.5) camera.setViewOffset(innerWidth, innerHeight, offX, offY, innerWidth, innerHeight);
+  else if (camera.view) camera.clearViewOffset();
+  if (!controls.autoRotate && sel < 0 && hover < 0 && scan === null && now - idleT > 6000) controls.autoRotate = true;
+  if (heat > 0.02) {   // the network settles around a moved point
+    tick(heat * 0.6); syncGeo();
+    if (!drag) heat *= 0.96;
+  }
+  controls.update(frameDt);   // in seconds, so the turn is as fast on any screen's frame rate
+  if (dirty) paint();
+  easeColours(now);
+  lineMat.uniforms.time.value = now / 1000;
+  renderer.render(scene, camera);
+  project();
+  for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
+  years.forEach(([, yy], k) => placeLabel(yearEls[k], 0, yy, 0, 10, -6));
+  {   // the slider rides the axis: at the scanned height, or resting at the present; bigger under the pointer or held
+    const ys = scan !== null ? scan : thumbRest;
+    thumbMesh.position.y = ys;
+    // grow / shrink over --t-feedback with ease-in-out, whatever the screen's frame rate (user, 2026-10-12: not a jump)
+    const k = thumbHot || scanning ? 1.3 : 1;
+    if (k !== thumbTw.to) Object.assign(thumbTw, { from: thumbTw.cur, to: k, t: now });
+    const u = Math.min(1, (now - thumbTw.t) / thumbTw.ms), e = u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
+    // never smaller on screen than about 34 px tall, however far the camera is
+    const camD = camera.position.distanceTo(thumbMesh.position);
+    const pxPerUnit = innerHeight / (2 * camD * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
+    const floor = Math.max(1, 22 / (23 * pxPerUnit));   // the capsule is 23 units tall
+    thumbTw.cur = thumbTw.from + (thumbTw.to - thumbTw.from) * e;
+    thumbMesh.scale.setScalar(thumbTw.cur * floor);
+    v3.set(0, ys, 0).project(camera);
+    scanRd.style.translate = `${((v3.x + 1) / 2 * innerWidth - 14).toFixed(1)}px ${((1 - v3.y) / 2 * innerHeight).toFixed(1)}px`;
+    scanRd.classList.toggle("on", scan !== null);
+    if (scan !== null) {
+      const t = tOf(scan), lo = tOf(scan - SCAN_BAND), hi = tOf(scan + SCAN_BAND);
+      const n = nodes.reduce((c, _, i) => c + (inScan(i) ? 1 : 0), 0);
+      const range = Math.floor(lo) === Math.floor(hi) ? "" : `${Math.floor(lo)}–${Math.floor(hi)} · `;
+      const txt = `<b>${Math.floor(t)}</b>${range}${n} ${n === 1 ? "entry" : "entries"}`;
+      if (scanRd.innerHTML !== txt) scanRd.innerHTML = txt;
     }
-    if (topic) results = results.filter(f => f.topic === topic);
-    if (status) results = results.filter(f => f.status === status);
-    if (sourceType) results = results.filter(f => (f.sources || []).some(s => s.type === sourceType));
-    if (year) results = results.filter(f => f.date && f.date.startsWith(year));
-    if (kind) results = results.filter(f => f.kind === kind);
-    if (subject) results = results.filter(f => f.media && f.media.subject === subject);
-
-    render(results, Boolean(query || topic || status || sourceType || year || kind || subject));
-    updateStats(results);
+  }
+  for (const [i, el] of blobs) {
+    const h = +el.dataset.h;
+    if (scr[3 * i + 2] > 1) { el.style.visibility = "hidden"; continue; }
+    el.style.visibility = "";
+    el.style.translate = `${(scr[3 * i] - h).toFixed(1)}px ${(scr[3 * i + 1] - h).toFixed(1)}px`;   // not transform: scale (lock-on) must act about the frame's own centre
+  }
+  requestAnimationFrame(frame);
 }
+requestAnimationFrame(frame);
 
-function render(findings, filtered) {
-    const container = document.getElementById('resultsContainer');
-    if (findings.length === 0) {
-        container.innerHTML = '<p class="no-results">No findings match. Try other words or clear the filters.</p>';
-        return;
-    }
-
-    let html = '';
-    let currentTopic = null, currentSubject = null;
-    const counts = new Map();
-    findings.forEach(f => counts.set(f.topic, (counts.get(f.topic) || 0) + 1));
-    findings.forEach(f => {
-        if (f.topic !== currentTopic) {
-            if (currentTopic !== null) html += '</section>';
-            currentTopic = f.topic; currentSubject = null;
-            html += `<section class="topic-group" id="${slug(f.topic)}"><h2 class="topic-title">${esc(f.topic)} <span class="topic-count">${counts.get(f.topic)}</span></h2>`;
-        }
-        if (f.media && f.media.subject !== currentSubject) {
-            currentSubject = f.media.subject;
-            const n = findings.filter(x => x.media && x.media.subject === currentSubject).length;
-            html += `<h3 class="subject-title">${esc(currentSubject)} <span class="topic-count">${n}</span></h3>`;
-        }
-        html += renderFinding(f);
-    });
-    html += '</section>';
-    container.innerHTML = html;
-
-    // contents: the topics shown, with their counts
-    document.getElementById('topicNav').innerHTML = [...counts].map(([t, n]) =>
-        `<a href="#${slug(t)}">${esc(t)}<span class="n">${n}</span></a>`).join('');
-
-    // A single search hit is most useful already open.
-    if (filtered && findings.length === 1) setAll(true);
-}
-
-function renderFinding(f) {
-    const details = renderDetails(f.details || []);
-    const srcs = f.sources || [];
-    const sources = srcs.map((s, i) => {
-        const label = esc(s.title);
-        const link = s.url && /^https?:\/\//.test(s.url)
-            ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${label}</a>`
-            : label;
-        const meta = [s.type, s.accessed && `opened ${formatDate(s.accessed)}`].filter(Boolean).map(esc).join(' · ');
-        const excerpt = s.excerpt && !(f.media && s.excerpt === f.media.quote) ? `<span class="source-excerpt">${esc(s.excerpt)}</span>` : '';
-        return `<li><span class="source-type">[${i + 1}]</span> ${link}${meta ? ` <span class="source-type">${meta}</span>` : ''}${excerpt}</li>`;
-    }).join('');
-    const conflicts = (f.conflicts || []).map(c => {
-        const refs = (c.sources || []).map(i => `[${i + 1}]`).join(' ');
-        return `<p>${linkify(esc(c.note))}${refs ? ` <span class="source-type">${esc(refs)}</span>` : ''}</p>`;
-    }).join('');
-    const m = f.media;
-    const quote = m ? `
-            <blockquote class="quote">${esc(m.quote)}${m.translation ? `<span class="quote-translation">${esc(m.translation)}</span>` : ''}</blockquote>
-            <p class="attribution"><b>${esc(m.speaker)}</b>${m.role ? `, ${esc(m.role)}` : ''}${m.venue ? ` · ${esc(m.venue)}` : ''}${m.said ? ` · ${formatDate(m.said)}` : ''}
-                <span class="via">${esc(mediaVia(f))}</span></p>` : '';
-
-    return `
-    <article class="finding" data-id="${esc(f.id)}">
-        <div class="finding-head" role="button" tabindex="0" aria-expanded="false">
-            <div class="finding-title-row">
-                <h3 class="finding-title">${esc(f.title)}</h3>
-                <span class="badge badge-${esc(f.status)}">${esc(STATUS_LABELS[f.status] || f.status)}</span>
-            </div>
-            ${quote || `<p class="finding-summary">${linkify(esc(f.summary || ''))}</p>`}
-            <div class="finding-meta">
-                ${f.kind ? `<span class="kind kind-${esc(f.kind)}">${esc(KIND_LABELS[f.kind] || f.kind)}</span>` : ''}
-                ${m && m.subject ? `<span class="subject-tag">${esc(m.subject)}</span>` : ''}
-                ${f.date && !m ? `<span>${formatDate(f.date)}</span>` : ''}
-                ${f.confidence ? `<span>Confidence: ${esc(f.confidence)}</span>` : ''}
-                ${f.lastVerified ? `<span>Checked ${formatDate(f.lastVerified)}</span>` : ''}
-                ${conflicts ? '<span class="disagree">Sources disagree</span>' : ''}
-                <span class="toggle-hint">Details</span>
-            </div>
-        </div>
-        <div class="finding-body">
-            ${m && f.summary ? `<p>${linkify(esc(f.summary))}</p>` : ''}
-            ${conflicts ? `<div class="finding-conflicts"><h4>Where sources disagree</h4>${conflicts}</div>` : ''}
-            ${details}
-            ${sources ? `<div class="finding-sources"><h4>Sources</h4><ul>${sources}</ul></div>` : ''}
-            ${f.sourceFile ? `<p class="source-file">From: ${esc(f.sourceFile)}</p>` : ''}
-        </div>
-    </article>`;
-}
-
-function renderDetails(lines) {
-    let html = '';
-    let inList = false;
-    lines.forEach(line => {
-        if (line.startsWith('- ')) {
-            if (!inList) { html += '<ul class="detail-list">'; inList = true; }
-            html += `<li>${linkify(esc(line.slice(2)))}</li>`;
-        } else {
-            if (inList) { html += '</ul>'; inList = false; }
-            html += `<p>${linkify(esc(line))}</p>`;
-        }
-    });
-    if (inList) html += '</ul>';
-    return html;
-}
-
-// where a Media statement comes from, as a short label
-function mediaVia(f) {
-    const s = (f.sources || [])[0] || {};
-    if (/PDF saved by Rui/.test(s.title || '')) return 'Reddit, from a PDF saved by Rui';
-    return { news: 'news', official: 'official record', press: 'press release', social: 'public post', secondary: 'secondary' }[s.type] || s.type || '';
-}
-
-function updateStats(findings) {
-    const count = s => findings.filter(f => f.status === s).length;
-    document.getElementById('totalCount').textContent = findings.length;
-    document.getElementById('verifiedCount').textContent = count('verified');
-    document.getElementById('unverifiedCount').textContent = count('unverified');
-    document.getElementById('questionCount').textContent = count('open-question');
-    document.getElementById('analysisCount').textContent = count('analysis');
-}
-
-function clearFilters() {
-    document.getElementById('searchInput').value = '';
-    FILTERS.forEach(id => { document.getElementById(id).value = ''; });
-    applyFilters();
-}
-
-function initTheme() {
-    // the theme button is wired by ../theme.js (shared with the home page and Methods)
-}
-
-function esc(text) {
-    return String(text ?? '').replace(/[&<>"']/g, m => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-    }[m]));
-}
-
-function formatDate(d) {
-    // only the precision the source gives: "1961", "Jul 2013", "Jul 30, 2013"
-    if (/^\d{4}$/.test(d)) return d;
-    if (/^\d{4}-\d{2}$/.test(d)) {
-        const ym = new Date(d + '-01T00:00:00Z');
-        return ym.toLocaleDateString('en-US', { year: 'numeric', month: 'short', timeZone: 'UTC' });
-    }
-    const date = new Date(d + 'T00:00:00Z');
-    if (isNaN(date)) return esc(d);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
-}
-
+const h0 = decodeURIComponent(location.hash.slice(1));
+if (byId.has(h0)) select(byId.get(h0), true);
+requestAnimationFrame(() => document.body.classList.add("ready"));
 </script>
-
-</body></html>
+</body>
+</html>

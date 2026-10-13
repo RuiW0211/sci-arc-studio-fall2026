@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research · List · Angels Knoll</title>
+<link rel="stylesheet" href="../../site.css">
+<script>
+  // the data (about 650 KB) starts loading at once, alongside the search library, not after it (user, 2026-10-13:
+  // the title showed first and the entries came in late)
+  window.__research = fetch('../data.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+</script>
+<script src="../../theme.js"></script>
+<style>
+/* Research, List view (was the Research page; the Network view is ../). Colours (status colours included),
+   header, type scale, footer and the theme button come from ../../site.css */
+.views { display: flex; gap: 14px; font-size: 0.8rem; margin: -4px 0 12px; }
+.views a { color: var(--muted); text-decoration: none; padding-bottom: 1px; border-bottom: 1px solid transparent;
+    transition: color var(--t-feedback), border-color var(--t-feedback); }
+.views a:hover { color: var(--text); }
+.views a.on { color: var(--text); border-bottom-color: currentColor; }
+
+/* Header, modeled on ruyf26.samlay.xyz */
+
+/* Search */
+.search-section { margin-bottom: 24px; }
+.search-input {
+    width: 100%;
+    padding: 12px 14px;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    margin-bottom: 12px;
+}
+.search-input:focus, .filter-select:focus, .btn:focus-visible, .finding-head:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filter-select, .btn {
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+.btn:hover, .filter-select:hover { border-color: var(--muted); }
+.btn-quiet { border-color: transparent; color: var(--muted); padding: 4px 6px; }
+.btn-quiet:hover { color: var(--text); border-color: transparent; }
+
+/* Stats */
+.stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+}
+.stats > div { display: flex; flex-direction: column; }
+.stat-number { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.stat-label { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+.s-verified { color: var(--verified); }
+.s-unverified { color: var(--unverified); }
+.s-question { color: var(--question); }
+.s-analysis { color: var(--analysis); }
+
+.list-controls { display: flex; justify-content: flex-end; gap: 4px; margin-bottom: 8px; }
+
+/* Topic groups */
+.topic-group { margin-top: 32px; }
+.topic-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+}
+.topic-count { font-weight: 400; margin-left: 6px; }
+
+/* Findings */
+.finding { border-bottom: 1px solid var(--line); }
+.finding-head { padding: 20px 0; cursor: pointer; }
+.finding-head:hover .finding-title { text-decoration-color: currentColor; }
+.finding-title-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 6px; }
+.finding-title { font-size: 1.15rem; line-height: 1.35; font-weight: 700; }
+.finding-summary { color: var(--muted); font-size: 0.95rem; }
+.finding-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 0.8rem; color: var(--faint); }
+.toggle-hint { margin-left: auto; color: var(--muted); }
+.toggle-hint::after { content: " +"; }
+.finding.open .toggle-hint::after { content: " \2212"; }
+
+.badge {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+}
+.badge-verified { color: var(--verified); }
+.badge-unverified { color: var(--unverified); }
+.badge-open-question { color: var(--question); }
+.badge-analysis { color: var(--analysis); }
+
+.finding-body { display: none; padding: 0 0 24px; font-size: 0.95rem; }
+.finding.open .finding-body { display: block; }
+.finding-body p { margin-bottom: 12px; }
+.detail-list { margin: 0 0 12px 20px; }
+.detail-list li { margin-bottom: 6px; }
+
+.finding-sources { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.finding-sources h4 {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 6px;
+}
+.finding-sources ul { list-style: none; }
+.finding-sources li { font-size: 0.85rem; margin-bottom: 4px; }
+.finding-sources a { color: var(--text); }
+.source-type { color: var(--faint); font-size: 0.75rem; }
+.source-file { margin-top: 10px; font-size: 0.75rem; color: var(--faint); }
+
+.no-results { padding: 48px 0; text-align: center; color: var(--muted); }
+
+/* kind (fact / claim / analysis), checked date, disagreement marker */
+.kind { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.kind-claim { color: var(--unverified); }
+.kind-analysis { color: var(--analysis); }
+.disagree { color: var(--unverified); }
+.disagree::before { content: "\25CB  "; }
+.finding-conflicts { margin: 4px 0 16px; padding: 10px 12px; border-left: 2px solid var(--unverified); background: var(--hover); }
+.finding-conflicts h4, .finding-sources h4 { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; }
+.finding-conflicts p { font-size: 0.88rem; margin-bottom: 6px; }
+.source-excerpt { display: block; color: var(--muted); font-size: 0.8rem; margin: 2px 0 6px 0; }
+.source-excerpt::before { content: "\201C"; } .source-excerpt::after { content: "\201D"; }
+
+/* Media: the statement itself, then who said it, where and when */
+.quote { margin: 4px 0 8px; padding-left: 14px; border-left: 2px solid var(--line); font-size: 1.05rem; line-height: 1.5; }
+.quote-translation { display: block; color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.attribution { font-size: 0.85rem; color: var(--muted); }
+.attribution b { color: var(--text); font-weight: 600; }
+.subject-tag { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+
+/* everything under the header is drawn from data.json: it fades in once, when drawn, instead of popping in piece by
+   piece (current status, counts, findings; user, 2026-10-12) */
+main { transition: opacity var(--t-in) ease; }
+body:not(.ready) main { opacity: 0; }   /* header and entries together, not the title first */
+
+.about { font-size: 0.85rem; color: var(--muted); margin: -8px 0 20px; }
+.about a { color: var(--muted); }
+
+/* current statuses, at the top */
+.current { margin: 0 0 28px; border-top: 1px solid var(--line); }
+.current h2 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
+    padding: 12px 0 4px; }
+.current dl { display: grid; grid-template-columns: 11rem 1fr; gap: 6px 16px; font-size: 0.9rem; }
+.current dt { color: var(--muted); }
+.current dd .xref { font-size: 0.75rem; color: var(--faint); margin-left: 4px; }
+@media (max-width: 600px) { .current dl { grid-template-columns: 1fr; gap: 0; } .current dd { margin-bottom: 8px; } }
+
+/* topic contents */
+.toc { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.8rem; margin: 0 0 8px; }
+.toc a { color: var(--muted); text-decoration: none; }
+.toc a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.toc .n { color: var(--faint); margin-left: 3px; }
+
+/* links between entries ("see af-008") */
+.xref { color: inherit; text-underline-offset: 2px; }
+
+/* Media, grouped by subject */
+.subject-title { font-size: 0.8rem; font-weight: 700; color: var(--muted); margin: 22px 0 0; padding-bottom: 4px; }
+.subject-title .topic-count { color: var(--faint); }
+.via { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+
+
+
+@media (max-width: 600px) {
+    .container { padding-top: 32px; }
+    .header h1 { font-size: 1.9rem; }
+    .stats { gap: 18px; }
+    .finding-title-row { flex-direction: column; gap: 6px; }
+}
+
+</style>
+</head>
+<body>
+<main class="container">
+        <header class="header">
+            <p class="eyebrow">Angels Knoll · Research · <a href="../../" class="home">home</a></p>
+            <h1>Y-1 Research Database</h1>
+            <p class="views"><a href="../">Network</a><a href="./" class="on" aria-current="page">List</a></p>
+            <p class="subtitle">What is known about Parcel Y-1, with sources.</p>
+        </header>
+
+        <section class="current" id="currentBox" aria-label="Current status" hidden></section>
+
+        <section class="search-section">
+            <input type="search" id="searchInput" class="search-input" placeholder="Search findings, e.g. litigation, 54234, Goldstein" aria-label="Search findings">
+            <div class="filters">
+                <select id="topicFilter" class="filter-select" aria-label="Topic"><option value="">All topics</option></select>
+                <select id="statusFilter" class="filter-select" aria-label="Status">
+                    <option value="">All statuses</option>
+                    <option value="verified">Verified</option>
+                    <option value="unverified">Unverified</option>
+                    <option value="open-question">Open question</option>
+                    <option value="analysis">Analysis</option>
+                </select>
+                <select id="kindFilter" class="filter-select" aria-label="Kind">
+                    <option value="">Facts, claims and analysis</option>
+                    <option value="fact">Facts</option>
+                    <option value="claim">Claims and statements</option>
+                    <option value="analysis">Our analysis</option>
+                </select>
+                <select id="subjectFilter" class="filter-select" aria-label="Media subject"><option value="">All Media subjects</option></select>
+                <select id="sourceFilter" class="filter-select" aria-label="Source type"><option value="">All source types</option></select>
+                <select id="yearFilter" class="filter-select" aria-label="Year"><option value="">All years</option></select>
+                <button id="clearBtn" class="btn">Clear</button>
+            </div>
+        </section>
+
+        <section class="stats" aria-label="Counts">
+            <div><span class="stat-number" id="totalCount">0</span><span class="stat-label">Shown</span></div>
+            <div><span class="stat-number s-verified" id="verifiedCount">0</span><span class="stat-label">Verified</span></div>
+            <div><span class="stat-number s-unverified" id="unverifiedCount">0</span><span class="stat-label">Unverified</span></div>
+            <div><span class="stat-number s-question" id="questionCount">0</span><span class="stat-label">Open questions</span></div>
+            <div><span class="stat-number s-analysis" id="analysisCount">0</span><span class="stat-label">Analysis</span></div>
+        </section>
+
+        <p class="about" id="aboutLine"></p>
+        <nav class="toc" id="topicNav" aria-label="Topics"></nav>
+
+        <div class="list-controls">
+            <button id="expandAll" class="btn btn-quiet">Expand all</button>
+            <button id="collapseAll" class="btn btn-quiet">Collapse all</button>
+        </div>
+
+        <div id="resultsContainer"></div>
+
+        <footer class="footer">
+            Y-1 Research Database - Syracuse Visiting Studio - Fall 2026. How entries are checked: <a href="https://github.com/RuiW0211/sci-arc-studio-fall2026/blob/main/docs/RESEARCH.md" target="_blank" rel="noopener">verification rules</a>. Add or correct findings by editing <code>web/research/data.json</code> in a pull request. Link to one finding with <code>research/list/#id</code> here or <code>research/#id</code> in the Network, e.g. <code>#lit-005</code>.
+        </footer>
+    </main>
+
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
+
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js" onload="window.__lunrReady && window.__lunrReady()"></script>
+<script>
+const TOPIC_ORDER = [
+    'Disposition & Notice',
+    'Litigation',
+    'Surplus Land Act',
+    'Zoning & Entitlements',
+    'Unbuilt Schemes',
+    'Angels Knoll Park',
+    'Angels Flight',
+    'MOCA',
+    '1980 Bargain & History',
+    'California Plaza',
+    'Bunker Hill Before Redevelopment',
+    'Site Conditions',
+    'Media',
+    'Insights',
+    'Design Implications',
+    'Open Questions'
+];
+
+const STATUS_LABELS = {
+    'verified': 'Verified',
+    'unverified': 'Unverified',
+    'open-question': 'Open question',
+    'analysis': 'Analysis'
+};
+const KIND_LABELS = { fact: 'Fact', claim: 'Claim', analysis: 'Our analysis' };
+// Media subjects, in this order on the page
+const SUBJECT_ORDER = ['Angels Knoll closure', 'Reopening the park', 'Angels Landing', 'Termination and lawsuits',
+    'Surplus land and housing', 'Angels Flight', 'MOCA and Y-1', 'Bunker Hill history'];
+let byId = new Map();
+let current = null;
+const FILTERS = ['topicFilter', 'statusFilter', 'kindFilter', 'subjectFilter', 'sourceFilter', 'yearFilter'];
+
+let allFindings = [];
+let lunrIdx = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    initTheme();
+    try {
+        const data = await window.__research;
+        allFindings = data.findings.sort(compareFindings);
+        byId = new Map(allFindings.map(f => [f.id, f]));
+        current = data.current || null;
+        renderCurrent();
+        initFilters();
+        attachListeners();
+        applyFilters();
+        openFromHash();
+        requestAnimationFrame(() => document.body.classList.add('ready'));
+        window.addEventListener('hashchange', openFromHash);
+        // the search index is built once the page is shown, when the browser is idle
+        const later = window.requestIdleCallback || ((f) => setTimeout(f, 200));
+        if (window.lunr) later(ensureIndex); else window.__lunrReady = () => later(ensureIndex);
+    } catch (error) {
+        console.error('Error loading data:', error);
+        document.getElementById('resultsContainer').innerHTML =
+            '<p class="no-results">Could not load data.json. Open the site through a local server (python3 web/serve.py).</p>';
+        document.body.classList.add('ready');
+    }
+});
+
+function openFromHash() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id || !allFindings.some(f => f.id === id)) return;
+    if (!document.querySelector(`.finding[data-id="${CSS.escape(id)}"]`)) clearFilters();
+    const el = document.querySelector(`.finding[data-id="${CSS.escape(id)}"]`);
+    if (!el.classList.contains('open')) toggle(el);
+    el.scrollIntoView({ block: 'start' });
+}
+
+function topicRank(topic) {
+    const i = TOPIC_ORDER.indexOf(topic);
+    return i === -1 ? TOPIC_ORDER.length : i;
+}
+
+function subjectRank(f) {
+    const i = SUBJECT_ORDER.indexOf(f.media && f.media.subject);
+    return i === -1 ? SUBJECT_ORDER.length : i;
+}
+
+function compareFindings(a, b) {
+    const t = topicRank(a.topic) - topicRank(b.topic);
+    if (t !== 0) return t;
+    if (a.media && b.media) {          // Media: by subject, then by when it was said
+        const s = subjectRank(a) - subjectRank(b);
+        if (s !== 0) return s;
+    }
+    return (a.date || '9999').localeCompare(b.date || '9999');
+}
+
+// the statuses that change, at the top: each line points to the entries it restates
+function renderCurrent() {
+    const box = document.getElementById('currentBox');
+    if (!current || !(current.items || []).length) return;
+    const rows = current.items.map(it => {
+        const refs = (it.ids || []).filter(i => byId.has(i)).map(i => `<a class="xref" href="#${esc(i)}">${esc(i)}</a>`).join(' ');
+        return `<dt>${esc(it.label)}</dt><dd>${esc(it.text)}${refs ? ` <span class="xref">${refs}</span>` : ''}</dd>`;
+    }).join('');
+    box.innerHTML = `<h2>Current status, as of ${formatDate(current.asOf)}</h2><dl>${rows}</dl>`;
+    box.hidden = false;
+}
+
+const slug = t => 'topic-' + String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+// "see af-008", "disp-003": links to the entry, when it exists
+const ID_RE = /\b(?:(?:disp|lit|sla|ent|moca|hist|plaza|ins|des|site|q|bh|af|park|ghost)-\d{3}|media-[prs]\d{2})\b/g;
+function linkify(escaped) {
+    return escaped.replace(ID_RE, id => byId.has(id) ? `<a class="xref" href="#${id}">${id}</a>` : id);
+}
+
+function initFilters() {
+    const topics = [...new Set(allFindings.map(f => f.topic))].sort((a, b) => topicRank(a) - topicRank(b));
+    const topicSelect = document.getElementById('topicFilter');
+    topics.forEach(topic => topicSelect.add(new Option(topic, topic)));
+
+    const sourceTypes = [...new Set(allFindings.flatMap(f => (f.sources || []).map(s => s.type)).filter(Boolean))].sort();
+    const sourceSelect = document.getElementById('sourceFilter');
+    sourceTypes.forEach(type => sourceSelect.add(new Option(type, type)));
+
+    const years = allFindings.map(f => f.date && f.date.slice(0, 4)).filter(Boolean);
+    const yearSelect = document.getElementById('yearFilter');
+    [...new Set(years)].sort().forEach(y => yearSelect.add(new Option(y, y)));
+
+    const subjects = [...new Set(allFindings.map(f => f.media && f.media.subject).filter(Boolean))].sort();
+    const subjectSelect = document.getElementById('subjectFilter');
+    subjects.forEach(s => subjectSelect.add(new Option(s, s)));
+
+    // when the entries were last checked against their sources
+    const checked = allFindings.map(f => f.lastVerified).filter(Boolean).sort();
+    if (checked.length) {
+        const last = checked[checked.length - 1];
+        const all = checked.length === allFindings.length && checked[0] === last;
+        document.getElementById('aboutLine').textContent = all
+            ? `All ${allFindings.length} entries were checked against their sources on ${formatDate(last)}. Statuses that change (litigation, notices, appointments) are as of that date.`
+            : `${checked.length} of ${allFindings.length} entries checked against their sources, most recently on ${formatDate(last)}.`;
+    }
+}
+
+function buildIndex() {
+    lunrIdx = lunr(function () {
+        this.ref('id');
+        this.field('title', { boost: 10 });
+        this.field('summary', { boost: 3 });
+        this.field('body');
+        this.field('topic');
+        this.field('sources');
+        allFindings.forEach(f => {
+            this.add({
+                id: f.id,
+                title: f.title,
+                summary: f.summary || '',
+                body: [...(f.details || []), ...(f.media ? [f.media.quote, f.media.translation, f.media.speaker, f.media.role, f.media.venue, f.media.subject] : [])].filter(Boolean).join(' '),
+                topic: f.topic,
+                sources: (f.sources || []).map(s => s.title).join(' ')
+            });
+        });
+    });
+}
+
+function ensureIndex() { if (!lunrIdx && window.lunr) buildIndex(); return !!lunrIdx; }
+
+function searchIds(query) {
+    if (!ensureIndex()) {   // the library has not arrived yet: plain text match
+        const q = query.toLowerCase();
+        return new Set(allFindings.filter(f => JSON.stringify(f).toLowerCase().includes(q)).map(f => f.id));
+    }
+    try {
+        return new Set(lunrIdx.search(query).map(r => r.ref));
+    } catch (e) {
+        // Lunr throws on stray query syntax such as a trailing ":"; fall back to wildcard terms.
+        const terms = query.split(/\s+/).filter(Boolean).map(t => t.replace(/[^\w]/g, '') + '*').join(' ');
+        return new Set(terms ? lunrIdx.search(terms).map(r => r.ref) : []);
+    }
+}
+
+function attachListeners() {
+    let timer;
+    document.getElementById('searchInput').addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(applyFilters, 200);
+    });
+    FILTERS.forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
+    document.getElementById('clearBtn').addEventListener('click', clearFilters);
+
+    document.getElementById('resultsContainer').addEventListener('click', e => {
+        if (e.target.closest('a')) return;
+        const head = e.target.closest('.finding-head');
+        if (head) toggle(head.closest('.finding'));
+    });
+    document.getElementById('resultsContainer').addEventListener('keydown', e => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('finding-head')) {
+            e.preventDefault();
+            toggle(e.target.closest('.finding'));
+        }
+    });
+    document.getElementById('expandAll').addEventListener('click', () => setAll(true));
+    document.getElementById('collapseAll').addEventListener('click', () => setAll(false));
+}
+
+function toggle(el) {
+    const open = el.classList.toggle('open');
+    el.querySelector('.finding-head').setAttribute('aria-expanded', open);
+}
+
+function setAll(open) {
+    document.querySelectorAll('.finding').forEach(el => {
+        el.classList.toggle('open', open);
+        el.querySelector('.finding-head').setAttribute('aria-expanded', open);
+    });
+}
+
+function applyFilters() {
+    const query = document.getElementById('searchInput').value.trim();
+    const topic = document.getElementById('topicFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const sourceType = document.getElementById('sourceFilter').value;
+    const year = document.getElementById('yearFilter').value;
+    const kind = document.getElementById('kindFilter').value;
+    const subject = document.getElementById('subjectFilter').value;
+
+    let results = allFindings;
+    if (query) {
+        const ids = searchIds(query);
+        results = results.filter(f => ids.has(f.id));
+    }
+    if (topic) results = results.filter(f => f.topic === topic);
+    if (status) results = results.filter(f => f.status === status);
+    if (sourceType) results = results.filter(f => (f.sources || []).some(s => s.type === sourceType));
+    if (year) results = results.filter(f => f.date && f.date.startsWith(year));
+    if (kind) results = results.filter(f => f.kind === kind);
+    if (subject) results = results.filter(f => f.media && f.media.subject === subject);
+
+    render(results, Boolean(query || topic || status || sourceType || year || kind || subject));
+    updateStats(results);
+}
+
+function render(findings, filtered) {
+    const container = document.getElementById('resultsContainer');
+    if (findings.length === 0) {
+        container.innerHTML = '<p class="no-results">No findings match. Try other words or clear the filters.</p>';
+        return;
+    }
+
+    let html = '';
+    let currentTopic = null, currentSubject = null;
+    const counts = new Map();
+    findings.forEach(f => counts.set(f.topic, (counts.get(f.topic) || 0) + 1));
+    findings.forEach(f => {
+        if (f.topic !== currentTopic) {
+            if (currentTopic !== null) html += '</section>';
+            currentTopic = f.topic; currentSubject = null;
+            html += `<section class="topic-group" id="${slug(f.topic)}"><h2 class="topic-title">${esc(f.topic)} <span class="topic-count">${counts.get(f.topic)}</span></h2>`;
+        }
+        if (f.media && f.media.subject !== currentSubject) {
+            currentSubject = f.media.subject;
+            const n = findings.filter(x => x.media && x.media.subject === currentSubject).length;
+            html += `<h3 class="subject-title">${esc(currentSubject)} <span class="topic-count">${n}</span></h3>`;
+        }
+        html += renderFinding(f);
+    });
+    html += '</section>';
+    container.innerHTML = html;
+
+    // contents: the topics shown, with their counts
+    document.getElementById('topicNav').innerHTML = [...counts].map(([t, n]) =>
+        `<a href="#${slug(t)}">${esc(t)}<span class="n">${n}</span></a>`).join('');
+
+    // A single search hit is most useful already open.
+    if (filtered && findings.length === 1) setAll(true);
+}
+
+function renderFinding(f) {
+    const details = renderDetails(f.details || []);
+    const srcs = f.sources || [];
+    const sources = srcs.map((s, i) => {
+        const label = esc(s.title);
+        const link = s.url && /^https?:\/\//.test(s.url)
+            ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${label}</a>`
+            : label;
+        const meta = [s.type, s.accessed && `opened ${formatDate(s.accessed)}`].filter(Boolean).map(esc).join(' · ');
+        const excerpt = s.excerpt && !(f.media && s.excerpt === f.media.quote) ? `<span class="source-excerpt">${esc(s.excerpt)}</span>` : '';
+        return `<li><span class="source-type">[${i + 1}]</span> ${link}${meta ? ` <span class="source-type">${meta}</span>` : ''}${excerpt}</li>`;
+    }).join('');
+    const conflicts = (f.conflicts || []).map(c => {
+        const refs = (c.sources || []).map(i => `[${i + 1}]`).join(' ');
+        return `<p>${linkify(esc(c.note))}${refs ? ` <span class="source-type">${esc(refs)}</span>` : ''}</p>`;
+    }).join('');
+    const m = f.media;
+    const quote = m ? `
+            <blockquote class="quote">${esc(m.quote)}${m.translation ? `<span class="quote-translation">${esc(m.translation)}</span>` : ''}</blockquote>
+            <p class="attribution"><b>${esc(m.speaker)}</b>${m.role ? `, ${esc(m.role)}` : ''}${m.venue ? ` · ${esc(m.venue)}` : ''}${m.said ? ` · ${formatDate(m.said)}` : ''}
+                <span class="via">${esc(mediaVia(f))}</span></p>` : '';
+
+    return `
+    <article class="finding" data-id="${esc(f.id)}">
+        <div class="finding-head" role="button" tabindex="0" aria-expanded="false">
+            <div class="finding-title-row">
+                <h3 class="finding-title">${esc(f.title)}</h3>
+                <span class="badge badge-${esc(f.status)}">${esc(STATUS_LABELS[f.status] || f.status)}</span>
+            </div>
+            ${quote || `<p class="finding-summary">${linkify(esc(f.summary || ''))}</p>`}
+            <div class="finding-meta">
+                ${f.kind ? `<span class="kind kind-${esc(f.kind)}">${esc(KIND_LABELS[f.kind] || f.kind)}</span>` : ''}
+                ${m && m.subject ? `<span class="subject-tag">${esc(m.subject)}</span>` : ''}
+                ${f.date && !m ? `<span>${formatDate(f.date)}</span>` : ''}
+                ${f.confidence ? `<span>Confidence: ${esc(f.confidence)}</span>` : ''}
+                ${f.lastVerified ? `<span>Checked ${formatDate(f.lastVerified)}</span>` : ''}
+                ${conflicts ? '<span class="disagree">Sources disagree</span>' : ''}
+                <span class="toggle-hint">Details</span>
+            </div>
+        </div>
+        <div class="finding-body">
+            ${m && f.summary ? `<p>${linkify(esc(f.summary))}</p>` : ''}
+            ${conflicts ? `<div class="finding-conflicts"><h4>Where sources disagree</h4>${conflicts}</div>` : ''}
+            ${details}
+            ${sources ? `<div class="finding-sources"><h4>Sources</h4><ul>${sources}</ul></div>` : ''}
+            ${f.sourceFile ? `<p class="source-file">From: ${esc(f.sourceFile)}</p>` : ''}
+            <p class="source-file"><a href="../#${encodeURIComponent(f.id)}">Show in the Network</a></p>
+        </div>
+    </article>`;
+}
+
+function renderDetails(lines) {
+    let html = '';
+    let inList = false;
+    lines.forEach(line => {
+        if (line.startsWith('- ')) {
+            if (!inList) { html += '<ul class="detail-list">'; inList = true; }
+            html += `<li>${linkify(esc(line.slice(2)))}</li>`;
+        } else {
+            if (inList) { html += '</ul>'; inList = false; }
+            html += `<p>${linkify(esc(line))}</p>`;
+        }
+    });
+    if (inList) html += '</ul>';
+    return html;
+}
+
+// where a Media statement comes from, as a short label
+function mediaVia(f) {
+    const s = (f.sources || [])[0] || {};
+    if (/PDF saved by Rui/.test(s.title || '')) return 'Reddit, from a PDF saved by Rui';
+    return { news: 'news', official: 'official record', press: 'press release', social: 'public post', secondary: 'secondary' }[s.type] || s.type || '';
+}
+
+function updateStats(findings) {
+    const count = s => findings.filter(f => f.status === s).length;
+    document.getElementById('totalCount').textContent = findings.length;
+    document.getElementById('verifiedCount').textContent = count('verified');
+    document.getElementById('unverifiedCount').textContent = count('unverified');
+    document.getElementById('questionCount').textContent = count('open-question');
+    document.getElementById('analysisCount').textContent = count('analysis');
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    FILTERS.forEach(id => { document.getElementById(id).value = ''; });
+    applyFilters();
+}
+
+function initTheme() {
+    // the theme button is wired by ../theme.js (shared with the home page and Methods)
+}
+
+function esc(text) {
+    return String(text ?? '').replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[m]));
+}
+
+function formatDate(d) {
+    // only the precision the source gives: "1961", "Jul 2013", "Jul 30, 2013"
+    if (/^\d{4}$/.test(d)) return d;
+    if (/^\d{4}-\d{2}$/.test(d)) {
+        const ym = new Date(d + '-01T00:00:00Z');
+        return ym.toLocaleDateString('en-US', { year: 'numeric', month: 'short', timeZone: 'UTC' });
+    }
+    const date = new Date(d + 'T00:00:00Z');
+    if (isNaN(date)) return esc(d);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+</script>
+
+</body></html>

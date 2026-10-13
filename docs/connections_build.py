@@ -1,4 +1,4 @@
-"""Build web/connections/data.json from web/research/data.json (user, 2026-10-12: the Connection page shows how the
+"""Build web/research/connections.json from web/research/data.json (user, 2026-10-12: the Network view of Research shows how the
 research entries are related; only relations that are in the data, never guessed).
 
 Three kinds of link, each with the evidence the page shows:
@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "web" / "research" / "data.json"
-OUT = ROOT / "web" / "connections" / "data.json"
+OUT = ROOT / "web" / "research" / "connections.json"
 
 # People and organisations. Each pattern is matched (case-sensitive unless (?i) is given) in an entry's title,
 # summary, details and, for Media, the speaker, role and quote; not in source titles or publication names, which say
