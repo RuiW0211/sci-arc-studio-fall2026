@@ -43,7 +43,7 @@
   /* blob tracking (user, 2026-10-12, after TouchDesigner's Blob Track): the point in focus and its neighbours get a
      tracking frame that locks on and follows them, with a small readout; the chosen one gets a full square */
   #blobs { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
-  .blob { position: absolute; left: 0; top: 0; width: var(--s); height: var(--s); will-change: transform;
+  .blob { position: absolute; left: 0; top: 0; width: var(--s); height: var(--s); will-change: translate;
     --k: var(--text); --l: 5px;
     background: linear-gradient(var(--k), var(--k)) top left / var(--l) 1px, linear-gradient(var(--k), var(--k)) top left / 1px var(--l),
       linear-gradient(var(--k), var(--k)) top right / var(--l) 1px, linear-gradient(var(--k), var(--k)) top right / 1px var(--l),
@@ -54,6 +54,13 @@
     white-space: nowrap; font-style: normal; letter-spacing: 0.02em; }
   .blob.main { border: 1px solid var(--k); background: none; }
   .blob.main i { color: var(--text); }
+  /* scanning the time axis (user, 2026-10-12): a hairline across the screen at the scanned year, with a readout */
+  #scan { position: fixed; left: 0; right: 0; top: 0; height: 0; pointer-events: none; z-index: 2; opacity: 0;
+    transition: opacity var(--t-feedback); }
+  #scan.on { opacity: 1; }
+  #scan .ln { position: absolute; left: 0; right: 0; top: 0; border-top: 1px solid var(--text); opacity: 0.35; }
+  #scan .rd { position: absolute; left: 16px; top: 4px;   /* at the screen's edge, clear of the labels */ font: 0.68rem/1.3 var(--mono); color: var(--text); white-space: nowrap; }
+  #scan .rd b { font-size: 0.95rem; font-weight: 400; display: block; }
   /* locking on: the frame closes in from larger (scale, not transform, which holds the position) */
   .blob { animation: lockOn var(--t-in) ease-out both; }
   @keyframes lockOn { from { opacity: 0; scale: 2.2; } to { opacity: 1; scale: 1; } }
@@ -95,6 +102,7 @@
 <body>
 <div id="view"></div>
 <div id="blobs"></div>
+<div id="scan"><div class="ln"></div><div class="rd"></div></div>
 <div id="labels"></div>
 <div class="over">
   <p class="eyebrow">Angels Knoll · Connections · <a href="../" class="home">home</a></p>
@@ -272,6 +280,7 @@ const years = [];
 const labelsEl = document.getElementById("labels");
 const labels = new Map();   // node index -> element
 const blobsEl = document.getElementById("blobs"), blobs = new Map();
+const scanEl = document.getElementById("scan"), scanRd = scanEl.querySelector(".rd");
 function label(i) {
   if (labels.has(i)) return labels.get(i);
   const n = nodes[i], el = document.createElement("div");
@@ -288,7 +297,7 @@ const yearEls = years.map(([y]) => { const el = document.createElement("div"); e
 // ---- controls: link kinds ----
 const on = Object.fromEntries(KINDS.map((k) => [k.k, k.on]));
 const ctl = document.getElementById("ctl");
-ctl.innerHTML = `<div class="hint">Drag a point or tag to move it · drag space to turn · scroll to zoom · ` +
+ctl.innerHTML = `<div class="hint">Drag a point or tag to move it · drag the time axis to scan · drag space to turn · ` +
   `<button data-reset>reset</button></div><div class="row">` +
   KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") + `</div>`;
 ctl.addEventListener("click", (e) => {
@@ -298,9 +307,12 @@ ctl.addEventListener("click", (e) => {
 });
 
 // ---- state, colouring ----
-let hover = -1, sel = -1, dirty = true;
+let hover = -1, sel = -1, dirty = true, scan = null;   // scan: world height of the scan line, or null
+const SCAN_BAND = 16;   // world units either side of the scan line (the axis is ${H} tall)
+function inScan(i) { return scan !== null && fixY[i] !== null && Math.abs(fixY[i] - scan) <= SCAN_BAND; }
 function focusSet() {
   const f = sel >= 0 ? sel : hover;
+  if (f < 0 && scan !== null) return new Set(nodes.map((n, i) => i).filter(inScan));
   if (f < 0) return null;
   const s = new Set([f]);
   for (const li of adj[f]) { const l = links[li]; if (on[l.kind]) s.add(l.i === f ? l.j : l.i); }
@@ -316,7 +328,7 @@ function paint() {
   links.forEach((l, k) => {
     const kind = KINDS.find((x) => x.k === l.kind);
     let a = on[l.kind] ? kind.a * (FAINT_HUB[l.a] || FAINT_HUB[l.b] || 1) : 0;
-    if (fs && a) a = (l.i === f || l.j === f) ? Math.min(1, kind.a * 2.2 + 0.3) : a * 0.12;
+    if (fs && a) a = (f >= 0 ? (l.i === f || l.j === f) : (fs.has(l.i) && fs.has(l.j))) ? Math.min(1, kind.a * 2.2 + 0.3) : a * 0.12;
     const c = css.text;
     for (const v of [0, 1]) { lCol.set([c.r, c.g, c.b, a], 8 * k + 4 * v); }
   });
@@ -386,6 +398,10 @@ function rayAt(e) { ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerH
 addEventListener("pointerdown", (e) => {
   if (!onScene(e) || e.button !== 0) return;
   down = [e.clientX, e.clientY]; controls.autoRotate = false; idleT = performance.now();
+  // the axis and the strip of years beside it scan, ahead of points there (tags still drag)
+  if (e.target === renderer.domElement && nearAxis(e.clientX, e.clientY)) {
+    controls.enabled = false; scanning = true; scanTo(e); document.body.style.cursor = "ns-resize"; e.preventDefault(); return;
+  }
   const i = nodeAt(e);
   if (i < 0) return;
   controls.enabled = false;   // runs before OrbitControls (capture), so the view does not turn
@@ -397,6 +413,7 @@ addEventListener("pointerdown", (e) => {
   e.preventDefault();
 }, true);
 addEventListener("pointermove", (e) => {
+  if (scanning) { scanTo(e); idleT = performance.now(); return; }
   if (drag) {
     if (!drag.moved && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 4) return;
     drag.moved = true; pinned.add(drag.i);
@@ -410,11 +427,14 @@ addEventListener("pointermove", (e) => {
     return;
   }
   if (e.pointerType !== "mouse" || e.buttons) return;
-  const h = onScene(e) ? nodeAt(e) : -1;
-  if (h !== hover) { hover = h; dirty = true; document.body.style.cursor = h >= 0 ? "grab" : ""; }
+  const onAxis = e.target === renderer.domElement && nearAxis(e.clientX, e.clientY);
+  const h = onScene(e) && !onAxis ? nodeAt(e) : -1;
+  if (h !== hover) { hover = h; dirty = true; }
+  document.body.style.cursor = onAxis ? "ns-resize" : h >= 0 ? "grab" : "";
 });
 addEventListener("pointerup", (e) => {
   idleT = performance.now();
+  if (scanning) { scanning = false; controls.enabled = true; down = null; return; }   // the scan stays until a click on empty space
   if (drag) {
     const { i, moved } = drag;
     drag = null; controls.enabled = true; document.body.style.cursor = hover >= 0 ? "grab" : "";
@@ -423,8 +443,30 @@ addEventListener("pointerup", (e) => {
   }
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
   down = null;
-  if (e.target === renderer.domElement) close();
+  if (e.target === renderer.domElement) { close(); clearScan(); }
 });
+// the time axis on screen, and the height under the pointer
+let scanning = false;
+const axTop = new THREE.Vector3(), axBot = new THREE.Vector3();
+function nearAxis(x, y) {
+  axTop.set(0, yOf(t1), 0).project(camera); axBot.set(0, yOf(t0), 0).project(camera);
+  const ax = (axTop.x + 1) / 2 * innerWidth, ay = (1 - axTop.y) / 2 * innerHeight;
+  const bx = (axBot.x + 1) / 2 * innerWidth, by = (1 - axBot.y) / 2 * innerHeight;
+  const dx = bx - ax, dy = by - ay, k = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)));
+  const ox = x - (ax + k * dx), oy = y - (ay + k * dy);
+  return Math.hypot(ox, oy) < 6 || (ox > 0 && ox < 46 && Math.abs(oy) < 30);   // on the line, or over its years
+}
+function scanTo(e) {
+  rayAt(e);
+  camera.getWorldDirection(camDir); camDir.y = 0; camDir.normalize();
+  const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camDir, new THREE.Vector3(0, 0, 0));
+  if (!ray.ray.intersectPlane(plane, hit)) return;
+  scan = Math.max(yOf(t0), Math.min(yOf(t1), hit.y)); dirty = true;
+  controls.autoRotate = false;
+}
+function clearScan() { if (scan !== null) { scan = null; dirty = true; } }
+// the year at a height: yOf is increasing, so search it
+function tOf(y) { let a = t0, b = t1; for (let k = 0; k < 40; k++) { const m = (a + b) / 2; if (yOf(m) < y) a = m; else b = m; } return (a + b) / 2; }
 controls.addEventListener("start", () => { controls.autoRotate = false; });
 controls.addEventListener("end", () => { idleT = performance.now(); });
 // geometry follows the positions while the network moves
@@ -474,7 +516,7 @@ card.addEventListener("click", (e) => {
   if (e.target.closest(".x")) return close();
   const b = e.target.closest("button[data-i]"); if (b) select(+b.dataset.i, true);
 });
-addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+addEventListener("keydown", (e) => { if (e.key === "Escape") { close(); clearScan(); } });
 
 // ---- frame ----
 function resize() {
@@ -506,7 +548,7 @@ function frame(now) {
   offX += (ox - offX) * 0.12; offY += (oy - offY) * 0.12;
   if (Math.abs(offX) > 0.5 || Math.abs(offY) > 0.5) camera.setViewOffset(innerWidth, innerHeight, offX, offY, innerWidth, innerHeight);
   else if (camera.view) camera.clearViewOffset();
-  if (!controls.autoRotate && sel < 0 && hover < 0 && now - idleT > 6000) controls.autoRotate = true;
+  if (!controls.autoRotate && sel < 0 && hover < 0 && scan === null && now - idleT > 6000) controls.autoRotate = true;
   if (heat > 0.02) {   // the network settles around a moved point
     tick(heat * 0.6); syncGeo();
     if (!drag) heat *= 0.96;
@@ -517,11 +559,19 @@ function frame(now) {
   project();
   for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
   years.forEach(([, yy], k) => placeLabel(yearEls[k], 0, yy, 0, 10, -6));
+  if (scan !== null) {
+    v3.set(0, scan, 0).project(camera);
+    const sy = (1 - v3.y) / 2 * innerHeight;
+    scanEl.style.translate = `0 ${sy.toFixed(1)}px`; scanEl.classList.add("on");
+    const t = tOf(scan), lo = tOf(scan - SCAN_BAND), hi = tOf(scan + SCAN_BAND), n = blobs.size;
+    const txt = `<b>${t.toFixed(1)}</b>${Math.floor(lo)}–${Math.floor(hi)} · ${n} ${n === 1 ? "entry" : "entries"}`;
+    if (scanRd.innerHTML !== txt) scanRd.innerHTML = txt;
+  } else scanEl.classList.remove("on");
   for (const [i, el] of blobs) {
     const h = +el.dataset.h;
     if (scr[3 * i + 2] > 1) { el.style.visibility = "hidden"; continue; }
     el.style.visibility = "";
-    el.style.transform = `translate(${(scr[3 * i] - h).toFixed(1)}px, ${(scr[3 * i + 1] - h).toFixed(1)}px)`;
+    el.style.translate = `${(scr[3 * i] - h).toFixed(1)}px ${(scr[3 * i + 1] - h).toFixed(1)}px`;   // not transform: scale (lock-on) must act about the frame's own centre
   }
   requestAnimationFrame(frame);
 }
