@@ -149,6 +149,28 @@
 
 .no-results { padding: 48px 0; text-align: center; color: var(--muted); }
 
+/* kind (fact / claim / analysis), checked date, disagreement marker */
+.kind { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.kind-claim { color: var(--unverified); }
+.kind-analysis { color: var(--analysis); }
+.disagree { color: var(--unverified); }
+.disagree::before { content: "\25CB  "; }
+.finding-conflicts { margin: 4px 0 16px; padding: 10px 12px; border-left: 2px solid var(--unverified); background: var(--hover); }
+.finding-conflicts h4, .finding-sources h4 { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; }
+.finding-conflicts p { font-size: 0.88rem; margin-bottom: 6px; }
+.source-excerpt { display: block; color: var(--muted); font-size: 0.8rem; margin: 2px 0 6px 0; }
+.source-excerpt::before { content: "\201C"; } .source-excerpt::after { content: "\201D"; }
+
+/* Media: the statement itself, then who said it, where and when */
+.quote { margin: 4px 0 8px; padding-left: 14px; border-left: 2px solid var(--line); font-size: 1.05rem; line-height: 1.5; }
+.quote-translation { display: block; color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.attribution { font-size: 0.85rem; color: var(--muted); }
+.attribution b { color: var(--text); font-weight: 600; }
+.subject-tag { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+
+.about { font-size: 0.85rem; color: var(--muted); margin: -8px 0 20px; }
+.about a { color: var(--muted); }
+
 
 
 @media (max-width: 600px) {
@@ -179,6 +201,13 @@
                     <option value="open-question">Open question</option>
                     <option value="analysis">Analysis</option>
                 </select>
+                <select id="kindFilter" class="filter-select" aria-label="Kind">
+                    <option value="">Facts, claims and analysis</option>
+                    <option value="fact">Facts</option>
+                    <option value="claim">Claims and statements</option>
+                    <option value="analysis">Our analysis</option>
+                </select>
+                <select id="subjectFilter" class="filter-select" aria-label="Media subject"><option value="">All Media subjects</option></select>
                 <select id="sourceFilter" class="filter-select" aria-label="Source type"><option value="">All source types</option></select>
                 <select id="yearFilter" class="filter-select" aria-label="Year"><option value="">All years</option></select>
                 <button id="clearBtn" class="btn">Clear</button>
@@ -193,6 +222,8 @@
             <div><span class="stat-number s-analysis" id="analysisCount">0</span><span class="stat-label">Analysis</span></div>
         </section>
 
+        <p class="about" id="aboutLine"></p>
+
         <div class="list-controls">
             <button id="expandAll" class="btn btn-quiet">Expand all</button>
             <button id="collapseAll" class="btn btn-quiet">Collapse all</button>
@@ -201,7 +232,7 @@
         <div id="resultsContainer"></div>
 
         <footer class="footer">
-            Y-1 Research Database - Syracuse Visiting Studio - Fall 2026. Add or correct findings by editing <code>web/research/data.json</code> in a pull request. Link to one finding with <code>research/#id</code>, e.g. <code>#lit-005</code>.
+            Y-1 Research Database - Syracuse Visiting Studio - Fall 2026. How entries are checked: <a href="https://github.com/RuiW0211/sci-arc-studio-fall2026/blob/main/docs/RESEARCH.md" target="_blank" rel="noopener">verification rules</a>. Add or correct findings by editing <code>web/research/data.json</code> in a pull request. Link to one finding with <code>research/#id</code>, e.g. <code>#lit-005</code>.
         </footer>
     </main>
 
@@ -214,10 +245,15 @@ const TOPIC_ORDER = [
     'Litigation',
     'Surplus Land Act',
     'Zoning & Entitlements',
+    'Unbuilt Schemes',
+    'Angels Knoll Park',
+    'Angels Flight',
     'MOCA',
     '1980 Bargain & History',
     'California Plaza',
+    'Bunker Hill Before Redevelopment',
     'Site Conditions',
+    'Media',
     'Insights',
     'Design Implications',
     'Open Questions'
@@ -229,6 +265,8 @@ const STATUS_LABELS = {
     'open-question': 'Open question',
     'analysis': 'Analysis'
 };
+const KIND_LABELS = { fact: 'Fact', claim: 'Claim', analysis: 'Our analysis' };
+const FILTERS = ['topicFilter', 'statusFilter', 'kindFilter', 'subjectFilter', 'sourceFilter', 'yearFilter'];
 
 let allFindings = [];
 let lunrIdx = null;
@@ -284,6 +322,20 @@ function initFilters() {
     const years = allFindings.map(f => f.date && f.date.slice(0, 4)).filter(Boolean);
     const yearSelect = document.getElementById('yearFilter');
     [...new Set(years)].sort().forEach(y => yearSelect.add(new Option(y, y)));
+
+    const subjects = [...new Set(allFindings.map(f => f.media && f.media.subject).filter(Boolean))].sort();
+    const subjectSelect = document.getElementById('subjectFilter');
+    subjects.forEach(s => subjectSelect.add(new Option(s, s)));
+
+    // when the entries were last checked against their sources
+    const checked = allFindings.map(f => f.lastVerified).filter(Boolean).sort();
+    if (checked.length) {
+        const last = checked[checked.length - 1];
+        const all = checked.length === allFindings.length && checked[0] === last;
+        document.getElementById('aboutLine').textContent = all
+            ? `All ${allFindings.length} entries were checked against their sources on ${formatDate(last)}. Statuses that change (litigation, notices, appointments) are as of that date.`
+            : `${checked.length} of ${allFindings.length} entries checked against their sources, most recently on ${formatDate(last)}.`;
+    }
 }
 
 function buildIndex() {
@@ -299,7 +351,7 @@ function buildIndex() {
                 id: f.id,
                 title: f.title,
                 summary: f.summary || '',
-                body: (f.details || []).join(' '),
+                body: [...(f.details || []), ...(f.media ? [f.media.quote, f.media.translation, f.media.speaker, f.media.role, f.media.venue, f.media.subject] : [])].filter(Boolean).join(' '),
                 topic: f.topic,
                 sources: (f.sources || []).map(s => s.title).join(' ')
             });
@@ -323,8 +375,7 @@ function attachListeners() {
         clearTimeout(timer);
         timer = setTimeout(applyFilters, 200);
     });
-    ['topicFilter', 'statusFilter', 'sourceFilter', 'yearFilter'].forEach(id =>
-        document.getElementById(id).addEventListener('change', applyFilters));
+    FILTERS.forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
     document.getElementById('clearBtn').addEventListener('click', clearFilters);
 
     document.getElementById('resultsContainer').addEventListener('click', e => {
@@ -360,6 +411,8 @@ function applyFilters() {
     const status = document.getElementById('statusFilter').value;
     const sourceType = document.getElementById('sourceFilter').value;
     const year = document.getElementById('yearFilter').value;
+    const kind = document.getElementById('kindFilter').value;
+    const subject = document.getElementById('subjectFilter').value;
 
     let results = allFindings;
     if (query) {
@@ -370,8 +423,10 @@ function applyFilters() {
     if (status) results = results.filter(f => f.status === status);
     if (sourceType) results = results.filter(f => (f.sources || []).some(s => s.type === sourceType));
     if (year) results = results.filter(f => f.date && f.date.startsWith(year));
+    if (kind) results = results.filter(f => f.kind === kind);
+    if (subject) results = results.filter(f => f.media && f.media.subject === subject);
 
-    render(results, Boolean(query || topic || status || sourceType || year));
+    render(results, Boolean(query || topic || status || sourceType || year || kind || subject));
     updateStats(results);
 }
 
@@ -402,13 +457,24 @@ function render(findings, filtered) {
 
 function renderFinding(f) {
     const details = renderDetails(f.details || []);
-    const sources = (f.sources || []).map(s => {
+    const srcs = f.sources || [];
+    const sources = srcs.map((s, i) => {
         const label = esc(s.title);
         const link = s.url && /^https?:\/\//.test(s.url)
             ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${label}</a>`
             : label;
-        return `<li>${link}${s.type ? ` <span class="source-type">${esc(s.type)}</span>` : ''}</li>`;
+        const meta = [s.type, s.accessed && `opened ${formatDate(s.accessed)}`].filter(Boolean).map(esc).join(' · ');
+        const excerpt = s.excerpt && !(f.media && s.excerpt === f.media.quote) ? `<span class="source-excerpt">${esc(s.excerpt)}</span>` : '';
+        return `<li><span class="source-type">[${i + 1}]</span> ${link}${meta ? ` <span class="source-type">${meta}</span>` : ''}${excerpt}</li>`;
     }).join('');
+    const conflicts = (f.conflicts || []).map(c => {
+        const refs = (c.sources || []).map(i => `[${i + 1}]`).join(' ');
+        return `<p>${esc(c.note)}${refs ? ` <span class="source-type">${esc(refs)}</span>` : ''}</p>`;
+    }).join('');
+    const m = f.media;
+    const quote = m ? `
+            <blockquote class="quote">${esc(m.quote)}${m.translation ? `<span class="quote-translation">${esc(m.translation)}</span>` : ''}</blockquote>
+            <p class="attribution"><b>${esc(m.speaker)}</b>${m.role ? `, ${esc(m.role)}` : ''}${m.venue ? ` · ${esc(m.venue)}` : ''}${m.said ? ` · ${formatDate(m.said)}` : ''}</p>` : '';
 
     return `
     <article class="finding" data-id="${esc(f.id)}">
@@ -417,14 +483,20 @@ function renderFinding(f) {
                 <h3 class="finding-title">${esc(f.title)}</h3>
                 <span class="badge badge-${esc(f.status)}">${esc(STATUS_LABELS[f.status] || f.status)}</span>
             </div>
-            <p class="finding-summary">${esc(f.summary || '')}</p>
+            ${quote || `<p class="finding-summary">${esc(f.summary || '')}</p>`}
             <div class="finding-meta">
-                ${f.date ? `<span>${formatDate(f.date)}</span>` : ''}
+                ${f.kind ? `<span class="kind kind-${esc(f.kind)}">${esc(KIND_LABELS[f.kind] || f.kind)}</span>` : ''}
+                ${m && m.subject ? `<span class="subject-tag">${esc(m.subject)}</span>` : ''}
+                ${f.date && !m ? `<span>${formatDate(f.date)}</span>` : ''}
                 ${f.confidence ? `<span>Confidence: ${esc(f.confidence)}</span>` : ''}
+                ${f.lastVerified ? `<span>Checked ${formatDate(f.lastVerified)}</span>` : ''}
+                ${conflicts ? '<span class="disagree">Sources disagree</span>' : ''}
                 <span class="toggle-hint">Details</span>
             </div>
         </div>
         <div class="finding-body">
+            ${m && f.summary ? `<p>${esc(f.summary)}</p>` : ''}
+            ${conflicts ? `<div class="finding-conflicts"><h4>Where sources disagree</h4>${conflicts}</div>` : ''}
             ${details}
             ${sources ? `<div class="finding-sources"><h4>Sources</h4><ul>${sources}</ul></div>` : ''}
             ${f.sourceFile ? `<p class="source-file">From: ${esc(f.sourceFile)}</p>` : ''}
@@ -459,9 +531,7 @@ function updateStats(findings) {
 
 function clearFilters() {
     document.getElementById('searchInput').value = '';
-    ['topicFilter', 'statusFilter', 'sourceFilter', 'yearFilter'].forEach(id => {
-        document.getElementById(id).value = '';
-    });
+    FILTERS.forEach(id => { document.getElementById(id).value = ''; });
     applyFilters();
 }
 
@@ -476,6 +546,12 @@ function esc(text) {
 }
 
 function formatDate(d) {
+    // only the precision the source gives: "1961", "Jul 2013", "Jul 30, 2013"
+    if (/^\d{4}$/.test(d)) return d;
+    if (/^\d{4}-\d{2}$/.test(d)) {
+        const ym = new Date(d + '-01T00:00:00Z');
+        return ym.toLocaleDateString('en-US', { year: 'numeric', month: 'short', timeZone: 'UTC' });
+    }
     const date = new Date(d + 'T00:00:00Z');
     if (isNaN(date)) return esc(d);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
