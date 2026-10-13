@@ -30,6 +30,10 @@
   ul.src { padding-left: 18px; font-size: 0.85rem; margin-bottom: 12px; }
   ul.src li { margin-bottom: 4px; word-break: break-word; }
   .wrap { overflow-x: auto; }
+  /* parts of the text are filled in from the data files: the page under the header fades in once, when they are
+     in, instead of text and tables popping in (user, 2026-10-12; same as Research) */
+  main > :not(.header) { transition: opacity var(--t-in) ease; }
+  body:not(.ready) main > :not(.header) { opacity: 0; }
 </style>
 </head>
 <body>
@@ -246,7 +250,7 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
       <li>The daily walks of people without shelter are assumed; raw tract tallies do not add up to LAHSA's published estimates.</li>
     </ul>`;
   document.getElementById("stamp").textContent = "";
-})();
+})().finally(() => requestAnimationFrame(() => document.body.classList.add("ready")));
 </script>
 </body>
 </html>
