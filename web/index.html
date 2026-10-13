@@ -19,6 +19,15 @@
     s.textContent = JSON.stringify({ prerender: [{ urls: ["viewer.html"], eagerness: eager ? "immediate" : "moderate" }] });
     document.head.appendChild(s);
   })();
+  // Back from the viewer with its "home" link (a history step back, viewer.js), the viewer is still the next history
+  // entry and the browser keeps it as it was: Model then steps forward to it, open at once with the same view
+  // (user, 2026-10-12: the second time it loaded again). Navigation API (Chromium); elsewhere the link just loads.
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest('a[href="viewer.html"]');
+    if (!a || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !window.navigation) return;
+    var es = navigation.entries(), next = es[navigation.currentEntry.index + 1];
+    if (next && new URL(next.url).pathname === new URL(a.href).pathname) { e.preventDefault(); navigation.forward(); }
+  });
 </script>
 <style>
   /* the three entries, laid out like Research's findings */

@@ -1196,6 +1196,14 @@ for (const ev of ["pointermove", "pointerdown", "wheel", "keydown", "touchstart"
 // prepared in the background from the home page (prerender): when the reader arrives, start the idle wait afresh (it
 // may have run out while hidden) and fit the canvas to the window as it is now
 if (document.prerendering) document.addEventListener("prerenderingchange", () => { wake(); dispatchEvent(new Event("resize")); invalidate(); }, { once: true });
+// "home" steps back in history when the home page is the previous entry, so this page stays in the browser's
+// back/forward cache and the home page's Model link can step forward to it, open at once (user, 2026-10-12)
+document.querySelector('.sub a[href="./"]')?.addEventListener("click", (e) => {
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !window.navigation) return;
+  const prev = navigation.entries()[navigation.currentEntry.index - 1];
+  if (prev && new URL(prev.url).pathname === new URL(e.currentTarget.href).pathname) { e.preventDefault(); navigation.back(); }
+});
+addEventListener("pageshow", (e) => { if (e.persisted) { wake(); dispatchEvent(new Event("resize")); invalidate(); } });
 // the floating tags fade after 10 s without input (user, 2026-10-08), like the panels
 let tagTimer = 0;
 function wakeTags() {

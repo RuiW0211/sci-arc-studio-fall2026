@@ -40,7 +40,9 @@ class Handler(SimpleHTTPRequestHandler):
         return super().translate_path(path)
 
     def end_headers(self):
-        self.send_header("Cache-Control", "no-store")  # always see the latest export while working
+        # always see the latest export while working (no-cache: revalidated on every load), but not no-store, which keeps
+        # pages out of the back/forward cache that the home page <-> viewer switch uses (as on GitHub Pages)
+        self.send_header("Cache-Control", "no-cache")
         super().end_headers()
 
 
