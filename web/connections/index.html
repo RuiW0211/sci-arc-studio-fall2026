@@ -474,8 +474,7 @@ ctl.innerHTML =
     `<dt>org 33</dt><dd>Organisation, with its number of links (pers: person, subj: subject)</dd></dl>` +
     `<div class="abbr-h">Topics</div><dl>${topicRows}</dl>`) +
   panel("view", "View",
-    `<div class="key"><button data-view="side">From the side (time)</button><button data-view="top">From above (links)</button>` +
-    `<button data-view="overview">Opening view</button></div>`) +
+    `<div class="key"><button data-view="side">Side</button><button data-view="top">Top</button></div>`) +
   panel("help", "How to use",
     `<dl><dt>drag a point or tag</dt><dd>Move it and see what it is tied to; dated entries move only sideways</dd>` +
     `<dt>drag the slider</dt><dd>Scan the time axis; the entries of that time are framed</dd>` +
@@ -783,9 +782,13 @@ function miniTimeline(i) {
 }
 // fly the camera to a point and frame it with its neighbours (double-click, the card's names, search, arrow keys)
 function flyTo(target, pos) {
-  fly = { from: controls.target.clone(), to: target, pFrom: camera.position.clone(), pTo: pos, t: performance.now() };
+  const s0 = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+  const s1 = new THREE.Spherical().setFromVector3(pos.clone().sub(target));
+  let dt = s1.theta - s0.theta; dt -= Math.round(dt / (2 * Math.PI)) * 2 * Math.PI;   // the shorter way round
+  fly = { from: controls.target.clone(), to: target, s0, s1, dTheta: dt, t: performance.now() };
   controls.autoRotate = false; idleT = performance.now();
 }
+const flySph = new THREE.Spherical();
 function focusOn(i) {
   const c = new THREE.Vector3(P[3 * i], P[3 * i + 1], P[3 * i + 2]);
   let r = 60;
@@ -799,11 +802,13 @@ function focusOn(i) {
   flyTo(c, c.clone().add(dir.multiplyScalar(dist)));
 }
 const HOME = { t: new THREE.Vector3(0, 0, 0), p: new THREE.Vector3(2050, 260, 2050) };
-const VIEWS = {   // preset views: from the side (time reads best), from above (links read best), the opening view
-  side: () => { const d = HOME.p.length(); flyTo(HOME.t.clone(), new THREE.Vector3(d * 0.98, 0, d * 0.2)); },
-  top: () => { const d = HOME.p.length() * 0.9; flyTo(HOME.t.clone(), new THREE.Vector3(0.01, d, 0.01)); },
+const VIEWS = {   // side: time reads best; top: links read best (user, 2026-10-13: these two only); overview: double-click
+  side: () => flyTo(HOME.t.clone(), new THREE.Vector3().setFromSphericalCoords(HOME.p.length(), Math.PI / 2, currentTheta())),
+  top: () => flyTo(HOME.t.clone(), new THREE.Vector3().setFromSphericalCoords(HOME.p.length() * 0.9, 0.06, currentTheta())),
   overview: () => flyTo(HOME.t.clone(), HOME.p.clone()),
 };
+// keep the turn the view already has, so switching views only tips it up or down
+function currentTheta() { return new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target)).theta; }
 function close() {
   if (sel < 0) return;
   sel = -1; dirty = true; card.classList.remove("show"); history.replaceState(null, "", location.pathname);
@@ -888,7 +893,10 @@ function frame(now) {
   if (fly) {
     const k = Math.min(1, (now - fly.t) / 700), e = k * k * (3 - 2 * k);
     controls.target.lerpVectors(fly.from, fly.to, e);
-    if (fly.pFrom) camera.position.lerpVectors(fly.pFrom, fly.pTo, e);
+    if (fly.s0) {
+      flySph.set(fly.s0.radius + (fly.s1.radius - fly.s0.radius) * e, fly.s0.phi + (fly.s1.phi - fly.s0.phi) * e, fly.s0.theta + fly.dTheta * e);
+      camera.position.setFromSpherical(flySph).add(controls.target);
+    }
     if (k >= 1) fly = null;
   }
   // with the card open, the view slides so the chosen point is not under it (right on wide screens, bottom on phones)
