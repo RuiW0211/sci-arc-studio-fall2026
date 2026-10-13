@@ -17,6 +17,22 @@
   .over .eyebrow { margin-bottom: 8px; pointer-events: auto; }
   .over h1 { font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; }
   .over .subtitle { font-size: 0.85rem; }
+  .search { margin-top: 12px; pointer-events: auto; width: min(320px, calc(100vw - 32px)); }
+  .search input { width: 100%; font: 0.8rem var(--font); color: var(--text); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 3px; padding: 6px 9px; outline: none; transition: border-color var(--t-feedback); }
+  .search input:focus { border-color: var(--muted); }
+  .search ul { list-style: none; margin-top: 4px; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; }
+  .search ul:empty { display: none; }
+  .search li { padding: 5px 9px; font-size: 0.78rem; cursor: pointer; display: flex; gap: 8px; align-items: baseline; }
+  .search li.on, .search li:hover { background: var(--hover); }
+  .search li small { font: 0.62rem var(--mono); color: var(--faint); flex: none; }
+  .search li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* the mini timeline in the card of a person, organisation or subject */
+  .card .mini { width: 100%; height: 44px; display: block; margin: 4px 0 2px; overflow: visible; }
+  .card .mini line { stroke: var(--line); }
+  .card .mini circle { cursor: pointer; transition: r var(--t-feedback); }
+  .card .mini circle:hover { r: 5; }
+  .card .mini text { font: 0.6rem var(--mono); fill: var(--faint); }
   /* the box of the controls lets the pointer through; only its buttons and open panel take it (user, 2026-10-12: points
      behind the controls' box could not be picked) */
   .ctl { position: fixed; left: 16px; bottom: 16px; z-index: 3; font-size: 0.75rem; color: var(--muted); max-width: calc(100% - 90px);
@@ -142,6 +158,8 @@
   <p class="eyebrow">Angels Knoll · Connections · <a href="../" class="home">home</a></p>
   <h1>Connections</h1>
   <p class="subtitle">How the research entries are linked. Up is later in time.</p>
+  <div class="search"><input id="q" type="search" placeholder="Search people, places, entries" autocomplete="off" spellcheck="false">
+    <ul id="qres"></ul></div>
 </div>
 <div class="ctl" id="ctl"></div>
 <div class="card" id="card" role="dialog" aria-live="polite"></div>
@@ -366,13 +384,19 @@ ctl.innerHTML =
     `<dt>subject</dt><dd>Linked to a Media subject (our grouping)</dd>` +
     `<dt>org 33</dt><dd>Organisation, with its number of links (pers: person, subj: subject)</dd></dl>` +
     `<div class="abbr-h">Topics</div><dl>${topicRows}</dl>`) +
+  panel("view", "View",
+    `<div class="key"><button data-view="side">From the side (time)</button><button data-view="top">From above (links)</button>` +
+    `<button data-view="overview">Opening view</button></div>`) +
   panel("help", "How to use",
     `<dl><dt>drag a point or tag</dt><dd>Move it and see what it is tied to; dated entries move only sideways</dd>` +
     `<dt>drag the slider</dt><dd>Scan the time axis; the entries of that time are framed</dd>` +
     `<dt>drag empty space</dt><dd>Turn the view</dd><dt>scroll</dt><dd>Zoom</dd>` +
-    `<dt>click</dt><dd>Open the card of a point; click empty space or press Esc to close</dd></dl>`) +
+    `<dt>click</dt><dd>Open the card of a point; click empty space or press Esc to close</dd>` +
+    `<dt>double-click</dt><dd>Fly to a point and its neighbours; on empty space, back to the opening view</dd>` +
+    `<dt>search</dt><dd>Type a name, a place or an entry id; Enter opens the first match</dd>` +
+    `<dt>← →</dt><dd>Walk the chosen point's neighbours, by date</dd><dt>↑ ↓</dt><dd>Move the slider a year later or earlier</dd></dl>`) +
   `<div class="bar"><button data-open="key">Key</button><button data-open="links">Links</button>` +
-  `<button data-open="abbr">Abbreviations</button><button data-open="help">How to use</button>` +
+  `<button data-open="view">View</button><button data-open="abbr">Abbreviations</button><button data-open="help">How to use</button>` +
   `<span class="sep">·</span><button data-reset>Reset layout</button></div>`;
 let openPanel = null;
 function showPanel(id) {
@@ -384,6 +408,7 @@ ctl.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.hasAttribute("data-reset")) return resetLayout();
   if (b.dataset.open) return showPanel(b.dataset.open);
+  if (b.dataset.view) return VIEWS[b.dataset.view]();
   on[b.dataset.k] = !on[b.dataset.k]; b.classList.toggle("on", on[b.dataset.k]); dirty = true;
 });
 
@@ -412,6 +437,8 @@ function readout(i, f) {
   const l = adj[f].map((li) => links[li]).find((l) => on[l.kind] && (l.i === i || l.j === i));
   return `${l ? l.kind : ""} · ${n.type === "entry" ? yr(n) : what(n)}`;
 }
+// the tags shown at rest (user, 2026-10-13: the centre was crowded): the 12 most linked people, organisations, subjects
+const TOP_HUBS = nodes.map((n, i) => i).filter((i) => isHub(nodes[i])).sort((a, b) => nodes[b].deg - nodes[a].deg).slice(0, 12);
 // focus changes fade (user, 2026-10-12): points and links ease to their new colour and alpha, labels and frames fade
 const pT = new Float32Array(N * 4), lT = new Float32Array(links.length * 8);
 let eased = false, easing = false, lastNow = 0;
@@ -455,7 +482,7 @@ function paint() {
   easing = true;
   axisMat.color.copy(css.faint); thumbMat.color.copy(css.text);
   // which labels show: hubs always; entries when in focus
-  const want = new Set(nodes.map((n, i) => isHub(n) ? i : -1).filter((i) => i >= 0));
+  const want = new Set(TOP_HUBS);   // at rest only the most linked tags; the rest come in with focus
   if (fs) fs.forEach((i) => want.add(i));
   if (fs) fs.forEach((i) => label(i));
   for (const [i, el] of labels) {
@@ -632,7 +659,7 @@ function select(i, flyTo) {
       (n.start ? ` · <a href="../timeline/#${encodeURIComponent(n.id)}">in Timeline</a>` : "") + `</div>`;
   } else {
     h += `<div class="meta">${n.type === "subject" ? "Subject · our grouping" : n.type === "person" ? "Person" : "Organisation"}</div>` +
-      `<h3>${esc(n.title)}</h3><p>${esc(n.note)}</p>`;
+      `<h3>${esc(n.title)}</h3><p>${esc(n.note)}</p>` + miniTimeline(i);
   }
   for (const kind of KINDS) {
     const ls = adj[i].map((li) => links[li]).filter((l) => l.kind === kind.k);
@@ -646,17 +673,103 @@ function select(i, flyTo) {
   }
   card.innerHTML = h; card.scrollTop = 0; card.classList.add("show");
   history.replaceState(null, "", "#" + encodeURIComponent(n.id));
-  if (flyTo) fly = { from: controls.target.clone(), to: new THREE.Vector3(P[3 * i], P[3 * i + 1], P[3 * i + 2]), t: performance.now() };
+  if (flyTo) focusOn(i);
 }
+// the linked dated entries of a person, organisation or subject on one line, in its own span of years
+function miniTimeline(i) {
+  const ds = adj[i].map((li) => links[li]).filter((l) => l.kind !== "source").map((l) => (l.i === i ? l.j : l.i))
+    .filter((o) => nodes[o].start).map((o) => ({ o, t: num(nodes[o].start) }));
+  if (ds.length < 2) return "";
+  const lo = Math.min(...ds.map((d) => d.t)), hi = Math.max(...ds.map((d) => d.t)), W = 320, pad = 6;
+  const x = (t) => pad + (hi === lo ? 0.5 : (t - lo) / (hi - lo)) * (W - 2 * pad);
+  const col = (n) => `var(--${{ "open-question": "question" }[n.status] || n.status})`;
+  return `<svg class="mini" viewBox="0 0 ${W} 44" aria-label="Linked entries by date">` +
+    `<line x1="${pad}" y1="16" x2="${W - pad}" y2="16" />` +
+    ds.map((d) => `<circle data-i="${d.o}" cx="${x(d.t).toFixed(1)}" cy="16" r="3.5" style="fill:${col(nodes[d.o])}"><title>${esc(nodes[d.o].start + " · " + nodes[d.o].title)}</title></circle>`).join("") +
+    `<text x="${pad}" y="36">${Math.floor(lo)}</text><text x="${W - pad}" y="36" text-anchor="end">${Math.floor(hi)}</text></svg>`;
+}
+// fly the camera to a point and frame it with its neighbours (double-click, the card's names, search, arrow keys)
+function flyTo(target, pos) {
+  fly = { from: controls.target.clone(), to: target, pFrom: camera.position.clone(), pTo: pos, t: performance.now() };
+  controls.autoRotate = false; idleT = performance.now();
+}
+function focusOn(i) {
+  const c = new THREE.Vector3(P[3 * i], P[3 * i + 1], P[3 * i + 2]);
+  let r = 60;
+  for (const li of adj[i]) {
+    const l = links[li]; if (!on[l.kind]) continue;
+    const o = l.i === i ? l.j : l.i;
+    r = Math.max(r, Math.hypot(P[3 * o] - c.x, P[3 * o + 1] - c.y, P[3 * o + 2] - c.z));
+  }
+  const dist = Math.min(2600, Math.max(260, r / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.15));
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  flyTo(c, c.clone().add(dir.multiplyScalar(dist)));
+}
+const HOME = { t: new THREE.Vector3(0, 0, 0), p: new THREE.Vector3(1750, 230, 1750) };
+const VIEWS = {   // preset views: from the side (time reads best), from above (links read best), the opening view
+  side: () => { const d = HOME.p.length(); flyTo(HOME.t.clone(), new THREE.Vector3(d * 0.98, 0, d * 0.2)); },
+  top: () => { const d = HOME.p.length() * 0.9; flyTo(HOME.t.clone(), new THREE.Vector3(0.01, d, 0.01)); },
+  overview: () => flyTo(HOME.t.clone(), HOME.p.clone()),
+};
 function close() {
   if (sel < 0) return;
   sel = -1; dirty = true; card.classList.remove("show"); history.replaceState(null, "", location.pathname);
 }
 card.addEventListener("click", (e) => {
   if (e.target.closest(".x")) return close();
-  const b = e.target.closest("button[data-i]"); if (b) select(+b.dataset.i, true);
+  const b = e.target.closest("[data-i]"); if (b) { nav = null; select(+b.dataset.i, true); }
 });
-addEventListener("keydown", (e) => { if (e.key === "Escape") { if (openPanel) showPanel(openPanel); else { close(); clearScan(); } } });
+// search: names, places and entry ids; Enter or a click opens the match and flies to it
+const qEl = document.getElementById("q"), qRes = document.getElementById("qres");
+let qHits = [], qK = 0;
+function runSearch() {
+  const q = qEl.value.trim().toLowerCase();
+  // an exact id first, then people, organisations and subjects, then entries whose title starts with it, then the rest
+  qHits = !q ? [] : nodes.map((n, i) => { const t = (n.title + " " + n.id).toLowerCase(), has = t.includes(q);
+      return { i, n, s: n.id.toLowerCase() === q ? 0 : has && isHub(n) ? 1 : n.title.toLowerCase().startsWith(q) ? 2 : has ? 3 : 9 }; })
+    .filter((h) => h.s < 9).sort((a, b) => a.s - b.s || (b.n.deg - a.n.deg)).slice(0, 8);
+  qK = 0;
+  qRes.innerHTML = qHits.map((h, k) => `<li data-k="${k}" class="${k === 0 ? "on" : ""}"><small>${esc(h.n.type === "entry" ? h.n.id : h.n.type === "subject" ? "subj" : h.n.type === "person" ? "pers" : "org")}</small><span>${esc(h.n.title)}</span></li>`).join("");
+}
+function pickHit(k) { const h = qHits[k]; if (!h) return; qEl.value = ""; runSearch(); qEl.blur(); nav = null; select(h.i, true); }
+qEl.addEventListener("input", runSearch);
+qEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { pickHit(qK); e.preventDefault(); }
+  else if (e.key === "Escape") { qEl.value = ""; runSearch(); qEl.blur(); }
+  else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    if (!qHits.length) return;
+    qK = (qK + (e.key === "ArrowDown" ? 1 : -1) + qHits.length) % qHits.length;
+    qRes.querySelectorAll("li").forEach((li, k) => li.classList.toggle("on", k === qK)); e.preventDefault();
+  }
+});
+qRes.addEventListener("pointerdown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); pickHit(+li.dataset.k); } });
+// double-click a point or tag: fly to it; double-click empty space: back to the opening view
+addEventListener("dblclick", (e) => {
+  if (!onScene(e)) return;
+  const i = nodeAt(e);
+  if (i >= 0) select(i, true); else if (e.target === renderer.domElement) VIEWS.overview();
+});
+// keys: Esc closes; left / right walk the chosen point's neighbours (by date); up / down move the slider a year
+let nav = null;   // { anchor, list, k }
+addEventListener("keydown", (e) => {
+  if (e.target.closest && e.target.closest("input")) return;
+  if (e.key === "Escape") { if (openPanel) showPanel(openPanel); else { close(); clearScan(); nav = null; } return; }
+  if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && sel >= 0) {
+    if (!nav || (nav.list[nav.k] !== sel && nav.anchor !== sel)) {
+      const a = sel, list = [...new Set(adj[a].map((li) => links[li]).filter((l) => on[l.kind]).map((l) => (l.i === a ? l.j : l.i)))]
+        .sort((x, y) => (nodes[x].start || "9").localeCompare(nodes[y].start || "9"));
+      nav = { anchor: a, list, k: -1 };
+    }
+    if (!nav.list.length) return;
+    nav.k = (nav.k + (e.key === "ArrowRight" ? 1 : -1) + nav.list.length) % nav.list.length;
+    select(nav.list[nav.k], true); e.preventDefault(); return;
+  }
+  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+    const t = tOf(scan !== null ? scan : thumbRest) + (e.key === "ArrowUp" ? 1 : -1);
+    scan = yOf(Math.max(t0, Math.min(t1, t))); dirty = true; controls.autoRotate = false; idleT = performance.now();
+    e.preventDefault();
+  }
+});
 
 // ---- frame ----
 function resize() {
@@ -678,8 +791,9 @@ let offX = 0, offY = 0;
 function frame(now) {
   if (root.classList.contains("theme-anim")) { readColours(); dirty = true; }
   if (fly) {
-    const k = Math.min(1, (now - fly.t) / 600), e = k * k * (3 - 2 * k);
+    const k = Math.min(1, (now - fly.t) / 700), e = k * k * (3 - 2 * k);
     controls.target.lerpVectors(fly.from, fly.to, e);
+    if (fly.pFrom) camera.position.lerpVectors(fly.pFrom, fly.pTo, e);
     if (k >= 1) fly = null;
   }
   // with the card open, the view slides so the chosen point is not under it (right on wide screens, bottom on phones)
