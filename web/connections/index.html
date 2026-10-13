@@ -264,6 +264,7 @@ const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
 camera.position.set(2050, 260, 2050);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.zoomToCursor = true;   // the wheel zooms towards the pointer, not the middle of the view (user, 2026-10-13)
 controls.autoRotate = true; controls.autoRotateSpeed = 0.26;   // one turn in about 3.8 minutes (was 0.35; user, 2026-10-13: a quarter slower)
 controls.minDistance = 120; controls.maxDistance = 4400;
 
