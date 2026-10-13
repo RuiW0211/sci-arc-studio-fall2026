@@ -24,7 +24,8 @@ These rules apply to everyone who edits the file, people and Claude sessions ali
 6. **Things that change carry a date.** Statuses (litigation, the Notice of Availability, a director's post) are
    written "as of" a date, and `lastVerified` records the day the entry was last checked against its sources.
 7. **Disagreements are shown, not resolved silently.** When sources differ, list each in `conflicts`, say which one
-   the entry follows and why.
+   the entry follows and why. Only real sources count: where a lead (rule 4) is simply wrong, correct the entry
+   and leave the lead out; do not record lead-versus-source mismatches.
 8. **Not found is a result.** If something cannot be confirmed, say so and list where it was looked for. Never guess
    or make up a date, a figure, a link or a quotation.
 9. **Unsupported entries are downgraded, not deleted.** An existing entry whose sources do not hold up becomes

@@ -215,8 +215,6 @@
         "HCD Notice List CSV (data.ca.gov, resource updated 2026-10-02, latest notice dated 2026-09-18): no record for 361 S Hill St or APNs 5149-010-951/-952.",
         "The same list shows two 2026 CRA/LA notices for other sites: MLK Shopping Center (issued March 17, 2026) and the former Bethune Library site (issued April 24, 2026). CRA/LA therefore does file notices with HCD; none is listed for Y-1.",
         "CRA/LA staff report, August 26, 2026: maintenance and security at Y-1 extended to June 30, 2027 'pending its disposition', while CRA/LA 'prepares for disposition of the Property in accordance with the Surplus Land Act'.",
-        "No public CRA/LA explanation of the timing was found (see disp-006). The Section 54234 litigation theory in the research file is not supported by the statute's text (see disp-004).",
-        "Correction: the professor's draft says the 60-day offer period began in late October 2025. The primary records show only the surplus declaration on that date; no notice has been found.",
         "Status statements depend on HCD's data, which can lag; re-check the dataset and CRA/LA agendas before relying on this."
       ],
       "topic": "Disposition & Notice",
@@ -232,16 +230,6 @@
         "start": "2025-10-24",
         "end": "present"
       },
-      "conflicts": [
-        {
-          "note": "The professor's Initial Site Narrative (TBC) timeline says the 60-day affordable-housing offer period began in late October 2025. CRA/LA's resolution, minutes and HCD's notice list show only the declaration; the entry follows the primary records.",
-          "sources": [
-            7,
-            0,
-            2
-          ]
-        }
-      ],
       "sources": [
         {
           "type": "official",
@@ -291,13 +279,6 @@
           "url": "https://www.hcd.ca.gov/housing-open-data-tools/notices-available-surplus-land-map",
           "accessed": "2026-10-12",
           "excerpt": "This map shows notices of availability that have been submitted by local agencies (cities, counties, and special districts) to HCD."
-        },
-        {
-          "type": "analysis",
-          "title": "Initial Site Narrative (TBC), professor's AI-drafted narrative, Sept 2026 (lead, not evidence)",
-          "url": null,
-          "accessed": "2026-10-12",
-          "excerpt": "CRA/LA declares Parcel Y-1 surplus land; 60-day affordable-housing offer"
         }
       ],
       "sourceFile": "Y-1_V2_Complete_Research.md §1"
@@ -311,8 +292,7 @@
         "Subdivision (b) is the provision written for redevelopment land: land designated in a long-range property management plan, 'for sale or retained for future development', may use the pre-2020 law if an exclusive negotiating or binding agreement was entered by December 31, 2020 and the disposition is completed by December 31, 2027; (b)(2) extends those dates to six months after litigation concludes.",
         "Y-1 is LRPMP Asset No. 168, 'Retained for Future Development' (CRA/LA staff reports).",
         "The 2018 exclusive negotiation agreement was between the City and the developer (March 28, 2018), not CRA/LA (CRA/LA memo to the Oversight Board, January 14, 2025).",
-        "CRA/LA staff report, October 24, 2025: because the City's option expired, CRA/LA 'must now comply with the requirements of the Surplus Land Act'; the resolution directs staff to send a notice of availability. This points away from reliance on Section 54234.",
-        "Whether the Angels Landing litigation plays any role in CRA/LA's timing is not stated in any public record found. Treat the litigation-freeze theory as an unconfirmed claim of the research file."
+        "CRA/LA staff report, October 24, 2025: because the City's option expired, CRA/LA 'must now comply with the requirements of the Surplus Land Act'; the resolution directs staff to send a notice of availability. This points away from reliance on Section 54234."
       ],
       "topic": "Disposition & Notice",
       "date": null,
@@ -764,8 +744,7 @@
         "Court: the language 'may be reasonably interpreted as intending to prohibit third parties' from obtaining an interest without City approval, and 'and' read with 'any person other than' may be construed in ALP's favor 'at least for purposes of withstanding this Demurrer'. This is a pleading-stage holding, not a final interpretation of the contract.",
         "2nd cause (implied covenant): sustained with leave, as superfluous (same conduct, same Section 3.8 damages). 3rd cause (unjust enrichment): sustained with leave, because a public entity cannot be sued on quasi-contract and an express contract exists.",
         "A later 'revised and final ruling' on the demurrer was reported by the checking agent but is not in the public Trellis view (older entries need a login); not confirmed.",
-        "Afterwards: the public Trellis view (refreshed Nov 19, 2025) shows the City's answer and cross-complaint, ALP's demurrer to the cross-complaint with a 'Ruling on Submitted Matter' minute order of Jul 18, 2025, and ALP's answer to the cross-complaint (Aug 2025). Earlier entries, including the date of the City's answer and the result of the demurrer, are behind Trellis's login and were not confirmed. Jury trial set for Aug 24, 2026; temporary stay pending a change in City counsel, Nov 2025.",
-        "The research file read this ruling as keeping the Section 54234 extension in effect. See disp-004: the statute's text does not clearly support that."
+        "Afterwards: the public Trellis view (refreshed Nov 19, 2025) shows the City's answer and cross-complaint, ALP's demurrer to the cross-complaint with a 'Ruling on Submitted Matter' minute order of Jul 18, 2025, and ALP's answer to the cross-complaint (Aug 2025). Earlier entries, including the date of the City's answer and the result of the demurrer, are behind Trellis's login and were not confirmed. Jury trial set for Aug 24, 2026; temporary stay pending a change in City counsel, Nov 2025."
       ],
       "topic": "Litigation",
       "date": "2025-03-11",
@@ -1085,7 +1064,6 @@
         "- Good-faith negotiation must last at least 90 days (Gov Code §54223)",
         "- HCD's definition of good faith: serious effort, reasonable meeting times, prompt responses, and consideration of reasonable offers. Refusing to meet, ignoring offers, or demanding large departures from the NOA do not count.",
         "- Example (Sacramento, 3625 Fong Ranch Road, declared March 2, 2021): two affordable housing entities responded, and the city chose Anton DevCo's proposal because it offered the most affordable units",
-        "- Corrected Sept 27, 2026: the research files cited Sections 54222/54223 for this rule. The priority rule is in Section 54227(a). Section 54223 covers the 90-day negotiation.",
         "- Tie-breakers in 54227(a): greatest number of qualifying units, then deepest average affordability; the agency may negotiate with all qualifying respondents at once."
       ],
       "topic": "Surplus Land Act",
@@ -1801,7 +1779,7 @@
       "details": [
         "LA Times (24 March 1998): MOCA's trustees struck a deal with the CRA for the developer to build a 100,000-sq-ft museum, designed by an architect of the trustees' choice, at no cost to the museum; in return the agency required the trustees to raise $10 million for an operations endowment.",
         "Time (Robert Hughes, written at the end of 1986): 'the law' required 1.5% of construction costs of new buildings to go to fine-arts embellishment, and the CRA made a free museum incumbent on any developer; the museum finally cost $23 million. LA Conservancy: MOCA was funded in part from a 1.5% allocation of Bunker Hill development budgets for public art.",
-        "No source opened says the $23 million was 1.5% of construction cost (the professor's draft says so). On a project of about $1 billion, Time says 1.5% 'might build a whole museum -- just'.",
+        "No source opened says the $23 million was 1.5% of construction cost. On a project of about $1 billion, Time says 1.5% 'might build a whole museum -- just'.",
         "Size: the 1980 Erickson proposal listed a 33,000-sq-ft museum (Erickson estate site); the 1998 LA Times gives 100,000 sq ft for the deal; the Christian Science Monitor gives 98,000 sq ft for the finished building (Dec 1986).",
         "Primary documents: the Phase 1A ground lease recorded 26 Aug 1983 refers to a Museum Agreement (developer and MOCA), a Museum Lease attached to the DDA as Attachment No. 10(A), and a Second Implementation Agreement with MOCA signed by the developer on 22 Oct 1982. These instruments, not yet read, would hold the binding terms (see hist-006)."
       ],
@@ -2397,7 +2375,7 @@
         "- VTT-82936-CN (Deputy Advisory Agency, Feb 3, 2022): merger and re-subdivision of one lot into one ground lot and 29 airspace lots, and a haul route for up to 334,000 cubic yards (ZA determination p. 17).",
         "- ZA-2018-3271-MCUP-CUX-SPPA-SPP (Zoning Administrator, Feb 3, 2022): Main CUP for alcohol at up to 15 establishments; CUP for public dancing; Project Permit Adjustment for 32% retail frontage on 4th St (75% required) and 11% on Olive St (50% required); Bunker Hill Specific Plan Project Permit Compliance. Effective after Feb 18, 2022; PDIS shows 'Appealed: No'. A Letter of Correction (Mar 30, 2022) amended Condition 13 to require 5% of rental units affordable for 55 years.",
         "- CPC-2018-3272-DA: withdrawn by the applicant Dec 29, 2021; PDIS records 'CPC Action: WITHDRAWN' dated 02/03/2022. No City Planning Commission, PLUM or City Council action on the entitlements was found.",
-        "- Press: the LA Times (Mar 28, 2022) says the developers announced the approvals 'Monday'; Urbanize LA (Mar 29, 2022) and Archinect (Mar 30, 2022) followed. The draft narrative's 'April 2022' and 'Urbanize Apr 14, 2022' are not supported; the Urbanize article is dated March 29, 2022.",
+        "- Press: the LA Times (Mar 28, 2022) says the developers announced the approvals 'Monday'; Urbanize LA (Mar 29, 2022) and Archinect (Mar 30, 2022) followed.",
         "- The earlier number 'VTT-82842-SL' is not this project's map. It appears in 2023 permits for a small-lot subdivision at 506 N Sycamore Ave (BuildZoom listing, secondary)."
       ],
       "topic": "Zoning & Entitlements",
@@ -2413,17 +2391,6 @@
         "start": "2022-02-03",
         "end": null
       },
-      "conflicts": [
-        {
-          "note": "The draft narrative gives April 2022 (citing Urbanize, Apr 14, 2022) and the old entry gives March 2022. The official City Planning records give February 3, 2022 for the approvals; March 28 to 30, 2022 are press dates. The entry follows the official records.",
-          "sources": [
-            0,
-            1,
-            6,
-            7
-          ]
-        }
-      ],
       "sources": [
         {
           "type": "official",
@@ -4122,7 +4089,7 @@
         "- Checked Oct 12, 2026: the HCD Notices of Availability dataset (updated Oct 6, 2026) lists CRA/LA notices for other sites in 2026 but none for Y-1.",
         "- Section 54234's text extends completion deadlines for dispositions under agreements made by Sept 30, 2019 (to be completed by Dec 31, 2027), to six months after litigation ends. It does not say a new notice must wait, so 'statutory suspension' is an inference (see disp-004). Why CRA/LA has not issued the notice is not public.",
         "- Litigation status: the federal case (2:26-cv-01524) was stayed on Sept 12, 2026 pending final approval of a settlement (see lit-005); the diagnostic's 'pending as of Sept 2026' predates this. Settlement terms are not public.",
-        "- Timeline estimates have no named source and conflict: '2028-2030' groundbreaking (Diagnostic, WebSearch file), construction from Q1 2033 (Strategic Brief), settlement approval '2027-2028' (WebSearch file).",
+        "- The timeline estimates in our research files (groundbreaking, construction, settlement approval) have no named source.",
         "- Design consequence in the Strategic Brief: early-stage design should be exploratory, not prescriptive, so that constraints come to light before construction."
       ],
       "topic": "Insights",
@@ -4452,7 +4419,7 @@
       "details": [
         "The brief calls the absence of vested approvals 'liberation': a new buyer could propose a different height, use mix, phasing (affordable units first), parking and ground-floor strategy without justifying departures from Angels Landing. This depends on premises not yet confirmed (below).",
         "- Housing-First Tower: 600 units (450 market, 150 affordable); 20-30K sq ft cultural/community; 30K sq ft neighborhood retail; underground parking plus a podium.",
-        "- Mixed-Use Affordable Focus: 400 residential units at 40% affordable (the file says '240 units affordable', which is inconsistent with 40% of 400 = 160); 15K sq ft office; 40K sq ft community cultural; food hall; possibly 8-10 stories.",
+        "- Mixed-Use Affordable Focus: 400 residential units at 40% affordable (160 units); 15K sq ft office; 40K sq ft community cultural; food hall; possibly 8-10 stories.",
         "- Hybrid Cultural + Housing: if the Angels Flight Foundation or a history organization commits, a 25K sq ft exhibition and restoration workshop, 10K sq ft temporary exhibition, 400 units in 200K sq ft, and 40 parking spaces.",
         "- Unconfirmed premises: 'VTT-82842-SL likely expired (3-4 year validity)' is the brief's inference. State law (Gov Code 66452.6) sets 24 months plus local and discretionary extensions of up to six years and allows stays during litigation, so expiry has to be checked with City Planning (see ent-005). The 2019 NOP listed a Development Agreement among requested approvals; whether one was adopted or recorded is unknown."
       ],
@@ -4799,7 +4766,7 @@
         "- Confirmed: 'Existing public easements for the Pedestrian Walkway located along the Angels Flight Railway, connecting Hill Street to Olive Street, shall be maintained' (ZA condition 21.a).",
         "- The 2019 design set Tower A back about 10 ft from the shared property line with Angels Flight and stepped it down to about eight stories along the upper track (Initial Study p. 25).",
         "- Unverified: Angels Flight right-of-way recorded Dec 22, 2017; airspace above 17 ft on Olive Street held by 2 Cal Land, recorded Nov 29, 2016. Not found in City, CEQA or Assessor records; probably from a title report.",
-        "- Unverified and inconsistent: the Strategic Brief's 30 ft right-of-way / 30 ft Olive Street setback has no source; the Angels Landing design used about 10 ft from the Angels Flight line.",
+        "- No source was found for a 30 ft right-of-way or a 30 ft Olive Street setback; the Angels Landing design kept Tower A about 10 ft from the Angels Flight line.",
         "- The risk map rates the Angels Flight ROW as MEDIUM severity (our analysis). The Angels Flight history is also proposed as exhibition content (see des-005)."
       ],
       "topic": "Site Conditions",
@@ -5260,7 +5227,7 @@
         "- Interview: ask MOCA's advancement office (Chief Advancement Officer; advancement@moca.org; general line 213 621 2766, 250 S. Grand Ave) whether the board has considered or committed to Y-1, whether any capital campaign or downtown feasibility study exists, what would trigger downtown interest, and for board minutes from 2017-2026.",
         "- Form 990 review via ProPublica Nonprofit Explorer (EIN 95-3433820; filings back to 2001), GuideStar/Candid, or moca.org/about/financials (FY2025 only): search for Bunker Hill, Y-1, Angels Knoll and downtown expansion. The FY2025 990 (filed April 8, 2026) was keyword-searched on 2026-10-12 with no hits; earlier years remain to be read.",
         "- Outcomes: if MOCA commits (board approval plus capital campaign), optimize the ground floor for MOCA and treat it as a development partner, adding 3-4 months of coordination; if MOCA declines or stays silent, pursue the Angels Flight Foundation, a local history group, or an independent permanent exhibition.",
-        "- Corrected from source file: the protocol says 'director position vacant' and 'MOCA director vacant since 8/25/2025'. In fact Ann Goldstein was interim director from Aug 18, 2025, and Jonathan Abbott became CEO & Maurice Marciano Director on Sept 24, 2026. The file's phone number (213-626-6222) and its 'GiveWell' 990 source are not supported; MOCA's current number is 213 621 2766."
+        "- Current: Ann Goldstein was interim director from Aug 18, 2025, and Jonathan Abbott became CEO & Maurice Marciano Director on Sept 24, 2026. MOCA's current number is 213 621 2766."
       ],
       "topic": "Open Questions",
       "date": "2026-09-21",
@@ -5423,7 +5390,7 @@
         "PBS SoCal Lost LA (Nathan Masters, July 11, 2012): Beaudry bought the land atop Bunker Hill in 1867 'at the reported cost of $51'; spurned by the Los Angeles Water Company, he built his own system of pipes and steam-powered pumps fed from a reservoir below; he reportedly spent $95,000 improving the hill.",
         "LAmag CityDig (Glen Creason, LAPL map librarian, March 5, 2015): Beaudry bought the hillside lots for $517 total and had surveyor George Hanson subdivide them into 80 properties; his system had two reservoirs, 11 miles of iron pipe and steam-driven pumps moving up to 40,000 gallons per hour. LAmag calls the area on the 1869 map the Mott Tract.",
         "Wikipedia (Bunker Hill; pointer only): the Los Angeles Water Company denied Beaudry's request, so he built his own pipes and formed the Canal and Reservoir Company. Wikipedia (Prudent Beaudry): mayor December 18, 1874 - December 8, 1876; a merchant until 1867, then active in real estate.",
-        "Price: the two sources disagree ($51 'reported' vs $517). The entry gives both and does not pick one; neither cites a primary record. The lead's '$51 at a tax sale' could not be confirmed: no opened source mentions a tax sale (see notFound)."
+        "Price: the two sources disagree ($51 'reported' vs $517). The entry gives both and does not pick one; neither cites a primary record, and no opened source mentions a tax sale."
       ],
       "topic": "Bunker Hill Before Redevelopment",
       "date": "1867",
@@ -5493,7 +5460,7 @@
       "details": [
         "Wikipedia (Bunker Hill): Beaudry's purchase ranged from present-day Hill Street to Olive Street and 4th Street and 2nd Street; Stephen Mott's ran from 4th Street to Temple and Figueroa and Grand. The footnote cites Pugsley, Bunker Hill: Last of the Lofty Mansions (1977), pp. 8-14, which was not opened.",
         "Bisnow (January 5, 2017): Parcel Y-1 (Angels Knoll) is at the corner of 4th and Hill Streets and covers 2.26 acres.",
-        "Our analysis: a site at 4th and Hill lies within a Hill-Olive / 2nd-4th rectangle, so Y-1 would be inside Beaudry's purchase if the Wikipedia boundary holds. The lead's phrase 'squarely inside the original 1867 subdivision' is not confirmed by any opened source.",
+        "Our analysis: a site at 4th and Hill lies within a Hill-Olive / 2nd-4th rectangle, so Y-1 would be inside Beaudry's purchase if the Wikipedia boundary holds; no opened source confirms it.",
         "Caution: LAmag calls the land Beaudry subdivided on the 1869 map the 'Mott Tract', and PCAD places the Castle (325 S. Bunker Hill Ave.) on Lot 16, Block L of the Mott Tract, so the tract names and limits in the sources are not consistent. A primary map (e.g. the 1869 tract map or an early Sanborn sheet) is needed before this is stated as fact."
       ],
       "topic": "Bunker Hill Before Redevelopment",
@@ -5758,7 +5725,7 @@
         "The West End Museum (2025): records show 7,310 housing units demolished and at least 8,000 people displaced.",
         "KCET / PBS SoCal (Jeremy Rosenberg, January 23, 2012): 7,310 housing units were demolished, according to a recent CRA/LA report (not named or linked).",
         "Stephen Jones, CUNY thesis abstract (2017): the city was poised to evict the hill's 9,000 residents - a population figure, not a count of those displaced.",
-        "None of these cites a primary relocation record. The lead's range of 'roughly 6,000 to 8,000' matches the published figures, and its 'more than 7,000 units' matches the 7,310 figure. Which figure is correct is not settled; the entry reports them all."
+        "None of these cites a primary relocation record. Which figure is correct is not settled; the entry reports them all."
       ],
       "topic": "Bunker Hill Before Redevelopment",
       "date": null,
@@ -5828,7 +5795,7 @@
         "KCET / PBS SoCal (Nathan Masters, October 13, 2011): in the 1960s the CRA oversaw demolition and the scraping of some 30 feet of earth from the top of Bunker Hill, creating 27 superblocks for high-rise development. Earlier regrading schemes (the 1912 Bunker Hill Razing and Regrading Association; C.C. Bigelow in the late 1920s) were not carried out.",
         "PBS SoCal Lost LA (Masters, July 11, 2012): the 1950s redevelopment scheme cleared all structures, reconfigured the streets and altered the topography; Clay Street and Bunker Hill Avenue no longer exist, and Olive Street now rests several stories below where it once was.",
         "The West End Museum (2025): engineers regraded and flattened the hill itself.",
-        "'Some 30 feet' is the only figure found and comes from one secondary source; no CRA grading plan or survey with elevations was opened. The lead's statement that the slope surviving on Y-1 is 'a relic' is interpretation and is not confirmed here."
+        "'Some 30 feet' is the only figure found and comes from one secondary source; no CRA grading plan or survey with elevations was opened."
       ],
       "topic": "Bunker Hill Before Redevelopment",
       "date": null,
@@ -6759,7 +6726,7 @@
         "Suisman Urban Design (firm's own news page, June 2009): calls Angels Knoll 'a temporary park in downtown Los Angeles designed by Suisman Urban Design with Pat Smith' (designer's self-description; not checked against CRA records).",
         "Urbanize LA (Sept 22, 2016): the CRA 'repurposed a significant portion' of the planned third California Plaza tower site as the temporary green space; LA Downtown News (Aug 9, 2013) says the park was 'always intended as a temporary park'.",
         "By 2008-2010 the park was in use: the CRA hired goats to clear brush in Sept 2008 (LA Downtown News, Sept 15, 2008) and a July 2010 Downtown News item calls the parcel 'now a lovely, if steep, park'.",
-        "Opening year: not found. Searched LA Downtown News archive (ladowntownnews.com search for 'angels knoll' / 'angel's knoll'), Urbanize LA, LAist, Esotouric, Suisman; none states when the park opened. The lead's 'early 2000s' is consistent with the dated mentions but no source gives a year."
+        "Opening year: not found. Searched LA Downtown News archive (ladowntownnews.com search for 'angels knoll' / 'angel's knoll'), Urbanize LA, LAist, Esotouric, Suisman; none states when the park opened."
       ],
       "topic": "Angels Knoll Park",
       "date": "2004-09-06",
@@ -7190,8 +7157,7 @@
       "details": [
         "LA Downtown News (Sept 17, 2013): in a petition drafted on change.org, Chris Yamashita 'asked Mayor Eric Garcetti to reopen the park'; the petition calls it a 'beautiful and beloved park in the heart of urban Downtown'; Yamashita also ran a Facebook page, 'Re-Open Angel's Knoll'.",
         "Board of Recreation and Park Commissioners, General Manager's reports on 'Various Communications': Oct 16, 2013 (No. 13-272, item 7: approximately sixty additional signers), Nov 6, 2013 (No. 13-280, item 9: approximately forty), Feb 19, 2014 (No. 14-046, item 15: approximately one hundred ninety five). Each is described as 'a continuation of Chris Yamashita's petition (via Change.org) relative to the State-owned Angel's Knoll Park'; the recommendation shown is 'Note and File'.",
-        "Search results also list further RAP reports (e.g. Nov 20, 2013; Mar-Oct 2014) that were not opened; total signatures not found. The Change.org page itself was not found.",
-        "The lead's statement that 'a petition asked the city to transfer the knoll to the Department of Recreation and Parks' is not supported by the sources opened: the petition as reported asked the mayor to reopen the park; it reached RAP as correspondence only."
+        "Search results also list further RAP reports (e.g. Nov 20, 2013; Mar-Oct 2014) that were not opened; total signatures not found. The Change.org page itself was not found."
       ],
       "topic": "Angels Knoll Park",
       "date": "2013-09-17",
@@ -7206,14 +7172,6 @@
         "start": "2013-09",
         "end": "2014-02-19"
       },
-      "conflicts": [
-        {
-          "note": "Lead (professor's narrative) says the petition sought a transfer to Recreation and Parks; Downtown News says it asked the mayor to reopen the park. The entry follows Downtown News.",
-          "sources": [
-            0
-          ]
-        }
-      ],
       "sources": [
         {
           "type": "news",
@@ -7312,7 +7270,7 @@
         "Council action cited by Esotouric: on Sept 20, 2024 de León moved (CF 14-0425-S4) that the Mayor pursue a 36-month extension of the City's Option Agreement on Parcel Y-1, to Sept 30, 2027; the Council adopted it on Sept 27, 2024. The motion's text is about developing the property 'in a manner that provides the greatest benefit to the City and the Affected Taxing Entities' and does not mention reopening a park; the link to the park campaign is Esotouric's reading. CRA/LA reports the option expired on Sept 30, 2025.",
         "Later updates (Esotouric page): Dec 10, 2024, campaign 'still active' under new councilmember Ysabel Jurado; May 2026, 'The aspirational Leo & Helen Politi Bunker Hill Park is now on Google Maps'; June 2026, a garage elevator window at the Broadway-Spring Center gives a view of the plot, 'Open it up!'.",
         "Leo Politi (LA Public Library blog, Nov 13, 2023): artist and author of more than twenty children's books, including Song of the Swallows, winner of the 1950 Caldecott Medal; his 1964 book 'Bunker Hill, Los Angeles: Reminiscences of Bygone Days' documented the neighbourhood's vanishing Victorian houses; in 1965 the Library bought a selection of the book's paintings for $3,000.",
-        "Start date: the lead says the campaign began in 2023. Esotouric's Substack sitemaps for 2023-2026 list its Angels Knoll posts only from Sept 2024 (2023 posts are Politi tours that do not mention the knoll). The entry follows Sept 2024.",
+        "Start date: Esotouric's Substack sitemaps for 2023-2026 list its Angels Knoll posts only from Sept 2024 (2023 posts are Politi tours that do not mention the knoll).",
         "CD14 position: no statement by Councilmember Jurado or her office on reopening or naming the park was found (web search, Oct 12, 2026)."
       ],
       "topic": "Angels Knoll Park",
@@ -7328,14 +7286,6 @@
         "start": "2024-09-18",
         "end": "present"
       },
-      "conflicts": [
-        {
-          "note": "Lead says the campaign has run since 2023; Esotouric's own posts start Sept 18, 2024. The entry follows Esotouric.",
-          "sources": [
-            0
-          ]
-        }
-      ],
       "viewer": "Optional 'proposed name' label 'Leo & Helen Politi Bunker Hill Park (proposed, Esotouric)' on the upper park, clearly marked as a proposal.",
       "sources": [
         {
@@ -8313,13 +8263,6 @@
           "sources": [
             1,
             4
-          ]
-        },
-        {
-          "note": "Motion date: the draft narrative says Huizar's motion was introduced in March 2016; the council file shows it received Sept 21, 2016, and the CLA report says it was 'introduced' on March 21, 2017 (the date of the Council's action on it). The entry follows the council file.",
-          "sources": [
-            0,
-            9
           ]
         },
         {
