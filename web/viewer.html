@@ -14,6 +14,9 @@
   html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--fg);
     font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
   canvas { display: block; touch-action: none; }
+  /* coming from the home page cross-fades (site.css has the same rule) */
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .5s; animation-timing-function: ease; }
   .panel { position: fixed; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(6px); }
   #ui { top: 16px; left: 16px; padding: 12px 14px; width: 252px; max-height: calc(100% - 64px); overflow: auto; }
   #ui.collapsed .body { display: none; }

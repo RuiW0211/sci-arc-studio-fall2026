@@ -1174,6 +1174,9 @@ function wake(ms = IDLE_MS) {
   }, ms);
 }
 for (const ev of ["pointermove", "pointerdown", "wheel", "keydown", "touchstart", "focusin"]) addEventListener(ev, wake, { passive: true });
+// prepared in the background from the home page (prerender): when the reader arrives, start the idle wait afresh (it
+// may have run out while hidden) and fit the canvas to the window as it is now
+if (document.prerendering) document.addEventListener("prerenderingchange", () => { wake(); dispatchEvent(new Event("resize")); invalidate(); }, { once: true });
 // the floating tags fade after 10 s without input (user, 2026-10-08), like the panels
 let tagTimer = 0;
 function wakeTags() {

@@ -6,6 +6,20 @@
 <title>Angels Knoll Studio</title>
 <link rel="stylesheet" href="site.css">
 <script src="theme.js"></script>
+<script>
+  // The viewer is heavy (about 45 MB of LiDAR, decoded in the browser), so the home page asks the browser to prepare
+  // it in the background (Speculation Rules prerender, user 2026-10-12): clicking Model then opens it at once.
+  // Right away with a mouse on a screen wider than a phone; on phones or with Data Saver only once the link is pressed or hovered.
+  (function () {
+    if (!(HTMLScriptElement.supports && HTMLScriptElement.supports("speculationrules"))) return;
+    var c = navigator.connection, small = matchMedia("(max-width: 600px), (pointer: coarse)").matches;
+    var eager = !small && !(c && c.saveData);
+    var s = document.createElement("script");
+    s.type = "speculationrules";
+    s.textContent = JSON.stringify({ prerender: [{ urls: ["viewer.html"], eagerness: eager ? "immediate" : "moderate" }] });
+    document.head.appendChild(s);
+  })();
+</script>
 <style>
   /* the three entries, laid out like Research's findings */
   a.item { display: block; border-bottom: 1px solid var(--line); padding: 20px 0; color: inherit; text-decoration: none; }

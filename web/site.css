@@ -32,6 +32,10 @@
   --tint: #9fa8da;
 }
 
+/* moving between the site's pages cross-fades (View Transitions; browsers without it simply change page) */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .5s; animation-timing-function: ease; }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 /* short pages keep the scrollbar's room, so every page's column lines up; the page colour reaches the window edges */
 html { scrollbar-gutter: stable; background: var(--bg); }
