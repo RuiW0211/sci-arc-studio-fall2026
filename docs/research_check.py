@@ -45,7 +45,8 @@ def main():
     ap.add_argument("--links", action="store_true")
     ap.add_argument("--out")
     a = ap.parse_args()
-    findings = json.loads(DATA.read_text(encoding="utf-8"))["findings"]
+    db = json.loads(DATA.read_text(encoding="utf-8"))
+    findings = db["findings"]
     out = [f"# Research database check: {len(findings)} entries", ""]
     sec = lambda t: out.extend(["", f"## {t}", ""])
 
@@ -65,6 +66,13 @@ def main():
             out.append(f"- {f['id']}: date {f['date']!r}")
         if f.get("date") and f["date"][5:] == "01-01":
             out.append(f"- {f['id']}: date {f['date']} (1 January: probably only the year or month is known)")
+    cur = db.get("current") or {}
+    for it in cur.get("items", []):
+        for i in it.get("ids", []):
+            if i not in ids:
+                out.append(f"- current status '{it.get('label')}' points to a missing entry {i}")
+    if cur:
+        out.append(f"- current status box: {len(cur.get('items', []))} items, as of {cur.get('asOf')} (re-check them with their entries)")
     no_new = [f["id"] for f in findings if any(k not in f for k in NEW)]
     out.append(f"- without the new fields ({', '.join(NEW)}): {len(no_new)} of {len(findings)}")
     no_date = [f["id"] for f in findings if not f.get("date") and f.get("status") == "verified"]

@@ -171,6 +171,29 @@
 .about { font-size: 0.85rem; color: var(--muted); margin: -8px 0 20px; }
 .about a { color: var(--muted); }
 
+/* current statuses, at the top */
+.current { margin: 0 0 28px; border-top: 1px solid var(--line); }
+.current h2 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
+    padding: 12px 0 4px; }
+.current dl { display: grid; grid-template-columns: 11rem 1fr; gap: 6px 16px; font-size: 0.9rem; }
+.current dt { color: var(--muted); }
+.current dd .xref { font-size: 0.75rem; color: var(--faint); margin-left: 4px; }
+@media (max-width: 600px) { .current dl { grid-template-columns: 1fr; gap: 0; } .current dd { margin-bottom: 8px; } }
+
+/* topic contents */
+.toc { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.8rem; margin: 0 0 8px; }
+.toc a { color: var(--muted); text-decoration: none; }
+.toc a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.toc .n { color: var(--faint); margin-left: 3px; }
+
+/* links between entries ("see af-008") */
+.xref { color: inherit; text-underline-offset: 2px; }
+
+/* Media, grouped by subject */
+.subject-title { font-size: 0.8rem; font-weight: 700; color: var(--muted); margin: 22px 0 0; padding-bottom: 4px; }
+.subject-title .topic-count { color: var(--faint); }
+.via { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+
 
 
 @media (max-width: 600px) {
@@ -189,6 +212,8 @@
             <h1>Y-1 Research Database</h1>
             <p class="subtitle">Bunker Hill Parcel Y-1. Every finding, where it came from, and how sure we are.</p>
         </header>
+
+        <section class="current" id="currentBox" aria-label="Current status" hidden></section>
 
         <section class="search-section">
             <input type="search" id="searchInput" class="search-input" placeholder="Search findings, e.g. litigation, 54234, Goldstein" aria-label="Search findings">
@@ -223,6 +248,7 @@
         </section>
 
         <p class="about" id="aboutLine"></p>
+        <nav class="toc" id="topicNav" aria-label="Topics"></nav>
 
         <div class="list-controls">
             <button id="expandAll" class="btn btn-quiet">Expand all</button>
@@ -266,6 +292,11 @@ const STATUS_LABELS = {
     'analysis': 'Analysis'
 };
 const KIND_LABELS = { fact: 'Fact', claim: 'Claim', analysis: 'Our analysis' };
+// Media subjects, in this order on the page
+const SUBJECT_ORDER = ['Angels Knoll closure', 'Reopening the park', 'Angels Landing', 'Termination and lawsuits',
+    'Surplus land and housing', 'Angels Flight', 'MOCA and Y-1', 'Bunker Hill history'];
+let byId = new Map();
+let current = null;
 const FILTERS = ['topicFilter', 'statusFilter', 'kindFilter', 'subjectFilter', 'sourceFilter', 'yearFilter'];
 
 let allFindings = [];
@@ -277,6 +308,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch('data.json');
         const data = await response.json();
         allFindings = data.findings.sort(compareFindings);
+        byId = new Map(allFindings.map(f => [f.id, f]));
+        current = data.current || null;
+        renderCurrent();
         initFilters();
         buildIndex();
         attachListeners();
@@ -304,10 +338,39 @@ function topicRank(topic) {
     return i === -1 ? TOPIC_ORDER.length : i;
 }
 
+function subjectRank(f) {
+    const i = SUBJECT_ORDER.indexOf(f.media && f.media.subject);
+    return i === -1 ? SUBJECT_ORDER.length : i;
+}
+
 function compareFindings(a, b) {
     const t = topicRank(a.topic) - topicRank(b.topic);
     if (t !== 0) return t;
+    if (a.media && b.media) {          // Media: by subject, then by when it was said
+        const s = subjectRank(a) - subjectRank(b);
+        if (s !== 0) return s;
+    }
     return (a.date || '9999').localeCompare(b.date || '9999');
+}
+
+// the statuses that change, at the top: each line points to the entries it restates
+function renderCurrent() {
+    const box = document.getElementById('currentBox');
+    if (!current || !(current.items || []).length) return;
+    const rows = current.items.map(it => {
+        const refs = (it.ids || []).filter(i => byId.has(i)).map(i => `<a class="xref" href="#${esc(i)}">${esc(i)}</a>`).join(' ');
+        return `<dt>${esc(it.label)}</dt><dd>${esc(it.text)}${refs ? ` <span class="xref">${refs}</span>` : ''}</dd>`;
+    }).join('');
+    box.innerHTML = `<h2>Current status, as of ${formatDate(current.asOf)}</h2><dl>${rows}</dl>`;
+    box.hidden = false;
+}
+
+const slug = t => 'topic-' + String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+// "see af-008", "disp-003": links to the entry, when it exists
+const ID_RE = /\b(?:(?:disp|lit|sla|ent|moca|hist|plaza|ins|des|site|q|bh|af|park|ghost)-\d{3}|media-[prs]\d{2})\b/g;
+function linkify(escaped) {
+    return escaped.replace(ID_RE, id => byId.has(id) ? `<a class="xref" href="#${id}">${id}</a>` : id);
 }
 
 function initFilters() {
@@ -438,18 +501,28 @@ function render(findings, filtered) {
     }
 
     let html = '';
-    let currentTopic = null;
+    let currentTopic = null, currentSubject = null;
+    const counts = new Map();
+    findings.forEach(f => counts.set(f.topic, (counts.get(f.topic) || 0) + 1));
     findings.forEach(f => {
         if (f.topic !== currentTopic) {
             if (currentTopic !== null) html += '</section>';
-            currentTopic = f.topic;
-            const count = findings.filter(x => x.topic === f.topic).length;
-            html += `<section class="topic-group"><h2 class="topic-title">${esc(f.topic)} <span class="topic-count">${count}</span></h2>`;
+            currentTopic = f.topic; currentSubject = null;
+            html += `<section class="topic-group" id="${slug(f.topic)}"><h2 class="topic-title">${esc(f.topic)} <span class="topic-count">${counts.get(f.topic)}</span></h2>`;
+        }
+        if (f.media && f.media.subject !== currentSubject) {
+            currentSubject = f.media.subject;
+            const n = findings.filter(x => x.media && x.media.subject === currentSubject).length;
+            html += `<h3 class="subject-title">${esc(currentSubject)} <span class="topic-count">${n}</span></h3>`;
         }
         html += renderFinding(f);
     });
     html += '</section>';
     container.innerHTML = html;
+
+    // contents: the topics shown, with their counts
+    document.getElementById('topicNav').innerHTML = [...counts].map(([t, n]) =>
+        `<a href="#${slug(t)}">${esc(t)}<span class="n">${n}</span></a>`).join('');
 
     // A single search hit is most useful already open.
     if (filtered && findings.length === 1) setAll(true);
@@ -469,12 +542,13 @@ function renderFinding(f) {
     }).join('');
     const conflicts = (f.conflicts || []).map(c => {
         const refs = (c.sources || []).map(i => `[${i + 1}]`).join(' ');
-        return `<p>${esc(c.note)}${refs ? ` <span class="source-type">${esc(refs)}</span>` : ''}</p>`;
+        return `<p>${linkify(esc(c.note))}${refs ? ` <span class="source-type">${esc(refs)}</span>` : ''}</p>`;
     }).join('');
     const m = f.media;
     const quote = m ? `
             <blockquote class="quote">${esc(m.quote)}${m.translation ? `<span class="quote-translation">${esc(m.translation)}</span>` : ''}</blockquote>
-            <p class="attribution"><b>${esc(m.speaker)}</b>${m.role ? `, ${esc(m.role)}` : ''}${m.venue ? ` · ${esc(m.venue)}` : ''}${m.said ? ` · ${formatDate(m.said)}` : ''}</p>` : '';
+            <p class="attribution"><b>${esc(m.speaker)}</b>${m.role ? `, ${esc(m.role)}` : ''}${m.venue ? ` · ${esc(m.venue)}` : ''}${m.said ? ` · ${formatDate(m.said)}` : ''}
+                <span class="via">${esc(mediaVia(f))}</span></p>` : '';
 
     return `
     <article class="finding" data-id="${esc(f.id)}">
@@ -483,7 +557,7 @@ function renderFinding(f) {
                 <h3 class="finding-title">${esc(f.title)}</h3>
                 <span class="badge badge-${esc(f.status)}">${esc(STATUS_LABELS[f.status] || f.status)}</span>
             </div>
-            ${quote || `<p class="finding-summary">${esc(f.summary || '')}</p>`}
+            ${quote || `<p class="finding-summary">${linkify(esc(f.summary || ''))}</p>`}
             <div class="finding-meta">
                 ${f.kind ? `<span class="kind kind-${esc(f.kind)}">${esc(KIND_LABELS[f.kind] || f.kind)}</span>` : ''}
                 ${m && m.subject ? `<span class="subject-tag">${esc(m.subject)}</span>` : ''}
@@ -495,7 +569,7 @@ function renderFinding(f) {
             </div>
         </div>
         <div class="finding-body">
-            ${m && f.summary ? `<p>${esc(f.summary)}</p>` : ''}
+            ${m && f.summary ? `<p>${linkify(esc(f.summary))}</p>` : ''}
             ${conflicts ? `<div class="finding-conflicts"><h4>Where sources disagree</h4>${conflicts}</div>` : ''}
             ${details}
             ${sources ? `<div class="finding-sources"><h4>Sources</h4><ul>${sources}</ul></div>` : ''}
@@ -510,14 +584,21 @@ function renderDetails(lines) {
     lines.forEach(line => {
         if (line.startsWith('- ')) {
             if (!inList) { html += '<ul class="detail-list">'; inList = true; }
-            html += `<li>${esc(line.slice(2))}</li>`;
+            html += `<li>${linkify(esc(line.slice(2)))}</li>`;
         } else {
             if (inList) { html += '</ul>'; inList = false; }
-            html += `<p>${esc(line)}</p>`;
+            html += `<p>${linkify(esc(line))}</p>`;
         }
     });
     if (inList) html += '</ul>';
     return html;
+}
+
+// where a Media statement comes from, as a short label
+function mediaVia(f) {
+    const s = (f.sources || [])[0] || {};
+    if (/PDF saved by Rui/.test(s.title || '')) return 'Reddit, from a PDF saved by Rui';
+    return { news: 'news', official: 'official record', press: 'press release', social: 'public post', secondary: 'secondary' }[s.type] || s.type || '';
 }
 
 function updateStats(findings) {

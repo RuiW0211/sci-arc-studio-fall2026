@@ -1,4 +1,56 @@
 {
+  "current": {
+    "asOf": "2026-10-12",
+    "_comment": "Statuses that change, shown at the top of the Research page. Each line restates its entries; update both together.",
+    "items": [
+      {
+        "label": "Surplus land notice",
+        "text": "No Notice of Availability for Y-1 on HCD's list (data updated Oct 2, 2026); declared surplus Oct 24, 2025.",
+        "ids": [
+          "disp-003",
+          "disp-001"
+        ]
+      },
+      {
+        "label": "Litigation",
+        "text": "Conditional settlement of both cases awaiting the City Council (Council File 26-1436, no vote recorded); terms not public.",
+        "ids": [
+          "lit-004",
+          "lit-005"
+        ]
+      },
+      {
+        "label": "The park",
+        "text": "Fenced since July 30, 2013; CRA/LA pays the DTLA Alliance for maintenance and security.",
+        "ids": [
+          "park-004",
+          "park-006"
+        ]
+      },
+      {
+        "label": "2022 approvals",
+        "text": "Approved Feb 3, 2022 with no Development Agreement; whether any approval still survives is unconfirmed.",
+        "ids": [
+          "ent-004",
+          "ent-005"
+        ]
+      },
+      {
+        "label": "MOCA",
+        "text": "Jonathan Abbott, CEO & Maurice Marciano Director since Sept 24, 2026.",
+        "ids": [
+          "moca-003"
+        ]
+      },
+      {
+        "label": "One California Plaza",
+        "text": "In receivership since Aug 2025; still in receivership as of Feb 27, 2026, no sale reported.",
+        "ids": [
+          "plaza-002"
+        ]
+      }
+    ]
+  },
   "findings": [
     {
       "id": "disp-001",
