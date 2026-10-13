@@ -435,7 +435,7 @@
   {
    "id": "plaza-001",
    "type": "entry",
-   "title": "Sept 30, 1981 DDA with CRA/LA covered parcels R, S, T, U and Y-1",
+   "title": "Sept 30, 1981 DDA with the CRA covered parcels R, S, T, U and Y-1",
    "topic": "California Plaza",
    "status": "verified",
    "start": "1981-09-30",
@@ -2017,6 +2017,48 @@
    "type": "person",
    "title": "Carolyn Clark Powers",
    "note": "MOCA board chair"
+  },
+  {
+   "id": "subject:Bunker Hill history",
+   "type": "subject",
+   "title": "Bunker Hill history",
+   "note": "Media subject (our grouping)"
+  },
+  {
+   "id": "subject:Angels Knoll closure",
+   "type": "subject",
+   "title": "Angels Knoll closure",
+   "note": "Media subject (our grouping)"
+  },
+  {
+   "id": "subject:Reopening the park",
+   "type": "subject",
+   "title": "Reopening the park",
+   "note": "Media subject (our grouping)"
+  },
+  {
+   "id": "subject:Angels Landing",
+   "type": "subject",
+   "title": "Angels Landing",
+   "note": "Media subject (our grouping)"
+  },
+  {
+   "id": "subject:Angels Flight",
+   "type": "subject",
+   "title": "Angels Flight",
+   "note": "Media subject (our grouping)"
+  },
+  {
+   "id": "subject:Surplus land and housing",
+   "type": "subject",
+   "title": "Surplus land and housing",
+   "note": "Media subject (our grouping)"
+  },
+  {
+   "id": "subject:Termination and lawsuits",
+   "type": "subject",
+   "title": "Termination and lawsuits",
+   "note": "Media subject (our grouping)"
   }
  ],
  "links": [
@@ -2958,18 +3000,10 @@
   },
   {
    "a": "plaza-001",
-   "b": "actor:crala",
-   "kind": "actor",
-   "why": "Sept 30, 1981 DDA with CRA/LA covered parcels R, S, T, U and Y-1",
-   "field": "title",
-   "match": "CRA/LA"
-  },
-  {
-   "a": "plaza-001",
    "b": "actor:cra",
    "kind": "actor",
-   "why": "USC's copy of the Disposition and Development Agreement between the CRA and Bunker Hill Associates, a limited partnership, is dated 30 September 1981.",
-   "field": "summary",
+   "why": "Sept 30, 1981 DDA with the CRA covered parcels R, S, T, U and Y-1",
+   "field": "title",
    "match": "CRA"
   },
   {
@@ -4830,6 +4864,468 @@
    "kind": "mention",
    "why": "the site was once to hold a third California Plaza tower (see plaza-006).",
    "field": "details"
+  },
+  {
+   "a": "media-p01",
+   "b": "subject:Bunker Hill history",
+   "kind": "subject",
+   "why": "Grouped under 'Bunker Hill history' (our grouping)"
+  },
+  {
+   "a": "media-p02",
+   "b": "subject:Bunker Hill history",
+   "kind": "subject",
+   "why": "Grouped under 'Bunker Hill history' (our grouping)"
+  },
+  {
+   "a": "media-p03",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-p04",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-p05",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-p06",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-p07",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-p08",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-p09",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-p10",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-p11",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-p12",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-p13",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p14",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p15",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-p16",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-p17",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p18",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p19",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p20",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p21",
+   "b": "subject:Angels Flight",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Flight' (our grouping)"
+  },
+  {
+   "a": "media-p22",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p23",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p24",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p25",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p26",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p27",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p28",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p29",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p30",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-p31",
+   "b": "subject:Surplus land and housing",
+   "kind": "subject",
+   "why": "Grouped under 'Surplus land and housing' (our grouping)"
+  },
+  {
+   "a": "media-p32",
+   "b": "subject:Termination and lawsuits",
+   "kind": "subject",
+   "why": "Grouped under 'Termination and lawsuits' (our grouping)"
+  },
+  {
+   "a": "media-p33",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p34",
+   "b": "subject:Surplus land and housing",
+   "kind": "subject",
+   "why": "Grouped under 'Surplus land and housing' (our grouping)"
+  },
+  {
+   "a": "media-p35",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-p36",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-s01",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-s02",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-s03",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-s04",
+   "b": "subject:Termination and lawsuits",
+   "kind": "subject",
+   "why": "Grouped under 'Termination and lawsuits' (our grouping)"
+  },
+  {
+   "a": "media-s05",
+   "b": "subject:Termination and lawsuits",
+   "kind": "subject",
+   "why": "Grouped under 'Termination and lawsuits' (our grouping)"
+  },
+  {
+   "a": "media-s06",
+   "b": "subject:Termination and lawsuits",
+   "kind": "subject",
+   "why": "Grouped under 'Termination and lawsuits' (our grouping)"
+  },
+  {
+   "a": "media-s07",
+   "b": "subject:Termination and lawsuits",
+   "kind": "subject",
+   "why": "Grouped under 'Termination and lawsuits' (our grouping)"
+  },
+  {
+   "a": "media-s08",
+   "b": "subject:Termination and lawsuits",
+   "kind": "subject",
+   "why": "Grouped under 'Termination and lawsuits' (our grouping)"
+  },
+  {
+   "a": "media-s09",
+   "b": "subject:Bunker Hill history",
+   "kind": "subject",
+   "why": "Grouped under 'Bunker Hill history' (our grouping)"
+  },
+  {
+   "a": "media-s10",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-s11",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-s12",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-s13",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-s14",
+   "b": "subject:Bunker Hill history",
+   "kind": "subject",
+   "why": "Grouped under 'Bunker Hill history' (our grouping)"
+  },
+  {
+   "a": "media-s15",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-s16",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-s17",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-s18",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-s19",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-r01",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-r02",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-r03",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-r04",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-r05",
+   "b": "subject:Bunker Hill history",
+   "kind": "subject",
+   "why": "Grouped under 'Bunker Hill history' (our grouping)"
+  },
+  {
+   "a": "media-r06",
+   "b": "subject:Bunker Hill history",
+   "kind": "subject",
+   "why": "Grouped under 'Bunker Hill history' (our grouping)"
+  },
+  {
+   "a": "media-r07",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-r08",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-r09",
+   "b": "subject:Angels Flight",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Flight' (our grouping)"
+  },
+  {
+   "a": "media-r10",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-r11",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-r12",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-r13",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-r14",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-r15",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-r16",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-r17",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-r18",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-r19",
+   "b": "subject:Angels Knoll closure",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Knoll closure' (our grouping)"
+  },
+  {
+   "a": "media-r20",
+   "b": "subject:Reopening the park",
+   "kind": "subject",
+   "why": "Grouped under 'Reopening the park' (our grouping)"
+  },
+  {
+   "a": "media-p37",
+   "b": "subject:Angels Landing",
+   "kind": "subject",
+   "why": "Grouped under 'Angels Landing' (our grouping)"
+  },
+  {
+   "a": "media-p38",
+   "b": "subject:Surplus land and housing",
+   "kind": "subject",
+   "why": "Grouped under 'Surplus land and housing' (our grouping)"
   },
   {
    "a": "af-001",

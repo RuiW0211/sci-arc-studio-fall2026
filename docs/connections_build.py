@@ -5,6 +5,7 @@ Three kinds of link, each with the evidence the page shows:
   mention  an entry's text names another entry's id                     (the sentence)
   actor    an entry's text names a person or organisation (ACTORS)      (the sentence)
            a Media entry's speaker is one of them                       (the speaker line)
+  subject  a Media entry belongs to a subject (our grouping)            (the subject)
   source   two entries cite the same source link                        (the source title; off by default on the page)
 
 Rerun after changing the research data or ACTORS:
@@ -132,6 +133,16 @@ def main():
                     links.append({"a": f["id"], "b": "actor:" + key, "kind": "actor", "why": why, "field": field,
                                   "match": m.group()})
                     review[key].append((f["id"], field, m.group(), why))
+    # subject links: each Media entry to its subject (our grouping, made while collecting; user, 2026-10-12: most
+    # comments name no person or entry, so they hang on their subject instead of floating alone)
+    subjects = []
+    for f in F:
+        sub = (f.get("media") or {}).get("subject")
+        if sub:
+            if sub not in subjects:
+                subjects.append(sub)
+                nodes.append({"id": "subject:" + sub, "type": "subject", "title": sub, "note": "Media subject (our grouping)"})
+            links.append({"a": f["id"], "b": "subject:" + sub, "kind": "subject", "why": f"Grouped under '{sub}' (our grouping)"})
     # mentions both ways count once
     uniq, out = set(), []
     for l in links:
@@ -168,7 +179,8 @@ def main():
     kinds = defaultdict(int)
     for l in links:
         kinds[l["kind"]] += 1
-    print(f"{len(nodes)} nodes ({len(F)} entries, {len(ACTORS)} people and organisations); links: {dict(kinds)}")
+    print(f"{len(nodes)} nodes ({len(F)} entries, {len(ACTORS)} people and organisations, {len(subjects)} subjects);"
+          f" links: {dict(kinds)}")
     for key, label, *_ in ACTORS:
         r = review[key]
         print(f"\n## {label} ({len(r)})")

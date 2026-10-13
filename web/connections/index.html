@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connections · Angels Knoll</title>
+<link rel="stylesheet" href="../site.css">
+<script src="../theme.js"></script>
+<style>
+  /* Connections only; colours and type come from site.css. A 3D network of the research entries (data.json, built by
+     docs/connections_build.py): height is time (user, 2026-10-12), the other two directions are free. Only links
+     that are in the data are drawn; each one says why. */
+  html, body { height: 100%; overflow: hidden; }
+  #view { position: fixed; inset: 0; touch-action: none; }
+  #view canvas { display: block; }
+  .over { position: fixed; left: 16px; top: 16px; max-width: 420px; pointer-events: none; z-index: 3; }
+  .over .eyebrow { margin-bottom: 8px; pointer-events: auto; }
+  .over h1 { font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .over .subtitle { font-size: 0.85rem; }
+  .ctl { position: fixed; left: 16px; bottom: 16px; z-index: 3; font-size: 0.75rem; color: var(--muted); max-width: calc(100% - 90px); }
+  .ctl .row { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; }
+  .ctl button { font: inherit; color: var(--faint); background: none; border: 0; padding: 0; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; transition: color var(--t-feedback); }
+  .ctl button:hover { color: var(--text); }
+  .ctl button.on { color: var(--text); }
+  .ctl button i { display: inline-block; width: 16px; height: 0; border-top: 1px solid currentColor; opacity: .35; }
+  .ctl button.on i { opacity: 1; }
+  .ctl .hint { color: var(--faint); }
+
+  /* labels drawn over the canvas */
+  #labels { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+  .lb { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 0.68rem; line-height: 1.2; will-change: transform;
+    transition: opacity var(--t-feedback); }
+  .lb.hub { padding: 2px 5px; border-radius: 2px; background: var(--text); color: var(--bg); font-weight: 600; }
+  .lb.hub.org { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.6rem; }
+  .lb.subject { padding: 1px 5px; border: 1px solid var(--muted); color: var(--muted); background: var(--bg); font-style: italic; border-radius: 2px; }
+  .lb.entry { color: var(--text); max-width: 200px; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg); }
+  .lb.entry.sel { background: var(--c); color: var(--bg); padding: 2px 5px; border-radius: 2px; text-shadow: none; max-width: 300px; }
+  .lb.year { font: 0.62rem var(--mono); color: var(--faint); }
+  .lb.dim { opacity: 0.18; }
+
+  .card { position: fixed; right: 16px; top: 16px; bottom: 64px; width: 360px; overflow: auto; background: var(--bg);
+    border: 1px solid var(--line); border-radius: 3px; padding: 16px 18px; font-size: 0.85rem; z-index: 4;
+    opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity var(--t-in) ease, transform var(--t-in) ease; }
+  .card.show { opacity: 1; transform: none; pointer-events: auto; }
+  .card .meta { font: 0.68rem var(--mono); color: var(--faint); margin-bottom: 6px; }
+  .card h3 { font-size: 1rem; line-height: 1.35; margin-bottom: 8px; padding-right: 16px; }
+  .card p { color: var(--muted); margin-bottom: 10px; }
+  .card .st { font-weight: 700; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .card .st.verified { color: var(--verified); } .card .st.unverified { color: var(--unverified); }
+  .card .st.open-question { color: var(--question); } .card .st.analysis { color: var(--analysis); }
+  .card .x { position: absolute; top: 8px; right: 10px; background: none; border: 0; color: var(--faint); font-size: 1.1rem; cursor: pointer; }
+  .card a { color: var(--text); }
+  .card h4 { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
+    margin: 16px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+  .card ul { list-style: none; }
+  .card li { margin-bottom: 9px; }
+  .card li button { font: inherit; font-weight: 600; color: var(--text); background: none; border: 0; padding: 0; text-align: left; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent; transition: text-decoration-color var(--t-feedback); }
+  .card li button:hover { text-decoration-color: currentColor; }
+  .card li .why { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+
+  #view, .over, .ctl { transition: opacity var(--t-out) ease; }
+  body:not(.ready) #view, body:not(.ready) .ctl, body:not(.ready) #labels { opacity: 0; }
+  @media (max-width: 600px) {
+    .over h1 { font-size: 1.3rem; }
+    .over .subtitle { display: none; }
+    .card { left: 16px; right: 16px; width: auto; top: auto; max-height: 55vh; bottom: 60px; }
+  }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="view"></div>
+<div id="labels"></div>
+<div class="over">
+  <p class="eyebrow">Angels Knoll · Connections · <a href="../" class="home">home</a></p>
+  <h1>Connections</h1>
+  <p class="subtitle">How the research entries are linked. Up is later in time.</p>
+</div>
+<div class="ctl" id="ctl"></div>
+<div class="card" id="card" role="dialog" aria-live="polite"></div>
+<button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const STATUS = { verified: "Verified", unverified: "Unverified", "open-question": "Open question", analysis: "Analysis" };
+const KINDS = [   // drawn in this order; source is off at first (user, 2026-10-12)
+  { k: "mention", label: "Mentions another entry", on: true, a: 0.6 },
+  { k: "actor", label: "Names a person or organisation", on: true, a: 0.28 },
+  { k: "subject", label: "Media subject (our grouping)", on: true, a: 0.22 },
+  { k: "source", label: "Same source", on: false, a: 0.1 },
+];
+const FAINT_HUB = { "actor:city": 0.3 };   // the City is in 50 entries: kept, drawn fainter (user, 2026-10-12)
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const fmt = (d) => {
+  if (!d) return ""; if (d === "present") return "present";
+  const [y, m, dd] = d.split("-");
+  return !m ? y : !dd ? `${MON[+m - 1]} ${y}` : `${MON[+m - 1]} ${+dd}, ${y}`;
+};
+const num = (d) => { const [y, m, dd] = d.split("-").map(Number); return y + ((m || 1) - 1) / 12 + ((dd || 1) - 1) / 365; };
+
+let data, research;
+try {
+  [data, research] = await Promise.all([fetch("data.json").then((r) => r.json()), fetch("../research/data.json").then((r) => r.json())]);
+} catch (e) {
+  document.querySelector(".over .subtitle").textContent = "Could not load the data. Open the site through a local server (python web/serve.py).";
+  document.body.classList.add("ready");
+  throw e;
+}
+const finding = new Map(research.findings.map((f) => [f.id, f]));
+const nodes = data.nodes, N = nodes.length;
+const byId = new Map(nodes.map((n, i) => [n.id, i]));
+const links = data.links.map((l) => ({ ...l, i: byId.get(l.a), j: byId.get(l.b) })).filter((l) => l.i !== undefined && l.j !== undefined);
+const adj = nodes.map(() => []);
+links.forEach((l, li) => { adj[l.i].push(li); adj[l.j].push(li); });
+const isHub = (n) => n.type !== "entry";
+
+// ---- layout: height is time for dated entries; a seeded force layout for the rest, computed once ----
+const H = 640;
+const dated = nodes.filter((n) => n.type === "entry" && n.start).map((n) => num(n.start)).sort((a, b) => a - b);
+const t0 = dated[0], t1 = Math.max(dated[dated.length - 1], num(data.asOf || "2026-10-12"));
+function yOf(t) {     // part linear, mostly by rank: the quiet decades stay short, the busy years open up
+  let lo = 0, hi = dated.length - 1;
+  while (lo < hi) { const m = (lo + hi) >> 1; if (dated[m] < t) lo = m + 1; else hi = m; }
+  const rank = lo / (dated.length - 1);
+  return H * (0.3 * (t - t0) / (t1 - t0) + 0.7 * rank) - H / 2;
+}
+const P = new Float32Array(N * 3), V = new Float32Array(N * 3), fixY = new Array(N).fill(null);
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+nodes.forEach((n, i) => {
+  const a = rnd() * Math.PI * 2, r = 40 + rnd() * 140;
+  P[3 * i] = Math.cos(a) * r; P[3 * i + 2] = Math.sin(a) * r;
+  if (n.type === "entry" && n.start) { fixY[i] = yOf(num(n.start)); P[3 * i + 1] = fixY[i]; }
+  else P[3 * i + 1] = (rnd() - 0.5) * H * 0.6;
+  n.deg = adj[i].filter((li) => links[li].kind !== "source").length;
+});
+const layoutLinks = links.filter((l) => l.kind !== "source");
+const SPRING = { mention: [34, 0.06], actor: [52, 0.03], subject: [40, 0.05] };
+for (let it = 0; it < 420; it++) {
+  const cool = 1 - it / 420;
+  V.fill(0);
+  for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+    let dx = P[3 * i] - P[3 * j], dy = P[3 * i + 1] - P[3 * j + 1], dz = P[3 * i + 2] - P[3 * j + 2];
+    let d2 = dx * dx + dy * dy + dz * dz + 1;
+    if (d2 > 160000) continue;
+    const f = Math.min(1400 / d2, 4), d = Math.sqrt(d2);
+    dx *= f / d; dy *= f / d; dz *= f / d;
+    V[3 * i] += dx; V[3 * i + 1] += dy; V[3 * i + 2] += dz; V[3 * j] -= dx; V[3 * j + 1] -= dy; V[3 * j + 2] -= dz;
+  }
+  for (const l of layoutLinks) {
+    const [len, k0] = SPRING[l.kind], k = k0 * (FAINT_HUB[l.a] || FAINT_HUB[l.b] || 1);
+    const i = l.i, j = l.j;
+    const dx = P[3 * j] - P[3 * i], dy = P[3 * j + 1] - P[3 * i + 1], dz = P[3 * j + 2] - P[3 * i + 2];
+    const d = Math.sqrt(dx * dx + dy * dy + dz * dz) + 0.01, f = k * (d - len) / d;
+    V[3 * i] += dx * f; V[3 * i + 1] += dy * f; V[3 * i + 2] += dz * f; V[3 * j] -= dx * f; V[3 * j + 1] -= dy * f; V[3 * j + 2] -= dz * f;
+  }
+  for (let i = 0; i < N; i++) {
+    const n = nodes[i], x = P[3 * i], z = P[3 * i + 2], r = Math.hypot(x, z) + 0.01;
+    V[3 * i] -= x * 0.004; V[3 * i + 2] -= z * 0.004;                     // toward the time axis
+    if (n.type === "entry" && !n.start && r < 210) { V[3 * i] += x / r * 1.5; V[3 * i + 2] += z / r * 1.5; }   // undated: an outer shell
+    for (let c = 0; c < 3; c++) P[3 * i + c] += Math.max(-8, Math.min(8, V[3 * i + c])) * cool;
+    if (fixY[i] !== null) P[3 * i + 1] = fixY[i];
+    else P[3 * i + 1] = Math.max(-H / 2 - 40, Math.min(H / 2 + 40, P[3 * i + 1]));
+  }
+}
+
+// ---- scene ----
+const view = document.getElementById("view");
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+view.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
+camera.position.set(1060, 140, 1060);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.autoRotate = true; controls.autoRotateSpeed = 0.35;
+controls.minDistance = 120; controls.maxDistance = 2600;
+
+// colours from the page's variables (they ease when the theme changes)
+const css = {};
+function readColours() {
+  const s = getComputedStyle(document.documentElement);
+  for (const v of ["bg", "text", "muted", "faint", "line", "verified", "unverified", "question", "analysis"]) css[v] = new THREE.Color(s.getPropertyValue("--" + v).trim() || "#888");
+}
+readColours();
+const statusColour = (n) => n.type === "entry" ? css[{ "open-question": "question" }[n.status] || n.status] || css.muted : n.type === "subject" ? css.muted : css.text;
+
+// nodes: one Points object; size, colour, alpha and shape per node
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute("position", new THREE.BufferAttribute(P, 3));
+const pCol = new Float32Array(N * 4), pSize = new Float32Array(N), pShape = new Float32Array(N);
+nodes.forEach((n, i) => {
+  pSize[i] = n.type === "entry" ? 5 + Math.sqrt(n.deg + n.nsrc) * 1.6 : 7 + Math.sqrt(n.deg) * 1.4;
+  pShape[i] = n.type === "entry" ? (n.start ? 0 : 2) : n.type === "subject" ? 2 : 1;   // disc, square, ring
+});
+pGeo.setAttribute("color", new THREE.BufferAttribute(pCol, 4));
+pGeo.setAttribute("size", new THREE.BufferAttribute(pSize, 1));
+pGeo.setAttribute("shape", new THREE.BufferAttribute(pShape, 1));
+const pMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false,
+  uniforms: { scale: { value: 1 } },
+  vertexShader: `attribute float size; attribute float shape; attribute vec4 color; varying vec4 vC; varying float vS;
+    uniform float scale;
+    void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
+      gl_PointSize = size * scale / -mv.z; vC = color; vS = shape;
+      vC.a *= clamp(1.35 - (-mv.z) / 2200.0, 0.35, 1.0); }`,
+  fragmentShader: `varying vec4 vC; varying float vS;
+    void main() { vec2 p = gl_PointCoord - 0.5; float d = length(p);
+      if (vS < 0.5) { if (d > 0.5) discard; }
+      else if (vS < 1.5) { if (max(abs(p.x), abs(p.y)) > 0.42) discard; }
+      else { if (d > 0.5 || d < 0.3) discard; }
+      gl_FragColor = vC; }`,
+});
+scene.add(new THREE.Points(pGeo, pMat));
+
+// links: one LineSegments object, rgba per vertex
+const lPos = new Float32Array(links.length * 6), lCol = new Float32Array(links.length * 8);
+links.forEach((l, k) => { for (let c = 0; c < 3; c++) { lPos[6 * k + c] = P[3 * l.i + c]; lPos[6 * k + 3 + c] = P[3 * l.j + c]; } });
+const lGeo = new THREE.BufferGeometry();
+lGeo.setAttribute("position", new THREE.BufferAttribute(lPos, 3));
+lGeo.setAttribute("color", new THREE.BufferAttribute(lCol, 4));
+const lines = new THREE.LineSegments(lGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
+scene.add(lines);
+
+// the time axis and its years
+const years = [];
+{
+  const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, yOf(t0) - 20, 0), new THREE.Vector3(0, yOf(t1) + 20, 0)]);
+  var axisMat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.5 });
+  scene.add(new THREE.Line(g, axisMat));
+  let last = -1e9;
+  for (let y = Math.ceil(t0); y <= Math.floor(t1); y++) {
+    const yy = yOf(y), round = y % 50 === 0 ? 1 : y % 10 === 0 ? 2 : y % 5 === 0 ? 3 : 4;
+    if ((round <= 2 && yy - last > 16) || (round === 3 && yy - last > 26) || (round === 4 && yy - last > 44)) { years.push([y, yy]); last = yy; }
+  }
+  const tg = new THREE.BufferGeometry().setFromPoints(years.flatMap(([, yy]) => [new THREE.Vector3(-6, yy, 0), new THREE.Vector3(6, yy, 0)]));
+  scene.add(new THREE.LineSegments(tg, axisMat));
+}
+
+// ---- labels (HTML over the canvas) ----
+const labelsEl = document.getElementById("labels");
+const labels = new Map();   // node index -> element
+function label(i) {
+  if (labels.has(i)) return labels.get(i);
+  const n = nodes[i], el = document.createElement("div");
+  el.className = "lb " + (n.type === "entry" ? "entry" : n.type === "subject" ? "subject" : "hub " + n.type);
+  el.textContent = n.title;
+  if (n.type === "entry") el.style.setProperty("--c", `var(--${{ "open-question": "question" }[n.status] || n.status})`);
+  labelsEl.appendChild(el); labels.set(i, el);
+  return el;
+}
+nodes.forEach((n, i) => { if (isHub(n)) label(i); });
+const yearEls = years.map(([y]) => { const el = document.createElement("div"); el.className = "lb year"; el.textContent = y; labelsEl.appendChild(el); return el; });
+
+// ---- controls: link kinds ----
+const on = Object.fromEntries(KINDS.map((k) => [k.k, k.on]));
+const ctl = document.getElementById("ctl");
+ctl.innerHTML = `<div class="hint">Drag to turn · scroll to zoom · click a point</div><div class="row">` +
+  KINDS.map((k) => `<button data-k="${k.k}" class="${k.on ? "on" : ""}"><i></i>${esc(k.label)}</button>`).join("") + `</div>`;
+ctl.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  on[b.dataset.k] = !on[b.dataset.k]; b.classList.toggle("on", on[b.dataset.k]); dirty = true;
+});
+
+// ---- state, colouring ----
+let hover = -1, sel = -1, dirty = true;
+function focusSet() {
+  const f = sel >= 0 ? sel : hover;
+  if (f < 0) return null;
+  const s = new Set([f]);
+  for (const li of adj[f]) { const l = links[li]; if (on[l.kind]) s.add(l.i === f ? l.j : l.i); }
+  return s;
+}
+function paint() {
+  const fs = focusSet(), f = sel >= 0 ? sel : hover;
+  nodes.forEach((n, i) => {
+    const c = statusColour(n), a = !fs ? (n.type === "entry" ? 0.9 : 1) : fs.has(i) ? 1 : 0.12;
+    pCol[4 * i] = c.r; pCol[4 * i + 1] = c.g; pCol[4 * i + 2] = c.b; pCol[4 * i + 3] = a;
+  });
+  pGeo.attributes.color.needsUpdate = true;
+  links.forEach((l, k) => {
+    const kind = KINDS.find((x) => x.k === l.kind);
+    let a = on[l.kind] ? kind.a * (FAINT_HUB[l.a] || FAINT_HUB[l.b] || 1) : 0;
+    if (fs && a) a = (l.i === f || l.j === f) ? Math.min(1, kind.a * 2.2 + 0.3) : a * 0.12;
+    const c = css.text;
+    for (const v of [0, 1]) { lCol.set([c.r, c.g, c.b, a], 8 * k + 4 * v); }
+  });
+  lGeo.attributes.color.needsUpdate = true;
+  axisMat.color.copy(css.faint);
+  // which labels show: hubs always; entries when in focus
+  const want = new Set(nodes.map((n, i) => isHub(n) ? i : -1).filter((i) => i >= 0));
+  if (fs) fs.forEach((i) => want.add(i));
+  for (const [i, el] of labels) {
+    const show = want.has(i);
+    el.style.display = show ? "" : "none";
+    el.classList.toggle("dim", !!fs && !fs.has(i));
+    el.classList.toggle("sel", i === sel);
+  }
+  if (fs) fs.forEach((i) => { const el = label(i); el.style.display = ""; el.classList.remove("dim"); el.classList.toggle("sel", i === sel); });
+  dirty = false;
+}
+
+// ---- picking: nearest node on screen ----
+const v3 = new THREE.Vector3();
+const scr = new Float32Array(N * 3);   // x, y, depth (view z) per node, each frame
+function project() {
+  const w = innerWidth, h = innerHeight;
+  for (let i = 0; i < N; i++) {
+    v3.set(P[3 * i], P[3 * i + 1], P[3 * i + 2]).project(camera);
+    scr[3 * i] = (v3.x + 1) / 2 * w; scr[3 * i + 1] = (1 - v3.y) / 2 * h; scr[3 * i + 2] = v3.z;
+  }
+}
+function pick(x, y) {
+  let best = -1, bd = 14 * 14;
+  for (let i = 0; i < N; i++) {
+    if (scr[3 * i + 2] > 1) continue;
+    const dx = scr[3 * i] - x, dy = scr[3 * i + 1] - y, d = dx * dx + dy * dy;
+    if (d < bd) { bd = d; best = i; }
+  }
+  return best;
+}
+let down = null, idleT = 0;
+renderer.domElement.addEventListener("pointerdown", (e) => { down = [e.clientX, e.clientY]; controls.autoRotate = false; idleT = performance.now(); });
+renderer.domElement.addEventListener("pointermove", (e) => {
+  if (e.pointerType !== "mouse") return;
+  const h = pick(e.clientX, e.clientY);
+  if (h !== hover) { hover = h; dirty = true; renderer.domElement.style.cursor = h >= 0 ? "pointer" : ""; }
+});
+renderer.domElement.addEventListener("pointerleave", () => { if (hover >= 0) { hover = -1; dirty = true; } });
+renderer.domElement.addEventListener("pointerup", (e) => {
+  idleT = performance.now();
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+  const p = pick(e.clientX, e.clientY);
+  if (p >= 0) select(p, false); else close();
+});
+controls.addEventListener("start", () => { controls.autoRotate = false; });
+controls.addEventListener("end", () => { idleT = performance.now(); });
+
+// ---- the card ----
+const card = document.getElementById("card");
+const KIND_TITLE = { mention: "Mentions", actor: "People and organisations", subject: "Subject", source: "Same source" };
+let fly = null;
+function select(i, flyTo) {
+  sel = i; dirty = true; controls.autoRotate = false; idleT = performance.now();
+  const n = nodes[i], f = finding.get(n.id);
+  let h = `<button class="x" aria-label="Close">×</button>`;
+  if (n.type === "entry") {
+    const date = n.start ? fmt(n.start) + (n.end && n.end !== n.start ? ` – ${fmt(n.end)}` : "") : "no date";
+    h += `<div class="meta">${esc(date)} · ${esc(n.topic)} · <span class="st ${esc(n.status)}">${esc(STATUS[n.status] || n.status)}</span></div>` +
+      `<h3>${esc(n.title)}</h3><p>${esc(f?.summary)}</p>` +
+      `<div class="meta"><a href="../research/#${encodeURIComponent(n.id)}">open in Research</a>` +
+      (n.start ? ` · <a href="../timeline/#${encodeURIComponent(n.id)}">in Timeline</a>` : "") + `</div>`;
+  } else {
+    h += `<div class="meta">${n.type === "subject" ? "Subject · our grouping" : n.type === "person" ? "Person" : "Organisation"}</div>` +
+      `<h3>${esc(n.title)}</h3><p>${esc(n.note)}</p>`;
+  }
+  for (const kind of KINDS) {
+    const ls = adj[i].map((li) => links[li]).filter((l) => l.kind === kind.k);
+    if (!ls.length) continue;
+    ls.sort((a, b) => (nodes[a.i === i ? a.j : a.i].start || "9").localeCompare(nodes[b.i === i ? b.j : b.i].start || "9"));
+    h += `<h4>${KIND_TITLE[kind.k]} (${ls.length})${on[kind.k] ? "" : " · hidden"}</h4><ul>` + ls.map((l) => {
+      const o = l.i === i ? l.j : l.i, on_ = nodes[o];
+      const why = Array.isArray(l.why) ? l.why.join("; ") + (l.n > l.why.length ? ` (+${l.n - l.why.length})` : "") : l.why;
+      return `<li><button data-i="${o}">${esc(on_.title)}</button><span class="why">${esc(why)}</span></li>`;
+    }).join("") + `</ul>`;
+  }
+  card.innerHTML = h; card.scrollTop = 0; card.classList.add("show");
+  history.replaceState(null, "", "#" + encodeURIComponent(n.id));
+  if (flyTo) fly = { from: controls.target.clone(), to: new THREE.Vector3(P[3 * i], P[3 * i + 1], P[3 * i + 2]), t: performance.now() };
+}
+function close() {
+  if (sel < 0) return;
+  sel = -1; dirty = true; card.classList.remove("show"); history.replaceState(null, "", location.pathname);
+}
+card.addEventListener("click", (e) => {
+  if (e.target.closest(".x")) return close();
+  const b = e.target.closest("button[data-i]"); if (b) select(+b.dataset.i, true);
+});
+addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+// ---- frame ----
+function resize() {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  pMat.uniforms.scale.value = innerHeight * renderer.getPixelRatio() * 0.9;
+}
+addEventListener("resize", resize); resize();
+const root = document.documentElement;
+new MutationObserver(() => { readColours(); dirty = true; }).observe(root, { attributes: true, attributeFilter: ["data-theme", "class"] });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { readColours(); dirty = true; });
+function placeLabel(el, x, y, z, dx = 8, dy = -6) {
+  v3.set(x, y, z).project(camera);
+  if (v3.z > 1) { el.style.visibility = "hidden"; return; }
+  el.style.visibility = "";
+  el.style.transform = `translate(${((v3.x + 1) / 2 * innerWidth + dx).toFixed(1)}px, ${((1 - v3.y) / 2 * innerHeight + dy).toFixed(1)}px)`;
+}
+let offX = 0, offY = 0;
+function frame(now) {
+  if (root.classList.contains("theme-anim")) { readColours(); dirty = true; }
+  if (fly) {
+    const k = Math.min(1, (now - fly.t) / 600), e = k * k * (3 - 2 * k);
+    controls.target.lerpVectors(fly.from, fly.to, e);
+    if (k >= 1) fly = null;
+  }
+  // with the card open, the view slides so the chosen point is not under it (right on wide screens, bottom on phones)
+  const wide = innerWidth > 600, showCard = card.classList.contains("show");
+  const ox = showCard && wide ? (card.offsetWidth + 16) / 2 : 0, oy = showCard && !wide ? card.offsetHeight / 2 : 0;
+  offX += (ox - offX) * 0.12; offY += (oy - offY) * 0.12;
+  if (Math.abs(offX) > 0.5 || Math.abs(offY) > 0.5) camera.setViewOffset(innerWidth, innerHeight, offX, offY, innerWidth, innerHeight);
+  else if (camera.view) camera.clearViewOffset();
+  if (!controls.autoRotate && sel < 0 && hover < 0 && now - idleT > 6000) controls.autoRotate = true;
+  controls.update();
+  if (dirty) paint();
+  renderer.render(scene, camera);
+  project();
+  for (const [i, el] of labels) if (el.style.display !== "none") placeLabel(el, P[3 * i], P[3 * i + 1], P[3 * i + 2], isHub(nodes[i]) ? 7 : 8, isHub(nodes[i]) ? -8 : -7);
+  years.forEach(([, yy], k) => placeLabel(yearEls[k], 0, yy, 0, 10, -6));
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+const h0 = decodeURIComponent(location.hash.slice(1));
+if (byId.has(h0)) select(byId.get(h0), true);
+requestAnimationFrame(() => document.body.classList.add("ready"));
+</script>
+</body>
+</html>
