@@ -56,7 +56,6 @@
     .m2 .content p > .note { float: right; clear: right; width: 240px; margin: 0.25em -280px 0 0; font-size: 0.75rem;
       line-height: 1.45; color: var(--faint); word-break: break-word; }
   }
-  .draft { color: var(--unverified); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
   /* the diagram */
   .flow { margin: 10px 0 18px; }
   .flow svg { width: 100%; height: auto; display: block; overflow: visible; }
@@ -130,7 +129,6 @@
     <h3 class="entry-title">2.1 LiDAR point cloud</h3>
     <p id="lidar">Loading…</p>
     <h3 class="entry-title">2.2 Labelling the points</h3>
-    <p class="draft">Draft, from the pipeline's own notes; to be checked.</p>
     <p>Every point carries two labels: a <b>segment</b> (ground, low, building, tree, shrub, vehicle, wall, street
       furniture, podium tree, porous facade, unsure) and the <b>object</b> it belongs to: one building part, one tree,
       one car. The nine USGS tiles are cut into 500 m chunks, each with a 50 m margin for the points around it, and
@@ -155,7 +153,6 @@
       <b>They are estimates, not measurements</b>; the viewer draws them with the measured points of their building.
       <span class="note">(site-model/houdini/tools/synth_facades.py)</span></p>
     <h3 class="entry-title">2.5 Terrain</h3>
-    <p class="draft">Draft, from the pipeline's own notes; to be checked.</p>
     <p>The ground is Houdini's ground model of the LiDAR: every point keeps its height above it. For the analysis
       layers it is written as a 2 m grid over 2.5 by 2.5 km around Y-1 (1,250 by 1,250 cells), each cell the mean
       ground height of the returns in it, under buildings too; 0.2% of the cells had no returns and take the nearest
