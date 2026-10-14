@@ -295,7 +295,9 @@ def other(r_near=1.5, h_min=2.0, r_outline=3.0, min_struct=150):
     from pack_wide import SEGMENTS, load_chunk
     HZ = STAGE.parent.parent
     feats = json.load(open(HZ / "in" / "lariac_3km.geojson"))["features"]
-    fp_names = ["BLD_" + str(f["properties"]["BLD_ID"]) for f in feats]
+    # named as fetch_lariac_wide.py names them: outlines without a BLD_ID are BLD_noid<OBJECTID> (2026-10-15: they were all
+    # "BLD_None", one object scattered over the whole site)
+    fp_names = [f"BLD_{f['properties']['BLD_ID']}" if f["properties"].get("BLD_ID") else f"BLD_noid{f['properties']['OBJECTID']}" for f in feats]
     tree = STRtree([shape(f["geometry"]).buffer(0) for f in feats])
     (STAGE / "points").mkdir(exist_ok=True)
     tot = np.zeros(5, int)
