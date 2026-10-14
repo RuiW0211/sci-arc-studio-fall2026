@@ -39,11 +39,15 @@ import export_handoff as eh   # noqa: E402  (full-density labelled points, the h
 
 OUT = HERE.parents[2] / "web" / "data"
 TRIAL = ["400 S Hope St", "Wells Fargo Center - North Tower", "AT&T building (windowless, with antenna tower)"]   # first test
-DENSITY = 0.3        # points / m2 of wall: a little below the walls the LiDAR saw well (0.4-0.7), so filled walls do not stand out (user, 2026-10-08)
+DENSITY = 0.75       # points / m2 of wall: the walls the LiDAR saw (user, 2026-10-15: the median of the 2 m wall cells with
+                     # returns within 250 m of Y-1, measured; 0.3 before, the filled walls looked hollow as the buildings rose)
+CELL_M = 2.0         # (2026-10-15) each wall is filled cell by cell up to DENSITY: a cell the LiDAR saw well gets nothing,
+                     # a sparse one the difference, an empty one all of it
 FLOOR_M = 4.0        # storey height when the building's own wall returns do not show one (office default)
 BAND_M = 0.25        # spread of the points around each floor line (spandrels: where walls return the laser)
 IN_BANDS = 0.8       # share of the points on the floor lines; the rest anywhere on the wall
-GAP_M = 1.5          # no estimate within this distance of a measured return
+GAP_M = 0.5          # no estimate within this distance of a measured return (no point on top of another; was 1.5 m,
+                     # which left sparsely seen walls sparse)
 SNAP_M = 2.5         # largest wall shift onto the measured wall points
 BOTTOM_M = 6.0       # nothing in the lowest metres above the ground
 
@@ -118,6 +122,11 @@ def main(names):
             along, off = rel @ u, rel @ n
             near = (along > -0.5) & (along < L + 0.5) & (np.abs(off) < SNAP_M) & (P[:, 2] > lo) & (P[:, 2] < z1 - 1.5)
             shift = float(np.clip(np.median(off[near]), -SNAP_M, SNAP_M)) if near.sum() >= 8 else 0.0
+            # measured returns on this wall per cell (within 1 m of it, once moved onto them)
+            onw = near & (np.abs(off - shift) < 1.0)
+            na, nz = max(int(np.ceil(L / CELL_M)), 1), max(int(np.ceil((z1 - lo) / CELL_M)), 1)
+            have = np.zeros((na, nz))
+            np.add.at(have, (np.clip((along[onw] // CELL_M).astype(int), 0, na - 1), np.clip(((P[onw, 2] - lo) // CELL_M).astype(int), 0, nz - 1)), 1)
             k = rng.poisson(DENSITY * L * (z1 - lo))
             if k == 0:
                 continue
@@ -130,6 +139,10 @@ def main(names):
                 Z = np.clip(Z, lo, z1)
             XY = a + np.outer(S, u) + n * shift
             C = np.c_[XY, Z]
+            # keep a candidate with the share its cell still lacks: the cell ends up at about DENSITY, measured + estimated
+            ca = np.clip((S // CELL_M).astype(int), 0, na - 1); cz = np.clip(((Z - lo) // CELL_M).astype(int), 0, nz - 1)
+            lack = np.clip(1.0 - have[ca, cz] / (DENSITY * CELL_M * CELL_M), 0.0, 1.0)
+            C = C[rng.random(len(C)) < lack]
             free = tree.query(C, distance_upper_bound=GAP_M)[0] == np.inf
             C = C[free]
             C = C[rng.random(len(C)) < eh.pw.ratio(C[:, 0], C[:, 1], np.full(len(C), u_bld))]   # thin with distance
@@ -161,8 +174,8 @@ def main(names):
         "objects": [objnames[o] for o in used],
         "buildings": report,
         "source": "ESTIMATED, not measured: points on the walls of the building prisms of site-model/houdini/handoff/ "
-                  "where the 2023 LiDAR has no return within %.1f m (site-model/houdini/tools/synth_facades.py)" % GAP_M,
-        "settings": {"density_per_m2": DENSITY, "floor_m": FLOOR_M, "band_m": BAND_M, "in_bands": IN_BANDS, "gap_m": GAP_M, "snap_m": SNAP_M, "bottom_m": BOTTOM_M},
+                  "filled cell by cell up to %.2f points / m2 with what the 2023 LiDAR saw, none within %.1f m of a return (site-model/houdini/tools/synth_facades.py)" % (DENSITY, GAP_M),
+        "settings": {"density_per_m2": DENSITY, "cell_m": CELL_M, "floor_m": FLOOR_M, "band_m": BAND_M, "in_bands": IN_BANDS, "gap_m": GAP_M, "snap_m": SNAP_M, "bottom_m": BOTTOM_M},
     }, indent=1))
     print(f"wrote {len(three)} points ({(OUT / 'facades_estimated.bin').stat().st_size / 1e6:.2f} MB)")
 
