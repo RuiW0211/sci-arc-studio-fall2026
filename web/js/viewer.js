@@ -1165,8 +1165,9 @@ addEventListener("keydown", (e) => {
   e.preventDefault();   // not a click on the focused checkbox, not a page scroll
   if (playing || cine) setPaused(!paused); else startPlay(false);   // stopped (the slider was moved, or the end): play
 });
-// a drag or scroll while it plays hands the camera back for good; while paused it is only a look around
-for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused) handBack(); }, { passive: true });
+// a drag or scroll while the camera plays pauses it (user, 2026-10-13: it used to hand the camera back for good and the
+// orbit never came back): a look around, after which it goes on by itself (autoResumeS) or with Space
+for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused && (tour || cine)) setPaused(true); }, { passive: true });
 // years a second (user, 2026-10-13: slower): 5 to 1950, then 1.25 (a building about 4 s going up), 0.6 while an
 // unbuilt scheme is on the site; config.json time.rates
 const ghostSpans = [...ghostYears.values()].flat();
