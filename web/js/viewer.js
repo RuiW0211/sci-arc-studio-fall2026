@@ -82,9 +82,10 @@ const focusMats = [];
 function withFocus(shader) {
   shader.uniforms.uFocus = FOCUS; shader.uniforms.uFocusGrey = FOCUS_GREY; shader.uniforms.uFocusAlpha = FOCUS_ALPHA;
   // vSel (from pointMaterial's vertex shader): a selected object keeps its highlight under Highlight people
-  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha;\nvarying float vSel;\n" + shader.fragmentShader.replace("#include <color_fragment>",
+  // vBuild, vGhost (Time module): a building going up keeps its colour, and so do the unbuilt towers
+  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha;\nvarying float vSel, vBuild, vGhost;\n" + shader.fragmentShader.replace("#include <color_fragment>",
     `#include <color_fragment>
-  float fk = uFocus * (1.0 - vSel);
+  float fk = uFocus * (1.0 - vSel) * (1.0 - vBuild) * (1.0 - vGhost);
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(uFocusGrey), fk);
   diffuseColor.a *= mix(1.0, uFocusAlpha, fk);`);
 }
@@ -234,7 +235,8 @@ let lidar = null;
 let lidarDensityMatch = null, lidarPlazaPoints = 0;   // object -> ground / own density, for the moved structures (loadLidar)
 
 // the Time module (user, 2026-10-13): off = today; on = the year of its slider. TIME feeds the point shader.
-const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.undatedDim ?? 0.4 } };
+const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.undatedDim ?? 0.4 },
+               build: { value: cfg.time?.buildYears ?? 3 } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && TIME.year.value < b + 1);
 function applyVisibility() {
   for (const L of ordered) {
@@ -285,18 +287,28 @@ function pointMaterial(sizeMetres) {
     withFocus(shader);
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
+    shader.uniforms.uBuild = TIME.build;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim;\nuniform vec3 uHi;\nvarying float vSel;\n" +
+    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
   vColor.rgb = mix(vColor.rgb, uHi, sw);
-  vSel = sw;`);
+  vSel = sw; vBuild = 0.0; vGhost = 0.0;`);
     shader.vertexShader = shader.vertexShader.replace(
       "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n"
-      // the Time module: a building not built yet shrinks away over its last year; an undated one stays, faint
-      + "if (uTimeOn > 0.5) { if (aYear > 0.5) { float tk = clamp(uYear - aYear + 1.0, 0.0, 1.0); gl_PointSize *= tk;"
-      + " if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0); } else if (aYear < -0.5) vColor.rgb *= uDim; }\n#include <fog_vertex>");
+      // the Time module (user, 2026-10-13: buildings go up from the ground, softly): over the uBuild years before its
+      // year a building rises, its points shown up to an eased height with a soft front (aRise: the point's height in
+      // its building, 0 at the foot, 1 at the top); it keeps its colour while it rises and for a year after. An undated
+      // building stays, faint; the unbuilt towers (aYear -2) keep their colour.
+      + "if (uTimeOn > 0.5) {\n"
+      + "  if (aYear > 0.5) {\n"
+      + "    float p = clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0); p = p * p * (3.0 - 2.0 * p);\n"
+      + "    float tk = clamp((p * 1.08 - aRise) / 0.08, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
+      + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
+      + "    vBuild = step(aYear - uBuild, uYear) * clamp(aYear + 1.0 - uYear, 0.0, 1.0);\n"
+      + "  } else if (aYear < -1.5) vGhost = 1.0; else if (aYear < -0.5) vColor.rgb *= uDim;\n"
+      + "}\n#include <fog_vertex>");
     // round points instead of squares
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <clipping_planes_fragment>",
@@ -573,10 +585,17 @@ async function loadLidar() {
   // none, 0 for what is not a building (ground, trees, cars, unbuilt towers: always there for the Time module)
   const objYear = new Int16Array(objNames.length);
   objNames.forEach((nm, k) => {
+    if (ghostYears.has(objLayers[k])) { objYear[k] = -2; return; }   // unbuilt towers: their colour under the grey
     if (objLayers[k] !== "Buildings" && objLayers[k] !== "Landmarks") return;
     const e = entityOfName.get(nm), y = e ? parseInt(e.built?.[0] ?? e.parcel?.year_built, 10) : NaN;
     objYear[k] = y > 1000 ? y : -1;
   });
+  // per object: the height of its lowest and highest point, so each point knows how far up its building it is (aRise)
+  const objLo = new Float32Array(objNames.length).fill(1e9), objHi = new Float32Array(objNames.length).fill(-1e9);
+  for (let i = 0; i < n; i++) {
+    const o = obj[i]; if (objYear[o] <= 0) continue;
+    const y = P[3 * i + 1]; if (y < objLo[o]) objLo[o] = y; if (y > objHi[o]) objHi[o] = y;
+  }
   // bucket point indices by layer and LOD chunk
   const buckets = new Map();
   for (let i = 0; i < n; i++) {
@@ -592,10 +611,11 @@ async function loadLidar() {
     idx.sort((a, b) => q[a] - q[b]);   // by draw priority: the first k points are the ones to keep when thinning
     const pos = new Float32Array(m * 3), zs = new Float32Array(m), cls = new Uint8Array(m), inten = new Uint8Array(m), ob = new Uint16Array(m);
     const qs = new Float32Array(m), hag = HG ? new Int16Array(m) : null;   // height above ground, 0.1 m (Houdini LAZ)
-    const sz = new Uint8Array(m), yr = new Int16Array(m);
+    const sz = new Uint8Array(m), yr = new Int16Array(m), rise = new Uint8Array(m);
     for (let j = 0; j < m; j++) {
       const i = idx[j];
       sz[j] = sizeK[i]; yr[j] = objYear[obj[i]];
+      if (yr[j] > 0) { const o = obj[i]; rise[j] = Math.round(255 * (P[3 * i + 1] - objLo[o]) / Math.max(objHi[o] - objLo[o], 0.1)); }
       pos[3 * j] = P[3 * i]; pos[3 * j + 1] = P[3 * i + 1]; pos[3 * j + 2] = P[3 * i + 2];
       zs[j] = P[3 * i + 1]; cls[j] = C[i]; inten[j] = I[i]; ob[j] = obj[i]; qs[j] = q[i];
       if (hag) hag[j] = HG[i];
@@ -608,6 +628,7 @@ async function loadLidar() {
     g.setAttribute("aSel", new THREE.BufferAttribute(new Uint8Array(m), 1));               // selection mark (paintSelection)
     g.setAttribute("aSize", new THREE.BufferAttribute(sz, 1));                             // point size x 64 (density match)
     g.setAttribute("aYear", new THREE.BufferAttribute(yr, 1));                             // year built (Time module)
+    g.setAttribute("aRise", new THREE.BufferAttribute(rise, 1, true));                     // height in its building, 0-1
     g.computeBoundingSphere();
     const pts = new THREE.Points(g, material);
     pts.frustumCulled = true;
@@ -967,11 +988,17 @@ $("#popOn").onchange = async (e) => {
   }
   $("#popBox").hidden = !on;
   pop?.setVisible(on);
-  setWhiteCloud(on && $("#popWhite").checked);
+  updateWhite();
   if (!on) for (const s of [...selection]) if (s.key.startsWith("pop:")) deselect(s.key);
   invalidate();
 };
-$("#popWhite").onchange = (e) => setWhiteCloud(e.target.checked && $("#popOn").checked);
+// the cloud turns grey for Highlight people, and with the Time module (user, 2026-10-13: as Population does)
+let whiteNow = false;
+function updateWhite() {
+  const want = ($("#popOn").checked && $("#popWhite").checked) || $("#timeOn").checked;
+  if (want !== whiteNow) { whiteNow = want; setWhiteCloud(want); }
+}
+$("#popWhite").onchange = () => updateWhite();
 // ---------- Time module ----------
 // buildings with a year, for the count under the slider
 const datedYears = (ENTITIES?.entities ?? []).map((e) => parseInt(e.built?.[0] ?? e.parcel?.year_built, 10)).filter((y) => y > 1000).sort((a, b) => a - b);
@@ -989,6 +1016,7 @@ $("#timeOn").onchange = (e) => {
   const on = e.target.checked;
   $("#timeBox").hidden = !on;
   TIME.on.value = on ? 1 : 0;
+  updateWhite();
   if (!on) stopPlay();
   setYear(+$("#timeRange").value);
 };
@@ -999,9 +1027,9 @@ $("#timePlay").onclick = () => {
   if (playing) return stopPlay();
   let y = +$("#timeRange").value >= 2025.9 ? 1867 : +$("#timeRange").value, last = performance.now();
   $("#timePlay").textContent = "Pause";
-  const step = (now) => {   // about 25 s for the whole span, faster through the empty early years
+  const step = (now) => {   // about 35 s: 8 years a second to 1950, then 3, so a building takes about a second to go up
     const dt = (now - last) / 1000; last = now;
-    y = Math.min(2026, y + dt * (y < 1950 ? 9 : 5));
+    y = Math.min(2026, y + dt * (y < 1950 ? 8 : 3));
     setYear(y);
     if (y >= 2026) return stopPlay();
     playing = requestAnimationFrame(step);
