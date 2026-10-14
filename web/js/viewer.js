@@ -625,9 +625,15 @@ async function loadLidar() {
     const add = [];   // x, y, z, year
     for (let a = 0; a < W; a++) for (let b = 0; b < H; b++) {
       const c = a * H + b; if (!cy[c]) continue;
-      const a0 = Math.max(a - rc, 0), b0 = Math.max(b - rc, 0), a1 = Math.min(a + rc + 1, W), b1 = Math.min(b + rc + 1, H);
-      const k = box(Z, a0, b0, a1, b1); if (!k) continue;
-      const d = box(S, a0, b0, a1, b1) / k, y = gsum[c] / gn[c];
+      // the ground's density around it, within radiusM - or, deep under a large building or landmark where nothing
+      // within that is ground (user, 2026-10-15: black under Disney Hall and the big buildings), within wider radii
+      let k = 0, d = 0;
+      for (const r of [rc, ...(GF.widerM ?? [60, 150]).map((m) => Math.round(m / CM))]) {
+        const a0 = Math.max(a - r, 0), b0 = Math.max(b - r, 0), a1 = Math.min(a + r + 1, W), b1 = Math.min(b + r + 1, H);
+        k = box(Z, a0, b0, a1, b1); if (k) { d = box(S, a0, b0, a1, b1) / k; break; }
+      }
+      if (!k) continue;
+      const y = gsum[c] / gn[c];
       for (let m = Math.floor(d + rnd()); m > 0; m--) add.push(x0 + (a + rnd()) * CM, y, z0 + (b + rnd()) * CM, cy[c]);
     }
     const m = add.length / 4, N2 = n + m, iMean = icnt ? Math.round(isum / icnt) : 128;
