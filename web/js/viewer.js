@@ -146,11 +146,13 @@ try {
 // walls and roof (not coloured by use, no drawn storey lines), as dense as the towers around it; the points join the
 // LiDAR when it loads (loadLidar), so they are drawn, thinned and highlighted as every building is. An invisible prism
 // per tower answers clicks in the mesh view.
-const ghostPts = [];   // { name, base, pos: three.js order }
+const ghostPts = [];   // { name, base, layer, pos: three.js order }
+const ghostYears = new Map();   // unbuilt layer -> [[from, to], ...]: shown with the Time module, in those years
 try {
   const G = cfg.ghosts, gd = await (await fetch(G.data)).json();
   let seed = G.seed ?? 11;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);   // the same scatter on every visit
+  for (const sc of gd.schemes) (ghostYears.get(sc.layer || "Unbuilt") ?? ghostYears.set(sc.layer || "Unbuilt", []).get(sc.layer || "Unbuilt")).push(sc.years);
   for (const sc of gd.schemes) for (const t of sc.towers) {
     const ring = t.ring;   // [x east, y north], metres
     const pos = [], H = t.top_z - t.base_z;
@@ -231,8 +233,18 @@ scene.add(lidarGroup);
 let lidar = null;
 let lidarDensityMatch = null, lidarPlazaPoints = 0;   // object -> ground / own density, for the moved structures (loadLidar)
 
+// the Time module (user, 2026-10-13): off = today; on = the year of its slider. TIME feeds the point shader.
+const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.undatedDim ?? 0.4 } };
+const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && TIME.year.value < b + 1);
 function applyVisibility() {
   for (const L of ordered) {
+    if (ghostYears.has(L.name)) {   // unbuilt: its own toggle, and only with the Time module, in its years
+      const on = Boolean(L.visible && ghostShown(L.name));
+      for (const o of L.objects) o.visible = on;
+      for (const p of L.lidarParts || []) p.visible = on && mode === "cloud";
+      L.row?.classList.toggle("out", !ghostShown(L.name));
+      continue;
+    }
     // strict booleans: three.js only skips objects whose visible === false (undefined still renders)
     // the Y-1 outline overlay stays on in the raw LiDAR, where there are no toggles
     const showMesh = Boolean(L.visible && L.cfg.overlay);   // overlays (the designs) are drawn over the cloud
@@ -255,10 +267,14 @@ for (const L of ordered) {
   // the dot is the toggle: filled = shown, ring = hidden (the checkbox stays for keyboard / screen readers, visually hidden);
   // it shows the layer colour when the point cloud is coloured by layer, a neutral dot otherwise
   const sw = `<i class="sw" style="--c:${L.cfg.color || "var(--muted)"}"></i>`;
-  row.innerHTML = `<input type="checkbox" ${L.visible ? "checked" : ""}>${sw}<span class="nm">${L.cfg.label || L.name}</span><span class="n">${n}</span>`;
-  L.countEl = row.querySelector(".n");
+  const ghost = ghostYears.has(L.name);
+  if (ghost) L.visible = true;   // shown whenever the Time module is on and the year is theirs
+  const yrs = ghost ? ghostYears.get(L.name).map(([a, b]) => `${a}–${b}`).join(", ") : n;
+  row.innerHTML = `<input type="checkbox" ${L.visible ? "checked" : ""}>${sw}<span class="nm">${L.cfg.label || L.name}</span><span class="n">${yrs}</span>`;
+  L.countEl = ghost ? null : row.querySelector(".n");
+  L.row = row;
   row.querySelector("input").onchange = (e) => { L.visible = e.target.checked; applyVisibility(); };
-  $("#layers").append(row);
+  (ghost ? $("#timeGhosts") : $("#layers")).append(row);
 }
 
 // ---------- point material: size in metres (perspective), never smaller than 1 px ----------
@@ -268,15 +284,19 @@ function pointMaterial(sizeMetres) {
   mat.onBeforeCompile = (shader) => {
     withFocus(shader);
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
+    shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nuniform float uColorMix, uSelK;\nuniform vec3 uHi;\nvarying float vSel;\n" +
+    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim;\nuniform vec3 uHi;\nvarying float vSel;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
   vColor.rgb = mix(vColor.rgb, uHi, sw);
   vSel = sw;`);
     shader.vertexShader = shader.vertexShader.replace(
-      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n#include <fog_vertex>");
+      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n"
+      // the Time module: a building not built yet shrinks away over its last year; an undated one stays, faint
+      + "if (uTimeOn > 0.5) { if (aYear > 0.5) { float tk = clamp(uYear - aYear + 1.0, 0.0, 1.0); gl_PointSize *= tk;"
+      + " if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0); } else if (aYear < -0.5) vColor.rgb *= uDim; }\n#include <fog_vertex>");
     // round points instead of squares
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <clipping_planes_fragment>",
@@ -549,6 +569,14 @@ async function loadLidar() {
               + (grid[o + ix * gnz + iz + 1] * (1 - tx) + grid[o + (ix + 1) * gnz + iz + 1] * tx) * tz;
     q[i] = Math.random() * Math.max(rho, 1e-4) ** (1 - LOD_KEEP) * LOD_RHO0 ** LOD_KEEP;
   }
+  // per object: the year its building was built (the landmark's own year, else the Assessor's), -1 for a building with
+  // none, 0 for what is not a building (ground, trees, cars, unbuilt towers: always there for the Time module)
+  const objYear = new Int16Array(objNames.length);
+  objNames.forEach((nm, k) => {
+    if (objLayers[k] !== "Buildings" && objLayers[k] !== "Landmarks") return;
+    const e = entityOfName.get(nm), y = e ? parseInt(e.built?.[0] ?? e.parcel?.year_built, 10) : NaN;
+    objYear[k] = y > 1000 ? y : -1;
+  });
   // bucket point indices by layer and LOD chunk
   const buckets = new Map();
   for (let i = 0; i < n; i++) {
@@ -564,10 +592,10 @@ async function loadLidar() {
     idx.sort((a, b) => q[a] - q[b]);   // by draw priority: the first k points are the ones to keep when thinning
     const pos = new Float32Array(m * 3), zs = new Float32Array(m), cls = new Uint8Array(m), inten = new Uint8Array(m), ob = new Uint16Array(m);
     const qs = new Float32Array(m), hag = HG ? new Int16Array(m) : null;   // height above ground, 0.1 m (Houdini LAZ)
-    const sz = new Uint8Array(m);
+    const sz = new Uint8Array(m), yr = new Int16Array(m);
     for (let j = 0; j < m; j++) {
       const i = idx[j];
-      sz[j] = sizeK[i];
+      sz[j] = sizeK[i]; yr[j] = objYear[obj[i]];
       pos[3 * j] = P[3 * i]; pos[3 * j + 1] = P[3 * i + 1]; pos[3 * j + 2] = P[3 * i + 2];
       zs[j] = P[3 * i + 1]; cls[j] = C[i]; inten[j] = I[i]; ob[j] = obj[i]; qs[j] = q[i];
       if (hag) hag[j] = HG[i];
@@ -579,6 +607,7 @@ async function loadLidar() {
     g.setAttribute("color0", new THREE.BufferAttribute(new Uint8Array(m * 3), 3, true));   // the colours before a change
     g.setAttribute("aSel", new THREE.BufferAttribute(new Uint8Array(m), 1));               // selection mark (paintSelection)
     g.setAttribute("aSize", new THREE.BufferAttribute(sz, 1));                             // point size x 64 (density match)
+    g.setAttribute("aYear", new THREE.BufferAttribute(yr, 1));                             // year built (Time module)
     g.computeBoundingSphere();
     const pts = new THREE.Points(g, material);
     pts.frustumCulled = true;
@@ -943,6 +972,43 @@ $("#popOn").onchange = async (e) => {
   invalidate();
 };
 $("#popWhite").onchange = (e) => setWhiteCloud(e.target.checked && $("#popOn").checked);
+// ---------- Time module ----------
+// buildings with a year, for the count under the slider
+const datedYears = (ENTITIES?.entities ?? []).map((e) => parseInt(e.built?.[0] ?? e.parcel?.year_built, 10)).filter((y) => y > 1000).sort((a, b) => a - b);
+const undatedN = (ENTITIES?.entities ?? []).length - datedYears.length;
+function setYear(y) {
+  const r = $("#timeRange");
+  TIME.year.value = y; r.value = y;
+  r.style.setProperty("--p", `${(100 * (y - r.min)) / (r.max - r.min)}%`);
+  $("#timeYear").textContent = Math.floor(y);
+  let k = 0; while (k < datedYears.length && datedYears[k] <= y) k++;
+  $("#timeCounts").textContent = `${k.toLocaleString()} of ${datedYears.length.toLocaleString()} dated buildings standing · ${undatedN} undated`;
+  applyVisibility();
+}
+$("#timeOn").onchange = (e) => {
+  const on = e.target.checked;
+  $("#timeBox").hidden = !on;
+  TIME.on.value = on ? 1 : 0;
+  if (!on) stopPlay();
+  setYear(+$("#timeRange").value);
+};
+$("#timeRange").oninput = (e) => { stopPlay(); setYear(+e.target.value); };
+let playing = null;
+function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null; $("#timePlay").textContent = "Play"; }
+$("#timePlay").onclick = () => {
+  if (playing) return stopPlay();
+  let y = +$("#timeRange").value >= 2025.9 ? 1867 : +$("#timeRange").value, last = performance.now();
+  $("#timePlay").textContent = "Pause";
+  const step = (now) => {   // about 25 s for the whole span, faster through the empty early years
+    const dt = (now - last) / 1000; last = now;
+    y = Math.min(2026, y + dt * (y < 1950 ? 9 : 5));
+    setYear(y);
+    if (y >= 2026) return stopPlay();
+    playing = requestAnimationFrame(step);
+  };
+  playing = requestAnimationFrame(step);
+};
+setYear(2026);
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
 // a clicked person's modeled day (population.js story()) as a floating tag that follows them. how: "only" (Alt + click),

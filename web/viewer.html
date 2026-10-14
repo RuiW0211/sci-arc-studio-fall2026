@@ -240,6 +240,16 @@
   #popCounts span { display: inline-flex; align-items: center; gap: 4px; margin-right: 8px; }
   #popBox input[type=range] { width: 100%; margin: 0; }
   #popDay { margin: 6px 0 4px; }
+  /* time section (user, 2026-10-13): a module like Population; the unbuilt schemes live here, shown only with it */
+  #timeSec label.layer:has(input:checked) i.sw { background: var(--c); box-shadow: none; }
+  #timeBox[hidden] { display: none; }
+  #timeBox .clock { display: flex; align-items: center; gap: 6px; margin: 4px 0 2px; }
+  #timeYear { font-size: 20px; font-variant-numeric: tabular-nums; margin-right: auto; }
+  #timeBox input[type=range] { width: 100%; margin: 0 0 4px; }
+  #timeGhosts .layer .n { font-variant-numeric: tabular-nums; }
+  #timeGhosts .layer.out { opacity: 0.45; }
+  #timeCounts { font-size: 11px; margin-top: 4px; }
+  .tnote { font-size: 10.5px; line-height: 1.4; color: var(--muted); margin: 6px 0 0; }
   /* the Color choice is kept but set aside while the point cloud is drawn white */
 </style>
 </head>
@@ -267,6 +277,16 @@
         <input id="popTime" type="range" min="0" max="86399" step="60" aria-label="Time of day">
         <canvas id="popChart" aria-label="People on site over 24 hours"></canvas>
         <div id="popCounts"></div>
+      </div>
+    </details>
+    <details class="sec" id="timeSec" open><summary>Time</summary>
+      <label class="layer" title="The site through the years: buildings by the year they were built, and the schemes never built on Y-1"><input type="checkbox" id="timeOn"><i class="sw" style="--c:#B5CDEA"></i><span class="nm">Through time</span> <span class="n">1867–2026</span></label>
+      <div id="timeBox" hidden>
+        <div class="clock"><span id="timeYear">2026</span><button id="timePlay" title="Plays from 1867 to today">Play</button></div>
+        <input id="timeRange" type="range" min="1867" max="2026" step="0.1" value="2026" aria-label="Year">
+        <div id="timeGhosts"></div>
+        <div id="timeCounts"></div>
+        <p class="tnote">Buildings appear by the year the LA County Assessor gives (landmarks by their own); undated ones stay, faint. Buildings cleared before 2023 are not in the data, and an Assessor year can be a later rebuild.</p>
       </div>
     </details>
     <details class="sec" open><summary>Views</summary>

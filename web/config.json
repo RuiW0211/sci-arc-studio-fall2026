@@ -1,6 +1,10 @@
 {
   "_comment": "Viewer settings. Layers come from the point cloud (data/lidar_points.json, written by site-model/houdini/tools/pack_wide.py) and from the design files; this file only gives display names, order, default visibility and colours. Unknown layers still appear under their own name (grey). Design files site-model/exports/design_<name>.glb load on top of the point cloud (listed in assets/models.json); their layers default to the Design style, visible. Camera values are three.js coordinates: x = east, y = up (m, NAVD88), z = -north, from the site origin E 384580 / N 3768520.",
   "designs": "assets/models.json",
+  "time": {
+    "_comment": "The Time module (user, 2026-10-13): buildings by the year they were built; undatedDim: the colour factor of buildings with no year while it is on.",
+    "undatedDim": 0.4
+  },
   "ghosts": {
     "data": "data/ghosts.json",
     "_comment": "Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: each tower's points are scattered at random over its walls and roof, as dense as the towers around Y-1 (ghosts.json density, measured by the script), and join the point cloud when it loads, as the estimated facades do: the same point size, thinning with distance and highlight as every building; their own layer (Unbuilt) and colour. inBands of the wall points lie within bandM of a floor line, the rest anywhere on the wall (as the estimated facades: 0.8, 0.25 m), so the storeys show; seed: the same scatter every time.",
