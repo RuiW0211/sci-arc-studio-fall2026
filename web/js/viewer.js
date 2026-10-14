@@ -81,13 +81,15 @@ const FOCUS_GREY = { value: cfg.population?.whiteCloud?.white ?? 0.8 }, FOCUS_AL
 const focusMats = [];
 function withFocus(shader) {
   shader.uniforms.uFocus = FOCUS; shader.uniforms.uFocusGrey = FOCUS_GREY; shader.uniforms.uFocusAlpha = FOCUS_ALPHA;
+  shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uTimeGrey = TIME.grey; shader.uniforms.uTimeAlpha = TIME.alpha;
   // vSel (from pointMaterial's vertex shader): a selected object keeps its highlight under Highlight people
-  // vBuild, vGhost (Time module): a building going up keeps its colour, and so do the unbuilt towers
-  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha;\nvarying float vSel, vBuild, vGhost;\n" + shader.fragmentShader.replace("#include <color_fragment>",
+  // vBuild, vGhost (Time module): buildings (white, set in the vertex shader) and the unbuilt towers are not greyed,
+  // and the rest goes a darker, fainter grey than for Highlight people, so the buildings stand out
+  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha, uTimeOn, uTimeGrey, uTimeAlpha;\nvarying float vSel, vBuild, vGhost;\n" + shader.fragmentShader.replace("#include <color_fragment>",
     `#include <color_fragment>
   float fk = uFocus * (1.0 - vSel) * (1.0 - vBuild) * (1.0 - vGhost);
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(uFocusGrey), fk);
-  diffuseColor.a *= mix(1.0, uFocusAlpha, fk);`);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(mix(uFocusGrey, uTimeGrey, uTimeOn)), fk);
+  diffuseColor.a *= mix(1.0, mix(uFocusAlpha, uTimeAlpha, uTimeOn), fk);`);
 }
 let focusAnim = 0;
 function setWhiteCloud(on) {
@@ -236,7 +238,8 @@ let lidarDensityMatch = null, lidarPlazaPoints = 0;   // object -> ground / own 
 
 // the Time module (user, 2026-10-13): off = today; on = the year of its slider. TIME feeds the point shader.
 const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.undatedDim ?? 0.4 },
-               build: { value: cfg.time?.buildYears ?? 3 } };
+               build: { value: cfg.time?.buildYears ?? 5 }, front: { value: cfg.time?.front ?? 0.25 },
+               grey: { value: cfg.time?.contextGrey ?? 0.45 }, alpha: { value: cfg.time?.contextOpacity ?? 0.35 } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && TIME.year.value < b + 1);
 function applyVisibility() {
   for (const L of ordered) {
@@ -287,9 +290,9 @@ function pointMaterial(sizeMetres) {
     withFocus(shader);
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
-    shader.uniforms.uBuild = TIME.build;
+    shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
@@ -297,17 +300,19 @@ function pointMaterial(sizeMetres) {
   vSel = sw; vBuild = 0.0; vGhost = 0.0;`);
     shader.vertexShader = shader.vertexShader.replace(
       "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n"
-      // the Time module (user, 2026-10-13: buildings go up from the ground, softly): over the uBuild years before its
-      // year a building rises, its points shown up to an eased height with a soft front (aRise: the point's height in
-      // its building, 0 at the foot, 1 at the top); it keeps its colour while it rises and for a year after. An undated
-      // building stays, faint; the unbuilt towers (aYear -2) keep their colour.
+      // the Time module (user, 2026-10-13: buildings go up from the ground, slowly and softly, and stay once built):
+      // over the uBuild years before its year a building rises, its points shown up to an eased height with a wide
+      // soft front (aRise: the point's height in its building, 0 at the foot, 1 at the top). Buildings and landmarks
+      // are white, opaque, over the faint grey of the rest; an undated one stays, a dimmer white; the unbuilt towers
+      // (aYear -2) keep their colour.
       + "if (uTimeOn > 0.5) {\n"
       + "  if (aYear > 0.5) {\n"
       + "    float p = clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0); p = p * p * (3.0 - 2.0 * p);\n"
-      + "    float tk = clamp((p * 1.08 - aRise) / 0.08, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
+      + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
-      + "    vBuild = step(aYear - uBuild, uYear) * clamp(aYear + 1.0 - uYear, 0.0, 1.0);\n"
-      + "  } else if (aYear < -1.5) vGhost = 1.0; else if (aYear < -0.5) vColor.rgb *= uDim;\n"
+      + "    vColor.rgb = mix(vColor.rgb, mix(vec3(1.0), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
+      + "  } else if (aYear < -1.5) vGhost = 1.0;\n"
+      + "  else if (aYear < -0.5) { vColor.rgb = mix(vColor.rgb, mix(vec3(uDim), vColor.rgb, vSel), uFocus); vBuild = 1.0; }\n"
       + "}\n#include <fog_vertex>");
     // round points instead of squares
     shader.fragmentShader = shader.fragmentShader.replace(
@@ -1027,9 +1032,9 @@ $("#timePlay").onclick = () => {
   if (playing) return stopPlay();
   let y = +$("#timeRange").value >= 2025.9 ? 1867 : +$("#timeRange").value, last = performance.now();
   $("#timePlay").textContent = "Pause";
-  const step = (now) => {   // about 35 s: 8 years a second to 1950, then 3, so a building takes about a second to go up
+  const step = (now) => {   // about 50 s: 8 years a second to 1950, then 2, so a building takes about 2.5 s to go up
     const dt = (now - last) / 1000; last = now;
-    y = Math.min(2026, y + dt * (y < 1950 ? 8 : 3));
+    y = Math.min(2026, y + dt * (y < 1950 ? 8 : 2));
     setYear(y);
     if (y >= 2026) return stopPlay();
     playing = requestAnimationFrame(step);
