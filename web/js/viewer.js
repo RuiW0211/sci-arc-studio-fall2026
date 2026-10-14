@@ -146,16 +146,12 @@ try {
 // walls and roof (not coloured by use, no drawn storey lines), as dense as the towers around it; the points join the
 // LiDAR when it loads (loadLidar), so they are drawn, thinned and highlighted as every building is. An invisible prism
 // per tower answers clicks in the mesh view.
-const ghostPts = [];   // { name, base, layer, pos: three.js order }
-// one layer per scheme (user, 2026-10-13: the 2019 and 2021 towers stand on the same ground), styled as config.json Unbuilt
-const ghostLayers = new Map();   // layer name -> its label
+const ghostPts = [];   // { name, base, pos: three.js order }
 try {
   const G = cfg.ghosts, gd = await (await fetch(G.data)).json();
   let seed = G.seed ?? 11;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);   // the same scatter on every visit
   for (const sc of gd.schemes) for (const t of sc.towers) {
-    const layer = `Unbuilt_${sc.years[0]}`;
-    ghostLayers.set(layer, `Unbuilt, ${sc.years[0]}`);
     const ring = t.ring;   // [x east, y north], metres
     const pos = [], H = t.top_z - t.base_z;
     // the floor lines of every band: most points gather on them, as on the walls the LiDAR saw and on the estimated
@@ -182,14 +178,14 @@ try {
       const x = minX + rnd() * (maxX - minX), n = minN + rnd() * (maxN - minN);
       if (inside(x, n)) { pos.push(x, t.top_z, -n); k--; }
     }
-    ghostPts.push({ name: t.name, base: t.base_z, layer, pos: new Float32Array(pos) });
+    ghostPts.push({ name: t.name, base: t.base_z, pos: new Float32Array(pos) });
     const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
     const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }));
     prism.rotation.x = -Math.PI / 2; prism.position.y = t.base_z;
     const grp = new THREE.Group();
     grp.name = t.name;
-    grp.userData = { layer, ghost: { scheme: sc, tower: t } };
+    grp.userData = { layer: "Unbuilt", ghost: { scheme: sc, tower: t } };
     grp.add(prism);
     model.add(grp);
   }
@@ -201,8 +197,7 @@ model.traverse((o) => {
   if (!name || layers.get(name)?.objects.includes(o)) return;
   if (!layers.has(name)) {
     const c = cfg.layers[name] || (designLayers.has(name)
-      ? { ...cfg.layers.Design, label: name.replace(/_/g, " "), visible: true }
-      : ghostLayers.has(name) ? { ...cfg.layers.Unbuilt, label: ghostLayers.get(name), order: (cfg.layers.Unbuilt?.order ?? 6.5) + 0.0001 * Number(name.slice(-4)) } : {});
+      ? { ...cfg.layers.Design, label: name.replace(/_/g, " "), visible: true } : {});
     if (designLayers.has(name)) c.overlay = true;
     layers.set(name, { name, cfg: c, objects: [], meshes: [], visible: c.visible ?? true });
   }
@@ -394,7 +389,7 @@ async function loadLidar() {
     P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
     let i = n;
     for (const g of ghostPts) {
-      const o = objNames.length; objNames.push(g.name); objLayers.push(g.layer);
+      const o = objNames.length; objNames.push(g.name); objLayers.push("Unbuilt");
       for (let j = 0; j < g.pos.length; j += 3, i++) {
         P2[3 * i] = g.pos[j]; P2[3 * i + 1] = g.pos[j + 1]; P2[3 * i + 2] = g.pos[j + 2];
         C2[i] = 6; O2[i] = o; I2[i] = 128; if (H2) H2[i] = Math.round((g.pos[j + 1] - g.base) * 10);

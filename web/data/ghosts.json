@@ -3,321 +3,6 @@
  "frame": "local metres: x east, y north from E 384580 / N 3768520; z NAVD88 metres",
  "schemes": [
   {
-   "id": "angels-landing-2019",
-   "name": "Angels Landing (NOP and Initial Study, March 2019)",
-   "years": [
-    2019,
-    2021
-   ],
-   "research": [
-    "ghost-004",
-    "ent-001"
-   ],
-   "source": "Angels Landing Initial Study, City of Los Angeles, March 2019: Figs. 3 and 4 (heights, uses), 10 (floor plates, Lower California Plaza level); drawings by Handel Architects, 2018",
-   "assumptions": [
-    "Tower B follows the figures (48 floors, 541 ft 8 in to the parapet); the study's text gives 42 floors and 494 ft.",
-    "Heights are measured from the Hill Street plaza (287 ft above sea level), as in the 2021 scheme.",
-    "Floors are spread evenly between the Lower California Plaza level (taken as 376 ft, as in 2021) and the parapet.",
-    "Floor plates are those of Figure 10, kept for the whole height, scaled by the property line (314 ft by 313 ft 11 in)."
-   ],
-   "scale_m_per_unit": 0.04553,
-   "density": {
-    "roof_per_m2": 2.89,
-    "wall_per_m2": 0.96,
-    "towers": [
-     "Two California Plaza",
-     "One California Plaza",
-     "AT&T building (windowless, with antenna tower)",
-     "Wells Fargo Center - South Tower",
-     "Wells Fargo Center - North Tower",
-     "Park Fifth (apartments)",
-     "The Gas Company Tower",
-     "Perla on Broadway",
-     "400 S Hope St"
-    ],
-    "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest plus the estimated facade points"
-   },
-   "towers": [
-    {
-     "id": "angels-landing-2019-a",
-     "name": "Angels Landing 2019, Tower A",
-     "ring": [
-      [
-       3.7,
-       10.78
-      ],
-      [
-       24.2,
-       -11.43
-      ],
-      [
-       36.61,
-       -17.97
-      ],
-      [
-       37.61,
-       -16.78
-      ],
-      [
-       43.38,
-       -19.79
-      ],
-      [
-       55.76,
-       -4.22
-      ],
-      [
-       54.62,
-       -3.26
-      ],
-      [
-       57.69,
-       0.61
-      ],
-      [
-       44.74,
-       15.7
-      ],
-      [
-       19.82,
-       29.8
-      ],
-      [
-       16.91,
-       26.45
-      ],
-      [
-       16.4,
-       26.74
-      ]
-     ],
-     "base_z": 87.48,
-     "top_z": 347.62,
-     "floors": 64,
-     "height_ft": 853.5,
-     "area_m2": 1466.6,
-     "bands": [
-      {
-       "use": "podium",
-       "levels": [
-        0,
-        5
-       ],
-       "z": [
-        87.48,
-        114.6
-       ]
-      },
-      {
-       "use": "hotel",
-       "levels": [
-        6,
-        18
-       ],
-       "z": [
-        114.6,
-        165.95
-       ]
-      },
-      {
-       "use": "lobby and amenity",
-       "levels": [
-        19,
-        22
-       ],
-       "z": [
-        165.95,
-        181.75
-       ]
-      },
-      {
-       "use": "apartments",
-       "levels": [
-        23,
-        28
-       ],
-       "z": [
-        181.75,
-        205.44
-       ]
-      },
-      {
-       "use": "condominiums",
-       "levels": [
-        29,
-        40
-       ],
-       "z": [
-        205.44,
-        252.84
-       ]
-      },
-      {
-       "use": "amenity",
-       "levels": [
-        41,
-        43
-       ],
-       "z": [
-        252.84,
-        264.69
-       ]
-      },
-      {
-       "use": "condominiums",
-       "levels": [
-        44,
-        63
-       ],
-       "z": [
-        264.69,
-        343.67
-       ]
-      },
-      {
-       "use": "top",
-       "levels": [
-        64,
-        64
-       ],
-       "z": [
-        343.67,
-        347.62
-       ]
-      }
-     ]
-    },
-    {
-     "id": "angels-landing-2019-b",
-     "name": "Angels Landing 2019, Tower B",
-     "ring": [
-      [
-       -56.41,
-       5.48
-      ],
-      [
-       -42.71,
-       -5.41
-      ],
-      [
-       -13.45,
-       -29.86
-      ],
-      [
-       -13.47,
-       -30.02
-      ],
-      [
-       -17.08,
-       -40.18
-      ],
-      [
-       -17.51,
-       -41.3
-      ],
-      [
-       -19.81,
-       -47.24
-      ],
-      [
-       -19.89,
-       -47.41
-      ],
-      [
-       -63.05,
-       -13.07
-      ],
-      [
-       -63.13,
-       -12.95
-      ],
-      [
-       -62.52,
-       -11.16
-      ],
-      [
-       -57.83,
-       1.94
-      ],
-      [
-       -57.26,
-       3.53
-      ],
-      [
-       -57.06,
-       4.07
-      ],
-      [
-       -56.47,
-       5.47
-      ]
-     ],
-     "base_z": 87.48,
-     "top_z": 252.58,
-     "floors": 48,
-     "height_ft": 541.67,
-     "area_m2": 1017.6,
-     "bands": [
-      {
-       "use": "podium",
-       "levels": [
-        0,
-        4
-       ],
-       "z": [
-        87.48,
-        110.08
-       ]
-      },
-      {
-       "use": "hotel",
-       "levels": [
-        5,
-        19
-       ],
-       "z": [
-        110.08,
-        159.53
-       ]
-      },
-      {
-       "use": "amenity",
-       "levels": [
-        20,
-        21
-       ],
-       "z": [
-        159.53,
-        165.94
-       ]
-      },
-      {
-       "use": "apartments",
-       "levels": [
-        22,
-        46
-       ],
-       "z": [
-        165.94,
-        246.16
-       ]
-      },
-      {
-       "use": "roof deck",
-       "levels": [
-        47,
-        48
-       ],
-       "z": [
-        246.16,
-        252.58
-       ]
-      }
-     ]
-    }
-   ]
-  },
-  {
    "id": "angels-landing-2021",
    "name": "Angels Landing (Draft EIR 2021; approved 2022)",
    "years": [
@@ -336,7 +21,7 @@
     "Floors are spread evenly between Level 6 (376 ft) and the parapet.",
     "Floor plates are those of Level 6, kept for the whole height."
    ],
-   "scale_m_per_unit": 0.27302,
+   "scale_m_per_pt": 0.27302,
    "density": {
     "roof_per_m2": 2.89,
     "wall_per_m2": 0.96,
@@ -359,43 +44,43 @@
      "name": "Angels Landing, Tower A",
      "ring": [
       [
-       4.47,
-       10.37
+       4.49,
+       10.38
       ],
       [
-       21.22,
-       -9.76
+       21.2,
+       -9.73
       ],
       [
-       36.46,
-       -17.37
+       36.43,
+       -17.32
       ],
       [
-       43.36,
-       -19.11
+       43.33,
+       -19.06
       ],
       [
-       55.23,
-       -4.2
+       55.21,
+       -4.12
       ],
       [
-       56.8,
-       0.25
+       56.79,
+       0.32
       ],
       [
-       42.36,
-       17.62
+       42.37,
+       17.68
       ],
       [
-       19.37,
-       29.09
+       19.4,
+       29.13
       ]
      ],
      "base_z": 87.48,
      "top_z": 347.78,
      "floors": 63,
      "height_ft": 854,
-     "area_m2": 1428.9,
+     "area_m2": 1428.7,
      "bands": [
       {
        "use": "podium",
@@ -492,31 +177,31 @@
      "name": "Angels Landing, Tower B",
      "ring": [
       [
-       -55.67,
-       2.97
+       -55.65,
+       2.9
       ],
       [
-       -62.23,
-       -13.71
+       -62.22,
+       -13.79
       ],
       [
-       -32.61,
-       -37.27
+       -32.65,
+       -37.32
       ],
       [
-       -15.31,
-       -24.46
+       -15.34,
+       -24.48
       ],
       [
-       -50.02,
-       3.15
+       -50.0,
+       3.09
       ]
      ],
      "base_z": 87.48,
      "top_z": 238.05,
      "floors": 42,
      "height_ft": 494,
-     "area_m2": 901.2,
+     "area_m2": 901.0,
      "bands": [
       {
        "use": "podium",
