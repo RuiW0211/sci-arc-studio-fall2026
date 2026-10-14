@@ -1,6 +1,91 @@
 {
   "_comment": "Viewer settings. Layers come from the point cloud (data/lidar_points.json, written by site-model/houdini/tools/pack_wide.py) and from the design files; this file only gives display names, order, default visibility and colours. Unknown layers still appear under their own name (grey). Design files site-model/exports/design_<name>.glb load on top of the point cloud (listed in assets/models.json); their layers default to the Design style, visible. Camera values are three.js coordinates: x = east, y = up (m, NAVD88), z = -north, from the site origin E 384580 / N 3768520.",
   "designs": "assets/models.json",
+  "time": {
+    "_comment": "The Time module (user, 2026-10-13; Space pauses / resumes the opening and the film after it, and after a look around while paused the camera eases back over rejoinS seconds): buildings by the year they were built, each rising from the ground over the buildYears before it, with a soft front (front: its depth, as a share of the building's height). Buildings and landmarks turn white and opaque and stay; the rest goes to contextGrey at contextOpacity; the unbuilt towers keep their colour. undatedDim: the white of buildings with no year.",
+    "opening": true,
+    "openingMode": "B",
+    "openingB": {
+      "_comment": "Plan B (user, 2026-10-14): the opening's camera follows the building. Shots by years; each frames the densest cluster (most height within clusterM) of the buildings going up in its years, nearer when tight, farther when spread; y1 keeps Y-1 in the frame; the last pulls out to the whole site; turnDeg in all. openingMode A = the old orbit (time.tour).",
+      "turnDeg": 160,
+      "clusterM": 300,
+      "shots": [
+        { "from": 1867, "to": 1910 },
+        { "from": 1910, "to": 1935 },
+        { "from": 1935, "to": 1980 },
+        { "from": 1980, "to": 2000, "y1": true },
+        { "from": 2000, "to": 2026, "y1": true }
+      ]
+    },
+    "rejoinS": 2.5,
+    "autoResumeS": 4,
+    "rates": { "early": 7.5, "late": 1.9, "unbuilt": 0.9 },
+    "undatedDim": 0.55,
+    "buildYears": 5,
+    "front": 0.25,
+    "contextGrey": 0.45,
+    "contextOpacity": 0.35,
+    "groundFill": {
+      "_comment": "ESTIMATED ground under the buildings, where the LiDAR saw only roofs (drawn as ground, in every mode): cellM grid, density = the mean of the ground cells within radiusM.",
+      "cellM": 2,
+      "radiusM": 20
+    },
+    "labels": {
+      "_comment": "Labels on the buildings going up (blob-tracking frames): at most max new ones at once, the tallest first, for named buildings and landmarks (namedOnly) at least minHeightM tall; a labelled building keeps its frame and text once built, fading over fadeYears to doneOpacity; behind another building (its top hidden) it fades to hiddenOpacity, far ones (past 1.2 x the view distance) to farOpacity, never below minOpacity; a text with no free place hides; one that could not get a label is still eligible holdYears after completion; unbuilt towers always.",
+      "max": 6,
+      "doneOpacity": 0.7,
+      "namedOnly": true,
+      "fadeYears": 8,
+      "hiddenOpacity": 0.15,
+      "farOpacity": 0.75,
+      "minOpacity": 0.25,
+      "noHeight": ["Angels Flight"],
+      "holdYears": 2,
+      "minHeightM": 25
+    },
+    "cinema": {
+      "_comment": "After the opening: the film, shots in order (type wide / crane / low / orbit / track; members = entity names or Angels Knoll, their tags lit; cut = dip to black in, else fly; s = seconds). Groups of places near each other: Y-1 (Angels Knoll, Angels Flight, the Metro), California Plaza and MOCA, Grand Avenue, Civic Center, Broadway, the west towers. thenPeople: People comes on after shot peopleAfter (0 = the first wide shot) and the film goes on. shotS / blendS seconds; heroes = the tallest labelled towers within heroWithinM of Y-1; labelOpacity = every label while filming (the hero full). on false = stop at the end.",
+      "on": true,
+      "shotS": 10,
+      "blendS": 3.5,
+      "heroes": 4,
+      "heroWithinM": 700,
+      "wideR": 1300,
+      "wideTilt": 46,
+      "labelOpacity": 0.6,
+      "thenPeople": true,
+      "peopleAfter": 0,
+      "shots": [
+        { "type": "wide", "s": 10 },
+        { "type": "crane", "members": ["Angels Knoll", "Angels Flight", "Pershing Square Station entrance (4th & Hill, Metro)"] },
+        { "type": "track", "from": "Pershing Square Station entrance (4th & Hill, Metro)", "to": "Angels Flight",
+          "members": ["Angels Knoll", "Angels Flight", "Pershing Square Station entrance (4th & Hill, Metro)", "Pershing Square Station building (Metro, NE corner of 4th & Hill)"] },
+        { "type": "low", "members": ["One California Plaza", "Two California Plaza", "Omni Los Angeles Hotel at California Plaza", "The Museum of Contemporary Art (MOCA Grand Avenue)", "Angelus Plaza"] },
+        { "type": "orbit", "members": ["The Broad", "Colburn School", "The Grand LA", "Walt Disney Concert Hall"] },
+        { "type": "orbit", "members": ["The Music Center (Dorothy Chandler Pavilion, Ahmanson Theatre, Mark Taper Forum)", "Cathedral of Our Lady of the Angels", "Los Angeles City Hall"] },
+        { "type": "wide" },
+        { "type": "track", "cut": true, "from": "Grand Central Market", "to": "Million Dollar Theater building (3rd & Broadway)", "members": ["Grand Central Market", "Million Dollar Theater building (3rd & Broadway)"] },
+        { "type": "low", "members": ["U.S. Bank Tower", "Wells Fargo Center - South Tower", "Wells Fargo Center - North Tower"] },
+        { "type": "wide" }
+      ]
+    },
+    "tour": {
+      "_comment": "The camera while it plays from 1867 (the viewer's opening; opening false = start on today): it ends far out, on the whole site. turnDeg round the site, distance r0 -> r1 (m) and tilt0 -> tilt1 (degrees from straight down), about target.",
+      "turnDeg": 220,
+      "r0": 420,
+      "r1": 1300,
+      "tilt0": 64,
+      "tilt1": 46,
+      "target": [0, 95, 0]
+    }
+  },
+  "ghosts": {
+    "data": "data/ghosts.json",
+    "_comment": "Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: each tower's points are scattered at random over its walls and roof, as dense as the towers around Y-1 (ghosts.json density, measured by the script), and join the point cloud when it loads, as the estimated facades do: the same point size, thinning with distance and highlight as every building; their own layer (Unbuilt) and colour. inBands of the wall points lie within bandM of a floor line, the rest anywhere on the wall (as the estimated facades: 0.8, 0.25 m), so the storeys show; seed: the same scatter every time.",
+    "inBands": 0.8,
+    "bandM": 0.25,
+    "seed": 11
+  },
   "facades": {
     "meta": "data/facades_estimated.json",
     "_comment": "Estimated wall points (site-model/houdini/tools/synth_facades.py), merged into the Buildings points when the LiDAR loads (user, 2026-10-10)."
@@ -51,6 +136,21 @@
       "order": 6,
       "visible": false,
       "color": "#DDE5B6"
+    },
+    "Unbuilt": {
+      "label": "Unbuilt schemes",
+      "order": 6.5,
+      "visible": false,
+      "color": "#B5CDEA",
+      "overlay": true
+    },
+    "Unbuilt_schematic": {
+      "label": "Unbuilt, schematic",
+      "_comment": "Unbuilt schemes known only from descriptions (Three California Plaza): their own layer, apart from those traced from drawings.",
+      "order": 6.6,
+      "visible": false,
+      "color": "#B5CDEA",
+      "overlay": true
     }
   },
   "views": [

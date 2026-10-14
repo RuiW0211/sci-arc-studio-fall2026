@@ -225,6 +225,32 @@
   .tag.left .dd > summary::after { content: "‹"; }
   .tag.left .dd[open] > summary::after { transform: rotate(-90deg); }
   .tag.left dl { text-align: left; }
+  /* Time module labels (user, 2026-10-13, after the Connections page's blob tracking): a frame of corner brackets
+     that locks on to a building going up and grows with it, and stays once it is built; a readout beside it */
+  #tlabels { position: fixed; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; transition: opacity .6s ease; }
+  #tlabels.off { opacity: 0; }
+  .tblob { position: absolute; left: 0; top: 0; --k: rgba(255, 255, 255, .9); --l: 6px; will-change: translate;
+    background: linear-gradient(var(--k), var(--k)) top left / var(--l) 1px, linear-gradient(var(--k), var(--k)) top left / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) top right / var(--l) 1px, linear-gradient(var(--k), var(--k)) top right / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) bottom left / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom left / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) bottom right / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom right / 1px var(--l);
+    background-repeat: no-repeat; animation: tLock var(--t-in) ease-out both; }
+  .tblob.ghost { --k: #B5CDEA; }
+  .tblob.locked { animation: none; }
+  .tblob.out { animation: tOut .45s ease-in both; }
+  @keyframes tLock { from { opacity: 0; scale: 1.8; } to { opacity: 1; scale: 1; } }
+  @keyframes tOut { to { opacity: 0; scale: 1.25; } }
+  .tblob i { position: absolute; right: calc(100% + 6px); top: 0; text-align: right; white-space: nowrap; font-style: normal;
+    font: 10px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .02em; color: rgba(244, 244, 246, .7);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
+  .tblob i { transition: opacity .6s ease; }
+  /* the cut between two shots of the film after the opening (viewer.js stepCine): a short dip to black */
+  #cut { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 6; transition: opacity .28s ease; }
+  #cut.on { opacity: 1; }
+  .tblob i.hid { opacity: 0; }
+  .tblob i.r { right: auto; left: calc(100% + 6px); text-align: left; }
+  .tblob i b { display: block; font-size: 13px; font-weight: 300; line-height: 1.25; color: #fff; letter-spacing: .01em; }
+  .tblob.ghost i b { color: #B5CDEA; }
   #leads { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; transition: opacity var(--t-in) ease; }
   #leads line { stroke: var(--tag); stroke-width: 1; }
   body.idle-tags .tag, body.idle-tags #leads { opacity: 0; pointer-events: none; transition: opacity var(--t-idle) ease; }
@@ -240,6 +266,14 @@
   #popCounts span { display: inline-flex; align-items: center; gap: 4px; margin-right: 8px; }
   #popBox input[type=range] { width: 100%; margin: 0; }
   #popDay { margin: 6px 0 4px; }
+  /* time section (user, 2026-10-13): a module like Population; the unbuilt schemes live here, shown only with it */
+  #timeSec label.layer:has(input:checked) i.sw { background: var(--c); box-shadow: none; }
+  #timeBox[hidden] { display: none; }
+  #timeBox .clock { display: flex; align-items: center; gap: 6px; margin: 4px 0 2px; }
+  #timeYear { font-size: 20px; font-variant-numeric: tabular-nums; margin-right: auto; }
+  #timeBox input[type=range] { width: 100%; margin: 0 0 4px; }
+  #timeBox .tstate { font-size: 11px; color: var(--muted); }
+  #timeCounts { font-size: 11px; margin-top: 4px; }
   /* the Color choice is kept but set aside while the point cloud is drawn white */
 </style>
 </head>
@@ -258,10 +292,18 @@
       <div id="layers"></div>
     </details>
     <!-- modeled population (js/population.js, after Clark Amenudo's layer): one point per person over a typical day -->
-    <details class="sec" id="popSec" open><summary>Population</summary>
+    <details class="sec" id="timeSec" open><summary>History</summary>
+      <label class="layer" title="The site through the years: buildings by the year they were built, and the schemes never built on Y-1"><input type="checkbox" id="timeOn"><i class="sw" style="--c:#B5CDEA"></i><span class="nm">Since 1867</span></label>
+      <div id="timeBox" hidden>
+        <div class="clock"><span id="timeYear">2026</span><span id="timePlay" class="tstate">Space to play</span></div>
+        <input id="timeRange" type="range" min="1867" max="2026" step="0.1" value="2026" aria-label="Year">
+        <div id="timeCounts"></div>
+        <label class="layer" title="The frames and names on the buildings"><input type="checkbox" id="timeTags" checked><i class="sw" style="--c:#FFFFFF"></i><span class="nm">Tags</span><span class="n">names, years</span></label>
+      </div>
+    </details>
+    <details class="sec" id="popSec" open><summary>A Day</summary>
       <label class="layer" title="A modeled typical day: one point per person, from Census, survey and Assessor data"><input type="checkbox" id="popOn"><i class="sw" style="--c:#FFD166"></i><span class="nm">People</span> <span class="n" title="A modeled typical day, one point per person. Every person within 250 m of Y-1; farther out fewer and fainter, like the point cloud. The counts include everyone.">modeled typical day</span></label>
       <div id="popBox" hidden>
-        <label class="layer" id="popWhiteRow" title="The point cloud fades to light grey, half transparent, so the people stand out"><input type="checkbox" id="popWhite" checked><i class="sw" style="--c:#FFFFFF"></i><span class="nm">Highlight people</span><span class="n">point cloud fades</span></label>
         <div class="clock"><span id="popClock">08:30</span><button id="popPlay" title="Plays at 5 minutes per second: the whole day in about 5 minutes">Play</button></div>
         <div class="seg" id="popDay"><span class="thumb" aria-hidden="true"></span><button data-d="weekday">Weekday</button><button data-d="weekend">Weekend</button></div>
         <input id="popTime" type="range" min="0" max="86399" step="60" aria-label="Time of day">

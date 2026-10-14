@@ -1,0 +1,454 @@
+{
+ "_comment": "Unbuilt schemes on Y-1 for the viewer, built by site-model/ghosts/build_angels_landing.py; see its notes.",
+ "frame": "local metres: x east, y north from E 384580 / N 3768520; z NAVD88 metres",
+ "schemes": [
+  {
+   "id": "three-california-plaza",
+   "name": "Three California Plaza, Phase 3A of California Plaza (1981 plan; on hold by 1990)",
+   "layer": "Unbuilt_schematic",
+   "years": [
+    1981,
+    1990
+   ],
+   "research": [
+    "ghost-001",
+    "plaza-006",
+    "plaza-001"
+   ],
+   "source": "SCHEMATIC. 1981 DDA scope (USC Bunker Hill records, finding aid): 3 office towers, 37-60 stories, 3.2M sq ft; LA Times 1985, 1987, 1989 (sizes of the built towers, plaza at 385 ft, third phase with Angels Flight); 1980 competition rendering and master-plan model (CCA, Arthur Erickson fonds) for the tower's form",
+   "assumptions": [
+    "No drawing of this tower was found: its plan, position, height and floors are all assumed.",
+    "60 floors, the 1981 DDA's maximum; other sources give 62, 63 or 65, and 853, 915 or 950 ft, all unsourced.",
+    "Floors 4.44 m apart, the mean of One and Two California Plaza; rising from the 385 ft plaza, a podium below.",
+    "About 1.08M sq ft of offices (what the 3.2M or 3.5M sq ft programmes leave after the two built towers), 18,000 sq ft a floor, as a rounded square like the towers of the 1980 rendering and model.",
+    "On the Olive and 4th corner of Y-1, 8 m from both streets; the Hill Street side left as the garden of the rendering.",
+    "The tower's own drawing (CCA ARCH254551, c.1985, 'footprint of tower three') has not been seen."
+   ],
+   "towers": [
+    {
+     "id": "three-california-plaza",
+     "name": "Three California Plaza (schematic)",
+     "ring": [
+      [
+       -5.93,
+       2.2
+      ],
+      [
+       -4.58,
+       0.79
+      ],
+      [
+       -3.64,
+       -0.91
+      ],
+      [
+       -3.16,
+       -2.8
+      ],
+      [
+       -3.2,
+       -4.75
+      ],
+      [
+       -3.74,
+       -6.62
+      ],
+      [
+       -4.74,
+       -8.29
+      ],
+      [
+       -21.26,
+       -29.07
+      ],
+      [
+       -22.67,
+       -30.42
+      ],
+      [
+       -24.37,
+       -31.37
+      ],
+      [
+       -26.26,
+       -31.84
+      ],
+      [
+       -28.21,
+       -31.8
+      ],
+      [
+       -30.08,
+       -31.27
+      ],
+      [
+       -31.75,
+       -30.26
+      ],
+      [
+       -52.53,
+       -13.74
+      ],
+      [
+       -53.88,
+       -12.34
+      ],
+      [
+       -54.82,
+       -10.63
+      ],
+      [
+       -55.3,
+       -8.74
+      ],
+      [
+       -55.26,
+       -6.79
+      ],
+      [
+       -54.72,
+       -4.92
+      ],
+      [
+       -53.72,
+       -3.25
+      ],
+      [
+       -37.2,
+       17.52
+      ],
+      [
+       -35.8,
+       18.88
+      ],
+      [
+       -34.09,
+       19.82
+      ],
+      [
+       -32.2,
+       20.29
+      ],
+      [
+       -30.25,
+       20.26
+      ],
+      [
+       -28.38,
+       19.72
+      ],
+      [
+       -26.71,
+       18.72
+      ]
+     ],
+     "base_z": 100.75,
+     "top_z": 383.75,
+     "floors": 60,
+     "height_ft": 874,
+     "area_m2": 1670.3,
+     "bands": [
+      {
+       "use": "podium",
+       "levels": [
+        0,
+        0
+       ],
+       "z": [
+        100.75,
+        117.35
+       ]
+      },
+      {
+       "use": "offices",
+       "levels": [
+        1,
+        60
+       ],
+       "z": [
+        117.35,
+        383.75
+       ]
+      }
+     ]
+    }
+   ],
+   "density": {
+    "roof_per_m2": 2.89,
+    "wall_per_m2": 0.96,
+    "towers": [
+     "Two California Plaza",
+     "One California Plaza",
+     "AT&T building (windowless, with antenna tower)",
+     "Wells Fargo Center - South Tower",
+     "Wells Fargo Center - North Tower",
+     "Park Fifth (apartments)",
+     "The Gas Company Tower",
+     "Perla on Broadway",
+     "400 S Hope St"
+    ],
+    "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest plus the estimated facade points"
+   }
+  },
+  {
+   "id": "angels-landing-2021",
+   "name": "Angels Landing (Draft EIR 2021; approved 2022)",
+   "years": [
+    2021,
+    2024
+   ],
+   "research": [
+    "ghost-005",
+    "ent-002",
+    "ent-004",
+    "lit-002"
+   ],
+   "source": "Angels Landing Draft EIR, ch. II, City of Los Angeles, Jan 2021: Figs. II-4 (heights, uses), II-8 and II-14 (floor plates, dimensions)",
+   "assumptions": [
+    "Heights are measured from Level PB1, the Hill Street Plaza (287 ft above sea level).",
+    "Floors are spread evenly between Level 6 (376 ft) and the parapet.",
+    "Floor plates are those of Level 6, kept for the whole height."
+   ],
+   "scale_m_per_pt": 0.27302,
+   "density": {
+    "roof_per_m2": 2.89,
+    "wall_per_m2": 0.96,
+    "towers": [
+     "Two California Plaza",
+     "One California Plaza",
+     "AT&T building (windowless, with antenna tower)",
+     "Wells Fargo Center - South Tower",
+     "Wells Fargo Center - North Tower",
+     "Park Fifth (apartments)",
+     "The Gas Company Tower",
+     "Perla on Broadway",
+     "400 S Hope St"
+    ],
+    "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest plus the estimated facade points"
+   },
+   "towers": [
+    {
+     "id": "angels-landing-2021-a",
+     "name": "Angels Landing, Tower A",
+     "ring": [
+      [
+       4.49,
+       10.38
+      ],
+      [
+       21.2,
+       -9.73
+      ],
+      [
+       36.43,
+       -17.32
+      ],
+      [
+       43.33,
+       -19.06
+      ],
+      [
+       55.21,
+       -4.12
+      ],
+      [
+       56.79,
+       0.32
+      ],
+      [
+       42.37,
+       17.68
+      ],
+      [
+       19.4,
+       29.13
+      ]
+     ],
+     "base_z": 87.48,
+     "top_z": 347.78,
+     "floors": 63,
+     "height_ft": 854,
+     "area_m2": 1428.7,
+     "bands": [
+      {
+       "use": "podium",
+       "levels": [
+        0,
+        5
+       ],
+       "z": [
+        87.48,
+        114.6
+       ]
+      },
+      {
+       "use": "hotel",
+       "levels": [
+        6,
+        18
+       ],
+       "z": [
+        114.6,
+        166.87
+       ]
+      },
+      {
+       "use": "lobby and amenity",
+       "levels": [
+        19,
+        21
+       ],
+       "z": [
+        166.87,
+        178.93
+       ]
+      },
+      {
+       "use": "apartments",
+       "levels": [
+        22,
+        27
+       ],
+       "z": [
+        178.93,
+        203.05
+       ]
+      },
+      {
+       "use": "condominiums",
+       "levels": [
+        28,
+        39
+       ],
+       "z": [
+        203.05,
+        251.29
+       ]
+      },
+      {
+       "use": "amenity",
+       "levels": [
+        40,
+        41
+       ],
+       "z": [
+        251.29,
+        259.33
+       ]
+      },
+      {
+       "use": "condominiums",
+       "levels": [
+        42,
+        61
+       ],
+       "z": [
+        259.33,
+        339.74
+       ]
+      },
+      {
+       "use": "top",
+       "levels": [
+        62,
+        63
+       ],
+       "z": [
+        339.74,
+        347.78
+       ]
+      }
+     ]
+    },
+    {
+     "id": "angels-landing-2021-b",
+     "name": "Angels Landing, Tower B",
+     "ring": [
+      [
+       -55.65,
+       2.9
+      ],
+      [
+       -62.22,
+       -13.79
+      ],
+      [
+       -32.65,
+       -37.32
+      ],
+      [
+       -15.34,
+       -24.48
+      ],
+      [
+       -50.0,
+       3.09
+      ]
+     ],
+     "base_z": 87.48,
+     "top_z": 238.05,
+     "floors": 42,
+     "height_ft": 494,
+     "area_m2": 901.0,
+     "bands": [
+      {
+       "use": "podium",
+       "levels": [
+        0,
+        6
+       ],
+       "z": [
+        87.48,
+        117.94
+       ]
+      },
+      {
+       "use": "hotel",
+       "levels": [
+        7,
+        21
+       ],
+       "z": [
+        117.94,
+        167.99
+       ]
+      },
+      {
+       "use": "amenity",
+       "levels": [
+        22,
+        22
+       ],
+       "z": [
+        167.99,
+        171.32
+       ]
+      },
+      {
+       "use": "apartments",
+       "levels": [
+        23,
+        40
+       ],
+       "z": [
+        171.32,
+        231.38
+       ]
+      },
+      {
+       "use": "roof deck",
+       "levels": [
+        41,
+        42
+       ],
+       "z": [
+        231.38,
+        238.05
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

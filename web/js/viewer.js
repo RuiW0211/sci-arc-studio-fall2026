@@ -81,12 +81,15 @@ const FOCUS_GREY = { value: cfg.population?.whiteCloud?.white ?? 0.8 }, FOCUS_AL
 const focusMats = [];
 function withFocus(shader) {
   shader.uniforms.uFocus = FOCUS; shader.uniforms.uFocusGrey = FOCUS_GREY; shader.uniforms.uFocusAlpha = FOCUS_ALPHA;
+  shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uTimeGrey = TIME.grey; shader.uniforms.uTimeAlpha = TIME.alpha;
   // vSel (from pointMaterial's vertex shader): a selected object keeps its highlight under Highlight people
-  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha;\nvarying float vSel;\n" + shader.fragmentShader.replace("#include <color_fragment>",
+  // vBuild, vGhost (Time module): buildings (white, set in the vertex shader) and the unbuilt towers are not greyed,
+  // and the rest goes a darker, fainter grey than for Highlight people, so the buildings stand out
+  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha, uTimeOn, uTimeGrey, uTimeAlpha;\nvarying float vSel, vBuild, vGhost;\n" + shader.fragmentShader.replace("#include <color_fragment>",
     `#include <color_fragment>
-  float fk = uFocus * (1.0 - vSel);
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(uFocusGrey), fk);
-  diffuseColor.a *= mix(1.0, uFocusAlpha, fk);`);
+  float fk = uFocus * (1.0 - vSel) * (1.0 - vBuild) * (1.0 - vGhost);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(mix(uFocusGrey, uTimeGrey, uTimeOn)), fk);
+  diffuseColor.a *= mix(1.0, mix(uFocusAlpha, uTimeAlpha, uTimeOn), fk);`);
 }
 let focusAnim = 0;
 function setWhiteCloud(on) {
@@ -142,6 +145,60 @@ try {
   }
 } catch (e) { /* no list (or no designs yet) */ }
 
+// unbuilt schemes on Y-1 (user, 2026-10-13: research into the viewer): each tower as points scattered at random over its
+// walls and roof (not coloured by use, no drawn storey lines), as dense as the towers around it; the points join the
+// LiDAR when it loads (loadLidar), so they are drawn, thinned and highlighted as every building is. An invisible prism
+// per tower answers clicks in the mesh view.
+const ghostPts = [];   // { name, base, layer, pos: three.js order }
+const ghostYears = new Map();   // unbuilt layer -> [[from, to], ...]: shown with the Time module, in those years
+const ghostLabels = [];   // the Time module's labels for the unbuilt towers (updateTimeTags)
+try {
+  const G = cfg.ghosts, gd = await (await fetch(G.data)).json();
+  let seed = G.seed ?? 11;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);   // the same scatter on every visit
+  for (const sc of gd.schemes) (ghostYears.get(sc.layer || "Unbuilt") ?? ghostYears.set(sc.layer || "Unbuilt", []).get(sc.layer || "Unbuilt")).push(sc.years);
+  for (const sc of gd.schemes) for (const t of sc.towers) {
+    const ring = t.ring;   // [x east, y north], metres
+    const pos = [], H = t.top_z - t.base_z;
+    // the floor lines of every band: most points gather on them, as on the walls the LiDAR saw and on the estimated
+    // facades (synth_facades.py: inBands of the points within bandM of a floor line), so the storeys show without drawn lines
+    const floors = [];
+    for (const b of t.bands) {
+      const per = (b.z[1] - b.z[0]) / Math.max(1, b.levels[1] - b.levels[0] + 1);
+      for (let z = b.z[0]; z < b.z[1] - 0.01; z += per) floors.push(z);
+    }
+    const D = sc.density;
+    for (let i = 0; i < ring.length; i++) {                      // walls, at random
+      const [ax, an] = ring[i], [bx, bn] = ring[(i + 1) % ring.length], L = Math.hypot(bx - ax, bn - an);
+      for (let k = Math.round(D.wall_per_m2 * L * H); k > 0; k--) {
+        const s = rnd();
+        const z = rnd() < G.inBands ? floors[Math.floor(rnd() * floors.length)] + (rnd() - 0.5) * G.bandM : t.base_z + rnd() * H;
+        pos.push(ax + (bx - ax) * s, z, -(an + (bn - an) * s));
+      }
+    }
+    let minX = Infinity, maxX = -Infinity, minN = Infinity, maxN = -Infinity;
+    for (const [x, n] of ring) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minN = Math.min(minN, n); maxN = Math.max(maxN, n); }
+    const inside = (x, n) => { let c = false; for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+      if ((ring[a][1] > n) !== (ring[b][1] > n) && x < ((ring[b][0] - ring[a][0]) * (n - ring[a][1])) / (ring[b][1] - ring[a][1]) + ring[a][0]) c = !c; } return c; };
+    for (let k = Math.round(D.roof_per_m2 * t.area_m2); k > 0;) {   // roof
+      const x = minX + rnd() * (maxX - minX), n = minN + rnd() * (maxN - minN);
+      if (inside(x, n)) { pos.push(x, t.top_z, -n); k--; }
+    }
+    ghostPts.push({ name: t.name, base: t.base_z, layer: sc.layer || "Unbuilt", years: sc.years, pos: new Float32Array(pos) });
+    ghostLabels.push({ key: `g:${t.name}`, name: t.name.replace(/ \(schematic\)$/, ""), kind: "unbuilt", year: sc.years[0], end: sc.years[1],
+                       box: [minX, t.base_z, -maxN, maxX, t.top_z, -minN], h: t.top_z - t.base_z });
+    const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
+    const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }));
+    prism.rotation.x = -Math.PI / 2; prism.position.y = t.base_z;
+    const grp = new THREE.Group();
+    grp.name = t.name;
+    grp.userData = { layer: sc.layer || "Unbuilt", ghost: { scheme: sc, tower: t } };
+    grp.add(prism);
+    model.add(grp);
+  }
+} catch (e) { /* no ghosts file */ }
+
 const layers = new Map(); // name -> { cfg, objects, meshes, visible, points }
 model.traverse((o) => {
   const name = o.userData.layer;
@@ -180,10 +237,22 @@ let glassAt = -1e9;   // last adaptive-glass check (see adaptGlass); declared ea
 const lidarGroup = new THREE.Group();
 scene.add(lidarGroup);
 let lidar = null;
-let lidarDensityMatch = null, lidarPlazaPoints = 0;   // object -> ground / own density, for the moved structures (loadLidar)
+let lidarDensityMatch = null, lidarPlazaPoints = 0, lidarGroundFill = 0;   // object -> ground / own density, for the moved structures (loadLidar)
 
+// the Time module (user, 2026-10-13): off = today; on = the year of its slider. TIME feeds the point shader.
+const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.undatedDim ?? 0.4 },
+               build: { value: cfg.time?.buildYears ?? 5 }, front: { value: cfg.time?.front ?? 0.25 },
+               grey: { value: cfg.time?.contextGrey ?? 0.45 }, alpha: { value: cfg.time?.contextOpacity ?? 0.35 } };
+const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && TIME.year.value < b + 1);
 function applyVisibility() {
   for (const L of ordered) {
+    if (ghostYears.has(L.name)) {   // unbuilt: its own toggle, and only with the Time module, in its years
+      const on = Boolean(L.visible && ghostShown(L.name));
+      for (const o of L.objects) o.visible = on;
+      for (const p of L.lidarParts || []) p.visible = on && mode === "cloud";
+      L.row?.classList.toggle("out", !ghostShown(L.name));
+      continue;
+    }
     // strict booleans: three.js only skips objects whose visible === false (undefined still renders)
     // the Y-1 outline overlay stays on in the raw LiDAR, where there are no toggles
     const showMesh = Boolean(L.visible && L.cfg.overlay);   // overlays (the designs) are drawn over the cloud
@@ -206,10 +275,15 @@ for (const L of ordered) {
   // the dot is the toggle: filled = shown, ring = hidden (the checkbox stays for keyboard / screen readers, visually hidden);
   // it shows the layer colour when the point cloud is coloured by layer, a neutral dot otherwise
   const sw = `<i class="sw" style="--c:${L.cfg.color || "var(--muted)"}"></i>`;
-  row.innerHTML = `<input type="checkbox" ${L.visible ? "checked" : ""}>${sw}<span class="nm">${L.cfg.label || L.name}</span><span class="n">${n}</span>`;
-  L.countEl = row.querySelector(".n");
+  const ghost = ghostYears.has(L.name);
+  if (ghost) L.visible = true;   // shown whenever the Time module is on and the year is theirs
+  const yrs = ghost ? ghostYears.get(L.name).map(([a, b]) => `${a}–${b}`).join(", ") : n;
+  row.innerHTML = `<input type="checkbox" ${L.visible ? "checked" : ""}>${sw}<span class="nm">${L.cfg.label || L.name}</span><span class="n">${yrs}</span>`;
+  L.countEl = ghost ? null : row.querySelector(".n");
+  L.row = row;
   row.querySelector("input").onchange = (e) => { L.visible = e.target.checked; applyVisibility(); };
-  $("#layers").append(row);
+  // the unbuilt schemes have no row (user, 2026-10-13): they always show with the Time module, in their years
+  if (!ghost) $("#layers").append(row);
 }
 
 // ---------- point material: size in metres (perspective), never smaller than 1 px ----------
@@ -219,15 +293,39 @@ function pointMaterial(sizeMetres) {
   mat.onBeforeCompile = (shader) => {
     withFocus(shader);
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
+    shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
+    shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nuniform float uColorMix, uSelK;\nuniform vec3 uHi;\nvarying float vSel;\n" +
+    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
   vColor.rgb = mix(vColor.rgb, uHi, sw);
-  vSel = sw;`);
+  vSel = sw; vBuild = 0.0; vGhost = 0.0;`);
     shader.vertexShader = shader.vertexShader.replace(
-      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n#include <fog_vertex>");
+      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n"
+      // the Time module (user, 2026-10-13: buildings go up from the ground, slowly and softly, and stay once built):
+      // over the uBuild years before its year a building rises, its points shown up to an eased height with a wide
+      // soft front (aRise: the point's height in its building, 0 at the foot, 1 at the top). Buildings and landmarks
+      // are white, opaque, over the faint grey of the rest; an undated one stays, a dimmer white; the unbuilt towers
+      // keep their colour, rising the same way over their first years and sinking back over their last ones. The ground
+      // filled under a building (aYear 10000 + its year) is ordinary ground, always drawn (user, 2026-10-13: in every mode).
+      + "if (aYear > 9999.5) { }\n"
+      + "else if (uTimeOn > 0.5) {\n"
+      + "  if (aYear < -99.5) {\n"
+      + "    float c = -aYear, s = floor(c / 100.0 + 0.001), sp = c - 100.0 * s + 1.0; s += 1800.0;\n"
+      + "    float up = min(uBuild, 0.6 * sp), dn = min(1.5, 0.3 * sp);\n"
+      + "    float p = min(clamp((uYear - s) / up, 0.0, 1.0), clamp((s + sp - uYear) / dn, 0.0, 1.0)); p = p * p * (3.0 - 2.0 * p);\n"
+      + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
+      + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
+      + "    vGhost = 1.0;\n"
+      + "  } else if (aYear > 0.5) {\n"
+      + "    float p = clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0); p = p * p * (3.0 - 2.0 * p);\n"
+      + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
+      + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
+      + "    vColor.rgb = mix(vColor.rgb, mix(vec3(1.0), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
+      + "  } else if (aYear < -0.5) { vColor.rgb = mix(vColor.rgb, mix(vec3(uDim), vColor.rgb, vSel), uFocus); vBuild = 1.0; }\n"
+      + "}\n#include <fog_vertex>");
     // round points instead of squares
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <clipping_planes_fragment>",
@@ -332,6 +430,24 @@ async function loadLidar() {
     P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
     facadeData = null;   // memory
   }
+  // the unbuilt towers' points join as objects of their own (layer Unbuilt), named as their towers
+  const ghostObjYears = new Map();   // object -> the years of its scheme
+  if (ghostPts.length) {
+    const m = ghostPts.reduce((a, g) => a + g.pos.length / 3, 0), N2 = n + m;
+    const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2);
+    const H2 = HG ? new HG.constructor(N2) : null;
+    P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
+    let i = n;
+    for (const g of ghostPts) {
+      const o = objNames.length; objNames.push(g.name); objLayers.push(g.layer); ghostObjYears.set(o, g.years);
+      for (let j = 0; j < g.pos.length; j += 3, i++) {
+        P2[3 * i] = g.pos[j]; P2[3 * i + 1] = g.pos[j + 1]; P2[3 * i + 2] = g.pos[j + 2];
+        C2[i] = 6; O2[i] = o; I2[i] = 128; if (H2) H2[i] = Math.round((g.pos[j + 1] - g.base) * 10);
+      }
+    }
+    P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
+    ghostPts.length = 0;   // memory
+  }
   // config.json claims: a landmark takes the points of other objects right next to its own (user, 2026-10-10: part of
   // the Angels Flight upper station lies inside the Two California Plaza outline and was drawn as the tower). A point of
   // a `from` layer within marginM of a point of a `layer` object joins that object.
@@ -419,7 +535,7 @@ async function loadLidar() {
   // Per object: f = mean ground returns per 2 m cell around it (its box + 20 m, cells it covers left out) / its own
   // mean per cell (over cells with returns); f < 1 drops points at random down to the ground's density, f > 1 draws its points sqrt(f) times
   // larger (at most matchDensity.maxSize) so they cover the same share of the screen. Only the drawing changes.
-  const sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
+  let sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
   if (moved.size) {
     const CM = 2, PAD = 10, cellOf = (x, z) => (Math.floor(x / CM) + 32768) * 65536 + Math.floor(z / CM) + 32768;
     const own = new Map(), box = new Map();
@@ -462,6 +578,74 @@ async function loadLidar() {
     }
     lidarDensityMatch = f;   // for checks (__viewer)
   }
+  // per object: the year its building was built (the landmark's own year, else the Assessor's), -1 for a building with
+  // none, 0 for what is not a building (ground, trees, cars: always there for the Time module); an unbuilt tower:
+  // -(100 * (first year - 1800) + years it was alive), read back in the shader
+  const objYear = new Int16Array(objNames.length);
+  objNames.forEach((nm, k) => {
+    const gy = ghostObjYears.get(k);
+    if (gy) { objYear[k] = -(100 * (gy[0] - 1800) + Math.min(gy[1] - gy[0], 99)); return; }
+    if (objLayers[k] !== "Buildings" && objLayers[k] !== "Landmarks") return;
+    const e = entityOfName.get(nm), y = e ? parseInt(e.built?.[0] ?? e.parcel?.year_built, 10) : NaN;
+    objYear[k] = y > 1000 ? y : -1;
+  });
+  // the ground under the buildings (user, 2026-10-13: in 1867 the cloud showed black holes where today's buildings
+  // stand, the LiDAR seeing their roofs and not the ground). ESTIMATED: in every 2 m cell a building covers and
+  // the ground has no return, points at random at the ground's own density around it (the mean of the cells with ground
+  // returns within groundFill.radiusM), at the building's ground height (its points' height less their height above the
+  // ground). They draw as ground, always (user, 2026-10-13: the holes show in the other modes too, e.g. under Highlight
+  // people); per-point year code 10000 + the building's year (ptYear), kept for the Time module.
+  let ptYear = null;
+  const GF = cfg.time?.groundFill;
+  if (GF && HG && terrainObj >= 0) {
+    const CM = GF.cellM ?? 2, groundL = objLayers[terrainObj];
+    let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
+    for (let i = 0; i < n; i++) { const x = P[3 * i], z = P[3 * i + 2]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (z < z0) z0 = z; if (z > z1) z1 = z; }
+    const W = Math.ceil((x1 - x0) / CM) + 1, H = Math.ceil((z1 - z0) / CM) + 1, cellOf = (i) => Math.floor((P[3 * i] - x0) / CM) * H + Math.floor((P[3 * i + 2] - z0) / CM);
+    const tc = new Uint16Array(W * H);
+    let isum = 0, icnt = 0;
+    for (let i = 0; i < n; i++) if (objLayers[obj[i]] === groundL) { const c = cellOf(i); if (tc[c] < 65535) tc[c]++; isum += I[i]; icnt++; }
+    const cy = new Int16Array(W * H), gsum = new Float32Array(W * H), gn = new Uint16Array(W * H);   // earliest year over the cell
+    for (let i = 0; i < n; i++) {
+      const y0 = objYear[obj[i]]; if (y0 === 0 || y0 < -99) continue;   // every building, dated or not (undated: year 1)
+      const y = y0 > 0 ? y0 : 1;
+      const c = cellOf(i); if (tc[c]) continue;
+      if (!cy[c] || y < cy[c]) cy[c] = y;
+      gsum[c] += P[3 * i + 1] - HG[i] / 10; if (gn[c] < 65535) gn[c]++;
+    }
+    // summed-area tables of the ground counts and of the cells holding any, for the mean around each cell
+    const S = new Int32Array((W + 1) * (H + 1)), Z = new Int32Array((W + 1) * (H + 1)), ix = (a, b) => a * (H + 1) + b;
+    for (let a = 0; a < W; a++) for (let b = 0; b < H; b++) {
+      const c = a * H + b;
+      S[ix(a + 1, b + 1)] = tc[c] + S[ix(a, b + 1)] + S[ix(a + 1, b)] - S[ix(a, b)];
+      Z[ix(a + 1, b + 1)] = (tc[c] ? 1 : 0) + Z[ix(a, b + 1)] + Z[ix(a + 1, b)] - Z[ix(a, b)];
+    }
+    const rc = Math.round((GF.radiusM ?? 20) / CM), box = (T, a0, b0, a1, b1) => T[ix(a1, b1)] - T[ix(a0, b1)] - T[ix(a1, b0)] + T[ix(a0, b0)];
+    let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const add = [];   // x, y, z, year
+    for (let a = 0; a < W; a++) for (let b = 0; b < H; b++) {
+      const c = a * H + b; if (!cy[c]) continue;
+      const a0 = Math.max(a - rc, 0), b0 = Math.max(b - rc, 0), a1 = Math.min(a + rc + 1, W), b1 = Math.min(b + rc + 1, H);
+      const k = box(Z, a0, b0, a1, b1); if (!k) continue;
+      const d = box(S, a0, b0, a1, b1) / k, y = gsum[c] / gn[c];
+      for (let m = Math.floor(d + rnd()); m > 0; m--) add.push(x0 + (a + rnd()) * CM, y, z0 + (b + rnd()) * CM, cy[c]);
+    }
+    const m = add.length / 4, N2 = n + m, iMean = icnt ? Math.round(isum / icnt) : 128;
+    const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2), H2 = new HG.constructor(N2);
+    const S2 = new Uint8Array(N2).fill(64), D2 = new Uint8Array(N2);
+    P2.set(P); C2.set(C); I2.set(I); O2.set(obj); H2.set(HG); S2.set(sizeK); D2.set(drop);
+    ptYear = new Int16Array(N2);
+    for (let i = 0; i < n; i++) ptYear[i] = objYear[obj[i]];
+    for (let k = 0; k < m; k++) {
+      const i = n + k;
+      P2[3 * i] = add[4 * k]; P2[3 * i + 1] = add[4 * k + 1]; P2[3 * i + 2] = add[4 * k + 2];
+      C2[i] = 2; O2[i] = terrainObj; I2[i] = iMean; H2[i] = 0; ptYear[i] = 10000 + add[4 * k + 3];
+    }
+    P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
+    lidarGroundFill = m;   // for checks (__viewer)
+    sizeK = S2; drop = D2;
+  }
+  if (!ptYear) { ptYear = new Int16Array(n); for (let i = 0; i < n; i++) ptYear[i] = objYear[obj[i]]; }
   const material = pointMaterial(cfg.lidar.size ?? 0.3);
   // local density of each point's layer (returns per m2 of plan, from a 10 m grid, bilinear so it varies smoothly) and a
   // draw priority q = random * density^(1 - LOD_KEEP): the LOD draws the points with q below a target, so dense ground is
@@ -483,6 +667,12 @@ async function loadLidar() {
               + (grid[o + ix * gnz + iz + 1] * (1 - tx) + grid[o + (ix + 1) * gnz + iz + 1] * tx) * tz;
     q[i] = Math.random() * Math.max(rho, 1e-4) ** (1 - LOD_KEEP) * LOD_RHO0 ** LOD_KEEP;
   }
+  // per object: the height of its lowest and highest point, so each point knows how far up its building it is (aRise)
+  const objLo = new Float32Array(objNames.length).fill(1e9), objHi = new Float32Array(objNames.length).fill(-1e9);
+  for (let i = 0; i < n; i++) {
+    const o = obj[i]; if (objYear[o] === 0 || objYear[o] === -1) continue;
+    const y = P[3 * i + 1]; if (y < objLo[o]) objLo[o] = y; if (y > objHi[o]) objHi[o] = y;
+  }
   // bucket point indices by layer and LOD chunk
   const buckets = new Map();
   for (let i = 0; i < n; i++) {
@@ -498,10 +688,11 @@ async function loadLidar() {
     idx.sort((a, b) => q[a] - q[b]);   // by draw priority: the first k points are the ones to keep when thinning
     const pos = new Float32Array(m * 3), zs = new Float32Array(m), cls = new Uint8Array(m), inten = new Uint8Array(m), ob = new Uint16Array(m);
     const qs = new Float32Array(m), hag = HG ? new Int16Array(m) : null;   // height above ground, 0.1 m (Houdini LAZ)
-    const sz = new Uint8Array(m);
+    const sz = new Uint8Array(m), yr = new Int16Array(m), rise = new Uint8Array(m);
     for (let j = 0; j < m; j++) {
       const i = idx[j];
-      sz[j] = sizeK[i];
+      sz[j] = sizeK[i]; yr[j] = ptYear[i];
+      if ((yr[j] > 0 && yr[j] < 10000) || yr[j] < -99) { const o = obj[i]; rise[j] = Math.round(255 * (P[3 * i + 1] - objLo[o]) / Math.max(objHi[o] - objLo[o], 0.1)); }
       pos[3 * j] = P[3 * i]; pos[3 * j + 1] = P[3 * i + 1]; pos[3 * j + 2] = P[3 * i + 2];
       zs[j] = P[3 * i + 1]; cls[j] = C[i]; inten[j] = I[i]; ob[j] = obj[i]; qs[j] = q[i];
       if (hag) hag[j] = HG[i];
@@ -513,6 +704,8 @@ async function loadLidar() {
     g.setAttribute("color0", new THREE.BufferAttribute(new Uint8Array(m * 3), 3, true));   // the colours before a change
     g.setAttribute("aSel", new THREE.BufferAttribute(new Uint8Array(m), 1));               // selection mark (paintSelection)
     g.setAttribute("aSize", new THREE.BufferAttribute(sz, 1));                             // point size x 64 (density match)
+    g.setAttribute("aYear", new THREE.BufferAttribute(yr, 1));                             // year built (Time module)
+    g.setAttribute("aRise", new THREE.BufferAttribute(rise, 1, true));                     // height in its building, 0-1
     g.computeBoundingSphere();
     const pts = new THREE.Points(g, material);
     pts.frustumCulled = true;
@@ -872,11 +1065,334 @@ $("#popOn").onchange = async (e) => {
   }
   $("#popBox").hidden = !on;
   pop?.setVisible(on);
-  setWhiteCloud(on && $("#popWhite").checked);
+  updateWhite();
   if (!on) for (const s of [...selection]) if (s.key.startsWith("pop:")) deselect(s.key);
   invalidate();
 };
-$("#popWhite").onchange = (e) => setWhiteCloud(e.target.checked && $("#popOn").checked);
+// the cloud turns grey for Highlight people, and with the Time module (user, 2026-10-13: as Population does)
+let whiteNow = false;
+function updateWhite() {
+  // (user, 2026-10-14: Highlight people removed; the grey cloud is now the History module's only)
+  const want = $("#timeOn").checked;
+  if (want !== whiteNow) { whiteNow = want; setWhiteCloud(want); }
+}
+// the History module's Tags switch (user, 2026-10-14): the tags fade out and back in
+$("#timeTags").onchange = (e) => { tlLayer.classList.toggle("off", !e.target.checked); };
+// ---------- Time module ----------
+// buildings with a year, for the count under the slider
+const datedYears = (ENTITIES?.entities ?? []).map((e) => parseInt(e.built?.[0] ?? e.parcel?.year_built, 10)).filter((y) => y > 1000).sort((a, b) => a - b);
+const undatedN = (ENTITIES?.entities ?? []).length - datedYears.length;
+function setYear(y) {
+  animAt = performance.now();   // the buildings are going up: the picture is changing, no glass read-back
+  const r = $("#timeRange");
+  TIME.year.value = y; r.value = y;
+  r.style.setProperty("--p", `${(100 * (y - r.min)) / (r.max - r.min)}%`);
+  $("#timeYear").textContent = Math.floor(y);
+  let k = 0; while (k < datedYears.length && datedYears[k] <= y) k++;
+  $("#timeCounts").textContent = `${k.toLocaleString()} of ${datedYears.length.toLocaleString()} dated buildings standing · ${undatedN} undated`;
+  applyVisibility();
+}
+$("#timeOn").onchange = (e) => {
+  const on = e.target.checked;
+  $("#timeBox").hidden = !on;
+  TIME.on.value = on ? 1 : 0;
+  updateWhite();
+  if (!on) { stopPlay(); setYear(2026); return; }
+  setYear(1867);   // (user, 2026-10-13) it starts in 1867 and plays, the camera slowly going round the site
+  startPlay(true);
+};
+$("#timeRange").oninput = (e) => { stopPlay(); setYear(+e.target.value); };
+// the camera tour while it plays from 1867 (user, 2026-10-13): round the site and slowly out, so the whole of it comes
+// into view as it is built. From the current heading; config.json time.tour: turn (degrees), distance and tilt (degrees
+// from straight down) at the start and the end. Any drag or scroll hands the camera back.
+let tour = null;
+const TOUR = { turnDeg: 220, r0: 420, r1: 820, tilt0: 64, tilt1: 52, target: [0, 95, 0], ...(cfg.time?.tour || {}) };
+// ---------- the opening, plan B (user, 2026-10-14): the camera goes where the city is being built ----------
+// The opening is cut into shots by years (config.json time.openingShots). For each, ahead of time: the buildings that
+// go up in its years, weighted by height; the densest cluster of them (the spot with the most height within
+// clusterM), framed closer when it is tight and farther when it is spread out; a shot marked y1 also keeps Y-1 in the
+// frame (the unbuilt towers' years). The camera holds each shot's framing through the middle of its years and eases
+// (quintic) to the next across the change, always turning the same way at an even speed; the last shot pulls out to the
+// whole site. All as a function of the year (yearTime), so a pause holds the camera too. openingMode "A" = the old tour.
+const OPEN = { mode: "B", turnDeg: 160, clusterM: 300, shots: [
+  { from: 1867, to: 1910 }, { from: 1910, to: 1935 }, { from: 1935, to: 1980 }, { from: 1980, to: 2000, y1: true },
+  { from: 2000, to: 2026, y1: true }], ...(cfg.time?.openingB || {}), mode: cfg.time?.openingMode ?? "B" };
+let openAnchors = null;   // [{ hs, he, pose }]: held from hs to he seconds into the opening
+const yearT = [];         // seconds into the opening at 1867 + 0.05 k
+function yearTime(y) {
+  if (!yearT.length) { let t = 0; for (let u = 1867; u <= 2026.05; u += 0.05) { yearT.push(t); t += 0.05 / rate(u); } }
+  const f = Math.min(Math.max((y - 1867) / 0.05, 0), yearT.length - 1), k = Math.floor(f);
+  return yearT[k] + (yearT[Math.min(k + 1, yearT.length - 1)] - yearT[k]) * (f - k);
+}
+function buildOpening() {
+  if (!tlItems) tlBuild();
+  const pts = tlOcc.filter((o) => o.year > 0).map((o) => ({ x: (o.box[0] + o.box[3]) / 2, z: (o.box[2] + o.box[5]) / 2, y0: o.box[1], h: o.box[4] - o.box[1], year: o.year }));
+  const Y1 = TOUR.target, Rc = OPEN.clusterM, wide = { target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R };
+  const frame = (sh) => {
+    const ps = pts.filter((p) => p.year >= sh.from && p.year < sh.to);
+    if (!ps.length) return wide;
+    let best = ps[0], bw = -1;   // the densest spot: most height within clusterM
+    for (const p of ps) { let w = 0; for (const q of ps) if (Math.hypot(p.x - q.x, p.z - q.z) < Rc) w += q.h; if (w > bw) { bw = w; best = p; } }
+    const cl = ps.filter((q) => Math.hypot(best.x - q.x, best.z - q.z) < Rc), W = cl.reduce((s, q) => s + q.h, 0);
+    let cx = cl.reduce((s, q) => s + q.x * q.h, 0) / W, cz = cl.reduce((s, q) => s + q.z * q.h, 0) / W;
+    const spread = Math.sqrt(cl.reduce((s, q) => s + q.h * ((q.x - cx) ** 2 + (q.z - cz) ** 2), 0) / W);
+    const hmax = Math.max(...cl.map((q) => q.h)), gy = cl.reduce((s, q) => s + q.y0 * q.h, 0) / W;
+    let r = Math.min(Math.max(1.8 * spread + 1.2 * hmax + 120, 250), 1300), ty = gy + 0.3 * hmax;
+    if (sh.y1) {   // Y-1 in the frame too
+      const d = Math.hypot(cx - Y1[0], cz - Y1[2]);
+      cx = (cx + Y1[0]) / 2; cz = (cz + Y1[2]) / 2; ty = (ty + Y1[1]) / 2; r = Math.min(Math.max(r, 1.1 * d + 300), 1300);
+    }
+    const k = (r - 250) / (1300 - 250);
+    return { target: [cx, ty, cz], r, phi: (66 - 16 * k) * D2R };
+  };
+  const end = playDur;
+  openAnchors = OPEN.shots.map((sh, i) => {
+    const t0 = yearTime(sh.from), t1 = yearTime(sh.to), q = 0.25 * (t1 - t0);
+    return { hs: i === 0 ? 0 : t0 + q, he: i === OPEN.shots.length - 1 ? t0 + 2 * q : t1 - q, pose: frame(sh) };
+  });
+  openAnchors.push({ hs: end, he: end, pose: wide });   // and out to the whole site at the end
+}
+function openingPose(frac) {
+  const t = frac * playDur, A = openAnchors;
+  let P = A[A.length - 1].pose;
+  for (let i = 0; i < A.length; i++) {
+    if (t <= A[i].he) {
+      if (i === 0 || t >= A[i].hs) { P = A[i].pose; break; }
+      const a = A[i - 1], e = ease5((t - a.he) / Math.max(A[i].hs - a.he, 1e-3)), b = A[i].pose, p0 = a.pose;
+      P = { target: p0.target.map((v, j) => v + (b.target[j] - v) * e), r: Math.exp(Math.log(p0.r) + (Math.log(b.r) - Math.log(p0.r)) * e), phi: p0.phi + (b.phi - p0.phi) * e };
+      break;
+    }
+  }
+  return { ...P, th: tour.th + OPEN.turnDeg * D2R * frac };
+}
+function startTour(frac0 = 0) {
+  const th = sphOf(camera.position, controls.target).th;
+  if (OPEN.mode === "B") {   // fly to where the opening is at this year
+    // eased in from wherever the camera is (the same easing as after a pause), while the years already run
+    buildOpening(); tour = { th, t: 0 }; rejoin = { from: camPose(), t0: performance.now() };
+    return;
+  }
+  const tgt = new THREE.Vector3().fromArray(TOUR.target);
+  _sph.set(TOUR.r0, (TOUR.tilt0 * Math.PI) / 180, th);
+  goTo({ target: TOUR.target, position: tgt.clone().add(_off.setFromSpherical(_sph)).toArray() });
+  tour = { th, t: 0 };
+}
+function tourPose(frac) {
+  if (OPEN.mode === "B" && openAnchors) return openingPose(frac);
+  const e = frac * frac * (3 - 2 * frac);
+  return { target: TOUR.target, r: TOUR.r0 + (TOUR.r1 - TOUR.r0) * e, phi: ((TOUR.tilt0 + (TOUR.tilt1 - TOUR.tilt0) * e) * Math.PI) / 180,
+           th: tour.th + (TOUR.turnDeg * Math.PI / 180) * frac };
+}
+function stepTour(dt, frac) {
+  if (!tour || tween) return;
+  controls.enableDamping = false;
+  tour.frac = frac;
+  camApply(tourPose(frac));
+  invalidate();
+}
+function endTour() { if (tour) { tour = null; controls.enableDamping = true; } }
+// Space pauses and resumes the opening and the film after it (user, 2026-10-13). While paused the camera is free; on
+// resume the tour or film picks up from wherever the camera was left: its heading moves to the camera's, and distance,
+// tilt and target ease over rejoinS seconds from the camera's to the shot's, so there is no jump.
+let paused = false, rejoin = null;
+const REJOIN_S = cfg.time?.rejoinS ?? 2.5;
+const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r, phi: a.phi, th: a.th }; };
+const wrapA = (d) => Math.atan2(Math.sin(d), Math.cos(d));
+function camApply(P) {
+  if (rejoin) {
+    const k = Math.min((performance.now() - rejoin.t0) / (REJOIN_S * 1000), 1), e = k * k * (3 - 2 * k), A = rejoin.from;
+    P = { target: A.target.map((v, j) => v + (P.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(P.r) - Math.log(A.r)) * e),
+          phi: A.phi + (P.phi - A.phi) * e, th: A.th + wrapA(P.th - A.th) * e };
+    if (k >= 1) rejoin = null;
+  }
+  controls.target.fromArray(P.target);
+  _sph.set(P.r, P.phi, P.th);
+  camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
+  camera.lookAt(controls.target);
+  // the camera is moving: no glass read-back now (user, 2026-10-13: the panel flickered as the tour moved, its glass
+  // switching light / dark under the moving picture, and each read-back stalls a frame)
+  lastMove = performance.now();
+}
+function setPaused(on) {
+  if (on === paused) return;
+  paused = on;
+  timeState();
+  if (on) { controls.enableDamping = true; if (cine) cine.pausedAt = performance.now(); cutEl.classList.remove("on"); return; }
+  // resume: the shot's heading turns to the camera's, then everything else eases in
+  const U = camPose(), now = performance.now();
+  if (cine) {
+    if (cine.pausedAt) { cine.t0 += now - cine.pausedAt; cine.pausedAt = 0; }
+    if (cine.phase === "cut") cine.phase = "shot";
+    const P = cineNow(now), d = wrapA(U.th - P.th);
+    cine.th0 += d; if (cine.from) cine.from = { ...cine.from, th: cine.from.th + d };
+  } else if (tour) tour.th += wrapA(U.th - tourPose(tour.frac ?? 0).th);
+  if (cine || tour) { rejoin = { from: U, t0: now }; controls.enableDamping = false; }
+}
+addEventListener("keydown", (e) => {
+  // typing in a text field: not ours; a focused checkbox or button (Through time, Play) would take the Space itself
+  const t = document.activeElement, texty = t?.tagName === "TEXTAREA" || t?.tagName === "SELECT" || (t?.tagName === "INPUT" && !/^(checkbox|range|button|radio)$/.test(t.type));
+  if (e.code !== "Space" || texty || !($("#timeOn").checked || cine)) return;
+  t?.blur?.();
+  e.preventDefault();   // not a click on the focused checkbox, not a page scroll
+  if (playing || cine) setPaused(!paused); else if ($("#timeOn").checked) startPlay(false);   // stopped (the slider was moved, or the end): play
+});
+// a drag or scroll while the camera plays pauses it (user, 2026-10-13: it used to hand the camera back for good and the
+// orbit never came back): a look around, after which it goes on by itself (autoResumeS) or with Space
+for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused && (tour || cine)) setPaused(true); }, { passive: true });
+// years a second (user, 2026-10-14: the opening in a minute): 7.5 to 1950, then 1.9 (a building about 2.6 s going up), 0.9 while an
+// unbuilt scheme is on the site; config.json time.rates
+const ghostSpans = [...ghostYears.values()].flat();
+const RATES = { early: 7.5, late: 1.9, unbuilt: 0.9, ...(cfg.time?.rates || {}) };
+const rate = (y) => (ghostSpans.some(([a, b]) => y >= a - 0.5 && y < b + 1) ? RATES.unbuilt : y < 1950 ? RATES.early : RATES.late);
+let playDur = 0;
+for (let y = 1867; y < 2026; y += 0.05) playDur += 0.05 / rate(y);
+let playing = null;
+function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null; paused = false; rejoin = null; endTour(); endCine(); timeState(); }
+// no Play button (user, 2026-10-13): Space plays, pauses and goes on; the panel only says which
+function timeState() {
+  const el = $("#timePlay"); if (!el) return;
+  el.textContent = paused ? "Paused · Space" : playing || cine ? "Playing · Space to pause" : "Space to play";
+}
+function startPlay(withTour) {
+  if (playing) stopPlay();
+  let y = +$("#timeRange").value >= 2025.9 ? 1867 : +$("#timeRange").value, last = performance.now(), el = 0;
+  if (withTour || y <= 1867) startTour(yearTime(y) / playDur);
+  timeState();
+  const step = (now) => {   // about a minute in all
+    const dt = Math.min(Math.max((now - last) / 1000, 0), 0.1); last = now;   // a frame stamped before the start: 0
+    if (paused) { playing = requestAnimationFrame(step); return; }
+    el += dt;
+    y = Math.min(2026, y + dt * rate(y));
+    setYear(y);
+    stepTour(dt, Math.min((OPEN.mode === "B" ? yearTime(y) : el) / playDur, 1));   // plan B: by the year
+    if (y >= 2026) {   // the end: if the camera was left to the tour, it goes on filming (startCine)
+      playing = null; timeState();
+      const toured = Boolean(tour); endTour(); if (toured && CINE.on !== false) startCine();
+      return;
+    }
+    playing = requestAnimationFrame(step);
+  };
+  playing = requestAnimationFrame(step);
+  timeState();
+}
+$("#timePlay").onclick = () => (paused ? setPaused(false) : playing || cine ? setPaused(true) : startPlay(false));
+// paused and left alone (user, 2026-10-13): it goes on by itself after autoResumeS seconds without a drag, scroll or key
+const AUTO_RESUME_S = cfg.time?.autoResumeS ?? 4;
+let pauseInput = 0;
+for (const ev of ["pointerdown", "wheel", "keydown"]) addEventListener(ev, () => { pauseInput = performance.now(); }, { passive: true, capture: true });
+addEventListener("pointermove", (e) => { if (e.buttons) pauseInput = performance.now(); }, { passive: true, capture: true });
+setInterval(() => { if (paused && AUTO_RESUME_S > 0 && performance.now() - pauseInput > AUTO_RESUME_S * 1000) setPaused(false); }, 250);
+setYear(2026);
+
+// ---------- after the opening: the camera keeps filming (user, 2026-10-13) ----------
+// When the opening has played to the end with the camera untouched, the camera goes on as a loop of shots, the way a
+// film is cut: a wide establishing orbit of the whole site; a cut to a hero tower, low and close, craning up as it arcs
+// round it; a flight back out to the whole site; a crane down onto Y-1; and so on. Every shot moves (an arc, a push, a
+// crane), eases in and out, and lasts shotS seconds; into a close-up it cuts (a short dip to black), out of one it flies
+// (blendS). The labels settle to one faint opacity; the hero of a shot comes up. Any drag or scroll hands the camera
+// back. config.json time.cinema.
+const CINE = { shotS: 10, blendS: 3.5, heroes: 4, heroWithinM: 700, wideR: 1300, wideTilt: 46, labelOpacity: 0.6,
+               heroNames: ["Angels Flight"], ...(cfg.time?.cinema || {}) };
+let cine = null;
+const cutEl = document.createElement("div"); cutEl.id = "cut"; document.body.append(cutEl);
+const D2R = Math.PI / 180;
+function cineShots() {
+  // the film by groups of places near each other (user, 2026-10-13), config.json time.cinema.shots in order: each shot
+  // frames the box round its members (entity names, or "Angels Knoll" for the parcel) and lights their tags.
+  // type: wide (the whole site, high), crane (down onto the group), low (at about the middle of its height, looking a
+  // little up, arcing round), orbit (an oblique arc over a spread-out group), track (the view moves from one member to
+  // another, low). cut: a dip to black into the shot (otherwise the camera flies there).
+  const wide = { target: TOUR.target, r: [CINE.wideR, CINE.wideR * 0.9], tilt: [CINE.wideTilt, CINE.wideTilt + 4], turn: 25, keys: [] };
+  const find = (n) => (tlItems || []).find((it) => it.name.toLowerCase() === n.toLowerCase());
+  const boxOf = (items) => {
+    const b = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9];
+    for (const it of items) for (let j = 0; j < 3; j++) { b[j] = Math.min(b[j], it.box[j]); b[j + 3] = Math.max(b[j + 3], it.box[j + 3]); }
+    return { cx: (b[0] + b[3]) / 2, cz: (b[2] + b[5]) / 2, y0: b[1], h: b[4] - b[1], ext: Math.max(b[3] - b[0], b[5] - b[2], 40) };
+  };
+  const out = [];
+  for (const def of CINE.shots || []) {
+    if (def.type === "wide") { out.push({ ...wide, s: def.s }); continue; }
+    const items = (def.members || []).map(find).filter(Boolean);
+    if (!items.length) continue;
+    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s };
+    if (def.type === "crane") out.push({ ...base, turn: 40, tilt: [28, 58], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(4 * g.ext, 600), Math.max(1.6 * g.ext, 240)] });
+    else if (def.type === "low") out.push({ ...base, turn: 35, tilt: [92, 82], target: [g.cx, g.y0 + 0.6 * g.h, g.cz], r: [Math.max(1.9 * g.ext, 1.5 * g.h, 220), Math.max(1.25 * g.ext, 1.0 * g.h, 150)] });
+    else if (def.type === "orbit") out.push({ ...base, turn: 45, tilt: [56, 48], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(2.4 * g.ext, 380), Math.max(1.9 * g.ext, 300)] });
+    else if (def.type === "track") {
+      const A = find(def.from) ? boxOf([find(def.from)]) : g, B = find(def.to) ? boxOf([find(def.to)]) : g;
+      out.push({ ...base, turn: 20, tilt: [80, 72], target: [A.cx, A.y0 + 12, A.cz], target1: [B.cx, B.y0 + 0.5 * B.h, B.cz], r: [160, 120] });
+    }
+  }
+  return out.length ? out : [wide];
+}
+// smoother camera (user, 2026-10-14): the arc turns at an even speed, always the same way round, so it never stops or
+// turns back; distance, tilt and the point looked at ease with a quintic (no jolt at either end)
+const ease5 = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * t * (t * (6 * t - 15) + 10); };
+const shotLen = (sh) => sh.s ?? CINE.shotS;
+const shotW = (sh, dir) => (dir * sh.turn * D2R) / shotLen(sh);   // its turning speed, radians a second
+function cinePose(sh, t, th0, dir) {
+  const e = ease5(t);
+  const target = sh.target1 ? sh.target.map((v, j) => v + (sh.target1[j] - v) * e) : sh.target;
+  return { target, r: Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e),
+           phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + dir * sh.turn * D2R * t };
+}
+const cineApply = (P) => camApply(P);
+// where the film's camera is meant to be now (also for the rejoin after a pause)
+function cineNow(now) {
+  const c = cine, sh = c.shots[c.i];
+  if (c.phase === "blend" && c.from) {
+    // the flight between two shots: the heading keeps turning, its speed going evenly from the last shot's to the next
+    // one's (th0 of the next shot was set so that they meet), the rest eases (quintic)
+    const T = CINE.blendS, tau = Math.min((now - c.t0) / 1000, T), k = tau / T, e = ease5(k);
+    const A = c.from, B = cinePose(sh, 0, c.th0, c.dir), w0 = c.wFrom ?? 0, w1 = shotW(sh, c.dir);
+    return { target: A.target.map((v, j) => v + (B.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e),
+             phi: A.phi + (B.phi - A.phi) * e, th: A.th + w0 * tau + ((w1 - w0) * tau * tau) / (2 * T), k };
+  }
+  const len = shotLen(sh) * 1000;
+  return { ...cinePose(sh, Math.min((now - c.t0) / len, 1), c.th0, c.dir), k: (now - c.t0) / len };
+}
+function startCine() {
+  const shots = cineShots(); if (!shots.length) return;
+  controls.enableDamping = false;
+  const th = sphOf(camera.position, controls.target).th;
+  cine = { shots, i: 0, phase: "shot", t0: performance.now(), th0: th, dir: 1, from: null, op0: performance.now() };
+  timeState();
+}
+function endCine() {
+  if (!cine) return;
+  cine = null; cutEl.classList.remove("on"); controls.enableDamping = true; invalidate();
+  timeState();
+}
+function nextShot(now, P) {
+  const c = cine;
+  // after the first wide shot (user, 2026-10-14) People comes on, and the film goes on with them
+  if (c.i === (CINE.peopleAfter ?? 0) && CINE.thenPeople !== false && !$("#popOn").checked) {
+    $("#popOn").checked = true; $("#popOn").onchange({ target: $("#popOn") });
+  }
+  const prev = c.shots[c.i], sh = c.shots[(c.i + 1) % c.shots.length];
+  c.i = (c.i + 1) % c.shots.length;   // the same way round every time (it used to turn back at each shot)
+  if (sh.cut) {   // dip to black, jump, come up on the new shot
+    c.th0 = P.th; c.phase = "cut"; c.t0 = now; cutEl.classList.add("on");
+  } else {
+    c.wFrom = shotW(prev, c.dir);
+    c.th0 = P.th + ((c.wFrom + shotW(sh, c.dir)) / 2) * CINE.blendS;   // where the even change of speed lands
+    c.phase = "blend"; c.t0 = now; c.from = P;
+  }
+}
+function stepCine(now) {
+  const c = cine, sh = c.shots[c.i];
+  if (paused) return;
+  if (c.phase === "cut") {
+    if (now - c.t0 < 280) return;   // the screen is going dark
+    c.phase = "shot"; c.t0 = now; cutEl.classList.remove("on"); rejoin = null;
+  }
+  const P = cineNow(now);
+  cineApply(P);
+  if (c.phase === "blend") { if (P.k >= 1) { c.phase = "shot"; c.t0 = now; c.th0 = P.th; c.from = null; } return; }
+  if (P.k >= 1) nextShot(now, P);
+}
+function handBack() { endTour(); endCine(); }
+
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
 // a clicked person's modeled day (population.js story()) as a floating tag that follows them. how: "only" (Alt + click),
@@ -923,6 +1439,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   while (node && !node.userData.layer) node = node.parent;
   node = node || hit.object;
   const en = entityOfName.get(node.name), a = anchorOfNode(node) || pointAnchor(hit.point);
+  if (node.userData.ghost) return select(`g:${node.name}`, a, ghostTag(node.userData.ghost), [], add);
   if (en) return select(`m:${en.id}`, a, entityTag(en), [], add);
   select(`m:${node.uuid}`, a, objectTag(node, hit.point, null), [], add);
 
@@ -942,6 +1459,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
                                                   userData: { layer: lidar.objLayers[id] } };
     // layers with "highlight": false in config.json (e.g. Terrain) show their info but are not lit
     const lit = name !== "_other" && cfg.layers[lidar.objLayers[id]]?.highlight !== false;
+    if (node.userData?.ghost) return select(`o:${id}`, anchorOf(new Set([id])) || pointAnchor(hit.point), ghostTag(node.userData.ghost), [id], add);
     const ent = lidar.objEntity[id];
     if (ent >= 0) {
       const objs = lidar.entityObjs.get(ent);
@@ -1078,6 +1596,229 @@ function updateTags() {
     s.line.setAttribute("x1", sx); s.line.setAttribute("y1", sy); s.line.setAttribute("x2", ex); s.line.setAttribute("y2", by);
   }
 }
+// ---------- Time module: labels on the buildings going up ----------
+// (user, 2026-10-13: the buildings that go up get their name and year, floating, after the Connections page's blob
+// tracking) a tracking frame locks on to each building as it starts to rise and grows with it, a readout beside it
+// (name, year, height); only named buildings and landmarks (user, 2026-10-13: 300 labels by address were a mess). A
+// building once labelled keeps its frame and text after it is finished, fading slowly (fadeYears) to doneOpacity; once
+// the opening is over and the camera films (startCine) they all settle to one opacity, so the buildings stand out, and
+// the hero of a shot comes up (user, 2026-10-13). A text with no free place hides (it keeps its place while it can,
+// so labels do not hop about). No connecting curves. At most
+// time.labels.max new ones going up at once, the tallest first; unbuilt towers always. Screen space, after every render.
+const TL = { max: 6, holdYears: 2, minHeightM: 25, noHeight: ["Angels Flight"], ...(cfg.time?.labels || {}) };
+const tlLayer = document.createElement("div"); tlLayer.id = "tlabels"; document.body.append(tlLayer);
+let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1, z1], h, ent }
+let tlOcc = [];       // every building's box, for the labels' line of sight: { box, year (0 = undated), ent }
+// the Y-1 parcel (population.json y1: [x east, y north]), for the Angels Knoll label and shot
+let y1Ring = null;
+if (cfg.population?.meta) fetch(cfg.population.meta).then((r) => r.json()).then((m) => { y1Ring = m.y1?.[0] ?? null; }).catch(() => {});
+const tlShown = new Map();   // key -> { el }
+const tlEver = new Set();    // labelled once: kept while the year is past its start
+let tlLast = 0, tlMaskKey = "";
+function tlBuild() {
+  tlItems = [];
+  const filmNames = new Set((CINE.shots || []).flatMap((d) => d.members || []).map((n) => n.toLowerCase()));
+  const ents = ENTITIES?.entities ?? [], nE = ents.length, B = new Float32Array(nE * 6);
+  for (let i = 0; i < nE; i++) B.set([1e9, 1e9, 1e9, -1e9, -1e9, -1e9], 6 * i);
+  for (const p of lidar.parts) for (let i = 0; i < p.n; i++) {
+    const e = lidar.objEntity[p.ob[i]]; if (e < 0 || lidar.objLayers[p.ob[i]] === "Terrain") continue;
+    const x = p.pos[3 * i], y = p.pos[3 * i + 1], z = p.pos[3 * i + 2], o = 6 * e;
+    if (x < B[o]) B[o] = x; if (y < B[o + 1]) B[o + 1] = y; if (z < B[o + 2]) B[o + 2] = z;
+    if (x > B[o + 3]) B[o + 3] = x; if (y > B[o + 4]) B[o + 4] = y; if (z > B[o + 5]) B[o + 5] = z;
+  }
+  ents.forEach((e, i) => {
+    const y = parseInt(e.built?.[0] ?? e.parcel?.year_built, 10), o = 6 * i;
+    if (B[o] > 1e8) return;
+    const h = B[o + 4] - B[o + 1], box = Array.from(B.subarray(o, o + 6));
+    if (h >= 6) tlOcc.push({ box, year: y > 1000 ? y : 0, ent: i });
+    if (!(y > 1000) && !filmNames.has(e.name.toLowerCase())) return;   // undated: only the film's members (always there)
+    if (TL.namedOnly !== false && e.status === "auto" && !e.landmark) return;   // automatic entities are only an address
+    if (h < TL.minHeightM && !filmNames.has(e.name.toLowerCase())) return;   // a member of a film shot: tagged anyway
+    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i });
+  });
+  // Angels Knoll, the Y-1 parcel: a frame over its ground (the terrain points inside the parcel)
+  if (y1Ring) {
+    const ring = y1Ring.map(([x, n]) => [x, -n]);
+    let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9, lo = 1e9, hi = -1e9;
+    for (const [x, z] of ring) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+    const inside = (x, z) => { let c = false; for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+      if ((ring[a][1] > z) !== (ring[b][1] > z) && x < ((ring[b][0] - ring[a][0]) * (z - ring[a][1])) / (ring[b][1] - ring[a][1]) + ring[a][0]) c = !c; } return c; };
+    for (const p of lidar.parts) {
+      if (p.name !== "Terrain" && p.name !== lidar.objLayers[lidar.objNames.indexOf("Terrain")]) continue;
+      for (let i = 0; i < p.n; i++) {
+        const x = p.pos[3 * i], z = p.pos[3 * i + 2]; if (x < x0 || x > x1 || z < z0 || z > z1 || !inside(x, z)) continue;
+        const y = p.pos[3 * i + 1]; if (y < lo) lo = y; if (y > hi) hi = y;
+      }
+    }
+    if (hi > lo) tlItems.push({ key: "site:y1", name: "Angels Knoll", kind: "site", sub: "Parcel Y-1", box: [x0, lo, z0, x1, hi, z1], h: hi - lo });
+  }
+  for (const g of ghostLabels) tlItems.push(g);
+}
+const tlEase = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * (3 - 2 * t); };
+// 1 if the line from the camera to (x, y, z) passes no standing building (other than `own`), else 0. Boxes drawn in to
+// 80 % in plan: a building's box is larger than the building (it is not turned with it)
+function tlSees(x, y, z, own, Y) {
+  const o = camera.position, dx = x - o.x, dy = y - o.y, dz = z - o.z;
+  for (const b of tlOcc) {
+    if (b.ent === own || (b.year && b.year > Y)) continue;
+    const [x0, y0, z0, x1, y1, z1] = b.box, mx = (x1 - x0) * 0.1, mz = (z1 - z0) * 0.1;
+    let t0 = 0, t1 = 0.97;
+    for (const [oo, d, lo, hi] of [[o.x, dx, x0 + mx, x1 - mx], [o.y, dy, y0, y1], [o.z, dz, z0 + mz, z1 - mz]]) {
+      if (Math.abs(d) < 1e-9) { if (oo < lo || oo > hi) { t0 = 2; break; } continue; }
+      let a = (lo - oo) / d, c = (hi - oo) / d; if (a > c) [a, c] = [c, a];
+      if (a > t0) t0 = a; if (c < t1) t1 = c; if (t0 > t1) break;
+    }
+    if (t0 <= t1) return 0;
+  }
+  return 1;
+}
+function updateTimeTags() {
+  const Y = TIME.year.value, Bd = TIME.build.value, on = TIME.on.value > 0.5 && lidar && mode === "cloud";
+  if (on && !tlItems) tlBuild();
+  const W = innerWidth, H = innerHeight;
+  // who is up now: rising (or finished within holdYears), or labelled before; unbuilt towers while on the site
+  const live = [], kept = [];
+  if (on) for (const it of tlItems) {
+    let p, a, txt = true;
+    if (it.kind === "site" || (it.kind === "built" && !it.year)) {   // Angels Knoll, undated members: always there, quiet
+      p = 1; a = TL.doneOpacity ?? 0.7; kept.push({ it, p, a, txt, rising: false }); continue;
+    } else if (it.kind === "unbuilt") {
+      const sp = it.end - it.year + 1, up = Math.min(Bd, 0.6 * sp), dn = Math.min(1.5, 0.3 * sp);
+      if (Y < it.year || Y >= it.year + sp) continue;
+      p = tlEase(Math.min((Y - it.year) / up, (it.year + sp - Y) / dn)); a = Math.min(1, (Y - it.year) / 0.4, (it.year + sp - Y) / dn);
+    } else {
+      if (Y < it.year - Bd) { tlEver.delete(it.key); continue; }
+      const ever = tlEver.has(it.key);
+      if (!ever && Y > it.year + TL.holdYears) continue;
+      p = tlEase((Y - it.year + Bd) / Bd);
+      const done = Y > it.year + TL.holdYears, fade = tlEase((Y - it.year) / (TL.fadeYears ?? 8));
+      a = Math.min(1, (Y - it.year + Bd) / 0.4) * (1 + ((TL.doneOpacity ?? 0.7) - 1) * fade);
+      if (ever) { kept.push({ it, p, a, txt, rising: !done }); continue; }
+    }
+    live.push({ it, p, a, txt, rising: true });
+  }
+  live.sort((u, v) => (v.it.kind === "unbuilt") - (u.it.kind === "unbuilt") || v.it.h - u.it.h);
+  const keep = kept.concat(live.slice(0, TL.max)), keys = new Set(keep.map((l) => l.it.key));
+  for (const l of keep) if (l.it.kind !== "unbuilt") tlEver.add(l.it.key);
+  for (const [k, s] of tlShown) if (!keys.has(k)) {   // gone: fade out, then leave
+    tlShown.delete(k); s.el.classList.add("out");
+    setTimeout(() => s.el.remove(), 450);
+  }
+  const placed = [], ui = $("#ui").getBoundingClientRect();
+  // the left panel, while it shows (it fades out when idle): whatever part of a tag lies under it is dimmed to
+  // hiddenOpacity by a mask over the tag layer, as a building in front would (user, 2026-10-13: tags showed through the
+  // frosted panel; a fade by the share under it was too weak), and no text goes under it
+  const uiOp = ui.width > 0 ? +getComputedStyle($("#ui")).opacity : 0, uiOn = uiOp > 0.5;
+  if (uiOp > 0.01 && on) {
+    // an SVG mask the size of the window: opaque, with the panel's rounded rectangle at 1 - k (rebuilt only on change)
+    const k = (1 - (TL.hiddenOpacity ?? 0.15)) * uiOp, rad = parseFloat(getComputedStyle($("#ui")).borderTopLeftRadius) || 0;
+    const key = [W, H, ui.left, ui.top, ui.width, ui.height, rad, k.toFixed(2)].map((v) => Math.round(+v * 100) / 100).join();
+    if (key !== tlMaskKey) {
+      tlMaskKey = key;
+      const [x, y, w, h] = [ui.left, ui.top, ui.width, ui.height].map((v) => v.toFixed(1)), r0 = rad.toFixed(1);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><path fill-rule="evenodd" d="M0 0H${W}V${H}H0Z`
+        + `M${+x + +r0} ${y}H${+x + +w - +r0}A${r0} ${r0} 0 0 1 ${+x + +w} ${+y + +r0}V${+y + +h - +r0}A${r0} ${r0} 0 0 1 ${+x + +w - +r0} ${+y + +h}`
+        + `H${+x + +r0}A${r0} ${r0} 0 0 1 ${x} ${+y + +h - +r0}V${+y + +r0}A${r0} ${r0} 0 0 1 ${+x + +r0} ${y}Z"/>`
+        + `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r0}" fill-opacity="${(1 - k).toFixed(3)}"/></svg>`;
+      tlLayer.style.maskImage = tlLayer.style.webkitMaskImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+      tlLayer.style.maskSize = tlLayer.style.webkitMaskSize = "100% 100%";
+      tlLayer.style.maskRepeat = tlLayer.style.webkitMaskRepeat = "no-repeat";
+    }
+  } else if (tlMaskKey) { tlMaskKey = ""; tlLayer.style.maskImage = tlLayer.style.webkitMaskImage = "none"; }
+  if (uiOp > 0.01 && uiOp < 0.99) invalidate();   // the panel is fading in or out: follow it
+  const underUi = (x0, y0, x1, y1) => {
+    if (!uiOn) return 0;
+    const w = Math.max(0, Math.min(x1, ui.right) - Math.max(x0, ui.left)), h = Math.max(0, Math.min(y1, ui.bottom) - Math.max(y0, ui.top));
+    return (w * h) / Math.max((x1 - x0) * (y1 - y0), 1);
+  };
+  // texts placed in order of importance: going up and unbuilt first, then the tallest; a text with no free place hides
+  const lit = new Set(cine ? cine.shots[cine.i].keys || [] : []);   // the tags of the shot's group
+  const rank = (l) => (lit.has(l.it.key) ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
+  const now = performance.now(), dt = Math.min((now - (tlLast || now)) / 1000, 0.1); tlLast = now;
+  for (const { it, p, a: a0, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
+    // while filming: every label at one opacity, the shot's hero full
+    const hero = lit.has(it.key);
+    let a = cine ? (hero ? 1 : CINE.labelOpacity) : a0;
+    // depth (user, 2026-10-13: labels sat over the buildings, near and far alike): a label whose building is hidden
+    // behind a standing building fades (lines of sight to its top and its middle against the other buildings' boxes,
+    // drawn in a little); far ones are quieter; near ones are drawn over far ones
+    const [bx0, by0, bz0, bx1, by1, bz1] = it.box, cx = (bx0 + bx1) / 2, cz = (bz0 + bz1) / 2, ty = by0 + (by1 - by0) * Math.max(p, 0.02);
+    const dist = camera.position.distanceTo(_tv.set(cx, (by0 + ty) / 2, cz));
+    // four lines of sight (top, three quarters, middle, a quarter up), so a building half hidden gives a half, and the
+    // share is eased (tag.seen) rather than flipping as a line grazes a corner (user, 2026-10-13: tags flickered)
+    // (user, 2026-10-13: from above the tags were nearly invisible) a building whose top can be seen counts as seen:
+    // lines to its lower parts cross the neighbours' boxes from above, though the roof is in plain view
+    const hy = ty - by0;
+    const seen = tlSees(cx, ty, cz, it.ent, Y) ? 1
+      : (tlSees(cx, by0 + 0.75 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.5 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.25 * hy, cz, it.ent, Y)) / 4;
+    const ref = camera.position.distanceTo(controls.target);
+    let s = tlShown.get(it.key);
+    if (!s) {
+      const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
+      // no height for what is not a building (user, 2026-10-13: Angels Flight's is the rise of its track)
+      const noH = (TL.noHeight || []).some((n) => n.toLowerCase() === it.name.toLowerCase());
+      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : [it.kind === "unbuilt" ? `Unbuilt · ${it.year}–${it.end}` : it.year ? `Built ${it.year}` : "", noH ? "" : len(it.h)].filter(Boolean).join(" · ")}</i>`;
+      tlLayer.append(el);
+      // the lock-on plays once: after it the frame is "locked", so showing it again does not replay it
+      el.addEventListener("animationend", () => el.classList.add("locked"), { once: true });
+      tlShown.set(it.key, (s = { el, seen }));
+    }
+    const ease = (tau) => 1 - Math.exp(-dt / tau);   // exponential easing, tau seconds
+    s.seen += (seen - s.seen) * ease(0.35);
+    a *= (TL.hiddenOpacity ?? 0.15) + (1 - (TL.hiddenOpacity ?? 0.15)) * s.seen;
+    a *= Math.min(1, Math.max(TL.farOpacity ?? 0.75, 1 - 0.5 * (dist / ref - 1.2)));   // only past 1.2 x the view's distance
+    a = Math.max(a, TL.minOpacity ?? 0.25);
+    if (hero) a = Math.max(a, 0.6);
+    // the frame: the building's box up to the height it has reached, projected
+    const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
+    let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
+    for (const x of [x0, x1]) for (const y of [y0, top]) for (const z of [z0, z1]) {
+      _tv.set(x, y, z).project(camera); if (_tv.z > 1) behind = true;
+      const sx = ((_tv.x + 1) / 2) * W, sy = ((1 - _tv.y) / 2) * H;
+      sx0 = Math.min(sx0, sx); sx1 = Math.max(sx1, sx); sy0 = Math.min(sy0, sy); sy1 = Math.max(sy1, sy);
+    }
+    // out of view: it fades out where it is (no display: none, which made it blink and replay its lock-on)
+    const off = behind || sx1 < 0 || sx0 > W || sy1 < 0 || sy0 > H;
+    if (off) a = 0;
+    s.op = s.op === undefined ? a : s.op + (a - s.op) * ease(0.3);
+    if (Math.abs(a - s.op) > 0.004) invalidate();
+    s.el.style.opacity = s.op.toFixed(3);
+    s.el.style.visibility = s.op < 0.01 ? "hidden" : "";
+    if (behind) continue;   // its projection means nothing: it stays where it was while it fades
+    const w = Math.max(sx1 - sx0, 6), h = Math.max(sy1 - sy0, 6);
+    s.el.style.translate = `${sx0}px ${sy0}px`; s.el.style.width = `${w}px`; s.el.style.height = `${h}px`;
+    s.el.style.zIndex = String(Math.max(1, Math.round(100000 - dist)));
+    if (off) continue;
+    // the readout: beside the frame's top, on the side away from the screen's centre, clear of the panel and the others
+    const r = s.el.firstChild;
+    if (!txt) { r.classList.add("hid"); continue; }
+    if (!s.rw) { s.rw = r.offsetWidth; s.rh = r.offsetHeight; }   // measured once (its text does not change)
+    // the text sits by the frame's top, but inside the window: a tower taller than the view keeps its text at the top
+    // edge, beside it (user, 2026-10-13: the group's tags were out of sight in the low shots)
+    const tyA = Math.min(Math.max(sy0, 10), Math.max(sy1 - 30, 10), H - 40);
+    const rw = s.rw, rh = s.rh, pref = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
+    const free = (rx, ay) => rx > 4 && rx + rw < W - 4 && !underUi(rx, ay, rx + rw, ay + rh) && !placed.some((q) => rx < q.x + q.w + 4 && rx + rw + 4 > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y);
+    let spot = null;
+    const tries = [[pref, 0], [pref, rh + 4], [pref, -(rh + 4)], [!pref, 0], [!pref, rh + 4], [!pref, -(rh + 4)]];
+    if (s.spot) tries.unshift([s.spot.left, s.spot.ry]);   // where it was, first
+    for (const [left, ry] of tries) {
+      const rx = left ? sx1 + 6 : sx0 - 6 - rw;
+      if (!spot && free(rx, tyA + ry)) spot = { left, ry, rx };
+    }
+    // the text hides or comes back only after it has had (or lacked) a free place for a moment (hysteresis), and fades
+    // (CSS). A shown text stays where it is; it moves only while hidden, so it never hops about.
+    const shown = !r.classList.contains("hid");
+    const oldFree = s.spot && free(s.spot.left ? sx1 + 6 : sx0 - 6 - rw, tyA + s.spot.ry);
+    const want = shown ? Boolean(oldFree || (!s.spot && spot)) : Boolean(spot);
+    s.wait = want === shown ? 0 : (s.wait || 0) + dt;
+    if (s.wait > (want ? 0.5 : 0.35)) { r.classList.toggle("hid", !want); s.wait = 0; if (want) s.spot = spot; }
+    else if (!s.spot && spot) s.spot = spot;
+    if (r.classList.contains("hid") || !s.spot) continue;
+    const sp = s.spot, rx = sp.left ? sx1 + 6 : sx0 - 6 - rw;
+    r.classList.toggle("r", sp.left); r.style.top = `${tyA - sy0 + sp.ry}px`;
+    placed.push({ x: rx, y: tyA + sp.ry, w: rw, h: rh });
+  }
+}
 // a plain object (tree, car, wall ...), or a point of the ground / unassigned
 function objectTag(node, point, objSet) {
   const L = layers.get(node.userData.layer);
@@ -1122,6 +1863,20 @@ function entityTag(e) {
       : `Checked in Google Earth / Maps${e.confidence ? `, ${e.confidence} confidence` : ""}${pc ? "; LA County Assessor" : ""}`]);
     return tagHTML(kicker || "Building", e.name, e.address || "", rows, e.note);
   };
+}
+// an unbuilt tower: the scheme, its size, its uses by level, where it comes from and what is assumed
+function ghostTag({ scheme, tower: t }) {
+  const FTM = 0.3048, uses = t.bands.filter((b) => b.use !== "podium" && b.use !== "top")
+    .map((b) => `${b.use} ${b.levels[0] === b.levels[1] ? b.levels[0] : b.levels.join("–")}`).join(", ");
+  return () => tagHTML("Unbuilt scheme", t.name, scheme.name, [
+    ["Floors", String(t.floors)],
+    ["Height", `${units === "ft" ? t.height_ft + " ft" : (t.height_ft * FTM).toFixed(1) + " m"} to the parapet`],
+    ["Top", len(t.top_z)],
+    ["Floor plate", units === "ft" ? `${Math.round(t.area_m2 * 10.7639).toLocaleString()} sq ft` : `${t.area_m2.toLocaleString()} m²`],
+    ["Uses (levels)", uses],
+    ["Source", scheme.source],
+    ["Research", scheme.research.join(", ")],
+  ], scheme.assumptions.join(" "));
 }
 function pointAnchor(point) { return { centre: point.clone(), topY: point.y, height: 0 }; }
 function hideInfo() { clearSelection(); }
@@ -1184,12 +1939,13 @@ addEventListener("keydown", (e) => { if (e.key === "Escape" && !typing()) clearS
 const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") && document.activeElement.type !== "range";
 function wake(ms = IDLE_MS) {
   if (typeof ms !== "number") ms = IDLE_MS;    // called as an event listener
+  if (document.body.classList.contains("idle")) invalidate();   // the Time tags under the panel fade again
   document.body.classList.remove("idle");
   if (typeof wakeTags === "function") wakeTags();
   clearTimeout(idleTimer);
   idleTimer = setTimeout(function sleep() {
     if (overPanel() || typing()) { idleTimer = setTimeout(sleep, 1000); return; }
-    document.body.classList.add("idle");
+    document.body.classList.add("idle"); invalidate();   // the Time tags under the panel come back
   }, ms);
 }
 for (const ev of ["pointermove", "pointerdown", "wheel", "keydown", "touchstart", "focusin"]) addEventListener(ev, wake, { passive: true });
@@ -1218,6 +1974,9 @@ wakeTags();
 wake();
 
 await setMode("cloud");
+// the opening (user, 2026-10-13): the viewer opens in the Time module, playing from 1867 with the camera tour;
+// ?time=0 or config.json time.opening false opens on today
+if (cfg.time?.opening !== false && urlq.get("time") !== "0") { $("#timeOn").checked = true; $("#timeOn").onchange({ target: $("#timeOn") }); }
 if (urlq.get("earth")) setEarthView(urlq.get("earth"));   // ?earth=<Google Earth URL>: the same camera here
 status("");
 let lodEasing = true;
@@ -1261,6 +2020,7 @@ let glassPending = false;
 setInterval(() => { if (glassPending) { dirty = true; } }, GLASS_EVERY);   // re-check once the camera stops
 renderer.setAnimationLoop((now) => {
   if (tween) { stepTween(now); dirty = true; lastMove = now; }
+  if (cine) { stepCine(now); dirty = true; lastMove = now; }
   if (controls.update()) { dirty = true; lastMove = now; }   // damping keeps moving the camera after the drag ends
   // LiDAR level of detail: recomputed whenever the view changed or a chunk is still easing to its target
   if (lidar && mode === "cloud" && (dirty || lodEasing)) { lodEasing = updateLod(); if (lodEasing) dirty = true; }
@@ -1269,12 +2029,12 @@ renderer.setAnimationLoop((now) => {
   if (!dirty) return;
   dirty = false;
   renderer.render(scene, camera);
-  updateTags();
+  updateTags(); updateTimeTags();
   adaptGlass(now);
 });
 window.__viewer = {
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
