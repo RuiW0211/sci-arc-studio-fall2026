@@ -142,35 +142,34 @@ try {
   }
 } catch (e) { /* no list (or no designs yet) */ }
 
-// unbuilt schemes on Y-1 (user, 2026-10-13: research into the viewer): each tower as faint points on its walls and floor
-// lines, coloured by use, over the cloud like the designs; an invisible prism inside makes it clickable
+// unbuilt schemes on Y-1 (user, 2026-10-13: research into the viewer): each tower as points scattered at random over its
+// walls and roof, one colour, as the estimated facades are (not coloured by use, no storey lines: user, 2026-10-13), over
+// the cloud like the designs; an invisible prism inside makes it clickable
 try {
   const G = cfg.ghosts, gd = await (await fetch(G.data)).json();
-  const tmpC = new THREE.Color();
+  let seed = G.seed ?? 11;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);   // the same scatter on every visit
   for (const sc of gd.schemes) for (const t of sc.towers) {
     const ring = t.ring;   // [x east, y north], metres
-    const pos = [], col = [];
-    const put = (x, n, z, c, k = 1) => { pos.push(x, z, -n); col.push(c.r * k, c.g * k, c.b * k); };
-    const perim = (z, step, c, k) => {
-      for (let i = 0; i < ring.length; i++) {
-        const [ax, an] = ring[i], [bx, bn] = ring[(i + 1) % ring.length], L = Math.hypot(bx - ax, bn - an);
-        for (let s = 0; s < L; s += step) put(ax + (bx - ax) * s / L, an + (bn - an) * s / L, z, c, k);
-      }
-    };
-    for (const b of t.bands) {
-      tmpC.set(G.uses[b.use] || "#cccccc");
-      const per = (b.z[1] - b.z[0]) / Math.max(1, b.levels[1] - b.levels[0] + 1);   // one storey
-      for (let z = b.z[0]; z < b.z[1] - 0.01; z += per) {
-        perim(z, 0.35, tmpC, 1);                                          // the floor line, dense
-        for (let zz = z + 1.3; zz < z + per - 0.4; zz += 1.3) perim(zz, 1.4, tmpC, 0.8);   // the wall between, sparse
+    const pos = [], H = t.top_z - t.base_z;
+    for (let i = 0; i < ring.length; i++) {                      // walls: uniform at random, densityPerM2
+      const [ax, an] = ring[i], [bx, bn] = ring[(i + 1) % ring.length], L = Math.hypot(bx - ax, bn - an);
+      for (let k = Math.round(G.densityPerM2 * L * H); k > 0; k--) {
+        const s = rnd(), z = t.base_z + rnd() * H;
+        pos.push(ax + (bx - ax) * s, z, -(an + (bn - an) * s));
       }
     }
-    tmpC.set(G.uses[t.bands.at(-1).use] || "#cccccc");
-    perim(t.top_z, 0.35, tmpC, 1);
+    let minX = Infinity, maxX = -Infinity, minN = Infinity, maxN = -Infinity;
+    for (const [x, n] of ring) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minN = Math.min(minN, n); maxN = Math.max(maxN, n); }
+    const inside = (x, n) => { let c = false; for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+      if ((ring[a][1] > n) !== (ring[b][1] > n) && x < ((ring[b][0] - ring[a][0]) * (n - ring[a][1])) / (ring[b][1] - ring[a][1]) + ring[a][0]) c = !c; } return c; };
+    for (let k = Math.round(G.densityPerM2 * t.area_m2); k > 0;) {   // roof: the same density
+      const x = minX + rnd() * (maxX - minX), n = minN + rnd() * (maxN - minN);
+      if (inside(x, n)) { pos.push(x, t.top_z, -n); k--; }
+    }
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-    g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
-    const pts = new THREE.Points(g, new THREE.PointsMaterial({ size: G.pointSize, vertexColors: true, sizeAttenuation: true,
+    const pts = new THREE.Points(g, new THREE.PointsMaterial({ size: G.pointSize, color: G.color, sizeAttenuation: true,
       transparent: true, opacity: G.opacity, depthWrite: false }));
     const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
     const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),

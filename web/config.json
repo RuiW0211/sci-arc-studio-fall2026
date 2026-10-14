@@ -3,20 +3,12 @@
   "designs": "assets/models.json",
   "ghosts": {
     "data": "data/ghosts.json",
-    "_comment": "Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: drawn as faint points on the walls and floor lines of each tower, coloured by use (Figure II-4 of the 2021 Draft EIR). opacity and pointSize (m) of those points; floorEvery: a floor line every n levels.",
-    "opacity": 0.55,
+    "_comment": "Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: each tower drawn as points scattered at random over its walls and roof, one colour, like the estimated facades (user, 2026-10-13: not coloured, not storey lines). densityPerM2: points per m2 of wall (the estimated facades use 0.3); opacity and pointSize (m) of the points; seed: the same scatter every time.",
+    "color": "#D7DEE8",
+    "densityPerM2": 1.2,
+    "opacity": 0.75,
     "pointSize": 0.7,
-    "floorEvery": 1,
-    "uses": {
-      "podium": "#B9AFC8",
-      "hotel": "#8FC7B8",
-      "lobby and amenity": "#E8C17A",
-      "apartments": "#7FAEDC",
-      "condominiums": "#B5CDEA",
-      "amenity": "#E28B7E",
-      "roof deck": "#E28B7E",
-      "top": "#D9D9D9"
-    }
+    "seed": 11
   },
   "facades": {
     "meta": "data/facades_estimated.json",
