@@ -1226,15 +1226,20 @@ function endTour() { if (tour) { tour = null; controls.enableDamping = true; } }
 // tilt and target ease over rejoinS seconds from the camera's to the shot's, so there is no jump.
 let paused = false, rejoin = null;
 const REJOIN_S = cfg.time?.rejoinS ?? 2.5;
-const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r, phi: a.phi, th: a.th }; };
+const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r, phi: a.phi, th: a.th, fov: camera.fov }; };
+// the field of view (vertical, degrees) of the Guided camera's poses; a pose without one has FOV0 (user, 2026-10-15: a
+// dolly zoom on Y-1; the FOV only ever changes together with the distance, eased like the rest of the move)
+const FOV0 = camera.fov;
+function setFov(f) { if (Math.abs(camera.fov - f) > 1e-3) { camera.fov = f; camera.updateProjectionMatrix(); } }
 const wrapA = (d) => Math.atan2(Math.sin(d), Math.cos(d));
 function camApply(P) {
   if (rejoin) {
     const k = Math.min((performance.now() - rejoin.t0) / (REJOIN_S * 1000), 1), e = k * k * (3 - 2 * k), A = rejoin.from;
     P = { target: A.target.map((v, j) => v + (P.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(P.r) - Math.log(A.r)) * e),
-          phi: A.phi + (P.phi - A.phi) * e, th: A.th + wrapA(P.th - A.th) * e };
+          phi: A.phi + (P.phi - A.phi) * e, th: A.th + wrapA(P.th - A.th) * e, fov: (A.fov ?? FOV0) + ((P.fov ?? FOV0) - (A.fov ?? FOV0)) * e };
     if (k >= 1) rejoin = null;
   }
+  setFov(P.fov ?? FOV0);
   controls.target.fromArray(P.target);
   _sph.set(P.r, P.phi, P.th);
   camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
@@ -1359,7 +1364,11 @@ function cineShots() {
     const items = (def.members || []).map(find).filter(Boolean);
     if (!items.length) continue;
     const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold };
-    if (def.type === "crane") out.push({ ...base, turn: 40, tilt: [28, 58], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(4 * g.ext, 600), Math.max(1.6 * g.ext, 240)] });
+    const n0 = out.length;   // (overrides below apply to the shot pushed now)
+    // a crane with a dolly zoom (dolly: [fov from, fov to]): it lowers (tilt) and backs away as the view narrows
+    if (def.type === "crane" && def.dolly) out.push({ ...base, turn: 30, tilt: def.tilt ?? [40, 70], target: [g.cx, g.y0 + 0.3 * g.h, g.cz],
+      r: [Math.max(3 * g.ext, 420)], fov: def.dolly, dolly: true });
+    else if (def.type === "crane") out.push({ ...base, turn: 40, tilt: [28, 58], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(4 * g.ext, 600), Math.max(1.6 * g.ext, 240)] });
     else if (def.type === "low") out.push({ ...base, turn: 35, tilt: [92, 82], target: [g.cx, g.y0 + 0.6 * g.h, g.cz], r: [Math.max(1.9 * g.ext, 1.5 * g.h, 220), Math.max(1.25 * g.ext, 1.0 * g.h, 150)] });
     // reveal (user, 2026-10-15): the one shot that uses occlusion. Moderately low over its group, it starts from a
     // heading where a tower stands in front and arcs (turn) until the group is in the clear, then holds on it
@@ -1368,6 +1377,14 @@ function cineShots() {
     else if (def.type === "track") {
       const A = find(def.from) ? boxOf([find(def.from)]) : g, B = find(def.to) ? boxOf([find(def.to)]) : g;
       out.push({ ...base, turn: 20, tilt: [80, 72], target: [A.cx, A.y0 + 12, A.cz], target1: [B.cx, B.y0 + 0.5 * B.h, B.cz], r: [160, 120] });
+    }
+    // per-shot framing (2026-10-15, people for scale in the tower shots): aim = the height looked at, as a share of the
+    // group's height; tilt = [from, to] degrees from straight down; dist = a factor on the distance
+    const o = out[n0];
+    if (o && out.length > n0 && !o.target1) {
+      if (def.aim != null) o.target = [o.target[0], g.y0 + def.aim * g.h, o.target[2]];
+      if (def.tilt) o.tilt = def.tilt;
+      if (def.dist) o.r = o.r.map((x) => x * def.dist);
     }
   }
   // a shot may set its own turn (degrees over the shot), e.g. a short arc so the next shot's heading follows on
@@ -1391,8 +1408,12 @@ function cinePose(sh, t, th0, dir) {
   let a;
   if (tau <= S) a = w0 * tau;
   else { const x = tau - S; a = w0 * S + (x < D ? w0 * x - ((w0 - wd) * x * x) / (2 * D) : ((w0 + wd) * D) / 2 + wd * (x - D)); }
-  return { target, r: Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e),
-           phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + a };
+  const fov = sh.fov ? sh.fov[0] + (sh.fov[1] - sh.fov[0]) * e : FOV0;
+  // a dolly zoom (after Vertigo): the camera backs away as the view narrows, by just as much, so the subject keeps its
+  // size on screen and what stands behind it grows
+  const r = sh.dolly ? (sh.r[0] * Math.tan((sh.fov[0] * D2R) / 2)) / Math.tan((fov * D2R) / 2)
+                     : Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e);
+  return { target, r, phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + a, fov };
 }
 const cineApply = (P) => camApply(P);
 // where the film's camera is meant to be now (also for the rejoin after a pause)
@@ -1407,7 +1428,8 @@ function cineNow(now) {
     const A = c.from, B = cinePose(sh, 0, c.th0, c.dir), w0 = c.wFrom ?? 0, w1 = shotW(sh, c.dir);
     const s = k, h00 = 2 * s ** 3 - 3 * s * s + 1, h10 = s ** 3 - 2 * s * s + s, h01 = -2 * s ** 3 + 3 * s * s, h11 = s ** 3 - s * s;
     return { target: A.target.map((v, j) => v + (B.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e),
-             phi: A.phi + (B.phi - A.phi) * e, th: h00 * A.th + h10 * T * w0 + h01 * c.th0 + h11 * T * w1, k };
+             phi: A.phi + (B.phi - A.phi) * e, th: h00 * A.th + h10 * T * w0 + h01 * c.th0 + h11 * T * w1,
+             fov: (A.fov ?? FOV0) + ((B.fov ?? FOV0) - (A.fov ?? FOV0)) * e, k };
   }
   const len = shotLen(sh) * 1000;
   return { ...cinePose(sh, Math.min((now - c.t0) / len, 1), c.th0, c.dir), k: (now - c.t0) / len };
@@ -2086,6 +2108,10 @@ function setView(v) {
   if (v === "free") {
     historyLeft = $("#timeOn").checked ? { year: TIME.year.value, cine: cine && !cine.people ? cine : null, at: performance.now() } : null;
     paused = false; setHistory(false);
+    // the Free camera has the normal field of view: eased back over 0.8 s if a shot had changed it
+    const f0 = camera.fov, t0 = performance.now();
+    const ease = (now) => { const k = Math.min((now - t0) / 800, 1); setFov(f0 + (FOV0 - f0) * k * k * (3 - 2 * k)); invalidate(); if (k < 1) requestAnimationFrame(ease); };
+    if (Math.abs(f0 - FOV0) > 0.01) requestAnimationFrame(ease);
   } else setHistory(true, historyLeft);
   invalidate();
 }
@@ -2236,7 +2262,10 @@ const shotStudy = {
     }
     const cov = (Math.min(bx1, W) - Math.max(bx0, 0)) * (Math.min(by1, H) - Math.max(by0, 0)) / (W * H);
     const off = Math.hypot((bx0 + bx1) / 2 / W - 0.5, (by0 + by1) / 2 / H - 0.5);
-    return { seen: +(ok / tot).toFixed(2), cover: +Math.max(cov, 0).toFixed(2), offCentre: +off.toFixed(2), inFrame: +(inside / corners).toFixed(2) };
+    // where the group's foot (its lowest point, at its centre) is on the screen: 0 = top, 1 = bottom (people for scale)
+    let gx = 0, gz = 0, gy = 1e9; for (const k of sh.keys || []) { const b = tlItems.find((q) => q.key === k).box; gx += (b[0] + b[3]) / 2; gz += (b[2] + b[5]) / 2; gy = Math.min(gy, b[1]); }
+    _tv.set(gx / (sh.keys || [1]).length, gy, gz / (sh.keys || [1]).length).project(camera);
+    return { seen: +(ok / tot).toFixed(2), cover: +Math.max(cov, 0).toFixed(2), offCentre: +off.toFixed(2), inFrame: +(inside / corners).toFixed(2), foot: +((1 - _tv.y) / 2).toFixed(2) };
   },
   opening(i, th = 0.6) {
     const P = openAnchors[i].pose; endCine(); endTour(); camApply({ ...P, th }); invalidate();
