@@ -1348,12 +1348,15 @@ function cineShots() {
   const out = [];
   for (const def of CINE.shots || []) {
     const az = def.az == null ? null : def.az * D2R;   // the shot's heading at its start (0 = from the south, 90 = east)
-    if (def.type === "wide") { out.push({ ...wide, s: def.s, az }); continue; }
+    if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold }); continue; }
     const items = (def.members || []).map(find).filter(Boolean);
     if (!items.length) continue;
-    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az };
+    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold };
     if (def.type === "crane") out.push({ ...base, turn: 40, tilt: [28, 58], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(4 * g.ext, 600), Math.max(1.6 * g.ext, 240)] });
     else if (def.type === "low") out.push({ ...base, turn: 35, tilt: [92, 82], target: [g.cx, g.y0 + 0.6 * g.h, g.cz], r: [Math.max(1.9 * g.ext, 1.5 * g.h, 220), Math.max(1.25 * g.ext, 1.0 * g.h, 150)] });
+    // reveal (user, 2026-10-15): the one shot that uses occlusion. Moderately low over its group, it starts from a
+    // heading where a tower stands in front and arcs (turn) until the group is in the clear, then holds on it
+    else if (def.type === "reveal") out.push({ ...base, turn: 60, tilt: [74, 66], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(3.2 * g.ext, 380), Math.max(2.6 * g.ext, 320)] });
     else if (def.type === "orbit") out.push({ ...base, turn: 45, tilt: [56, 48], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(2.4 * g.ext, 380), Math.max(1.9 * g.ext, 300)] });
     else if (def.type === "track") {
       const A = find(def.from) ? boxOf([find(def.from)]) : g, B = find(def.to) ? boxOf([find(def.to)]) : g;
@@ -1367,13 +1370,22 @@ function cineShots() {
 // smoother camera (user, 2026-10-14): the arc turns at an even speed, always the same way round, so it never stops or
 // turns back; distance, tilt and the point looked at ease with a quintic (no jolt at either end)
 const ease5 = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * t * (t * (6 * t - 15) + 10); };
-const shotLen = (sh) => sh.s ?? CINE.shotS;
-const shotW = (sh, dir) => (dir * sh.turn * D2R) / shotLen(sh);   // its turning speed, radians a second
+// a shot = its move (s seconds) + a hold (user, 2026-10-15, after Ozu and Deakins: time to read the tags and to see the
+// people move): the arc slows over holdEaseS to holdDrift of its speed (never quite still) and the framing rests
+const shotMove = (sh) => sh.s ?? CINE.shotS;
+const shotHold = (sh) => sh.hold ?? (sh.keys?.length ? CINE.holdS ?? 2 : 0);
+const shotLen = (sh) => shotMove(sh) + shotHold(sh);
+const shotW = (sh, dir) => (dir * sh.turn * D2R) / shotMove(sh);   // its turning speed while it moves, radians a second
+const shotWEnd = (sh, dir) => shotW(sh, dir) * (shotHold(sh) > 0 ? CINE.holdDrift ?? 0.1 : 1);   // at its end
 function cinePose(sh, t, th0, dir) {
-  const e = ease5(t);
+  const S = shotMove(sh), H = shotHold(sh), tau = t * (S + H), e = ease5(Math.min(tau / S, 1));
   const target = sh.target1 ? sh.target.map((v, j) => v + (sh.target1[j] - v) * e) : sh.target;
+  const w0 = shotW(sh, dir), wd = w0 * (CINE.holdDrift ?? 0.1), D = Math.min(CINE.holdEaseS ?? 1.2, H || 1e-6);
+  let a;
+  if (tau <= S) a = w0 * tau;
+  else { const x = tau - S; a = w0 * S + (x < D ? w0 * x - ((w0 - wd) * x * x) / (2 * D) : ((w0 + wd) * D) / 2 + wd * (x - D)); }
   return { target, r: Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e),
-           phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + dir * sh.turn * D2R * t };
+           phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + a };
 }
 const cineApply = (P) => camApply(P);
 // where the film's camera is meant to be now (also for the rejoin after a pause)
@@ -1408,13 +1420,16 @@ function endCine() {
 }
 function nextShot(now, P) {   // now: the exact time the last shot ended
   const c = cine;
-  const prev = c.shots[c.i], sh = c.shots[(c.i + 1) % c.shots.length];
-  c.i = (c.i + 1) % c.shots.length;   // the same way round every time (it used to turn back at each shot)
+  // after the last shot the film goes back to shot loopFrom (2026-10-15: from the Y-1 reveal straight to the Y-1 track,
+  // the opening's wide shot and crane only once), always the same way round
+  const nextI = c.i + 1 < c.shots.length ? c.i + 1 : Math.min(CINE.loopFrom ?? 0, c.shots.length - 1);
+  const prev = c.shots[c.i], sh = c.shots[nextI];
+  c.i = nextI;
   if (sh.cut) {   // dip to black, jump, come up on the new shot
     c.th0 = P.th; c.phase = "cut"; c.t0 = now; cutEl.classList.add("on");
   } else {
-    c.wFrom = shotW(prev, c.dir);
-    const w1 = shotW(sh, c.dir), wm = (Math.abs(c.wFrom) + Math.abs(w1)) / 2 || 0.05;
+    c.wFrom = shotWEnd(prev, c.dir);
+    const w1 = shotW(sh, c.dir), wm = Math.max(Math.abs(c.wFrom), Math.abs(w1)) || 0.05;   // the faster of the two
     // the flight's length: at least blendS, and long enough that the camera never goes faster than maxFlyMS on average
     const B0 = cinePose(sh, 0, sh.az ?? P.th, c.dir), pos = (Q) => { _sph.set(Q.r, Q.phi, Q.th); return _off.setFromSpherical(_sph).clone().add(_tv.fromArray(Q.target)); };
     const dist = pos(P).distanceTo(pos({ ...B0, th: P.th }));
@@ -1424,9 +1439,9 @@ function nextShot(now, P) {   // now: the exact time the last shot ended
       let d = ((sh.az - P.th) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);   // forward to its heading
       if (d > 1.9 * Math.PI) d = 0;            // just past it: take it as reached
       T = Math.min(Math.max(T, d / (1.6 * wm)), 12);   // a long turn is not hurried
-      // never slower than about half the shots' speed on the way (the Hermite's middle speed is 1.5 d / T - (w0 + w1) / 4):
-      // when its heading is too near, the shot starts a little past it (within ~10 degrees, still a clear view)
-      d = Math.max(d, 0.7 * wm * T);
+      // always forward on the way: the Hermite's middle speed 1.5 d / T - (w0 + w1) / 4 stays positive with some margin;
+      // when the shot's heading is too near, it starts a little past it
+      d = Math.max(d, 0.25 * (Math.abs(c.wFrom) + Math.abs(w1)) * T);
       c.th0 = P.th + d;
     }
     c.blendT = T; c.phase = "blend"; c.from = P;
@@ -2176,14 +2191,18 @@ const shotStudy = {
       const P = sphOf(camera.position, controls.target), pos = camera.position.clone();
       const w = last == null ? 0 : wrapA(P.th - last) * fps / D2R, v = lastPos ? pos.distanceTo(lastPos) * fps : 0;
       rows.push({ t: f / fps, i: cine.i, ph: cine.phase, w, v }); last = P.th; lastPos = pos;
-      const sh = cine.shots[cine.i], len = shotLen(sh) * 1000;
-      if (cine.phase === "shot" && !seen[cine.i] && now - cine.t0 > len / 2 && (sh.keys || []).length) {
-        let ok = 0, tot = 0;
+      const sh = cine.shots[cine.i], len = shotLen(sh) * 1000, el = now - cine.t0;
+      const share = () => { let ok = 0, tot = 0;
         for (const k of sh.keys) { const it = tlItems.find((q) => q.key === k), [x0, y0, z0, x1, y1, z1] = it.box, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
           tot += 2; if (!tlBlockers(cx, y1, cz, it.ent, 2026).length) ok++; if (!tlBlockers(cx, (y0 + y1) / 2, cz, it.ent, 2026).length) ok++; }
-        seen[cine.i] = +(ok / tot).toFixed(2);
+        return +(ok / tot).toFixed(2); };
+      if (cine.phase === "shot" && (sh.keys || []).length) {   // at its start, middle and end
+        const s3 = (seen[cine.i] ??= [null, null, null]);
+        if (s3[0] === null) s3[0] = share();
+        if (s3[1] === null && el > len / 2) s3[1] = share();
+        if (s3[2] === null && el > len - 1000 / fps - 1) s3[2] = share();
       }
-      if (lastI === n - 1 && cine.i === 0) break;
+      if (lastI === n - 1 && cine.i !== n - 1) break;
       lastI = cine.i;
     }
     CINE.thenPeople = keep; endCine();
