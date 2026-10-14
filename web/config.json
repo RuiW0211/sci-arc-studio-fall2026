@@ -18,12 +18,14 @@
       "radiusM": 20
     },
     "labels": {
-      "_comment": "Labels on the buildings going up (blob-tracking frames): at most max new ones at once, the tallest first, for named buildings and landmarks (namedOnly) at least minHeightM tall; a labelled building keeps its frame and text once built, fading over fadeYears to doneOpacity; behind another building it fades to hiddenOpacity (line of sight), far ones are quieter; a text with no free place hides; one that could not get a label is still eligible holdYears after completion; unbuilt towers always.",
+      "_comment": "Labels on the buildings going up (blob-tracking frames): at most max new ones at once, the tallest first, for named buildings and landmarks (namedOnly) at least minHeightM tall; a labelled building keeps its frame and text once built, fading over fadeYears to doneOpacity; behind another building (its top hidden) it fades to hiddenOpacity, far ones (past 1.2 x the view distance) to farOpacity, never below minOpacity; a text with no free place hides; one that could not get a label is still eligible holdYears after completion; unbuilt towers always.",
       "max": 6,
-      "doneOpacity": 0.45,
+      "doneOpacity": 0.7,
       "namedOnly": true,
       "fadeYears": 8,
       "hiddenOpacity": 0.15,
+      "farOpacity": 0.75,
+      "minOpacity": 0.25,
       "noHeight": ["Angels Flight"],
       "holdYears": 2,
       "minHeightM": 25
@@ -37,7 +39,7 @@
       "heroWithinM": 700,
       "wideR": 1300,
       "wideTilt": 46,
-      "labelOpacity": 0.3,
+      "labelOpacity": 0.6,
       "heroNames": ["Angels Flight"]
     },
     "tour": {

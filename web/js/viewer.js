@@ -1220,7 +1220,7 @@ setYear(2026);
 // crane), eases in and out, and lasts shotS seconds; into a close-up it cuts (a short dip to black), out of one it flies
 // (blendS). The labels settle to one faint opacity; the hero of a shot comes up. Any drag or scroll hands the camera
 // back. config.json time.cinema.
-const CINE = { shotS: 10, blendS: 3.5, heroes: 4, heroWithinM: 700, wideR: 1300, wideTilt: 46, labelOpacity: 0.3,
+const CINE = { shotS: 10, blendS: 3.5, heroes: 4, heroWithinM: 700, wideR: 1300, wideTilt: 46, labelOpacity: 0.6,
                heroNames: ["Angels Flight"], ...(cfg.time?.cinema || {}) };
 let cine = null;
 const cutEl = document.createElement("div"); cutEl.id = "cut"; document.body.append(cutEl);
@@ -1589,7 +1589,7 @@ function updateTimeTags() {
   if (on) for (const it of tlItems) {
     let p, a, txt = true;
     if (it.kind === "site") {   // Angels Knoll: always there, as quiet as a finished building
-      p = 1; a = TL.doneOpacity ?? 0.45; kept.push({ it, p, a, txt, rising: false }); continue;
+      p = 1; a = TL.doneOpacity ?? 0.7; kept.push({ it, p, a, txt, rising: false }); continue;
     } else if (it.kind === "unbuilt") {
       const sp = it.end - it.year + 1, up = Math.min(Bd, 0.6 * sp), dn = Math.min(1.5, 0.3 * sp);
       if (Y < it.year || Y >= it.year + sp) continue;
@@ -1600,7 +1600,7 @@ function updateTimeTags() {
       if (!ever && Y > it.year + TL.holdYears) continue;
       p = tlEase((Y - it.year + Bd) / Bd);
       const done = Y > it.year + TL.holdYears, fade = tlEase((Y - it.year) / (TL.fadeYears ?? 8));
-      a = Math.min(1, (Y - it.year + Bd) / 0.4) * (1 + ((TL.doneOpacity ?? 0.45) - 1) * fade);
+      a = Math.min(1, (Y - it.year + Bd) / 0.4) * (1 + ((TL.doneOpacity ?? 0.7) - 1) * fade);
       if (ever) { kept.push({ it, p, a, txt, rising: !done }); continue; }
     }
     live.push({ it, p, a, txt, rising: true });
@@ -1627,9 +1627,11 @@ function updateTimeTags() {
     const dist = camera.position.distanceTo(_tv.set(cx, (by0 + ty) / 2, cz));
     // four lines of sight (top, three quarters, middle, a quarter up), so a building half hidden gives a half, and the
     // share is eased (tag.seen) rather than flipping as a line grazes a corner (user, 2026-10-13: tags flickered)
+    // (user, 2026-10-13: from above the tags were nearly invisible) a building whose top can be seen counts as seen:
+    // lines to its lower parts cross the neighbours' boxes from above, though the roof is in plain view
     const hy = ty - by0;
-    const seen = (tlSees(cx, ty, cz, it.ent, Y) + tlSees(cx, by0 + 0.75 * hy, cz, it.ent, Y)
-                + tlSees(cx, by0 + 0.5 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.25 * hy, cz, it.ent, Y)) / 4;
+    const seen = tlSees(cx, ty, cz, it.ent, Y) ? 1
+      : (tlSees(cx, by0 + 0.75 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.5 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.25 * hy, cz, it.ent, Y)) / 4;
     const ref = camera.position.distanceTo(controls.target);
     let s = tlShown.get(it.key);
     if (!s) {
@@ -1645,7 +1647,8 @@ function updateTimeTags() {
     const ease = (tau) => 1 - Math.exp(-dt / tau);   // exponential easing, tau seconds
     s.seen += (seen - s.seen) * ease(0.35);
     a *= (TL.hiddenOpacity ?? 0.15) + (1 - (TL.hiddenOpacity ?? 0.15)) * s.seen;
-    a *= Math.min(1, Math.max(0.45, 1.25 - 0.25 * dist / ref));
+    a *= Math.min(1, Math.max(TL.farOpacity ?? 0.75, 1 - 0.5 * (dist / ref - 1.2)));   // only past 1.2 x the view's distance
+    a = Math.max(a, TL.minOpacity ?? 0.25);
     if (hero) a = Math.max(a, 0.6);
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
