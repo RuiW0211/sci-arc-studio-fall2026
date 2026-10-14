@@ -1092,15 +1092,23 @@ function setYear(y) {
   $("#timeCounts").textContent = `${k.toLocaleString()} of ${datedYears.length.toLocaleString()} dated buildings standing · ${undatedN} undated`;
   applyVisibility();
 }
-$("#timeOn").onchange = (e) => {
-  const on = e.target.checked;
-  $("#timeBox").hidden = !on;
+// History on / off. resume: where the History view was left ({ year } or { cine, at }), to go on from there
+function setHistory(on, resume) {
+  $("#timeOn").checked = on; $("#timeBox").hidden = !on;
   TIME.on.value = on ? 1 : 0;
   updateWhite();
   if (!on) { stopPlay(); setYear(2026); return; }
-  setYear(1867);   // (user, 2026-10-13) it starts in 1867 and plays, the camera slowly going round the site
+  if (resume?.cine) {   // the film was playing: it goes on, eased in from where the camera is now
+    setYear(2026);
+    cine = resume.cine; cine.t0 += performance.now() - resume.at; cine.pausedAt = 0;
+    if (cine.phase === "cut") cine.phase = "shot";
+    rejoin = { from: camPose(), t0: performance.now() }; controls.enableDamping = false; timeState();
+    return;
+  }
+  setYear(resume ? resume.year : 1867);   // (user, 2026-10-13) it starts in 1867 and plays, the camera going round
   startPlay(true);
-};
+}
+$("#timeOn").onchange = (e) => setHistory(e.target.checked);
 $("#timeRange").oninput = (e) => { stopPlay(); setYear(+e.target.value); };
 // the camera tour while it plays from 1867 (user, 2026-10-13): round the site and slowly out, so the whole of it comes
 // into view as it is built. From the current heading; config.json time.tour: turn (degrees), distance and tilt (degrees
@@ -1976,7 +1984,27 @@ wake();
 await setMode("cloud");
 // the opening (user, 2026-10-13): the viewer opens in the Time module, playing from 1867 with the camera tour;
 // ?time=0 or config.json time.opening false opens on today
-if (cfg.time?.opening !== false && urlq.get("time") !== "0") { $("#timeOn").checked = true; $("#timeOn").onchange({ target: $("#timeOn") }); }
+// History view / Free view (user, 2026-10-15): one switch at the top of the panel, the same model loaded once.
+// History: the opening and the film (and A Day after the first wide shot); Free: today's model, the camera yours.
+// Back to History, it goes on where it was left. ?time=0 or time.opening false opens in Free.
+let viewMode = "free", historyLeft = null;
+function setView(v) {
+  if (v === viewMode) return;
+  viewMode = v;
+  document.querySelectorAll("#viewMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === v));
+  document.body.classList.toggle("v-free", v === "free");
+  moveThumb(false, "#viewMode");
+  if (v === "free") {
+    historyLeft = $("#timeOn").checked ? { year: TIME.year.value, cine: cine && !cine.people ? cine : null, at: performance.now() } : null;
+    paused = false; setHistory(false);
+  } else setHistory(true, historyLeft);
+  invalidate();
+}
+document.querySelectorAll("#viewMode button").forEach((b) => (b.onclick = () => setView(b.dataset.v)));
+addEventListener("resize", () => moveThumb(true, "#viewMode"));
+setView(cfg.time?.opening !== false && urlq.get("time") !== "0" ? "history" : "free");
+if (viewMode === "free") { document.querySelectorAll("#viewMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === "free")); document.body.classList.add("v-free"); }
+moveThumb(true, "#viewMode");
 if (urlq.get("earth")) setEarthView(urlq.get("earth"));   // ?earth=<Google Earth URL>: the same camera here
 status("");
 let lodEasing = true;
