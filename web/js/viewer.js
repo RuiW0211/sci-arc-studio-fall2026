@@ -1188,13 +1188,18 @@ function openingPose(frac) {
       break;
     }
   }
-  return { ...P, th: tour.th + OPEN.turnDeg * D2R * frac };
+  return { ...P, th: tour.th + (tour.turn ?? OPEN.turnDeg * D2R) * frac };
 }
 function startTour(frac0 = 0) {
   const th = sphOf(camera.position, controls.target).th;
   if (OPEN.mode === "B") {   // fly to where the opening is at this year
     // eased in from wherever the camera is (the same easing as after a pause), while the years already run
-    buildOpening(); tour = { th, t: 0 }; rejoin = { from: camPose(), t0: performance.now() };
+    buildOpening();
+    // turning so that the opening ends on the film's first heading (time.cinema.shots[0].az), the same way round
+    const az0 = (CINE.shots || [])[0]?.az, fwd = (a, b) => (((b - a) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    let turn = OPEN.turnDeg * D2R;
+    if (az0 != null) { turn = fwd(th, az0 * D2R) / Math.max(1 - frac0, 0.1); if (turn < 90 * D2R) turn += 2 * Math.PI * (1 - frac0 > 0.1 ? 1 : 0); }
+    tour = { th: th - turn * frac0, t: 0, turn }; rejoin = { from: camPose(), t0: performance.now() };
     return;
   }
   const tgt = new THREE.Vector3().fromArray(TOUR.target);
@@ -1248,8 +1253,8 @@ function setPaused(on) {
   if (cine) {
     if (cine.pausedAt) { cine.t0 += now - cine.pausedAt; cine.pausedAt = 0; }
     if (cine.phase === "cut") cine.phase = "shot";
-    const P = cineNow(now), d = wrapA(U.th - P.th);
-    cine.th0 += d; if (cine.from) cine.from = { ...cine.from, th: cine.from.th + d };
+    // the film keeps its own headings (2026-10-15: each shot is framed from where its subject is clear); the rejoin
+    // eases the camera back to it
   } else if (tour) tour.th += wrapA(U.th - tourPose(tour.frac ?? 0).th);
   if (cine || tour) { rejoin = { from: U, t0: now }; controls.enableDamping = false; }
 }
@@ -1342,10 +1347,11 @@ function cineShots() {
   };
   const out = [];
   for (const def of CINE.shots || []) {
-    if (def.type === "wide") { out.push({ ...wide, s: def.s }); continue; }
+    const az = def.az == null ? null : def.az * D2R;   // the shot's heading at its start (0 = from the south, 90 = east)
+    if (def.type === "wide") { out.push({ ...wide, s: def.s, az }); continue; }
     const items = (def.members || []).map(find).filter(Boolean);
     if (!items.length) continue;
-    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s };
+    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az };
     if (def.type === "crane") out.push({ ...base, turn: 40, tilt: [28, 58], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(4 * g.ext, 600), Math.max(1.6 * g.ext, 240)] });
     else if (def.type === "low") out.push({ ...base, turn: 35, tilt: [92, 82], target: [g.cx, g.y0 + 0.6 * g.h, g.cz], r: [Math.max(1.9 * g.ext, 1.5 * g.h, 220), Math.max(1.25 * g.ext, 1.0 * g.h, 150)] });
     else if (def.type === "orbit") out.push({ ...base, turn: 45, tilt: [56, 48], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(2.4 * g.ext, 380), Math.max(1.9 * g.ext, 300)] });
@@ -1374,10 +1380,13 @@ function cineNow(now) {
   if (c.phase === "blend" && c.from) {
     // the flight between two shots: the heading keeps turning, its speed going evenly from the last shot's to the next
     // one's (th0 of the next shot was set so that they meet), the rest eases (quintic)
-    const T = CINE.blendS, tau = Math.min((now - c.t0) / 1000, T), k = tau / T, e = ease5(k);
+    // (2026-10-15: each shot has its own heading az) the heading goes forward from where the last shot ended to the next
+    // one's az, its position and speed both continuous at either end (cubic Hermite over c.blendT seconds)
+    const T = c.blendT ?? CINE.blendS, tau = Math.min((now - c.t0) / 1000, T), k = tau / T, e = ease5(k);
     const A = c.from, B = cinePose(sh, 0, c.th0, c.dir), w0 = c.wFrom ?? 0, w1 = shotW(sh, c.dir);
+    const s = k, h00 = 2 * s ** 3 - 3 * s * s + 1, h10 = s ** 3 - 2 * s * s + s, h01 = -2 * s ** 3 + 3 * s * s, h11 = s ** 3 - s * s;
     return { target: A.target.map((v, j) => v + (B.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e),
-             phi: A.phi + (B.phi - A.phi) * e, th: A.th + w0 * tau + ((w1 - w0) * tau * tau) / (2 * T), k };
+             phi: A.phi + (B.phi - A.phi) * e, th: h00 * A.th + h10 * T * w0 + h01 * c.th0 + h11 * T * w1, k };
   }
   const len = shotLen(sh) * 1000;
   return { ...cinePose(sh, Math.min((now - c.t0) / len, 1), c.th0, c.dir), k: (now - c.t0) / len };
@@ -1385,7 +1394,8 @@ function cineNow(now) {
 function startCine() {
   const shots = cineShots(); if (!shots.length) return;
   controls.enableDamping = false;
-  const th = sphOf(camera.position, controls.target).th;
+  let th = sphOf(camera.position, controls.target).th;
+  if (shots[0].az != null) th += wrapA(shots[0].az - th);   // the opening ends on it; a small step if it was left elsewhere
   cine = { shots, i: 0, phase: "shot", t0: performance.now(), th0: th, dir: 1, from: null, op0: performance.now() };
   timeState();
 }
@@ -1394,7 +1404,7 @@ function endCine() {
   cine = null; cutEl.classList.remove("on"); controls.enableDamping = true; invalidate();
   timeState();
 }
-function nextShot(now, P) {
+function nextShot(now, P) {   // now: the exact time the last shot ended
   const c = cine;
   const prev = c.shots[c.i], sh = c.shots[(c.i + 1) % c.shots.length];
   c.i = (c.i + 1) % c.shots.length;   // the same way round every time (it used to turn back at each shot)
@@ -1402,8 +1412,23 @@ function nextShot(now, P) {
     c.th0 = P.th; c.phase = "cut"; c.t0 = now; cutEl.classList.add("on");
   } else {
     c.wFrom = shotW(prev, c.dir);
-    c.th0 = P.th + ((c.wFrom + shotW(sh, c.dir)) / 2) * CINE.blendS;   // where the even change of speed lands
-    c.phase = "blend"; c.t0 = now; c.from = P;
+    const w1 = shotW(sh, c.dir), wm = (Math.abs(c.wFrom) + Math.abs(w1)) / 2 || 0.05;
+    // the flight's length: at least blendS, and long enough that the camera never goes faster than maxFlyMS on average
+    const B0 = cinePose(sh, 0, sh.az ?? P.th, c.dir), pos = (Q) => { _sph.set(Q.r, Q.phi, Q.th); return _off.setFromSpherical(_sph).clone().add(_tv.fromArray(Q.target)); };
+    const dist = pos(P).distanceTo(pos({ ...B0, th: P.th }));
+    let T = Math.min(Math.max(CINE.blendS, dist / (CINE.maxFlyMS ?? 150)), 12);
+    if (sh.az == null) c.th0 = P.th + ((c.wFrom + w1) / 2) * T;   // no heading of its own: where the even speed lands
+    else {
+      let d = ((sh.az - P.th) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);   // forward to its heading
+      if (d > 1.9 * Math.PI) d = 0;            // just past it: take it as reached
+      T = Math.min(Math.max(T, d / (1.6 * wm)), 12);   // a long turn is not hurried
+      // never slower than about half the shots' speed on the way (the Hermite's middle speed is 1.5 d / T - (w0 + w1) / 4):
+      // when its heading is too near, the shot starts a little past it (within ~10 degrees, still a clear view)
+      d = Math.max(d, 0.7 * wm * T);
+      c.th0 = P.th + d;
+    }
+    c.blendT = T; c.phase = "blend"; c.from = P;
+    c.t0 = now;
   }
 }
 // People comes on peopleDelayS into shot peopleAfter (user, 2026-10-15: 2 s into the first wide shot, once the camera
@@ -1424,10 +1449,17 @@ function stepCine(now) {
     if (now - c.t0 < 280) return;   // the screen is going dark
     c.phase = "shot"; c.t0 = now; cutEl.classList.remove("on"); rejoin = null;
   }
-  const P = cineNow(now);
+  let P = cineNow(now);
+  // a phase that ended during this frame hands over at its exact end time, and this frame already shows the next one
+  // (2026-10-15: the camera stood still for a frame at every change of shot)
+  if (c.phase === "blend" && P.k >= 1) {
+    const end = c.t0 + c.blendT * 1000; c.phase = "shot"; c.t0 = end; c.from = null; P = cineNow(now);   // the flight ended on th0
+  } else if (c.phase === "shot" && P.k >= 1) {
+    const end = c.t0 + shotLen(sh) * 1000, E = cinePose(sh, 1, c.th0, c.dir);
+    nextShot(end, E);
+    if (c.phase !== "cut") P = cineNow(now);
+  }
   cineApply(P);
-  if (c.phase === "blend") { if (P.k >= 1) { c.phase = "shot"; c.t0 = now; c.th0 = P.th; c.from = null; } return; }
-  if (P.k >= 1) nextShot(now, P);
 }
 function handBack() { endTour(); endCine(); }
 
@@ -2127,6 +2159,35 @@ const shotStudy = {
       const top = tlBlockers(cx, y1, cz, it.ent, 2026), mid = tlBlockers(cx, (y0 + y1) / 2, cz, it.ent, 2026);
       return { name: it.name, top, mid };
     });
+  },
+  // run the film on a fake clock (fps frames a second) from heading th, round once: heading, its speed, the camera's
+  // speed, and per shot the share of its members' tops and middles in clear view at the middle of the shot
+  simulate(th = 330 * D2R, fps = 30) {
+    endCine(); endTour();
+    const keep = CINE.thenPeople; CINE.thenPeople = false;
+    camApply({ target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R, th });
+    startCine();
+    let now = cine.t0, last = null, lastPos = null, lastI = 0; const rows = [], seen = {};
+    const n = cine.shots.length;
+    for (let f = 0; f < fps * 400; f++) {
+      now += 1000 / fps; stepCine(now);
+      const P = sphOf(camera.position, controls.target), pos = camera.position.clone();
+      const w = last == null ? 0 : wrapA(P.th - last) * fps / D2R, v = lastPos ? pos.distanceTo(lastPos) * fps : 0;
+      rows.push({ t: f / fps, i: cine.i, ph: cine.phase, w, v }); last = P.th; lastPos = pos;
+      const sh = cine.shots[cine.i], len = shotLen(sh) * 1000;
+      if (cine.phase === "shot" && !seen[cine.i] && now - cine.t0 > len / 2 && (sh.keys || []).length) {
+        let ok = 0, tot = 0;
+        for (const k of sh.keys) { const it = tlItems.find((q) => q.key === k), [x0, y0, z0, x1, y1, z1] = it.box, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+          tot += 2; if (!tlBlockers(cx, y1, cz, it.ent, 2026).length) ok++; if (!tlBlockers(cx, (y0 + y1) / 2, cz, it.ent, 2026).length) ok++; }
+        seen[cine.i] = +(ok / tot).toFixed(2);
+      }
+      if (lastI === n - 1 && cine.i === 0) break;
+      lastI = cine.i;
+    }
+    CINE.thenPeople = keep; endCine();
+    const ws = rows.slice(1).map((r) => r.w);
+    return { seconds: rows.length / fps, minTurnDegS: Math.min(...ws).toFixed(2), maxTurnDegS: Math.max(...ws).toFixed(2),
+             maxSpeedMS: Math.round(Math.max(...rows.map((r) => r.v))), seen, rows };
   },
   opening(i, th = 0.6) {
     const P = openAnchors[i].pose; endCine(); endTour(); camApply({ ...P, th }); invalidate();
