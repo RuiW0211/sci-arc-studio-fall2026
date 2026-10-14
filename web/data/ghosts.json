@@ -22,6 +22,22 @@
     "Floor plates are those of Level 6, kept for the whole height."
    ],
    "scale_m_per_pt": 0.27302,
+   "density": {
+    "roof_per_m2": 2.89,
+    "wall_per_m2": 0.96,
+    "towers": [
+     "Two California Plaza",
+     "One California Plaza",
+     "AT&T building (windowless, with antenna tower)",
+     "Wells Fargo Center - South Tower",
+     "Wells Fargo Center - North Tower",
+     "Park Fifth (apartments)",
+     "The Gas Company Tower",
+     "Perla on Broadway",
+     "400 S Hope St"
+    ],
+    "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest plus the estimated facade points"
+   },
    "towers": [
     {
      "id": "angels-landing-2021-a",

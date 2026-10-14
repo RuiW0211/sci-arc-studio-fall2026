@@ -143,8 +143,10 @@ try {
 } catch (e) { /* no list (or no designs yet) */ }
 
 // unbuilt schemes on Y-1 (user, 2026-10-13: research into the viewer): each tower as points scattered at random over its
-// walls and roof, one colour, as the estimated facades are (not coloured by use, no storey lines: user, 2026-10-13), over
-// the cloud like the designs; an invisible prism inside makes it clickable
+// walls and roof (not coloured by use, no drawn storey lines), as dense as the towers around it; the points join the
+// LiDAR when it loads (loadLidar), so they are drawn, thinned and highlighted as every building is. An invisible prism
+// per tower answers clicks in the mesh view.
+const ghostPts = [];   // { name, base, pos: three.js order }
 try {
   const G = cfg.ghosts, gd = await (await fetch(G.data)).json();
   let seed = G.seed ?? 11;
@@ -159,9 +161,10 @@ try {
       const per = (b.z[1] - b.z[0]) / Math.max(1, b.levels[1] - b.levels[0] + 1);
       for (let z = b.z[0]; z < b.z[1] - 0.01; z += per) floors.push(z);
     }
-    for (let i = 0; i < ring.length; i++) {                      // walls: densityPerM2 at random
+    const D = sc.density;
+    for (let i = 0; i < ring.length; i++) {                      // walls, at random
       const [ax, an] = ring[i], [bx, bn] = ring[(i + 1) % ring.length], L = Math.hypot(bx - ax, bn - an);
-      for (let k = Math.round(G.densityPerM2 * L * H); k > 0; k--) {
+      for (let k = Math.round(D.wall_per_m2 * L * H); k > 0; k--) {
         const s = rnd();
         const z = rnd() < G.inBands ? floors[Math.floor(rnd() * floors.length)] + (rnd() - 0.5) * G.bandM : t.base_z + rnd() * H;
         pos.push(ax + (bx - ax) * s, z, -(an + (bn - an) * s));
@@ -171,20 +174,11 @@ try {
     for (const [x, n] of ring) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minN = Math.min(minN, n); maxN = Math.max(maxN, n); }
     const inside = (x, n) => { let c = false; for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
       if ((ring[a][1] > n) !== (ring[b][1] > n) && x < ((ring[b][0] - ring[a][0]) * (n - ring[a][1])) / (ring[b][1] - ring[a][1]) + ring[a][0]) c = !c; } return c; };
-    for (let k = Math.round(G.densityPerM2 * t.area_m2); k > 0;) {   // roof: the same density
+    for (let k = Math.round(D.roof_per_m2 * t.area_m2); k > 0;) {   // roof
       const x = minX + rnd() * (maxX - minX), n = minN + rnd() * (maxN - minN);
       if (inside(x, n)) { pos.push(x, t.top_z, -n); k--; }
     }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-    const gm = new THREE.PointsMaterial({ size: G.pointSize, color: G.color, sizeAttenuation: true,
-      transparent: true, opacity: G.opacity, depthWrite: false });
-    gm.onBeforeCompile = (shader) => {   // round, never under 1 px, as the LiDAR points (pointMaterial)
-      shader.vertexShader = shader.vertexShader.replace("#include <fog_vertex>", "gl_PointSize = max(gl_PointSize, 1.0);\n#include <fog_vertex>");
-      shader.fragmentShader = shader.fragmentShader.replace("#include <clipping_planes_fragment>",
-        "if (length(gl_PointCoord - vec2(0.5)) > 0.5) discard;\n#include <clipping_planes_fragment>");
-    };
-    const pts = new THREE.Points(g, gm);
+    ghostPts.push({ name: t.name, base: t.base_z, pos: new Float32Array(pos) });
     const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
     const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }));
@@ -192,7 +186,7 @@ try {
     const grp = new THREE.Group();
     grp.name = t.name;
     grp.userData = { layer: "Unbuilt", ghost: { scheme: sc, tower: t } };
-    grp.add(pts, prism);
+    grp.add(prism);
     model.add(grp);
   }
 } catch (e) { /* no ghosts file */ }
@@ -386,6 +380,23 @@ async function loadLidar() {
     });
     P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
     facadeData = null;   // memory
+  }
+  // the unbuilt towers' points join as objects of their own (layer Unbuilt), named as their towers
+  if (ghostPts.length) {
+    const m = ghostPts.reduce((a, g) => a + g.pos.length / 3, 0), N2 = n + m;
+    const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2);
+    const H2 = HG ? new HG.constructor(N2) : null;
+    P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
+    let i = n;
+    for (const g of ghostPts) {
+      const o = objNames.length; objNames.push(g.name); objLayers.push("Unbuilt");
+      for (let j = 0; j < g.pos.length; j += 3, i++) {
+        P2[3 * i] = g.pos[j]; P2[3 * i + 1] = g.pos[j + 1]; P2[3 * i + 2] = g.pos[j + 2];
+        C2[i] = 6; O2[i] = o; I2[i] = 128; if (H2) H2[i] = Math.round((g.pos[j + 1] - g.base) * 10);
+      }
+    }
+    P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
+    ghostPts.length = 0;   // memory
   }
   // config.json claims: a landmark takes the points of other objects right next to its own (user, 2026-10-10: part of
   // the Angels Flight upper station lies inside the Two California Plaza outline and was drawn as the tower). A point of
@@ -971,8 +982,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   const add = e.shiftKey;     // shift + click: add to / take out of the selection
   const layerOf = (o) => { for (; o; o = o.parent) if (o.userData.layer) return o.userData.layer; };
   // over the point cloud only the design meshes are clickable (they are drawn on top of it)
-  const hit = ray.intersectObject(model, true).find((h) => visible(h.object) && (mode !== "cloud" || designLayers.has(layerOf(h.object))
-    || layers.get(layerOf(h.object))?.cfg.overlay));
+  const hit = ray.intersectObject(model, true).find((h) => visible(h.object) && (mode !== "cloud" || designLayers.has(layerOf(h.object))));
   if (mode === "cloud" && !hit) return pickLidar();
   if (!hit) return add ? undefined : hideInfo();
   let node = hit.object;
@@ -999,6 +1009,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
                                                   userData: { layer: lidar.objLayers[id] } };
     // layers with "highlight": false in config.json (e.g. Terrain) show their info but are not lit
     const lit = name !== "_other" && cfg.layers[lidar.objLayers[id]]?.highlight !== false;
+    if (node.userData?.ghost) return select(`o:${id}`, anchorOf(new Set([id])) || pointAnchor(hit.point), ghostTag(node.userData.ghost), [id], add);
     const ent = lidar.objEntity[id];
     if (ent >= 0) {
       const objs = lidar.entityObjs.get(ent);

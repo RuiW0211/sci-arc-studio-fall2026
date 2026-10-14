@@ -21,6 +21,9 @@ public document; not kept in the repository for its size, 30 MB). What is read f
     ft; EIR about 285 and 355 ft).
   * uses: Figure II-4's floor bands. ASSUMED: floors are spread evenly between Level 6 (376 ft) and the parapet; the
     figure gives floor-to-floor heights for some bands only.
+  * point density (user, 2026-10-13: the ghosts' points as dense as the buildings around them): the median points per m2
+    of roof and of wall of the towers over 80 m within 300 m of Y-1, in the web point cloud (web/data/lidar_points.laz)
+    plus the estimated facade points, measured on their prisms in site-model/houdini/handoff/buildings.json.
 
 Frame of the output: local metres, x east, y north (from E 384580 / N 3768520), z NAVD88 metres, as the LiDAR.
 """
@@ -97,6 +100,43 @@ def to_site(plan):
     return rings, s
 
 
+def site_density():
+    """Median points per m2 of roof and of wall of the towers near Y-1, as the viewer draws them."""
+    import laspy
+    import numpy as np
+    from shapely import contains_xy
+    las = laspy.read(ROOT / "web/data/lidar_points.laz")
+    meta = json.loads((ROOT / "web/data/lidar_points.json").read_text(encoding="utf-8"))
+    x, y, z, ob = np.asarray(las.x), np.asarray(las.y), np.asarray(las.z), np.asarray(las["object"])
+    idx = {n: i for i, n in enumerate(meta["attributes"]["object"]["names"])}
+    est = {b["id"]: b["estimated"] for b in json.loads((ROOT / "web/data/facades_estimated.json").read_text(encoding="utf-8"))["buildings"]}
+    roofs, walls, used = [], [], []
+    for b in json.loads((ROOT / "site-model/houdini/handoff/buildings.json").read_text(encoding="utf-8"))["buildings"]:
+        parts = [idx[p] for p in b["parts"] if p in idx]
+        if b.get("height_m", 0) < 80 or not parts:
+            continue
+        m = np.isin(ob, parts)
+        px, py, pz = x[m], y[m], z[m]
+        if math.hypot(px.mean(), py.mean()) > 300:
+            continue
+        wall = roof = 0.0
+        on_roof = 0
+        for t in b["tiers"]:
+            pg = Polygon(t["outer"])
+            if pg.area < 50:
+                continue
+            wall += pg.length * (t["top"] - t["base"])
+            roof += pg.area
+            on_roof += int(np.sum(contains_xy(pg, px, py) & (np.abs(pz - t["top"]) < 1.5)))
+        if roof and wall:
+            roofs.append(on_roof / roof)
+            walls.append((m.sum() - on_roof + est.get(b["id"], 0)) / wall)
+            used.append(b["name"])
+    return {"roof_per_m2": round(float(np.median(roofs)), 2), "wall_per_m2": round(float(np.median(walls)), 2),
+            "towers": used, "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest "
+                                    "plus the estimated facade points"}
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
@@ -125,6 +165,7 @@ def main():
                             "Floors are spread evenly between Level 6 (376 ft) and the parapet.",
                             "Floor plates are those of Level 6, kept for the whole height."],
             "scale_m_per_pt": round(s, 5),
+            "density": site_density(),
             "towers": towers,
         }],
     }
