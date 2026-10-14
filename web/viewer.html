@@ -292,6 +292,15 @@
       <div id="layers"></div>
     </details>
     <!-- modeled population (js/population.js, after Clark Amenudo's layer): one point per person over a typical day -->
+    <details class="sec" id="timeSec" open><summary>History</summary>
+      <label class="layer" title="The site through the years: buildings by the year they were built, and the schemes never built on Y-1"><input type="checkbox" id="timeOn"><i class="sw" style="--c:#B5CDEA"></i><span class="nm">Since 1867</span></label>
+      <div id="timeBox" hidden>
+        <div class="clock"><span id="timeYear">2026</span><span id="timePlay" class="tstate">Space to play</span></div>
+        <input id="timeRange" type="range" min="1867" max="2026" step="0.1" value="2026" aria-label="Year">
+        <div id="timeCounts"></div>
+        <label class="layer" title="The frames and names on the buildings"><input type="checkbox" id="timeTags" checked><i class="sw" style="--c:#FFFFFF"></i><span class="nm">Tags</span><span class="n">names, years</span></label>
+      </div>
+    </details>
     <details class="sec" id="popSec" open><summary>Population</summary>
       <label class="layer" title="A modeled typical day: one point per person, from Census, survey and Assessor data"><input type="checkbox" id="popOn"><i class="sw" style="--c:#FFD166"></i><span class="nm">People</span> <span class="n" title="A modeled typical day, one point per person. Every person within 250 m of Y-1; farther out fewer and fainter, like the point cloud. The counts include everyone.">modeled typical day</span></label>
       <div id="popBox" hidden>
@@ -300,15 +309,6 @@
         <input id="popTime" type="range" min="0" max="86399" step="60" aria-label="Time of day">
         <canvas id="popChart" aria-label="People on site over 24 hours"></canvas>
         <div id="popCounts"></div>
-      </div>
-    </details>
-    <details class="sec" id="timeSec" open><summary>History</summary>
-      <label class="layer" title="The site through the years: buildings by the year they were built, and the schemes never built on Y-1"><input type="checkbox" id="timeOn"><i class="sw" style="--c:#B5CDEA"></i><span class="nm">Since 1867</span></label>
-      <div id="timeBox" hidden>
-        <div class="clock"><span id="timeYear">2026</span><span id="timePlay" class="tstate">Space to play</span></div>
-        <input id="timeRange" type="range" min="1867" max="2026" step="0.1" value="2026" aria-label="Year">
-        <div id="timeCounts"></div>
-        <label class="layer" title="The frames and names on the buildings"><input type="checkbox" id="timeTags" checked><i class="sw" style="--c:#FFFFFF"></i><span class="nm">Tags</span><span class="n">names, years</span></label>
       </div>
     </details>
     <details class="sec" open><summary>Views</summary>
