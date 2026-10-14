@@ -133,9 +133,7 @@ def site_density():
             roofs.append(on_roof / roof)
             walls.append((m.sum() - on_roof + est.get(b["id"], 0)) / wall)
             used.append(b["name"])
-    # walls: the same density as the estimated facades of the real buildings (synth_facades.py DENSITY, user 2026-10-15:
-    # 0.75, the median of the wall cells the LiDAR saw), so built and unbuilt towers read alike; the measured median is kept
-    return {"roof_per_m2": round(float(np.median(roofs)), 2), "wall_per_m2": 0.75, "wall_measured_median": round(float(np.median(walls)), 2),
+    return {"roof_per_m2": round(float(np.median(roofs)), 2), "wall_per_m2": round(float(np.median(walls)), 2),
             "towers": used, "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest "
                                     "plus the estimated facade points"}
 

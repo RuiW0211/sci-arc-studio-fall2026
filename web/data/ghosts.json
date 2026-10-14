@@ -175,7 +175,7 @@
    ],
    "density": {
     "roof_per_m2": 2.89,
-    "wall_per_m2": 0.75,
+    "wall_per_m2": 0.96,
     "towers": [
      "Two California Plaza",
      "One California Plaza",
@@ -187,7 +187,7 @@
      "Perla on Broadway",
      "400 S Hope St"
     ],
-    "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest plus the estimated facade points | wall set to 0.75 points/m2 (2026-10-15), the same as the estimated facades (synth_facades.py DENSITY): the median of the wall cells the LiDAR saw within 250 m of Y-1"
+    "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest plus the estimated facade points"
    }
   },
   {
@@ -212,7 +212,7 @@
    "scale_m_per_pt": 0.27302,
    "density": {
     "roof_per_m2": 2.89,
-    "wall_per_m2": 0.75,
+    "wall_per_m2": 0.96,
     "towers": [
      "Two California Plaza",
      "One California Plaza",
@@ -224,7 +224,7 @@
      "Perla on Broadway",
      "400 S Hope St"
     ],
-    "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest plus the estimated facade points | wall set to 0.75 points/m2 (2026-10-15), the same as the estimated facades (synth_facades.py DENSITY): the median of the wall cells the LiDAR saw within 250 m of Y-1"
+    "note": "medians over these towers; roof = returns within 1.5 m of a tier top, wall = the rest plus the estimated facade points"
    },
    "towers": [
     {
