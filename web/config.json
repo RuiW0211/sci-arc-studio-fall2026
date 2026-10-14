@@ -3,9 +3,11 @@
   "designs": "assets/models.json",
   "ghosts": {
     "data": "data/ghosts.json",
-    "_comment": "Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: each tower drawn as points scattered at random over its walls and roof, one colour, like the estimated facades (user, 2026-10-13: not coloured, not storey lines). densityPerM2: points per m2 of wall (the estimated facades use 0.3); opacity and pointSize (m) of the points; seed: the same scatter every time.",
+    "_comment": "Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: each tower drawn as points scattered at random over its walls and roof, one colour, like the estimated facades (user, 2026-10-13: not coloured, not storey lines). densityPerM2: points per m2 of wall (the estimated facades use 0.3); inBands of them within bandM of a floor line, the rest anywhere on the wall (as the estimated facades: 0.8, 0.25 m), so the storeys show as on the measured towers; opacity and pointSize (m) of the points; seed: the same scatter every time.",
     "color": "#D7DEE8",
     "densityPerM2": 1.2,
+    "inBands": 0.8,
+    "bandM": 0.25,
     "opacity": 0.75,
     "pointSize": 0.7,
     "seed": 11

@@ -152,10 +152,18 @@ try {
   for (const sc of gd.schemes) for (const t of sc.towers) {
     const ring = t.ring;   // [x east, y north], metres
     const pos = [], H = t.top_z - t.base_z;
-    for (let i = 0; i < ring.length; i++) {                      // walls: uniform at random, densityPerM2
+    // the floor lines of every band: most points gather on them, as on the walls the LiDAR saw and on the estimated
+    // facades (synth_facades.py: inBands of the points within bandM of a floor line), so the storeys show without drawn lines
+    const floors = [];
+    for (const b of t.bands) {
+      const per = (b.z[1] - b.z[0]) / Math.max(1, b.levels[1] - b.levels[0] + 1);
+      for (let z = b.z[0]; z < b.z[1] - 0.01; z += per) floors.push(z);
+    }
+    for (let i = 0; i < ring.length; i++) {                      // walls: densityPerM2 at random
       const [ax, an] = ring[i], [bx, bn] = ring[(i + 1) % ring.length], L = Math.hypot(bx - ax, bn - an);
       for (let k = Math.round(G.densityPerM2 * L * H); k > 0; k--) {
-        const s = rnd(), z = t.base_z + rnd() * H;
+        const s = rnd();
+        const z = rnd() < G.inBands ? floors[Math.floor(rnd() * floors.length)] + (rnd() - 0.5) * G.bandM : t.base_z + rnd() * H;
         pos.push(ax + (bx - ax) * s, z, -(an + (bn - an) * s));
       }
     }
