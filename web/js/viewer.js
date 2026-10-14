@@ -1613,6 +1613,14 @@ function updateTimeTags() {
     setTimeout(() => s.el.remove(), 450);
   }
   const placed = [], ui = $("#ui").getBoundingClientRect();
+  // the left panel, while it shows (it fades out when idle): a tag under it fades as one behind a building, and no text
+  // goes under it (user, 2026-10-13: tags showed through the frosted panel)
+  const uiOn = ui.width > 0 && !document.body.classList.contains("idle");
+  const underUi = (x0, y0, x1, y1) => {
+    if (!uiOn) return 0;
+    const w = Math.max(0, Math.min(x1, ui.right) - Math.max(x0, ui.left)), h = Math.max(0, Math.min(y1, ui.bottom) - Math.max(y0, ui.top));
+    return (w * h) / Math.max((x1 - x0) * (y1 - y0), 1);
+  };
   // texts placed in order of importance: going up and unbuilt first, then the tallest; a text with no free place hides
   const rank = (l) => (cine && l.it.key === cine.shots[cine.i].key ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
   const now = performance.now(), dt = Math.min((now - (tlLast || now)) / 1000, 0.1); tlLast = now;
@@ -1661,6 +1669,7 @@ function updateTimeTags() {
     // out of view: it fades out where it is (no display: none, which made it blink and replay its lock-on)
     const off = behind || sx1 < 0 || sx0 > W || sy1 < 0 || sy0 > H;
     if (off) a = 0;
+    else if (!hero) a *= 1 - (1 - (TL.hiddenOpacity ?? 0.15)) * underUi(Math.max(sx0, 0), Math.max(sy0, 0), Math.min(sx1, W), Math.min(sy1, H));
     s.op = s.op === undefined ? a : s.op + (a - s.op) * ease(0.3);
     if (Math.abs(a - s.op) > 0.004) invalidate();
     s.el.style.opacity = s.op.toFixed(3);
@@ -1675,7 +1684,7 @@ function updateTimeTags() {
     if (!txt) { r.classList.add("hid"); continue; }
     if (!s.rw) { s.rw = r.offsetWidth; s.rh = r.offsetHeight; }   // measured once (its text does not change)
     const rw = s.rw, rh = s.rh, pref = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
-    const free = (rx, ay) => rx > 4 && rx + rw < W - 4 && !placed.some((q) => rx < q.x + q.w + 4 && rx + rw + 4 > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y);
+    const free = (rx, ay) => rx > 4 && rx + rw < W - 4 && !underUi(rx, ay, rx + rw, ay + rh) && !placed.some((q) => rx < q.x + q.w + 4 && rx + rw + 4 > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y);
     let spot = null;
     const tries = [[pref, 0], [pref, rh + 4], [pref, -(rh + 4)], [!pref, 0], [!pref, rh + 4], [!pref, -(rh + 4)]];
     if (s.spot) tries.unshift([s.spot.left, s.spot.ry]);   // where it was, first
@@ -1817,12 +1826,13 @@ addEventListener("keydown", (e) => { if (e.key === "Escape" && !typing()) clearS
 const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") && document.activeElement.type !== "range";
 function wake(ms = IDLE_MS) {
   if (typeof ms !== "number") ms = IDLE_MS;    // called as an event listener
+  if (document.body.classList.contains("idle")) invalidate();   // the Time tags under the panel fade again
   document.body.classList.remove("idle");
   if (typeof wakeTags === "function") wakeTags();
   clearTimeout(idleTimer);
   idleTimer = setTimeout(function sleep() {
     if (overPanel() || typing()) { idleTimer = setTimeout(sleep, 1000); return; }
-    document.body.classList.add("idle");
+    document.body.classList.add("idle"); invalidate();   // the Time tags under the panel come back
   }, ms);
 }
 for (const ev of ["pointermove", "pointerdown", "wheel", "keydown", "touchstart", "focusin"]) addEventListener(ev, wake, { passive: true });
