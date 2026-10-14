@@ -32,7 +32,7 @@
     },
     "labels": {
       "_comment": "Labels on the buildings going up (blob-tracking frames): at most max new ones at once, the tallest first, for named buildings and landmarks (namedOnly) at least minHeightM tall; only the film's buildings (members of time.cinema.shots) keep their tag once built, fading over fadeYears to doneOpacity; the others fade out over fadeOutYears after holdYears; behind another building (its top hidden) it fades to hiddenOpacity, far ones (past 1.2 x the view distance) to farOpacity, never below minOpacity; a text with no free place hides; one that could not get a label is still eligible holdYears after completion; unbuilt towers always.",
-      "max": 6,
+      "max": 8,
       "doneOpacity": 0.7,
       "namedOnly": true,
       "fadeYears": 8,

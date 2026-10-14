@@ -1721,7 +1721,7 @@ function updateTags() {
 // the hero of a shot comes up (user, 2026-10-13). A text with no free place hides (it keeps its place while it can,
 // so labels do not hop about). No connecting curves. At most
 // time.labels.max new ones going up at once, the tallest first; unbuilt towers always. Screen space, after every render.
-const TL = { max: 6, holdYears: 2, minHeightM: 25, noHeight: ["Angels Flight"], ...(cfg.time?.labels || {}) };
+const TL = { max: 8, holdYears: 2, minHeightM: 25, noHeight: ["Angels Flight"], ...(cfg.time?.labels || {}) };
 const tlLayer = document.createElement("div"); tlLayer.id = "tlabels"; document.body.append(tlLayer);
 let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1, z1], h, ent }
 let tlOcc = [];       // every building's box, for the labels' line of sight: { box, year (0 = undated), ent }
