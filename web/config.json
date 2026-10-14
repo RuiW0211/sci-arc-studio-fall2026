@@ -31,7 +31,7 @@
       "minHeightM": 25
     },
     "cinema": {
-      "_comment": "After the opening, if the camera was not touched: a loop of shots (wide orbit, cut to a hero tower filmed low and close, fly back out, Angels Flight and the other heroNames close up, a low pass over Angels Knoll, crane down onto Y-1 ...). shotS / blendS seconds; heroes = the tallest labelled towers within heroWithinM of Y-1; labelOpacity = every label while filming (the hero full). on false = stop at the end.",
+      "_comment": "After the opening: the film, shots in order (type wide / crane / low / orbit / track; members = entity names or Angels Knoll, their tags lit; cut = dip to black in, else fly; s = seconds). Groups of places near each other: Y-1 (Angels Knoll, Angels Flight, the Metro), California Plaza and MOCA, Grand Avenue, Civic Center, Broadway, the west towers. thenPeople: after one round, Time off and People on, the camera circling. shotS / blendS seconds; heroes = the tallest labelled towers within heroWithinM of Y-1; labelOpacity = every label while filming (the hero full). on false = stop at the end.",
       "on": true,
       "shotS": 10,
       "blendS": 3.5,
@@ -40,7 +40,20 @@
       "wideR": 1300,
       "wideTilt": 46,
       "labelOpacity": 0.6,
-      "heroNames": ["Angels Flight"]
+      "thenPeople": true,
+      "shots": [
+        { "type": "wide" },
+        { "type": "crane", "members": ["Angels Knoll", "Angels Flight", "Pershing Square Station entrance (4th & Hill, Metro)"] },
+        { "type": "track", "from": "Pershing Square Station entrance (4th & Hill, Metro)", "to": "Angels Flight",
+          "members": ["Angels Knoll", "Angels Flight", "Pershing Square Station entrance (4th & Hill, Metro)", "Pershing Square Station building (Metro, NE corner of 4th & Hill)"] },
+        { "type": "low", "members": ["One California Plaza", "Two California Plaza", "Omni Los Angeles Hotel at California Plaza", "The Museum of Contemporary Art (MOCA Grand Avenue)", "Angelus Plaza"] },
+        { "type": "orbit", "members": ["The Broad", "Colburn School", "The Grand LA", "Walt Disney Concert Hall"] },
+        { "type": "orbit", "members": ["The Music Center (Dorothy Chandler Pavilion, Ahmanson Theatre, Mark Taper Forum)", "Cathedral of Our Lady of the Angels", "Los Angeles City Hall"] },
+        { "type": "wide" },
+        { "type": "track", "cut": true, "from": "Grand Central Market", "to": "Million Dollar Theater building (3rd & Broadway)", "members": ["Grand Central Market", "Million Dollar Theater building (3rd & Broadway)"] },
+        { "type": "low", "members": ["U.S. Bank Tower", "Wells Fargo Center - South Tower", "Wells Fargo Center - North Tower"] },
+        { "type": "wide" }
+      ]
     },
     "tour": {
       "_comment": "The camera while it plays from 1867 (the viewer's opening; opening false = start on today): it ends far out, on the whole site. turnDeg round the site, distance r0 -> r1 (m) and tilt0 -> tilt1 (degrees from straight down), about target.",

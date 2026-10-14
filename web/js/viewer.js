@@ -1164,10 +1164,10 @@ function setPaused(on) {
 addEventListener("keydown", (e) => {
   // typing in a text field: not ours; a focused checkbox or button (Through time, Play) would take the Space itself
   const t = document.activeElement, texty = t?.tagName === "TEXTAREA" || t?.tagName === "SELECT" || (t?.tagName === "INPUT" && !/^(checkbox|range|button|radio)$/.test(t.type));
-  if (e.code !== "Space" || texty || !$("#timeOn").checked) return;
+  if (e.code !== "Space" || texty || !($("#timeOn").checked || cine)) return;
   t?.blur?.();
   e.preventDefault();   // not a click on the focused checkbox, not a page scroll
-  if (playing || cine) setPaused(!paused); else startPlay(false);   // stopped (the slider was moved, or the end): play
+  if (playing || cine) setPaused(!paused); else if ($("#timeOn").checked) startPlay(false);   // stopped (the slider was moved, or the end): play
 });
 // a drag or scroll while the camera plays pauses it (user, 2026-10-13: it used to hand the camera back for good and the
 // orbit never came back): a look around, after which it goes on by itself (autoResumeS) or with Space
@@ -1230,34 +1230,38 @@ let cine = null;
 const cutEl = document.createElement("div"); cutEl.id = "cut"; document.body.append(cutEl);
 const D2R = Math.PI / 180;
 function cineShots() {
-  const near = (it) => Math.hypot((it.box[0] + it.box[3]) / 2, (it.box[2] + it.box[5]) / 2) < CINE.heroWithinM;
-  const heroes = (tlItems || []).filter((it) => it.kind === "built" && near(it)).sort((u, v) => v.h - u.h).slice(0, CINE.heroes);
-  const wide = { target: TOUR.target, r: [CINE.wideR, CINE.wideR * 0.9], tilt: [CINE.wideTilt, CINE.wideTilt + 4], turn: 25 };
-  const y1 = { target: TOUR.target, r: [900, 380], tilt: [26, 58], turn: 40 };   // crane down onto Y-1
-  // a hero: the camera a little below 70 % of its height (looking up), close, rising and arcing round it
-  const hero = (it) => ({ key: it.key, cut: true, turn: 35, tilt: [93, 83],
-    target: [(it.box[0] + it.box[3]) / 2, it.box[1] + 0.7 * it.h, (it.box[2] + it.box[5]) / 2],
-    r: [Math.max(2.4 * it.h, 220), Math.max(1.5 * it.h, 150)] });
-  // the named heroes (Angels Flight): close and low, whatever their height; Angels Knoll: a low pass over the parcel
-  const named = (CINE.heroNames || []).map((n) => (tlItems || []).find((it) => it.name.toLowerCase() === n.toLowerCase())).filter(Boolean);
-  const small = (it) => ({ key: it.key, cut: true, turn: 40, tilt: [82, 72],
-    target: [(it.box[0] + it.box[3]) / 2, it.box[1] + 0.5 * it.h, (it.box[2] + it.box[5]) / 2],
-    r: [Math.max(3 * it.h, 110), Math.max(2 * it.h, 75)] });
-  const site = (tlItems || []).find((it) => it.kind === "site");
-  const knoll = site && { key: site.key, turn: 50, tilt: [70, 63],
-    target: [(site.box[0] + site.box[3]) / 2, site.box[1] + 0.6 * site.h, (site.box[2] + site.box[5]) / 2], r: [300, 190] };
-  // wide, tower, wide, Angels Flight, Angels Knoll, tower, crane onto Y-1, tower, wide, tower, crane ...
-  const s = [wide];
-  heroes.forEach((it, k) => {
-    s.push(hero(it));
-    if (k === 0 && named.length) { s.push(wide); for (const n of named) s.push(small(n)); if (knoll) s.push(knoll); }
-    else s.push(k % 2 ? y1 : wide);
-  });
-  return s;
+  // the film by groups of places near each other (user, 2026-10-13), config.json time.cinema.shots in order: each shot
+  // frames the box round its members (entity names, or "Angels Knoll" for the parcel) and lights their tags.
+  // type: wide (the whole site, high), crane (down onto the group), low (at about the middle of its height, looking a
+  // little up, arcing round), orbit (an oblique arc over a spread-out group), track (the view moves from one member to
+  // another, low). cut: a dip to black into the shot (otherwise the camera flies there).
+  const wide = { target: TOUR.target, r: [CINE.wideR, CINE.wideR * 0.9], tilt: [CINE.wideTilt, CINE.wideTilt + 4], turn: 25, keys: [] };
+  const find = (n) => (tlItems || []).find((it) => it.name.toLowerCase() === n.toLowerCase());
+  const boxOf = (items) => {
+    const b = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9];
+    for (const it of items) for (let j = 0; j < 3; j++) { b[j] = Math.min(b[j], it.box[j]); b[j + 3] = Math.max(b[j + 3], it.box[j + 3]); }
+    return { cx: (b[0] + b[3]) / 2, cz: (b[2] + b[5]) / 2, y0: b[1], h: b[4] - b[1], ext: Math.max(b[3] - b[0], b[5] - b[2], 40) };
+  };
+  const out = [];
+  for (const def of CINE.shots || []) {
+    if (def.type === "wide") { out.push({ ...wide, s: def.s }); continue; }
+    const items = (def.members || []).map(find).filter(Boolean);
+    if (!items.length) continue;
+    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s };
+    if (def.type === "crane") out.push({ ...base, turn: 40, tilt: [28, 58], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(4 * g.ext, 600), Math.max(1.6 * g.ext, 240)] });
+    else if (def.type === "low") out.push({ ...base, turn: 35, tilt: [92, 82], target: [g.cx, g.y0 + 0.6 * g.h, g.cz], r: [Math.max(1.9 * g.ext, 1.5 * g.h, 220), Math.max(1.25 * g.ext, 1.0 * g.h, 150)] });
+    else if (def.type === "orbit") out.push({ ...base, turn: 45, tilt: [56, 48], target: [g.cx, g.y0 + 0.3 * g.h, g.cz], r: [Math.max(2.4 * g.ext, 380), Math.max(1.9 * g.ext, 300)] });
+    else if (def.type === "track") {
+      const A = find(def.from) ? boxOf([find(def.from)]) : g, B = find(def.to) ? boxOf([find(def.to)]) : g;
+      out.push({ ...base, turn: 20, tilt: [80, 72], target: [A.cx, A.y0 + 12, A.cz], target1: [B.cx, B.y0 + 0.5 * B.h, B.cz], r: [160, 120] });
+    }
+  }
+  return out.length ? out : [wide];
 }
 function cinePose(sh, t, th0, dir) {
   const e = tlEase(t), m = 0.5 * t + 0.5 * e;   // the arc keeps moving; distance and tilt ease
-  return { target: sh.target, r: Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e),
+  const target = sh.target1 ? sh.target.map((v, j) => v + (sh.target1[j] - v) * e) : sh.target;
+  return { target, r: Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e),
            phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + dir * sh.turn * D2R * m };
 }
 const cineApply = (P) => camApply(P);
@@ -1270,7 +1274,8 @@ function cineNow(now) {
     return { target: A.target.map((v, j) => v + (B.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e),
              phi: A.phi + (B.phi - A.phi) * e, th: A.th + wrapA(B.th - A.th) * e, k };
   }
-  return { ...cinePose(sh, Math.min((now - c.t0) / (CINE.shotS * 1000), 1), c.th0, c.dir), k: (now - c.t0) / (CINE.shotS * 1000) };
+  const len = (sh.s ?? CINE.shotS) * 1000;
+  return { ...cinePose(sh, Math.min((now - c.t0) / len, 1), c.th0, c.dir), k: (now - c.t0) / len };
 }
 function startCine() {
   const shots = cineShots(); if (!shots.length) return;
@@ -1285,7 +1290,10 @@ function endCine() {
   timeState();
 }
 function nextShot(now, P) {
-  const c = cine, sh = c.shots[(c.i + 1) % c.shots.length];
+  const c = cine;
+  // the film has been round once (user, 2026-10-13): the Population module takes over, the camera circling high
+  if (c.i + 1 >= c.shots.length && CINE.thenPeople !== false && !c.people) return toPeople();
+  const sh = c.shots[(c.i + 1) % c.shots.length];
   c.i = (c.i + 1) % c.shots.length; c.dir = -c.dir; c.th0 = P.th;
   if (sh.cut) {   // dip to black, jump, come up on the new shot
     c.phase = "cut"; c.t0 = now; cutEl.classList.add("on");
@@ -1304,6 +1312,16 @@ function stepCine(now) {
   if (P.k >= 1) nextShot(now, P);
 }
 function handBack() { endTour(); endCine(); }
+// leave the Time module (today's model, in colour) and turn People on; the camera goes on circling the whole site
+function toPeople() {
+  const th = sphOf(camera.position, controls.target).th;
+  $("#timeOn").checked = false; $("#timeOn").onchange({ target: $("#timeOn") });   // ends the film
+  if (!$("#popOn").checked) { $("#popOn").checked = true; $("#popOn").onchange({ target: $("#popOn") }); }
+  const ring = { target: TOUR.target, r: [CINE.wideR, CINE.wideR], tilt: [CINE.wideTilt, CINE.wideTilt], turn: 30, keys: [], s: 20 };
+  controls.enableDamping = false;
+  cine = { shots: [ring], i: 0, phase: "shot", t0: performance.now(), th0: th, dir: 1, from: null, people: true };
+  timeState();
+}
 
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
@@ -1529,6 +1547,7 @@ const tlEver = new Set();    // labelled once: kept while the year is past its s
 let tlLast = 0, tlMaskKey = "";
 function tlBuild() {
   tlItems = [];
+  const filmNames = new Set((CINE.shots || []).flatMap((d) => d.members || []).map((n) => n.toLowerCase()));
   const ents = ENTITIES?.entities ?? [], nE = ents.length, B = new Float32Array(nE * 6);
   for (let i = 0; i < nE; i++) B.set([1e9, 1e9, 1e9, -1e9, -1e9, -1e9], 6 * i);
   for (const p of lidar.parts) for (let i = 0; i < p.n; i++) {
@@ -1542,11 +1561,10 @@ function tlBuild() {
     if (B[o] > 1e8) return;
     const h = B[o + 4] - B[o + 1], box = Array.from(B.subarray(o, o + 6));
     if (h >= 6) tlOcc.push({ box, year: y > 1000 ? y : 0, ent: i });
-    if (!(y > 1000)) return;
+    if (!(y > 1000) && !filmNames.has(e.name.toLowerCase())) return;   // undated: only the film's members (always there)
     if (TL.namedOnly !== false && e.status === "auto" && !e.landmark) return;   // automatic entities are only an address
-    const always = (CINE.heroNames || []).some((n) => n.toLowerCase() === e.name.toLowerCase());   // a hero of the film
-    if (h < TL.minHeightM && !always) return;
-    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y, box, h, ent: i });
+    if (h < TL.minHeightM && !filmNames.has(e.name.toLowerCase())) return;   // a member of a film shot: tagged anyway
+    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i });
   });
   // Angels Knoll, the Y-1 parcel: a frame over its ground (the terrain points inside the parcel)
   if (y1Ring) {
@@ -1592,7 +1610,7 @@ function updateTimeTags() {
   const live = [], kept = [];
   if (on) for (const it of tlItems) {
     let p, a, txt = true;
-    if (it.kind === "site") {   // Angels Knoll: always there, as quiet as a finished building
+    if (it.kind === "site" || (it.kind === "built" && !it.year)) {   // Angels Knoll, undated members: always there, quiet
       p = 1; a = TL.doneOpacity ?? 0.7; kept.push({ it, p, a, txt, rising: false }); continue;
     } else if (it.kind === "unbuilt") {
       const sp = it.end - it.year + 1, up = Math.min(Bd, 0.6 * sp), dn = Math.min(1.5, 0.3 * sp);
@@ -1644,11 +1662,12 @@ function updateTimeTags() {
     return (w * h) / Math.max((x1 - x0) * (y1 - y0), 1);
   };
   // texts placed in order of importance: going up and unbuilt first, then the tallest; a text with no free place hides
-  const rank = (l) => (cine && l.it.key === cine.shots[cine.i].key ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
+  const lit = new Set(cine ? cine.shots[cine.i].keys || [] : []);   // the tags of the shot's group
+  const rank = (l) => (lit.has(l.it.key) ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
   const now = performance.now(), dt = Math.min((now - (tlLast || now)) / 1000, 0.1); tlLast = now;
   for (const { it, p, a: a0, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
     // while filming: every label at one opacity, the shot's hero full
-    const hero = cine && it.key === cine.shots[cine.i].key;
+    const hero = lit.has(it.key);
     let a = cine ? (hero ? 1 : CINE.labelOpacity) : a0;
     // depth (user, 2026-10-13: labels sat over the buildings, near and far alike): a label whose building is hidden
     // behind a standing building fades (lines of sight to its top and its middle against the other buildings' boxes,
@@ -1668,7 +1687,7 @@ function updateTimeTags() {
       const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
       // no height for what is not a building (user, 2026-10-13: Angels Flight's is the rise of its track)
       const noH = (TL.noHeight || []).some((n) => n.toLowerCase() === it.name.toLowerCase());
-      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : `${it.kind === "unbuilt" ? `Unbuilt · ${it.year}–${it.end}` : `Built ${it.year}`}${noH ? "" : ` · ${len(it.h)}`}`}</i>`;
+      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : [it.kind === "unbuilt" ? `Unbuilt · ${it.year}–${it.end}` : it.year ? `Built ${it.year}` : "", noH ? "" : len(it.h)].filter(Boolean).join(" · ")}</i>`;
       tlLayer.append(el);
       // the lock-on plays once: after it the frame is "locked", so showing it again does not replay it
       el.addEventListener("animationend", () => el.classList.add("locked"), { once: true });
@@ -1704,6 +1723,9 @@ function updateTimeTags() {
     const r = s.el.firstChild;
     if (!txt) { r.classList.add("hid"); continue; }
     if (!s.rw) { s.rw = r.offsetWidth; s.rh = r.offsetHeight; }   // measured once (its text does not change)
+    // the text sits by the frame's top, but inside the window: a tower taller than the view keeps its text at the top
+    // edge, beside it (user, 2026-10-13: the group's tags were out of sight in the low shots)
+    const tyA = Math.min(Math.max(sy0, 10), Math.max(sy1 - 30, 10), H - 40);
     const rw = s.rw, rh = s.rh, pref = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
     const free = (rx, ay) => rx > 4 && rx + rw < W - 4 && !underUi(rx, ay, rx + rw, ay + rh) && !placed.some((q) => rx < q.x + q.w + 4 && rx + rw + 4 > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y);
     let spot = null;
@@ -1711,20 +1733,20 @@ function updateTimeTags() {
     if (s.spot) tries.unshift([s.spot.left, s.spot.ry]);   // where it was, first
     for (const [left, ry] of tries) {
       const rx = left ? sx1 + 6 : sx0 - 6 - rw;
-      if (!spot && free(rx, sy0 + ry)) spot = { left, ry, rx };
+      if (!spot && free(rx, tyA + ry)) spot = { left, ry, rx };
     }
     // the text hides or comes back only after it has had (or lacked) a free place for a moment (hysteresis), and fades
     // (CSS). A shown text stays where it is; it moves only while hidden, so it never hops about.
     const shown = !r.classList.contains("hid");
-    const oldFree = s.spot && free(s.spot.left ? sx1 + 6 : sx0 - 6 - rw, sy0 + s.spot.ry);
+    const oldFree = s.spot && free(s.spot.left ? sx1 + 6 : sx0 - 6 - rw, tyA + s.spot.ry);
     const want = shown ? Boolean(oldFree || (!s.spot && spot)) : Boolean(spot);
     s.wait = want === shown ? 0 : (s.wait || 0) + dt;
     if (s.wait > (want ? 0.5 : 0.35)) { r.classList.toggle("hid", !want); s.wait = 0; if (want) s.spot = spot; }
     else if (!s.spot && spot) s.spot = spot;
     if (r.classList.contains("hid") || !s.spot) continue;
     const sp = s.spot, rx = sp.left ? sx1 + 6 : sx0 - 6 - rw;
-    r.classList.toggle("r", sp.left); r.style.top = `${sp.ry}px`;
-    placed.push({ x: rx, y: sy0 + sp.ry, w: rw, h: rh });
+    r.classList.toggle("r", sp.left); r.style.top = `${tyA - sy0 + sp.ry}px`;
+    placed.push({ x: rx, y: tyA + sp.ry, w: rw, h: rh });
   }
 }
 // a plain object (tree, car, wall ...), or a point of the ground / unassigned
