@@ -668,10 +668,15 @@ async function loadLidar() {
     q[i] = Math.random() * Math.max(rho, 1e-4) ** (1 - LOD_KEEP) * LOD_RHO0 ** LOD_KEEP;
   }
   // per object: the height of its lowest and highest point, so each point knows how far up its building it is (aRise)
+  // (2026-10-15) robust: the 0.5 % and 99.5 % heights, so a few stray points (wires, birds) above or below a building do
+  // not stretch its rise; points past them simply come first / last
   const objLo = new Float32Array(objNames.length).fill(1e9), objHi = new Float32Array(objNames.length).fill(-1e9);
-  for (let i = 0; i < n; i++) {
-    const o = obj[i]; if (objYear[o] === 0 || objYear[o] === -1) continue;
-    const y = P[3 * i + 1]; if (y < objLo[o]) objLo[o] = y; if (y > objHi[o]) objHi[o] = y;
+  { const hs = new Map();
+    for (let i = 0; i < n; i++) {
+      const o = obj[i]; if (objYear[o] === 0 || objYear[o] === -1) continue;
+      let a = hs.get(o); if (!a) hs.set(o, (a = [])); if (a.length < 6000 || (i & 3) === 0) a.push(P[3 * i + 1]);
+    }
+    for (const [o, a] of hs) { a.sort((p, q) => p - q); objLo[o] = a[Math.floor(0.005 * (a.length - 1))]; objHi[o] = a[Math.ceil(0.995 * (a.length - 1))]; }
   }
   // bucket point indices by layer and LOD chunk
   const buckets = new Map();
@@ -1736,11 +1741,18 @@ function tlBuild() {
   const filmNames = new Set((CINE.shots || []).flatMap((d) => d.members || []).map((n) => n.toLowerCase()));
   const ents = ENTITIES?.entities ?? [], nE = ents.length, B = new Float32Array(nE * 6);
   for (let i = 0; i < nE; i++) B.set([1e9, 1e9, 1e9, -1e9, -1e9, -1e9], 6 * i);
+  // each entity's box from the 1 % / 99 % of its points along x and z and 0.5 % / 99.5 % in height (2026-10-15: a few
+  // stray points made low buildings look 30 m tall, their tags and line-of-sight boxes too large)
+  const acc = new Map();
   for (const p of lidar.parts) for (let i = 0; i < p.n; i++) {
     const e = lidar.objEntity[p.ob[i]]; if (e < 0 || lidar.objLayers[p.ob[i]] === "Terrain") continue;
-    const x = p.pos[3 * i], y = p.pos[3 * i + 1], z = p.pos[3 * i + 2], o = 6 * e;
-    if (x < B[o]) B[o] = x; if (y < B[o + 1]) B[o + 1] = y; if (z < B[o + 2]) B[o + 2] = z;
-    if (x > B[o + 3]) B[o + 3] = x; if (y > B[o + 4]) B[o + 4] = y; if (z > B[o + 5]) B[o + 5] = z;
+    let a = acc.get(e); if (!a) acc.set(e, (a = [[], [], []]));
+    if (a[0].length < 8000 || (i & 3) === 0) { a[0].push(p.pos[3 * i]); a[1].push(p.pos[3 * i + 1]); a[2].push(p.pos[3 * i + 2]); }
+  }
+  const pct = (v, q) => v[Math.min(v.length - 1, Math.max(0, Math.round(q * (v.length - 1))))];
+  for (const [e, a] of acc) {
+    for (const v of a) v.sort((p, q) => p - q);
+    B.set([pct(a[0], 0.01), pct(a[1], 0.005), pct(a[2], 0.01), pct(a[0], 0.99), pct(a[1], 0.995), pct(a[2], 0.99)], 6 * e);
   }
   ents.forEach((e, i) => {
     const y = parseInt(e.built?.[0] ?? e.parcel?.year_built, 10), o = 6 * i;
