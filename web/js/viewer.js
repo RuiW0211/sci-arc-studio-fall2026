@@ -282,7 +282,8 @@ for (const L of ordered) {
   L.countEl = ghost ? null : row.querySelector(".n");
   L.row = row;
   row.querySelector("input").onchange = (e) => { L.visible = e.target.checked; applyVisibility(); };
-  (ghost ? $("#timeGhosts") : $("#layers")).append(row);
+  // the unbuilt schemes have no row (user, 2026-10-13): they always show with the Time module, in their years
+  if (!ghost) $("#layers").append(row);
 }
 
 // ---------- point material: size in metres (perspective), never smaller than 1 px ----------
@@ -1144,7 +1145,7 @@ function camApply(P) {
 function setPaused(on) {
   if (on === paused) return;
   paused = on;
-  $("#timePlay").textContent = on ? "Play" : "Pause";
+  timeState();
   if (on) { controls.enableDamping = true; if (cine) cine.pausedAt = performance.now(); cutEl.classList.remove("on"); return; }
   // resume: the shot's heading turns to the camera's, then everything else eases in
   const U = camPose(), now = performance.now();
@@ -1159,25 +1160,32 @@ function setPaused(on) {
 addEventListener("keydown", (e) => {
   // typing in a text field: not ours; a focused checkbox or button (Through time, Play) would take the Space itself
   const t = document.activeElement, texty = t?.tagName === "TEXTAREA" || t?.tagName === "SELECT" || (t?.tagName === "INPUT" && !/^(checkbox|range|button|radio)$/.test(t.type));
-  if (e.code !== "Space" || texty || !$("#timeOn").checked || !(playing || cine)) return;
+  if (e.code !== "Space" || texty || !$("#timeOn").checked) return;
   t?.blur?.();
-  e.preventDefault();   // not a click on the focused button, not a page scroll
-  setPaused(!paused);
+  e.preventDefault();   // not a click on the focused checkbox, not a page scroll
+  if (playing || cine) setPaused(!paused); else startPlay(false);   // stopped (the slider was moved, or the end): play
 });
 // a drag or scroll while it plays hands the camera back for good; while paused it is only a look around
 for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused) handBack(); }, { passive: true });
-// years a second: 8 to 1950, then 2 (a building about 2.5 s going up), 1 while an unbuilt scheme is on the site
+// years a second (user, 2026-10-13: slower): 5 to 1950, then 1.25 (a building about 4 s going up), 0.6 while an
+// unbuilt scheme is on the site; config.json time.rates
 const ghostSpans = [...ghostYears.values()].flat();
-const rate = (y) => (ghostSpans.some(([a, b]) => y >= a - 0.5 && y < b + 1) ? 1 : y < 1950 ? 8 : 2);
+const RATES = { early: 5, late: 1.25, unbuilt: 0.6, ...(cfg.time?.rates || {}) };
+const rate = (y) => (ghostSpans.some(([a, b]) => y >= a - 0.5 && y < b + 1) ? RATES.unbuilt : y < 1950 ? RATES.early : RATES.late);
 let playDur = 0;
 for (let y = 1867; y < 2026; y += 0.05) playDur += 0.05 / rate(y);
 let playing = null;
-function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null; paused = false; rejoin = null; $("#timePlay").textContent = "Play"; endTour(); endCine(); }
+function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null; paused = false; rejoin = null; endTour(); endCine(); timeState(); }
+// no Play button (user, 2026-10-13): Space plays, pauses and goes on; the panel only says which
+function timeState() {
+  const el = $("#timePlay"); if (!el) return;
+  el.textContent = paused ? "Paused · Space" : playing || cine ? "Playing · Space to pause" : "Space to play";
+}
 function startPlay(withTour) {
   if (playing) stopPlay();
   let y = +$("#timeRange").value >= 2025.9 ? 1867 : +$("#timeRange").value, last = performance.now(), el = 0;
   if (withTour || y <= 1867) startTour();
-  $("#timePlay").textContent = "Pause";
+  timeState();
   const step = (now) => {   // about a minute in all
     const dt = Math.min(Math.max((now - last) / 1000, 0), 0.1); last = now;   // a frame stamped before the start: 0
     if (paused) { playing = requestAnimationFrame(step); return; }
@@ -1186,15 +1194,22 @@ function startPlay(withTour) {
     setYear(y);
     stepTour(dt, Math.min(el / playDur, 1));
     if (y >= 2026) {   // the end: if the camera was left to the tour, it goes on filming (startCine)
-      playing = null; $("#timePlay").textContent = "Play";
+      playing = null; timeState();
       const toured = Boolean(tour); endTour(); if (toured && CINE.on !== false) startCine();
       return;
     }
     playing = requestAnimationFrame(step);
   };
   playing = requestAnimationFrame(step);
+  timeState();
 }
 $("#timePlay").onclick = () => (paused ? setPaused(false) : playing || cine ? setPaused(true) : startPlay(false));
+// paused and left alone (user, 2026-10-13): it goes on by itself after autoResumeS seconds without a drag, scroll or key
+const AUTO_RESUME_S = cfg.time?.autoResumeS ?? 4;
+let pauseInput = 0;
+for (const ev of ["pointerdown", "wheel", "keydown"]) addEventListener(ev, () => { pauseInput = performance.now(); }, { passive: true, capture: true });
+addEventListener("pointermove", (e) => { if (e.buttons) pauseInput = performance.now(); }, { passive: true, capture: true });
+setInterval(() => { if (paused && AUTO_RESUME_S > 0 && performance.now() - pauseInput > AUTO_RESUME_S * 1000) setPaused(false); }, 250);
 setYear(2026);
 
 // ---------- after the opening: the camera keeps filming (user, 2026-10-13) ----------
@@ -1257,12 +1272,12 @@ function startCine() {
   controls.enableDamping = false;
   const th = sphOf(camera.position, controls.target).th;
   cine = { shots, i: 0, phase: "shot", t0: performance.now(), th0: th, dir: 1, from: null, op0: performance.now() };
-  $("#timePlay").textContent = "Pause";
+  timeState();
 }
 function endCine() {
   if (!cine) return;
   cine = null; cutEl.classList.remove("on"); controls.enableDamping = true; invalidate();
-  if (!playing) $("#timePlay").textContent = "Play";
+  timeState();
 }
 function nextShot(now, P) {
   const c = cine, sh = c.shots[(c.i + 1) % c.shots.length];

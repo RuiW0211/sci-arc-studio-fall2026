@@ -5,6 +5,8 @@
     "_comment": "The Time module (user, 2026-10-13; Space pauses / resumes the opening and the film after it, and after a look around while paused the camera eases back over rejoinS seconds): buildings by the year they were built, each rising from the ground over the buildYears before it, with a soft front (front: its depth, as a share of the building's height). Buildings and landmarks turn white and opaque and stay; the rest goes to contextGrey at contextOpacity; the unbuilt towers keep their colour. undatedDim: the white of buildings with no year.",
     "opening": true,
     "rejoinS": 2.5,
+    "autoResumeS": 4,
+    "rates": { "early": 5, "late": 1.25, "unbuilt": 0.6 },
     "undatedDim": 0.55,
     "buildYears": 5,
     "front": 0.25,
