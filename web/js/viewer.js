@@ -169,8 +169,14 @@ try {
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-    const pts = new THREE.Points(g, new THREE.PointsMaterial({ size: G.pointSize, color: G.color, sizeAttenuation: true,
-      transparent: true, opacity: G.opacity, depthWrite: false }));
+    const gm = new THREE.PointsMaterial({ size: G.pointSize, color: G.color, sizeAttenuation: true,
+      transparent: true, opacity: G.opacity, depthWrite: false });
+    gm.onBeforeCompile = (shader) => {   // round, never under 1 px, as the LiDAR points (pointMaterial)
+      shader.vertexShader = shader.vertexShader.replace("#include <fog_vertex>", "gl_PointSize = max(gl_PointSize, 1.0);\n#include <fog_vertex>");
+      shader.fragmentShader = shader.fragmentShader.replace("#include <clipping_planes_fragment>",
+        "if (length(gl_PointCoord - vec2(0.5)) > 0.5) discard;\n#include <clipping_planes_fragment>");
+    };
+    const pts = new THREE.Points(g, gm);
     const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
     const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }));
