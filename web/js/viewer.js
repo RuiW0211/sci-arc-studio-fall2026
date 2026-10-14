@@ -304,11 +304,9 @@ function pointMaterial(sizeMetres) {
       // over the uBuild years before its year a building rises, its points shown up to an eased height with a wide
       // soft front (aRise: the point's height in its building, 0 at the foot, 1 at the top). Buildings and landmarks
       // are white, opaque, over the faint grey of the rest; an undated one stays, a dimmer white; the unbuilt towers
-      // (aYear -2) keep their colour.
-      // the ground filled under a building (aYear 10000 + its year): only with the Time module, gone as the building is
-      // finished. An unbuilt tower rises the same way over its first years and sinks back over its last ones.
-      + "if (aYear > 9999.5) { float gk = uTimeOn * clamp(aYear - 10000.0 - uYear, 0.0, 1.0); gl_PointSize *= gk;"
-      + " if (gk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0); }\n"
+      // keep their colour, rising the same way over their first years and sinking back over their last ones. The ground
+      // filled under a building (aYear 10000 + its year) is ordinary ground, always drawn (user, 2026-10-13: in every mode).
+      + "if (aYear > 9999.5) { }\n"
       + "else if (uTimeOn > 0.5) {\n"
       + "  if (aYear < -99.5) {\n"
       + "    float c = -aYear, s = floor(c / 100.0 + 0.001), sp = c - 100.0 * s + 1.0; s += 1800.0;\n"
@@ -587,12 +585,12 @@ async function loadLidar() {
     const e = entityOfName.get(nm), y = e ? parseInt(e.built?.[0] ?? e.parcel?.year_built, 10) : NaN;
     objYear[k] = y > 1000 ? y : -1;
   });
-  // the ground under the dated buildings (user, 2026-10-13: in 1867 the cloud showed black holes where today's buildings
-  // stand, the LiDAR seeing their roofs and not the ground). ESTIMATED: in every 2 m cell a dated building covers and
+  // the ground under the buildings (user, 2026-10-13: in 1867 the cloud showed black holes where today's buildings
+  // stand, the LiDAR seeing their roofs and not the ground). ESTIMATED: in every 2 m cell a building covers and
   // the ground has no return, points at random at the ground's own density around it (the mean of the cells with ground
   // returns within groundFill.radiusM), at the building's ground height (its points' height less their height above the
-  // ground). They draw with the ground, only with the Time module, until their building is up: per-point year code
-  // 10000 + the building's year (ptYear).
+  // ground). They draw as ground, always (user, 2026-10-13: the holes show in the other modes too, e.g. under Highlight
+  // people); per-point year code 10000 + the building's year (ptYear), kept for the Time module.
   let ptYear = null;
   const GF = cfg.time?.groundFill;
   if (GF && HG && terrainObj >= 0) {
@@ -605,7 +603,8 @@ async function loadLidar() {
     for (let i = 0; i < n; i++) if (objLayers[obj[i]] === groundL) { const c = cellOf(i); if (tc[c] < 65535) tc[c]++; isum += I[i]; icnt++; }
     const cy = new Int16Array(W * H), gsum = new Float32Array(W * H), gn = new Uint16Array(W * H);   // earliest year over the cell
     for (let i = 0; i < n; i++) {
-      const y = objYear[obj[i]]; if (y <= 0) continue;
+      const y0 = objYear[obj[i]]; if (y0 === 0 || y0 < -99) continue;   // every building, dated or not (undated: year 1)
+      const y = y0 > 0 ? y0 : 1;
       const c = cellOf(i); if (tc[c]) continue;
       if (!cy[c] || y < cy[c]) cy[c] = y;
       gsum[c] += P[3 * i + 1] - HG[i] / 10; if (gn[c] < 65535) gn[c]++;

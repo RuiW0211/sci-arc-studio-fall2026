@@ -9,7 +9,7 @@
     "contextGrey": 0.45,
     "contextOpacity": 0.35,
     "groundFill": {
-      "_comment": "ESTIMATED ground under the dated buildings, shown only before they are built: cellM grid, density = the mean of the ground cells within radiusM.",
+      "_comment": "ESTIMATED ground under the buildings, where the LiDAR saw only roofs (drawn as ground, in every mode): cellM grid, density = the mean of the ground cells within radiusM.",
       "cellM": 2,
       "radiusM": 20
     },
