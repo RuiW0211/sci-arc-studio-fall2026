@@ -1,28 +1,29 @@
 {
  "file": "facades_estimated.bin",
- "count": 540538,
+ "count": 534269,
  "format": "float32 x, y, z (x east, y up, z -north) for every point, then uint16 object (index into objects), then int16 height above the building's base (0.1 m)",
  "objects": [
   "BLD_482951838625",
-  "BLD_483100838466",
   "BLD_2014092962720000",
   "BLD_202000039161",
   "BLD_202000039145",
-  "BLD_202000039162",
+  "BLD_482551838973",
   "PC_-1063_544",
   "BLD_202000039133",
   "BLD_2014092852840000",
   "BLD_201700093405",
+  "PC_-1004_649",
   "BLD_482776839402",
   "BLD_483343839099",
   "BLD_202000039054",
   "BLD_483200839242",
   "BLD_201700093613",
+  "BLD_482544838768",
   "BLD_483346838781",
   "BLD_201700195147",
   "BLD_202000039452",
+  "BLD_201700194910",
   "BLD_201700094140",
-  "BLD_482193839618",
   "PC_-1083_354",
   "BLD_482841839844",
   "PC_-923_308",
@@ -30,8 +31,6 @@
   "BLD_202000039397",
   "BLD_noid2230610",
   "BLD_483052840101",
-  "BLD_483017840174",
-  "BLD_481954839399",
   "BLD_482302839409",
   "BLD_482558839671",
   "BLD_482812839478",
@@ -43,8 +42,8 @@
   "BLD_noid1877724",
   "BLD_483357839419",
   "BLD_483396839470",
-  "PC_-954_268",
   "PC_-896_308",
+  "PC_-954_268",
   "PC_-1017_382",
   "BLD_202000039776",
   "BLD_2014092963190000",
@@ -52,17 +51,13 @@
   "BLD_482679841787",
   "BLD_201700196058",
   "BLD_482858841642",
-  "PC_-979_-232",
   "PC_-813_-165",
   "PC_-769_-209",
-  "BLD_482430841324",
   "BLD_482271841236",
   "PC_-967_-30",
   "PC_-850_-119",
-  "PC_-842_-164",
   "BLD_483239841469",
   "BLD_483334841182",
-  "PC_-1110_74",
   "BLD_201700195459",
   "PC_-860_52",
   "BLD_482892841035",
@@ -76,7 +71,7 @@
   "PC_-824_-21",
   "PC_-805_-17",
   "PC_-828_57",
-  "BLD_482123840306",
+  "PC_-1064_182",
   "BLD_2014092854710000",
   "BLD_482505840530",
   "BLD_noid1898008",
@@ -87,17 +82,17 @@
   "BLD_483197840564",
   "PC_-840_111",
   "BLD_483149840606",
-  "PC_-873_59",
+  "PC_-931_140",
   "PC_-834_-4",
   "PC_-835_101",
-  "PC_-931_140",
+  "PC_-873_59",
   "PC_-839_43",
+  "BLD_482271842290",
   "BLD_482388842442",
   "BLD_483002842403",
   "BLD_482967842696",
   "BLD_483228842278",
   "BLD_482639843478",
-  "BLD_482564843304",
   "BLD_482874843359",
   "BLD_483250843367",
   "BLD_noid1897488",
@@ -112,32 +107,27 @@
   "PC_-754_-654",
   "PC_-782_-691",
   "PC_-752_-671",
+  "BLD_482709843080",
   "BLD_482869842970",
   "BLD_483082842926",
   "PC_-808_-594",
   "PC_-828_-531",
   "BLD_483390843024",
-  "BLD_482431842673",
+  "PC_-797_-648",
   "PC_-818_-615",
   "PC_-853_-277",
-  "PC_-797_-648",
-  "PC_-856_-912",
-  "BLD_2014092851390000",
   "BLD_483116843541",
   "BLD_483224843544",
   "BLD_483173843577",
-  "BLD_483142843517",
-  "BLD_483134843532",
   "BLD_483793838536",
   "BLD_202000038993",
   "BLD_2014092962470000",
   "BLD_2014092963210000",
   "BLD_483954838649",
+  "BLD_483846837927",
   "BLD_483650838314",
-  "BLD_483456838201",
   "BLD_483542838212",
   "BLD_483756837572",
-  "BLD_483867837396",
   "BLD_484395838651",
   "BLD_484561838585",
   "BLD_484843838573",
@@ -164,6 +154,7 @@
   "BLD_484690838176",
   "BLD_484418838173",
   "BLD_484951838153",
+  "PC_-566_895",
   "BLD_2014092853510000",
   "BLD_484324838062",
   "BLD_484879838057",
@@ -173,15 +164,13 @@
   "BLD_484236837930",
   "BLD_484742837944",
   "BLD_484709837920",
-  "BLD_484879837783",
+  "PC_-498_968",
   "BLD_484110837781",
-  "BLD_484322837798",
+  "BLD_484794837770",
   "BLD_201700091732",
-  "PC_-538_1048",
-  "BLD_2014092851130000",
+  "PC_-596_890",
   "BLD_484325838613",
   "PC_-576_784",
-  "PC_-596_890",
   "BLD_201700092997",
   "BLD_483472838933",
   "BLD_201700093631",
@@ -295,7 +284,6 @@
   "BLD_484853839630",
   "BLD_485002839594",
   "BLD_484905839461",
-  "PC_-428_504",
   "BLD_484655839376",
   "PC_-567_296",
   "BLD_noid1895236",
@@ -364,12 +352,13 @@
   "PC_-431_134",
   "BLD_484772840606",
   "BLD_noid1897197",
-  "PC_-351_-237",
+  "BLD_noid2230679",
   "PC_-283_-175",
-  "PC_-645_-147",
-  "BLD_noid1896917",
-  "PC_-281_-223",
   "PC_-350_-225",
+  "BLD_noid1896917",
+  "PC_-645_-147",
+  "PC_-351_-237",
+  "PC_-281_-223",
   "PC_-596_-429",
   "PC_-670_-294",
   "BLD_2014092961300000",
@@ -407,24 +396,22 @@
   "PC_-550_-542",
   "BLD_484712842833",
   "BLD_484583842796",
-  "BLD_noid1897705",
   "BLD_484643842765",
   "PC_-319_-532",
   "BLD_484244842656",
   "BLD_202000039934",
   "PC_-300_-301",
   "BLD_noid1897433",
+  "BLD_noid1897031",
+  "BLD_483654844521",
   "BLD_483777844456",
-  "BLD_201700198085",
+  "BLD_483733844331",
+  "BLD_483636844438",
   "BLD_483777844233",
   "BLD_2014092873060000",
   "PC_-572_-962",
   "PC_-628_-805",
-  "PC_-715_-899",
   "BLD_484263844575",
-  "BLD_484336844575",
-  "BLD_484350844515",
-  "BLD_484834844498",
   "BLD_484678844333",
   "BLD_484411844432",
   "BLD_483969844367",
@@ -446,12 +433,11 @@
   "BLD_484040843707",
   "PC_-440_-808",
   "PC_-419_-814",
-  "PC_-400_-814",
   "BLD_484101843627",
   "BLD_484129843542",
-  "PC_-335_-947",
-  "PC_-352_-848",
   "PC_-359_-839",
+  "PC_-352_-848",
+  "PC_-335_-947",
   "PC_-598_-960",
   "BLD_485466838631",
   "BLD_202000039035",
@@ -468,7 +454,6 @@
   "BLD_485210838433",
   "BLD_485130838413",
   "PC_-227_780",
-  "BLD_485272838450",
   "BLD_485850838409",
   "BLD_485097838412",
   "BLD_485234838413",
@@ -478,6 +463,7 @@
   "BLD_485491838252",
   "BLD_486572838378",
   "BLD_485602838291",
+  "BLD_485555838282",
   "BLD_485653838236",
   "BLD_485915838231",
   "BLD_486264838182",
@@ -497,17 +483,20 @@
   "BLD_485596837889",
   "BLD_485784837873",
   "BLD_486243837930",
+  "BLD_201700091889",
+  "BLD_485468837838",
   "BLD_485516837864",
   "BLD_486331837888",
   "BLD_486658837868",
   "BLD_202000038666",
   "BLD_485414837797",
   "BLD_485489837719",
-  "BLD_486542837669",
+  "BLD_485396837621",
+  "BLD_485776837636",
+  "BLD_486213837643",
   "BLD_486628837605",
-  "BLD_485438837640",
-  "BLD_486547837469",
-  "BLD_486179837391",
+  "BLD_485518837550",
+  "BLD_485567837464",
   "BLD_485330839179",
   "BLD_485007839349",
   "BLD_202000039213",
@@ -525,6 +514,7 @@
   "BLD_486303839192",
   "BLD_486572839221",
   "BLD_485189839200",
+  "BLD_noid2230366",
   "BLD_noid2230346",
   "BLD_486417839181",
   "BLD_486280839158",
@@ -620,12 +610,12 @@
   "BLD_486460839879",
   "BLD_486195839506",
   "BLD_noid2230542",
-  "BLD_noid1865871",
   "BLD_noid2230223",
-  "BLD_noid2230378",
-  "BLD_noid2230204",
   "BLD_noid2230410",
   "BLD_noid2230248",
+  "BLD_noid2230204",
+  "BLD_noid1865871",
+  "BLD_noid2230378",
   "BLD_noid2230384",
   "BLD_485091841660",
   "BLD_485569841928",
@@ -701,11 +691,11 @@
   "PC_-230_241",
   "BLD_485565840314",
   "BLD_486588840324",
+  "BLD_noid2230862",
   "PC_133_-126",
   "PC_-159_-80",
-  "PC_-156_163",
   "PC_-154_-56",
-  "BLD_noid2230862",
+  "PC_-156_163",
   "BLD_485216842179",
   "BLD_201700196443",
   "BLD_201700196586",
@@ -743,20 +733,18 @@
   "BLD_2014092852400000",
   "PC_-193_-569",
   "PC_-173_-525",
-  "PC_128_-412",
-  "PC_163_-458",
-  "PC_22_-648",
-  "PC_-54_-264",
   "PC_151_-740",
   "PC_-23_-271",
-  "PC_-163_-379",
+  "PC_22_-648",
+  "BLD_noid1896177",
+  "PC_-54_-264",
   "PC_122_-507",
+  "PC_-163_-379",
   "PC_-190_-591",
   "PC_-59_-565",
-  "BLD_noid1896177",
-  "BLD_202000040346",
-  "BLD_201700198408",
-  "BLD_noid2231580",
+  "PC_163_-458",
+  "PC_128_-412",
+  "PC_230_-677",
   "BLD_485956844300",
   "BLD_486623844160",
   "BLD_485843844032",
@@ -779,17 +767,16 @@
   "BLD_486814838088",
   "BLD_486922838093",
   "BLD_487218838079",
-  "BLD_486996838070",
   "BLD_487057837883",
+  "BLD_486785837972",
   "BLD_486731837873",
   "BLD_486736837784",
   "BLD_noid1866849",
   "BLD_486775837753",
   "BLD_202000038649",
   "BLD_487059837689",
-  "BLD_noid1874612",
+  "BLD_487058837670",
   "BLD_487057837650",
-  "BLD_486787837489",
   "BLD_487246838640",
   "BLD_487746838670",
   "BLD_488094838648",
@@ -800,8 +787,8 @@
   "BLD_488070838545",
   "BLD_487423838577",
   "BLD_2014092962600000",
-  "BLD_noid1872710",
   "BLD_487453838430",
+  "BLD_487435838481",
   "BLD_488141838506",
   "BLD_488097838451",
   "BLD_488125838434",
@@ -811,19 +798,19 @@
   "BLD_488258838322",
   "BLD_488112838135",
   "BLD_487390838000",
+  "BLD_487711838102",
   "PC_520_893",
   "BLD_487604838048",
   "BLD_487541837976",
   "PC_567_975",
+  "BLD_487523837889",
   "PC_495_1036",
-  "BLD_2014092933140000",
   "BLD_486665839374",
   "BLD_486831839248",
   "BLD_486836839201",
   "BLD_487076839350",
   "BLD_486934839245",
   "BLD_487201839331",
-  "BLD_486957839194",
   "BLD_486887839184",
   "BLD_486927839108",
   "BLD_487008839095",
@@ -894,6 +881,7 @@
   "BLD_488277838881",
   "BLD_487501838774",
   "BLD_487814838765",
+  "BLD_noid1867040",
   "BLD_487665838683",
   "BLD_2014092853150000",
   "BLD_488228838797",
@@ -957,7 +945,6 @@
   "BLD_486740840817",
   "BLD_486729841130",
   "BLD_486604841019",
-  "BLD_noid1898014",
   "BLD_486924840417",
   "BLD_486670840730",
   "BLD_487159840640",
@@ -994,17 +981,16 @@
   "BLD_201700195374",
   "BLD_2014092962770000",
   "BLD_487788840702",
-  "BLD_488184840757",
   "BLD_2014092962630000",
   "BLD_201700195205",
   "BLD_487302840448",
   "BLD_202000039480",
   "BLD_487328840352",
   "BLD_487429840297",
-  "PC_273_188",
-  "BLD_noid1896767",
   "PC_406_-237",
   "PC_384_204",
+  "PC_273_188",
+  "BLD_noid1896767",
   "BLD_487188842314",
   "BLD_487169842365",
   "BLD_2014092873370000",
@@ -1026,54 +1012,52 @@
   "BLD_487833843301",
   "PC_517_-677",
   "BLD_487294843248",
+  "PC_759_-648",
   "BLD_487881843063",
-  "BLD_487928843098",
   "BLD_201700231138",
   "BLD_487750843007",
   "PC_585_-554",
   "PC_431_-518",
   "BLD_noid1897577",
-  "PC_598_-555",
   "BLD_noid1896966",
   "BLD_noid1898017",
-  "PC_319_-1102",
+  "PC_598_-555",
   "PC_305_-1079",
+  "BLD_486898844764",
   "PC_284_-1043",
   "BLD_2014092961410000",
   "BLD_487097843890",
   "BLD_486900843827",
   "BLD_2014092851150000",
-  "BLD_487917844137",
-  "BLD_2014092850100000",
-  "BLD_487598844163",
   "PC_480_-891",
   "BLD_487873843823",
   "BLD_487281843809",
   "BLD_202000040132",
   "PC_725_-783",
-  "BLD_488391838346",
+  "BLD_488379838411",
   "BLD_488318838269",
-  "BLD_488363838256",
   "BLD_488466839370",
   "BLD_488719839327",
   "BLD_488733839263",
-  "BLD_489218839572",
   "BLD_488574839251",
   "BLD_488568838968",
+  "PC_958_548",
   "BLD_488537839183",
+  "BLD_488792839110",
   "BLD_488383839022",
   "BLD_488322838849",
+  "BLD_488357838823",
   "BLD_488378838808",
   "BLD_488412838784",
   "BLD_488514838675",
   "BLD_489046840315",
+  "BLD_488752840300",
   "BLD_488436840175",
   "BLD_201700194971",
   "BLD_488552840252",
   "BLD_488590840152",
   "BLD_488850840178",
   "BLD_488598840092",
-  "BLD_489732840070",
   "BLD_488802840036",
   "BLD_489046840013",
   "BLD_488609839978",
@@ -1087,7 +1071,6 @@
   "BLD_noid1876377",
   "BLD_489389839584",
   "BLD_488984841913",
-  "BLD_489433841973",
   "BLD_488292841881",
   "BLD_488403841800",
   "BLD_488318841863",
@@ -1099,7 +1082,6 @@
   "BLD_2014092930340000",
   "BLD_488403840976",
   "BLD_488293840963",
-  "PC_854_18",
   "BLD_488420840934",
   "BLD_488503840901",
   "BLD_488876840887",
@@ -1111,7 +1093,6 @@
   "BLD_202000039567",
   "PC_813_79",
   "BLD_488540840850",
-  "PC_1062_75",
   "BLD_488556840764",
   "BLD_488841840774",
   "BLD_488921840714",
@@ -1133,20 +1114,20 @@
   "BLD_488717840447",
   "BLD_488672840440",
   "BLD_488889840385",
-  "BLD_488992840450",
   "BLD_488963840482",
   "BLD_488936840308",
   "BLD_488650840332",
   "BLD_489071840426",
   "BLD_488517842500",
   "BLD_488821842335",
+  "BLD_489121842142",
   "BLD_202000040140",
-  "BLD_202000040109",
-  "PC_905_-507",
-  "PC_831_-293",
-  "PC_794_-597",
+  "PC_859_-574",
   "PC_775_-353",
-  "BLD_488316843806"
+  "PC_794_-597",
+  "PC_831_-293",
+  "PC_875_-533",
+  "BLD_202000040201"
  ],
  "buildings": [
   {
@@ -1192,7 +1173,7 @@
   {
    "name": "Parking booth, 340 S Hill St parking lot",
    "id": "E007",
-   "measured": 1388,
+   "measured": 1359,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -1216,16 +1197,16 @@
   {
    "name": "Subway Terminal Building (Metro 417)",
    "id": "E010",
-   "measured": 121888,
-   "estimated": 9459,
+   "measured": 122028,
+   "estimated": 9405,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "Parking structure, 406 S Olive St",
    "id": "E011",
-   "measured": 15809,
-   "estimated": 297,
+   "measured": 15669,
+   "estimated": 289,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1233,15 +1214,15 @@
    "name": "Million Dollar Theater building (3rd & Broadway)",
    "id": "E012",
    "measured": 52266,
-   "estimated": 4391,
+   "estimated": 4542,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Grand Central Market",
    "id": "E013",
-   "measured": 64328,
-   "estimated": 4232,
+   "measured": 64349,
+   "estimated": 4344,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1249,15 +1230,15 @@
    "name": "Parking structure at 3rd & Hill ('Public Parking' sign)",
    "id": "E014",
    "measured": 18021,
-   "estimated": 1409,
+   "estimated": 1403,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Broadway with CBD Sold Oils",
    "id": "E015",
-   "measured": 25470,
-   "estimated": 784,
+   "measured": 25449,
+   "estimated": 733,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1265,14 +1246,14 @@
    "name": "Building on Broadway (Los Angeles Power Systems, DT Los Angeles AC Repair)",
    "id": "E016",
    "measured": 20078,
-   "estimated": 376,
+   "estimated": 363,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Broadway with The Slipper Clutch",
    "id": "E017",
-   "measured": 5184,
+   "measured": 5152,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -1280,23 +1261,23 @@
   {
    "name": "Six-storey tan building on Broadway (with roof garden)",
    "id": "E018",
-   "measured": 11021,
-   "estimated": 324,
+   "measured": 11089,
+   "estimated": 278,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
   {
    "name": "Building at Broadway & 4th with Precinct",
    "id": "E019",
-   "measured": 13613,
-   "estimated": 314,
+   "measured": 13570,
+   "estimated": 352,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Glass pavilion on the parking deck, 4th St across from Two California Plaza",
    "id": "E020",
-   "measured": 1426,
+   "measured": 1385,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -1305,7 +1286,7 @@
    "name": "AT&T building (windowless, with antenna tower)",
    "id": "E021",
    "measured": 66924,
-   "estimated": 23908,
+   "estimated": 24106,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1313,7 +1294,7 @@
    "name": "Low building at 4th & Grand (US Bank Mortgage label)",
    "id": "E022",
    "measured": 8116,
-   "estimated": 748,
+   "estimated": 695,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1321,23 +1302,23 @@
    "name": "Low structure on the north side of the AT&T building",
    "id": "E023",
    "measured": 2807,
-   "estimated": 1551,
+   "estimated": 1578,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Wells Fargo Center - South Tower",
    "id": "E024",
-   "measured": 56387,
-   "estimated": 13738,
+   "measured": 56385,
+   "estimated": 14320,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Wells Fargo Center - North Tower",
    "id": "E025",
-   "measured": 130014,
-   "estimated": 27016,
+   "measured": 130015,
+   "estimated": 25645,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1345,7 +1326,7 @@
    "name": "Grand Avenue deck over Lower Grand Avenue",
    "id": "E026",
    "measured": 8686,
-   "estimated": 671,
+   "estimated": 663,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1353,7 +1334,7 @@
    "name": "Trademark (apartments)",
    "id": "E027",
    "measured": 59100,
-   "estimated": 13359,
+   "estimated": 13269,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1361,7 +1342,7 @@
    "name": "Park Fifth (apartments)",
    "id": "E028",
    "measured": 37174,
-   "estimated": 7449,
+   "estimated": 7310,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1369,7 +1350,7 @@
    "name": "Title Guarantee Building",
    "id": "E029",
    "measured": 15895,
-   "estimated": 3091,
+   "estimated": 3250,
    "storey_m": 4.75,
    "storey_from": "measured walls"
   },
@@ -1377,7 +1358,7 @@
    "name": "Junipero Serra State Office Building",
    "id": "E030",
    "measured": 90373,
-   "estimated": 5338,
+   "estimated": 5292,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1385,7 +1366,7 @@
    "name": "Hotel Clark",
    "id": "E031",
    "measured": 66361,
-   "estimated": 5044,
+   "estimated": 5011,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
@@ -1393,7 +1374,7 @@
    "name": "Building south of the Junipero Serra Building (20 m, skylight roof)",
    "id": "E032",
    "measured": 10816,
-   "estimated": 732,
+   "estimated": 767,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1401,7 +1382,7 @@
    "name": "Building between E032 and Planet Fitness (19 m)",
    "id": "E033",
    "measured": 14191,
-   "estimated": 804,
+   "estimated": 775,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1409,15 +1390,15 @@
    "name": "Building with Planet Fitness",
    "id": "E034",
    "measured": 23061,
-   "estimated": 2180,
+   "estimated": 2336,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Hill St with a roof terrace (Perch / Mrs. Fish labels nearby)",
    "id": "E035",
-   "measured": 2692,
-   "estimated": 223,
+   "measured": 2675,
+   "estimated": 175,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1425,30 +1406,30 @@
    "name": "Building at 3rd & Broadway, NW corner (GENAUX Fitness)",
    "id": "E036",
    "measured": 22857,
-   "estimated": 730,
+   "estimated": 717,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "Four-storey building, Broadway east side (north of the row)",
    "id": "E037",
-   "measured": 13934,
-   "estimated": 126,
+   "measured": 13960,
+   "estimated": 133,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Small building, Broadway east side (7 m)",
    "id": "E038",
-   "measured": 6032,
-   "estimated": 59,
+   "measured": 6026,
+   "estimated": 48,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building with arches, Broadway east side (6 m)",
    "id": "E039",
-   "measured": 7469,
+   "measured": 7435,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -1457,7 +1438,7 @@
    "name": "Building, Broadway east side (8 m)",
    "id": "E040",
    "measured": 9276,
-   "estimated": 207,
+   "estimated": 213,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1465,7 +1446,7 @@
    "name": "One-storey building under the trees, Broadway east side",
    "id": "E041",
    "measured": 3343,
-   "estimated": 162,
+   "estimated": 139,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1473,7 +1454,7 @@
    "name": "Five-storey building, Broadway east side (south of the row)",
    "id": "E042",
    "measured": 12552,
-   "estimated": 629,
+   "estimated": 646,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1481,7 +1462,7 @@
    "name": "Low building, Broadway east side (6 m)",
    "id": "E043",
    "measured": 6885,
-   "estimated": 42,
+   "estimated": 64,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1497,7 +1478,7 @@
    "name": "Building with a roof structure, Broadway east side (10 m)",
    "id": "E046",
    "measured": 10625,
-   "estimated": 214,
+   "estimated": 221,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1521,7 +1502,7 @@
    "name": "U.S. Bank Tower",
    "id": "E049",
    "measured": 66320,
-   "estimated": 21559,
+   "estimated": 17901,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1529,7 +1510,7 @@
    "name": "The Gas Company Tower",
    "id": "E050",
    "measured": 75955,
-   "estimated": 35445,
+   "estimated": 29868,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1537,7 +1518,7 @@
    "name": "Colburn School",
    "id": "E051",
    "measured": 82938,
-   "estimated": 2010,
+   "estimated": 2422,
    "storey_m": 4.5,
    "storey_from": "measured walls"
   },
@@ -1545,15 +1526,15 @@
    "name": "The Broad",
    "id": "E052",
    "measured": 75010,
-   "estimated": 354,
+   "estimated": 475,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Bank of America Plaza",
    "id": "E053",
-   "measured": 92093,
-   "estimated": 3292,
+   "measured": 92091,
+   "estimated": 4065,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1561,7 +1542,7 @@
    "name": "Ronald Reagan State Building",
    "id": "E054",
    "measured": 162850,
-   "estimated": 6244,
+   "estimated": 7758,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
@@ -1640,8 +1621,8 @@
   {
    "name": "Dorothy Chandler Pavilion (Music Center)",
    "id": "E064",
-   "measured": 221343,
-   "estimated": 1433,
+   "measured": 221331,
+   "estimated": 1344,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1816,24 +1797,24 @@
   {
    "name": "Structure (no parcel)",
    "id": "A0006",
-   "measured": 545,
-   "estimated": 198,
+   "measured": 540,
+   "estimated": 187,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "216 W 3rd St",
    "id": "A0007",
-   "measured": 40782,
-   "estimated": 1111,
+   "measured": 40798,
+   "estimated": 1123,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "448 S Hill St",
    "id": "A0008",
-   "measured": 19895,
-   "estimated": 2718,
+   "measured": 19912,
+   "estimated": 3300,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1841,7 +1822,7 @@
    "name": "445 S Broadway",
    "id": "A0009",
    "measured": 11530,
-   "estimated": 1658,
+   "estimated": 1621,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1849,15 +1830,15 @@
    "name": "237 S Broadway",
    "id": "A0010",
    "measured": 14217,
-   "estimated": 149,
+   "estimated": 127,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "248 S Broadway",
    "id": "A0012",
-   "measured": 16034,
-   "estimated": 151,
+   "measured": 15958,
+   "estimated": 92,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1865,7 +1846,7 @@
    "name": "Structure (no parcel)",
    "id": "A0013",
    "measured": 266,
-   "estimated": 38,
+   "estimated": 44,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1881,15 +1862,15 @@
    "name": "424 S Broadway",
    "id": "A0015",
    "measured": 14286,
-   "estimated": 2454,
+   "estimated": 2137,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
   {
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0016",
-   "measured": 79550,
-   "estimated": 2782,
+   "measured": 79534,
+   "estimated": 2084,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1897,7 +1878,7 @@
    "name": "449 S Broadway",
    "id": "A0017",
    "measured": 26726,
-   "estimated": 4387,
+   "estimated": 4133,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -1905,7 +1886,7 @@
    "name": "430 S Broadway",
    "id": "A0018",
    "measured": 12146,
-   "estimated": 1267,
+   "estimated": 2041,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -1913,7 +1894,7 @@
    "name": "222 S Hill St",
    "id": "A0019",
    "measured": 23863,
-   "estimated": 1037,
+   "estimated": 572,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1921,7 +1902,7 @@
    "name": "361 S Spring St",
    "id": "A0020",
    "measured": 23038,
-   "estimated": 3561,
+   "estimated": 3074,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1937,7 +1918,7 @@
    "name": "200 S Olive St",
    "id": "A0022",
    "measured": 38868,
-   "estimated": 1130,
+   "estimated": 1503,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1945,15 +1926,15 @@
    "name": "235 S Hill St",
    "id": "A0023",
    "measured": 49824,
-   "estimated": 1391,
+   "estimated": 1616,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "240 S Broadway",
-   "id": "A0025",
-   "measured": 18421,
-   "estimated": 160,
+   "id": "A0024",
+   "measured": 18497,
+   "estimated": 321,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -1961,7 +1942,7 @@
    "name": "400 S Hope St",
    "id": "A0026",
    "measured": 27027,
-   "estimated": 18859,
+   "estimated": 33248,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1976,8 +1957,8 @@
   {
    "name": "440 S Broadway",
    "id": "A0028",
-   "measured": 27398,
-   "estimated": 1004,
+   "measured": 27406,
+   "estimated": 483,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1985,7 +1966,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0029",
    "measured": 1068,
-   "estimated": 142,
+   "estimated": 93,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1993,7 +1974,7 @@
    "name": "311 S Spring St",
    "id": "A0030",
    "measured": 23666,
-   "estimated": 1113,
+   "estimated": 1532,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2009,7 +1990,7 @@
    "name": "601 W 5th St",
    "id": "A0032",
    "measured": 35557,
-   "estimated": 3315,
+   "estimated": 4674,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2017,14 +1998,14 @@
    "name": "433 S Spring St",
    "id": "A0034",
    "measured": 86582,
-   "estimated": 4771,
+   "estimated": 3066,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "450 S Broadway",
    "id": "A0035",
-   "measured": 2070,
+   "measured": 2062,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -2033,7 +2014,7 @@
    "name": "257 S Spring St",
    "id": "A0036",
    "measured": 33139,
-   "estimated": 374,
+   "estimated": 283,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -2041,7 +2022,7 @@
    "name": "200 S Hill St",
    "id": "A0037",
    "measured": 21098,
-   "estimated": 359,
+   "estimated": 514,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2049,7 +2030,7 @@
    "name": "Structure (no parcel)",
    "id": "A0041",
    "measured": 1941,
-   "estimated": 20,
+   "estimated": 23,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2057,7 +2038,7 @@
    "name": "550 W 5th St",
    "id": "A0042",
    "measured": 21549,
-   "estimated": 2381,
+   "estimated": 3622,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2065,7 +2046,7 @@
    "name": "460 S Broadway",
    "id": "A0043",
    "measured": 20132,
-   "estimated": 932,
+   "estimated": 822,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2073,7 +2054,7 @@
    "name": "501 S Broadway",
    "id": "A0045",
    "measured": 37938,
-   "estimated": 3155,
+   "estimated": 1855,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -2081,7 +2062,7 @@
    "name": "225 S Grand Ave",
    "id": "A0046",
    "measured": 47617,
-   "estimated": 480,
+   "estimated": 347,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2089,7 +2070,7 @@
    "name": "205 S Broadway",
    "id": "A0047",
    "measured": 50011,
-   "estimated": 2356,
+   "estimated": 1592,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2097,7 +2078,7 @@
    "name": "530 S Olive St",
    "id": "A0048",
    "measured": 5055,
-   "estimated": 125,
+   "estimated": 186,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2105,7 +2086,7 @@
    "name": "340 S Spring St",
    "id": "A0049",
    "measured": 1461,
-   "estimated": 49,
+   "estimated": 64,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
@@ -2113,7 +2094,7 @@
    "name": "408 S Spring St",
    "id": "A0051",
    "measured": 18665,
-   "estimated": 1950,
+   "estimated": 1262,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -2121,7 +2102,7 @@
    "name": "515 S Olive St",
    "id": "A0052",
    "measured": 112616,
-   "estimated": 12571,
+   "estimated": 6769,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2137,7 +2118,7 @@
    "name": "213 S Spring St",
    "id": "A0054",
    "measured": 90851,
-   "estimated": 297,
+   "estimated": 242,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2145,7 +2126,7 @@
    "name": "125 W 4th St",
    "id": "A0055",
    "measured": 45234,
-   "estimated": 1890,
+   "estimated": 3117,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2153,7 +2134,7 @@
    "name": "220 W 5th St 101",
    "id": "A0056",
    "measured": 17085,
-   "estimated": 1749,
+   "estimated": 881,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2161,7 +2142,7 @@
    "name": "453 S Spring St",
    "id": "A0057",
    "measured": 31644,
-   "estimated": 829,
+   "estimated": 940,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2169,7 +2150,7 @@
    "name": "519 S Broadway",
    "id": "A0058",
    "measured": 8416,
-   "estimated": 703,
+   "estimated": 507,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2177,7 +2158,7 @@
    "name": "416 S Spring St",
    "id": "A0060",
    "measured": 22881,
-   "estimated": 967,
+   "estimated": 1760,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2185,7 +2166,7 @@
    "name": "410 S Spring St",
    "id": "A0061",
    "measured": 17112,
-   "estimated": 1436,
+   "estimated": 1612,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2201,7 +2182,7 @@
    "name": "523 S Broadway",
    "id": "A0063",
    "measured": 3004,
-   "estimated": 34,
+   "estimated": 36,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2209,7 +2190,7 @@
    "name": "216 W 5th St",
    "id": "A0064",
    "measured": 6125,
-   "estimated": 696,
+   "estimated": 741,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2224,7 +2205,7 @@
   {
    "name": "525 S Broadway",
    "id": "A0066",
-   "measured": 2826,
+   "measured": 2816,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -2233,7 +2214,7 @@
    "name": "Building (no parcel)",
    "id": "A0068",
    "measured": 1492,
-   "estimated": 108,
+   "estimated": 111,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2241,7 +2222,7 @@
    "name": "Structure (no parcel)",
    "id": "A0069",
    "measured": 404,
-   "estimated": 65,
+   "estimated": 32,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2249,15 +2230,15 @@
    "name": "510 S Broadway",
    "id": "A0070",
    "measured": 9502,
-   "estimated": 548,
+   "estimated": 712,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
   {
    "name": "529 S Broadway",
    "id": "A0072",
-   "measured": 10541,
-   "estimated": 116,
+   "measured": 10602,
+   "estimated": 165,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -2265,7 +2246,7 @@
    "name": "715 W 3rd St",
    "id": "A0073",
    "measured": 16023,
-   "estimated": 1113,
+   "estimated": 1271,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2281,7 +2262,7 @@
    "name": "Structure (no parcel)",
    "id": "A0075",
    "measured": 344,
-   "estimated": 47,
+   "estimated": 39,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2289,7 +2270,7 @@
    "name": "400 S Flower St",
    "id": "A0076",
    "measured": 39653,
-   "estimated": 3840,
+   "estimated": 1681,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2297,15 +2278,15 @@
    "name": "501 S Spring St",
    "id": "A0077",
    "measured": 21801,
-   "estimated": 1056,
+   "estimated": 1906,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "533 S Broadway",
    "id": "A0078",
-   "measured": 3365,
-   "estimated": 137,
+   "measured": 3314,
+   "estimated": 113,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2313,7 +2294,7 @@
    "name": "516 S Broadway",
    "id": "A0079",
    "measured": 11777,
-   "estimated": 288,
+   "estimated": 238,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2321,7 +2302,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0080",
    "measured": 11159,
-   "estimated": 1581,
+   "estimated": 871,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2329,15 +2310,15 @@
    "name": "101 W 4th St",
    "id": "A0081",
    "measured": 28122,
-   "estimated": 361,
+   "estimated": 207,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "535 S Broadway",
    "id": "A0082",
-   "measured": 3221,
-   "estimated": 27,
+   "measured": 3200,
+   "estimated": 54,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2345,7 +2326,7 @@
    "name": "411 S Main St",
    "id": "A0083",
    "measured": 30136,
-   "estimated": 1114,
+   "estimated": 602,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2353,15 +2334,15 @@
    "name": "Building on Commercial parcel",
    "id": "A0084",
    "measured": 605,
-   "estimated": 27,
+   "estimated": 41,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "220 S Spring St",
    "id": "A0085",
-   "measured": 45752,
-   "estimated": 178,
+   "measured": 45815,
+   "estimated": 114,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2369,7 +2350,7 @@
    "name": "460 S Spring St",
    "id": "A0086",
    "measured": 45512,
-   "estimated": 2000,
+   "estimated": 947,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2377,7 +2358,7 @@
    "name": "401 S Main St",
    "id": "A0087",
    "measured": 9634,
-   "estimated": 117,
+   "estimated": 160,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2385,7 +2366,7 @@
    "name": "550 S Hill St",
    "id": "A0088",
    "measured": 51453,
-   "estimated": 1587,
+   "estimated": 1477,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2393,7 +2374,7 @@
    "name": "526 S Broadway",
    "id": "A0089",
    "measured": 10144,
-   "estimated": 53,
+   "estimated": 159,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2401,15 +2382,15 @@
    "name": "415 S Main St",
    "id": "A0090",
    "measured": 13069,
-   "estimated": 585,
+   "estimated": 461,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "537 S Broadway",
    "id": "A0091",
-   "measured": 12018,
-   "estimated": 212,
+   "measured": 12108,
+   "estimated": 131,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2417,7 +2398,7 @@
    "name": "444 S Flower St",
    "id": "A0092",
    "measured": 833,
-   "estimated": 12,
+   "estimated": 24,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2425,7 +2406,7 @@
    "name": "415 S Main St",
    "id": "A0093",
    "measured": 9425,
-   "estimated": 433,
+   "estimated": 709,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2433,7 +2414,7 @@
    "name": "515 S Spring St",
    "id": "A0094",
    "measured": 22613,
-   "estimated": 1556,
+   "estimated": 1222,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2441,7 +2422,7 @@
    "name": "Structure (no parcel)",
    "id": "A0095",
    "measured": 235,
-   "estimated": 18,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2449,7 +2430,7 @@
    "name": "Building on Government Parcel parcel",
    "id": "A0096",
    "measured": 103860,
-   "estimated": 3888,
+   "estimated": 3219,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2457,7 +2438,7 @@
    "name": "533 S Grand Ave",
    "id": "A0097",
    "measured": 13896,
-   "estimated": 362,
+   "estimated": 664,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2465,7 +2446,7 @@
    "name": "263 S Main St",
    "id": "A0098",
    "measured": 29077,
-   "estimated": 43,
+   "estimated": 70,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2473,7 +2454,7 @@
    "name": "532 S Broadway",
    "id": "A0099",
    "measured": 11022,
-   "estimated": 241,
+   "estimated": 385,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2489,7 +2470,7 @@
    "name": "429 S Main St",
    "id": "A0101",
    "measured": 30184,
-   "estimated": 602,
+   "estimated": 624,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2497,7 +2478,7 @@
    "name": "523 W 6th St",
    "id": "A0102",
    "measured": 90220,
-   "estimated": 2810,
+   "estimated": 2333,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2505,15 +2486,15 @@
    "name": "Structure (no parcel)",
    "id": "A0103",
    "measured": 2686,
-   "estimated": 43,
+   "estimated": 24,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "543 S Broadway",
    "id": "A0104",
-   "measured": 9072,
-   "estimated": 194,
+   "measured": 8983,
+   "estimated": 144,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2521,7 +2502,7 @@
    "name": "Building on unaddressed parcel",
    "id": "A0105",
    "measured": 8232,
-   "estimated": 53,
+   "estimated": 124,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2529,7 +2510,7 @@
    "name": "Structure (no parcel)",
    "id": "A0106",
    "measured": 4217,
-   "estimated": 48,
+   "estimated": 38,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2537,14 +2518,14 @@
    "name": "140 S Broadway",
    "id": "A0107",
    "measured": 58176,
-   "estimated": 1271,
+   "estimated": 749,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "212 S Spring St",
    "id": "A0108",
-   "measured": 17058,
+   "measured": 16995,
    "estimated": 20,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -2553,7 +2534,7 @@
    "name": "Structure (no parcel)",
    "id": "A0109",
    "measured": 1751,
-   "estimated": 181,
+   "estimated": 217,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2561,7 +2542,7 @@
    "name": "251 S Main St",
    "id": "A0110",
    "measured": 8415,
-   "estimated": 44,
+   "estimated": 23,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2569,7 +2550,7 @@
    "name": "145 S Spring St",
    "id": "A0111",
    "measured": 42577,
-   "estimated": 594,
+   "estimated": 360,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2577,15 +2558,15 @@
    "name": "510 S Spring St",
    "id": "A0112",
    "measured": 26330,
-   "estimated": 1007,
+   "estimated": 2631,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "551 S Broadway",
    "id": "A0113",
-   "measured": 7017,
-   "estimated": 189,
+   "measured": 7037,
+   "estimated": 272,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -2601,7 +2582,7 @@
    "name": "Structure (no parcel)",
    "id": "A0115",
    "measured": 3867,
-   "estimated": 68,
+   "estimated": 142,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2609,7 +2590,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0116",
    "measured": 103082,
-   "estimated": 1656,
+   "estimated": 1302,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2617,7 +2598,7 @@
    "name": "315 W 6th St",
    "id": "A0117",
    "measured": 5568,
-   "estimated": 80,
+   "estimated": 143,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2633,7 +2614,7 @@
    "name": "Structure (no parcel)",
    "id": "A0119",
    "measured": 12726,
-   "estimated": 257,
+   "estimated": 274,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2641,7 +2622,7 @@
    "name": "206 S Spring St",
    "id": "A0120",
    "measured": 26817,
-   "estimated": 48,
+   "estimated": 29,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2649,7 +2630,7 @@
    "name": "451 S Main St",
    "id": "A0121",
    "measured": 39240,
-   "estimated": 488,
+   "estimated": 817,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2657,7 +2638,7 @@
    "name": "Structure (no parcel)",
    "id": "A0123",
    "measured": 978,
-   "estimated": 12,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2665,7 +2646,7 @@
    "name": "559 S Broadway",
    "id": "A0124",
    "measured": 9319,
-   "estimated": 187,
+   "estimated": 132,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2673,7 +2654,7 @@
    "name": "541 S Spring St",
    "id": "A0125",
    "measured": 49635,
-   "estimated": 656,
+   "estimated": 699,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2689,7 +2670,7 @@
    "name": "550 S Hope St",
    "id": "A0127",
    "measured": 51133,
-   "estimated": 1346,
+   "estimated": 2712,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2697,7 +2678,7 @@
    "name": "514 S Spring St",
    "id": "A0129",
    "measured": 22596,
-   "estimated": 961,
+   "estimated": 587,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2705,7 +2686,7 @@
    "name": "546 S Broadway",
    "id": "A0130",
    "measured": 3045,
-   "estimated": 151,
+   "estimated": 121,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2713,7 +2694,7 @@
    "name": "400 S Main St",
    "id": "A0131",
    "measured": 32186,
-   "estimated": 362,
+   "estimated": 237,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2721,14 +2702,14 @@
    "name": "611 W 6th St",
    "id": "A0132",
    "measured": 62371,
-   "estimated": 2947,
+   "estimated": 2667,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
   {
    "name": "524 S Flower St",
    "id": "A0133",
-   "measured": 3971,
+   "measured": 3967,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -2737,7 +2718,7 @@
    "name": "412 W 6th St",
    "id": "A0134",
    "measured": 14778,
-   "estimated": 564,
+   "estimated": 470,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2745,7 +2726,7 @@
    "name": "503 S Main St",
    "id": "A0135",
    "measured": 17870,
-   "estimated": 802,
+   "estimated": 850,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2753,7 +2734,7 @@
    "name": "118 S Broadway",
    "id": "A0136",
    "measured": 19762,
-   "estimated": 515,
+   "estimated": 1068,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2761,7 +2742,7 @@
    "name": "213 S Main St",
    "id": "A0137",
    "measured": 1243,
-   "estimated": 66,
+   "estimated": 93,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2769,7 +2750,7 @@
    "name": "606 S Hill St",
    "id": "A0138",
    "measured": 16907,
-   "estimated": 172,
+   "estimated": 193,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2777,7 +2758,7 @@
    "name": "350 S Figueroa St",
    "id": "A0139",
    "measured": 225725,
-   "estimated": 669,
+   "estimated": 915,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -2785,7 +2766,7 @@
    "name": "606 S Olive St",
    "id": "A0140",
    "measured": 35851,
-   "estimated": 655,
+   "estimated": 792,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -2793,15 +2774,15 @@
    "name": "103 W 3rd St",
    "id": "A0141",
    "measured": 5754,
-   "estimated": 36,
+   "estimated": 18,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "558 S Broadway",
    "id": "A0142",
-   "measured": 11883,
-   "estimated": 160,
+   "measured": 11886,
+   "estimated": 210,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
@@ -2809,7 +2790,7 @@
    "name": "607 S Hill St",
    "id": "A0143",
    "measured": 25155,
-   "estimated": 237,
+   "estimated": 246,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2817,15 +2798,15 @@
    "name": "424 S Main St",
    "id": "A0144",
    "measured": 23273,
-   "estimated": 181,
+   "estimated": 100,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "217 W 6th St",
    "id": "A0145",
-   "measured": 4781,
-   "estimated": 128,
+   "measured": 4784,
+   "estimated": 274,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2833,7 +2814,7 @@
    "name": "524 S Spring St",
    "id": "A0146",
    "measured": 21294,
-   "estimated": 334,
+   "estimated": 269,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2841,14 +2822,14 @@
    "name": "108 W 2nd St",
    "id": "A0147",
    "measured": 42163,
-   "estimated": 213,
+   "estimated": 410,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0148",
-   "measured": 276,
+   "measured": 269,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -2857,7 +2838,7 @@
    "name": "601 S Broadway",
    "id": "A0149",
    "measured": 14718,
-   "estimated": 160,
+   "estimated": 244,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -2865,7 +2846,7 @@
    "name": "Structure (no parcel)",
    "id": "A0150",
    "measured": 433,
-   "estimated": 18,
+   "estimated": 15,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2873,15 +2854,15 @@
    "name": "510 W 6th St",
    "id": "A0151",
    "measured": 32040,
-   "estimated": 369,
+   "estimated": 295,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "448 S Main St",
    "id": "A0152",
-   "measured": 12116,
-   "estimated": 34,
+   "measured": 12102,
+   "estimated": 35,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2889,7 +2870,7 @@
    "name": "202 W 1st St",
    "id": "A0153",
    "measured": 73799,
-   "estimated": 1634,
+   "estimated": 1207,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2897,7 +2878,7 @@
    "name": "530 W 6th St",
    "id": "A0155",
    "measured": 21869,
-   "estimated": 439,
+   "estimated": 198,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2905,7 +2886,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0156",
    "measured": 96969,
-   "estimated": 2484,
+   "estimated": 1072,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2913,7 +2894,7 @@
    "name": "Structure (no parcel)",
    "id": "A0157",
    "measured": 625,
-   "estimated": 86,
+   "estimated": 110,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2921,7 +2902,7 @@
    "name": "215 W 6th St",
    "id": "A0158",
    "measured": 29339,
-   "estimated": 609,
+   "estimated": 1352,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2937,7 +2918,7 @@
    "name": "Building (no parcel)",
    "id": "A0160",
    "measured": 109130,
-   "estimated": 764,
+   "estimated": 402,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2945,7 +2926,7 @@
    "name": "115 E 3rd St",
    "id": "A0161",
    "measured": 10824,
-   "estimated": 37,
+   "estimated": 41,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2953,15 +2934,15 @@
    "name": "234 W 1st St",
    "id": "A0162",
    "measured": 20278,
-   "estimated": 572,
+   "estimated": 421,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "456 S Main St",
    "id": "A0163",
-   "measured": 26579,
-   "estimated": 309,
+   "measured": 26646,
+   "estimated": 223,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2969,7 +2950,7 @@
    "name": "120 E 4th St",
    "id": "A0164",
    "measured": 24551,
-   "estimated": 55,
+   "estimated": 158,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -2985,7 +2966,7 @@
    "name": "617 S Olive St",
    "id": "A0166",
    "measured": 14841,
-   "estimated": 315,
+   "estimated": 244,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -2993,7 +2974,7 @@
    "name": "Structure (no parcel)",
    "id": "A0167",
    "measured": 1027,
-   "estimated": 7,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3001,31 +2982,31 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0168",
    "measured": 42652,
-   "estimated": 118,
+   "estimated": 190,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "609 S Broadway",
    "id": "A0169",
-   "measured": 45289,
-   "estimated": 454,
+   "measured": 45305,
+   "estimated": 469,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "117 Winston St",
    "id": "A0170",
-   "measured": 14594,
-   "estimated": 107,
+   "measured": 14674,
+   "estimated": 74,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "105 E 5th St",
    "id": "A0171",
-   "measured": 8113,
-   "estimated": 22,
+   "measured": 8057,
+   "estimated": 36,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3033,15 +3014,15 @@
    "name": "118 Winston St",
    "id": "A0172",
    "measured": 5482,
-   "estimated": 29,
+   "estimated": 25,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "609 S Grand Ave",
    "id": "A0173",
-   "measured": 14165,
-   "estimated": 366,
+   "measured": 14208,
+   "estimated": 186,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3049,7 +3030,7 @@
    "name": "Structure (no parcel)",
    "id": "A0174",
    "measured": 17077,
-   "estimated": 65,
+   "estimated": 107,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3057,7 +3038,7 @@
    "name": "538 S Flower St",
    "id": "A0175",
    "measured": 46294,
-   "estimated": 225,
+   "estimated": 259,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3065,7 +3046,7 @@
    "name": "625 S Hill St",
    "id": "A0176",
    "measured": 19519,
-   "estimated": 191,
+   "estimated": 183,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3073,47 +3054,47 @@
    "name": "600 S Broadway",
    "id": "A0178",
    "measured": 26525,
-   "estimated": 558,
+   "estimated": 453,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
   {
    "name": "612 W 6th St",
    "id": "A0179",
-   "measured": 2857,
-   "estimated": 77,
+   "measured": 2837,
+   "estimated": 30,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "628 S Hill St",
    "id": "A0180",
-   "measured": 1479,
-   "estimated": 2,
+   "measured": 1463,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "128 E 4th St",
    "id": "A0181",
-   "measured": 9291,
-   "estimated": 71,
+   "measured": 9298,
+   "estimated": 52,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "619 S Olive St",
    "id": "A0182",
-   "measured": 6729,
-   "estimated": 53,
+   "measured": 6699,
+   "estimated": 166,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "122 Winston St",
    "id": "A0183",
-   "measured": 10118,
-   "estimated": 34,
+   "measured": 10094,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3121,7 +3102,7 @@
    "name": "108 E 5th St",
    "id": "A0184",
    "measured": 18249,
-   "estimated": 261,
+   "estimated": 185,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3136,7 +3117,7 @@
   {
    "name": "425 S Los Angeles St",
    "id": "A0188",
-   "measured": 7315,
+   "measured": 7229,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -3145,14 +3126,14 @@
    "name": "121 S Hope St",
    "id": "A0189",
    "measured": 75135,
-   "estimated": 737,
+   "estimated": 1088,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "401 S Los Angeles St",
    "id": "A0190",
-   "measured": 5160,
+   "measured": 5159,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -3169,7 +3150,7 @@
    "name": "601 S Spring St",
    "id": "A0192",
    "measured": 18260,
-   "estimated": 305,
+   "estimated": 242,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3177,15 +3158,15 @@
    "name": "331 S Los Angeles St",
    "id": "A0193",
    "measured": 11304,
-   "estimated": 11,
+   "estimated": 24,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "630 W 6th St.",
    "id": "A0194",
-   "measured": 26034,
-   "estimated": 250,
+   "measured": 26038,
+   "estimated": 239,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3193,7 +3174,7 @@
    "name": "548 S Spring St. B7 Los Angeles",
    "id": "A0195",
    "measured": 30418,
-   "estimated": 599,
+   "estimated": 821,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3201,15 +3182,15 @@
    "name": "222 S Figueroa St",
    "id": "A0196",
    "measured": 73305,
-   "estimated": 399,
+   "estimated": 623,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
   {
    "name": "127 E 3rd St",
    "id": "A0197",
-   "measured": 17265,
-   "estimated": 24,
+   "measured": 17224,
+   "estimated": 40,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3217,23 +3198,23 @@
    "name": "Structure (no parcel)",
    "id": "A0198",
    "measured": 1272,
-   "estimated": 8,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "615 S Grand Ave",
    "id": "A0199",
-   "measured": 6932,
-   "estimated": 40,
+   "measured": 6903,
+   "estimated": 23,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "443 S Los Angeles St",
    "id": "A0200",
-   "measured": 9406,
-   "estimated": 37,
+   "measured": 9405,
+   "estimated": 51,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3241,7 +3222,7 @@
    "name": "431 S Los Angeles St",
    "id": "A0201",
    "measured": 4414,
-   "estimated": 9,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3249,7 +3230,7 @@
    "name": "325 S Los Angeles St",
    "id": "A0202",
    "measured": 5458,
-   "estimated": 10,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3257,7 +3238,7 @@
    "name": "612 S Broadway",
    "id": "A0203",
    "measured": 13163,
-   "estimated": 339,
+   "estimated": 239,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3265,31 +3246,31 @@
    "name": "621 S Broadway",
    "id": "A0204",
    "measured": 11397,
-   "estimated": 176,
+   "estimated": 279,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "627 S Olive St",
    "id": "A0205",
-   "measured": 17856,
-   "estimated": 93,
+   "measured": 18126,
+   "estimated": 88,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
   {
    "name": "514 S Main St",
    "id": "A0206",
-   "measured": 10775,
-   "estimated": 166,
+   "measured": 10806,
+   "estimated": 162,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "437 S Los Angeles St",
    "id": "A0207",
-   "measured": 5575,
-   "estimated": 28,
+   "measured": 5599,
+   "estimated": 49,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3297,7 +3278,7 @@
    "name": "222 S Main St.",
    "id": "A0208",
    "measured": 52004,
-   "estimated": 571,
+   "estimated": 804,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -3305,15 +3286,15 @@
    "name": "631 S Hill St",
    "id": "A0209",
    "measured": 13380,
-   "estimated": 632,
+   "estimated": 336,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "121 E 5th St",
    "id": "A0210",
-   "measured": 18833,
-   "estimated": 98,
+   "measured": 18834,
+   "estimated": 170,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3321,7 +3302,7 @@
    "name": "301 S Los Angeles St",
    "id": "A0211",
    "measured": 6783,
-   "estimated": 10,
+   "estimated": 26,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3329,7 +3310,7 @@
    "name": "111 N Hill St",
    "id": "A0212",
    "measured": 176865,
-   "estimated": 6581,
+   "estimated": 4003,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3337,7 +3318,7 @@
    "name": "447 S Los Angeles St",
    "id": "A0213",
    "measured": 5987,
-   "estimated": 54,
+   "estimated": 57,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3345,7 +3326,7 @@
    "name": "214 S Main St",
    "id": "A0214",
    "measured": 42197,
-   "estimated": 351,
+   "estimated": 356,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3353,23 +3334,23 @@
    "name": "607 S Spring St",
    "id": "A0215",
    "measured": 12717,
-   "estimated": 305,
+   "estimated": 124,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "259 S Los Angeles St",
    "id": "A0216",
-   "measured": 20768,
-   "estimated": 14,
+   "measured": 20809,
+   "estimated": 52,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "520 S Main St",
    "id": "A0217",
-   "measured": 11275,
-   "estimated": 93,
+   "measured": 11240,
+   "estimated": 27,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3377,23 +3358,23 @@
    "name": "249 S Los Angeles St",
    "id": "A0218",
    "measured": 35931,
-   "estimated": 56,
+   "estimated": 109,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "633 S Olive St",
    "id": "A0219",
-   "measured": 7146,
-   "estimated": 32,
+   "measured": 6906,
+   "estimated": 18,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "116 E 5th St",
    "id": "A0220",
-   "measured": 9425,
-   "estimated": 40,
+   "measured": 9379,
+   "estimated": 26,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3401,7 +3382,7 @@
    "name": "620 S Broadway",
    "id": "A0221",
    "measured": 8252,
-   "estimated": 109,
+   "estimated": 95,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3409,7 +3390,7 @@
    "name": "646 S Olive St",
    "id": "A0222",
    "measured": 25560,
-   "estimated": 143,
+   "estimated": 182,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3417,15 +3398,15 @@
    "name": "301 W 1st St",
    "id": "A0223",
    "measured": 38892,
-   "estimated": 173,
+   "estimated": 354,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "629 S Broadway",
    "id": "A0224",
-   "measured": 11551,
-   "estimated": 94,
+   "measured": 11566,
+   "estimated": 142,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3433,7 +3414,7 @@
    "name": "550 S Flower St",
    "id": "A0225",
    "measured": 22639,
-   "estimated": 223,
+   "estimated": 343,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3441,7 +3422,7 @@
    "name": "601 Wilshire Blvd",
    "id": "A0226",
    "measured": 25186,
-   "estimated": 442,
+   "estimated": 417,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3449,15 +3430,15 @@
    "name": "635 S Hill St",
    "id": "A0227",
    "measured": 14745,
-   "estimated": 205,
+   "estimated": 77,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "526 S Main St",
    "id": "A0228",
-   "measured": 5428,
-   "estimated": 90,
+   "measured": 5432,
+   "estimated": 93,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3465,7 +3446,7 @@
    "name": "Structure (no parcel)",
    "id": "A0229",
    "measured": 1038,
-   "estimated": 18,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3473,23 +3454,23 @@
    "name": "530 S Main St",
    "id": "A0230",
    "measured": 7282,
-   "estimated": 81,
+   "estimated": 105,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "635 S Broadway",
    "id": "A0231",
-   "measured": 3400,
-   "estimated": 12,
+   "measured": 3317,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "501 S Los Angeles St",
    "id": "A0233",
-   "measured": 17229,
-   "estimated": 165,
+   "measured": 17275,
+   "estimated": 161,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3497,7 +3478,7 @@
    "name": "645 S Hill St",
    "id": "A0234",
    "measured": 1011,
-   "estimated": 36,
+   "estimated": 41,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3505,15 +3486,15 @@
    "name": "637 Wilshire Blvd",
    "id": "A0235",
    "measured": 32713,
-   "estimated": 344,
+   "estimated": 462,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
   {
    "name": "414 S Los Angeles St",
    "id": "A0236",
-   "measured": 11330,
-   "estimated": 58,
+   "measured": 11331,
+   "estimated": 29,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3521,7 +3502,7 @@
    "name": "422 S Los Angeles St",
    "id": "A0237",
    "measured": 15785,
-   "estimated": 36,
+   "estimated": 66,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3529,7 +3510,7 @@
    "name": "600 S Spring St",
    "id": "A0238",
    "measured": 31409,
-   "estimated": 635,
+   "estimated": 576,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3537,15 +3518,15 @@
    "name": "404 S Los Angeles St",
    "id": "A0239",
    "measured": 10990,
-   "estimated": 22,
+   "estimated": 16,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "416 S Los Angeles St",
    "id": "A0240",
-   "measured": 3676,
-   "estimated": 27,
+   "measured": 3675,
+   "estimated": 44,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3553,7 +3534,7 @@
    "name": "626 S Broadway",
    "id": "A0241",
    "measured": 19877,
-   "estimated": 282,
+   "estimated": 278,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3561,7 +3542,7 @@
    "name": "400 S Los Angeles St",
    "id": "A0242",
    "measured": 11231,
-   "estimated": 14,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3569,7 +3550,7 @@
    "name": "515 S Los Angeles St",
    "id": "A0243",
    "measured": 4756,
-   "estimated": 35,
+   "estimated": 52,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3577,7 +3558,7 @@
    "name": "621 S Spring St",
    "id": "A0244",
    "measured": 25997,
-   "estimated": 247,
+   "estimated": 285,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3585,7 +3566,7 @@
    "name": "643 S Olive St",
    "id": "A0245",
    "measured": 12426,
-   "estimated": 105,
+   "estimated": 129,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3593,7 +3574,7 @@
    "name": "372 S Los Angeles St",
    "id": "A0246",
    "measured": 10275,
-   "estimated": 17,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3601,7 +3582,7 @@
    "name": "Building on Office Buildings parcel",
    "id": "A0247",
    "measured": 1744,
-   "estimated": 95,
+   "estimated": 65,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3616,7 +3597,7 @@
   {
    "name": "430 S Los Angeles St",
    "id": "A0249",
-   "measured": 17443,
+   "measured": 17441,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -3625,7 +3606,7 @@
    "name": "640 S Grand Ave",
    "id": "A0250",
    "measured": 5339,
-   "estimated": 77,
+   "estimated": 154,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3633,7 +3614,7 @@
    "name": "640 S Hill St",
    "id": "A0251",
    "measured": 65491,
-   "estimated": 575,
+   "estimated": 1020,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3641,7 +3622,7 @@
    "name": "Building (no parcel)",
    "id": "A0252",
    "measured": 854,
-   "estimated": 19,
+   "estimated": 18,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3649,7 +3630,7 @@
    "name": "880 W 1st St",
    "id": "A0253",
    "measured": 96696,
-   "estimated": 823,
+   "estimated": 1200,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3657,7 +3638,7 @@
    "name": "324 S Los Angeles St",
    "id": "A0254",
    "measured": 11160,
-   "estimated": 30,
+   "estimated": 31,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3673,7 +3654,7 @@
    "name": "322 S Los Angeles St",
    "id": "A0256",
    "measured": 9263,
-   "estimated": 53,
+   "estimated": 40,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3681,15 +3662,15 @@
    "name": "396 S Los Angeles St",
    "id": "A0257",
    "measured": 48718,
-   "estimated": 57,
+   "estimated": 64,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "310 S Los Angeles St",
    "id": "A0258",
-   "measured": 10312,
-   "estimated": 47,
+   "measured": 10372,
+   "estimated": 96,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3697,31 +3678,31 @@
    "name": "525 S Los Angeles St",
    "id": "A0259",
    "measured": 3732,
-   "estimated": 12,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "444 S Los Angeles St",
    "id": "A0260",
-   "measured": 11944,
-   "estimated": 12,
+   "measured": 11946,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "300 S Los Angeles St",
    "id": "A0261",
-   "measured": 11936,
-   "estimated": 12,
+   "measured": 11876,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "529 S Los Angeles St",
    "id": "A0263",
-   "measured": 4268,
-   "estimated": 16,
+   "measured": 4145,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3729,7 +3710,7 @@
    "name": "431 W 7th St",
    "id": "A0264",
    "measured": 45876,
-   "estimated": 347,
+   "estimated": 126,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3737,7 +3718,7 @@
    "name": "203 S Los Angeles St",
    "id": "A0265",
    "measured": 19967,
-   "estimated": 36,
+   "estimated": 41,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3745,7 +3726,7 @@
    "name": "Structure (no parcel)",
    "id": "A0267",
    "measured": 227,
-   "estimated": 5,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3753,7 +3734,7 @@
    "name": "638 S Broadway",
    "id": "A0268",
    "measured": 11159,
-   "estimated": 235,
+   "estimated": 335,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -3761,7 +3742,7 @@
    "name": "545 S Los Angeles St",
    "id": "A0269",
    "measured": 36797,
-   "estimated": 334,
+   "estimated": 391,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3769,7 +3750,7 @@
    "name": "252 S Los Angeles St",
    "id": "A0270",
    "measured": 4767,
-   "estimated": 10,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3777,7 +3758,7 @@
    "name": "401 W 7th St",
    "id": "A0271",
    "measured": 32633,
-   "estimated": 188,
+   "estimated": 90,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
@@ -3793,7 +3774,7 @@
    "name": "517 W 7th St",
    "id": "A0274",
    "measured": 1716,
-   "estimated": 8,
+   "estimated": 25,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3801,7 +3782,7 @@
    "name": "649 S Olive St",
    "id": "A0275",
    "measured": 29303,
-   "estimated": 409,
+   "estimated": 470,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3809,7 +3790,7 @@
    "name": "618 S Spring St",
    "id": "A0276",
    "measured": 12549,
-   "estimated": 477,
+   "estimated": 418,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3817,23 +3798,23 @@
    "name": "Building on Government Parcel parcel",
    "id": "A0277",
    "measured": 107209,
-   "estimated": 1956,
+   "estimated": 1368,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "641 S Broadway",
    "id": "A0278",
-   "measured": 48974,
-   "estimated": 779,
+   "measured": 49042,
+   "estimated": 372,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "533 S Los Angeles St",
    "id": "A0279",
-   "measured": 13799,
-   "estimated": 132,
+   "measured": 13922,
+   "estimated": 211,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3841,7 +3822,7 @@
    "name": "215 Winston St",
    "id": "A0280",
    "measured": 16478,
-   "estimated": 18,
+   "estimated": 33,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3849,7 +3830,7 @@
    "name": "254 S Los Angeles St",
    "id": "A0281",
    "measured": 14250,
-   "estimated": 29,
+   "estimated": 24,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3857,7 +3838,7 @@
    "name": "212 1/2 Winston St",
    "id": "A0282",
    "measured": 9321,
-   "estimated": 16,
+   "estimated": 34,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3865,7 +3846,7 @@
    "name": "Structure (no parcel)",
    "id": "A0283",
    "measured": 301,
-   "estimated": 2,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3873,7 +3854,7 @@
    "name": "Building (no parcel)",
    "id": "A0284",
    "measured": 7637,
-   "estimated": 256,
+   "estimated": 393,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -3881,7 +3862,7 @@
    "name": "Building on Office Buildings parcel",
    "id": "A0285",
    "measured": 7458,
-   "estimated": 139,
+   "estimated": 125,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3889,7 +3870,7 @@
    "name": "214 E 4th St",
    "id": "A0286",
    "measured": 18904,
-   "estimated": 16,
+   "estimated": 22,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3897,15 +3878,15 @@
    "name": "513 W 7th St",
    "id": "A0287",
    "measured": 5884,
-   "estimated": 175,
+   "estimated": 121,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "216 Winston St",
    "id": "A0289",
-   "measured": 7063,
-   "estimated": 9,
+   "measured": 7066,
+   "estimated": 15,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3913,7 +3894,7 @@
    "name": "216 Boyd St",
    "id": "A0290",
    "measured": 6407,
-   "estimated": 10,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3921,7 +3902,7 @@
    "name": "600 Wilshire Blvd",
    "id": "A0291",
    "measured": 44482,
-   "estimated": 984,
+   "estimated": 1534,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -3929,7 +3910,7 @@
    "name": "644 S Broadway",
    "id": "A0292",
    "measured": 9475,
-   "estimated": 457,
+   "estimated": 231,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3937,7 +3918,7 @@
    "name": "626 S Spring St",
    "id": "A0293",
    "measured": 8499,
-   "estimated": 141,
+   "estimated": 102,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3945,15 +3926,15 @@
    "name": "Building on Restaurants, Cocktail Lounges parcel",
    "id": "A0295",
    "measured": 2804,
-   "estimated": 24,
+   "estimated": 26,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0296",
-   "measured": 262,
-   "estimated": 12,
+   "measured": 256,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3961,7 +3942,7 @@
    "name": "235 S Figueroa St",
    "id": "A0297",
    "measured": 185406,
-   "estimated": 836,
+   "estimated": 853,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3969,7 +3950,7 @@
    "name": "639 S Spring St",
    "id": "A0298",
    "measured": 18823,
-   "estimated": 505,
+   "estimated": 241,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -3977,7 +3958,7 @@
    "name": "214 E 3rd St",
    "id": "A0300",
    "measured": 8645,
-   "estimated": 22,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -3985,7 +3966,7 @@
    "name": "529 W 7th St",
    "id": "A0302",
    "measured": 16488,
-   "estimated": 154,
+   "estimated": 221,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -3993,15 +3974,15 @@
    "name": "558 S Main St",
    "id": "A0303",
    "measured": 38020,
-   "estimated": 381,
+   "estimated": 355,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "215 E 5th St",
    "id": "A0304",
-   "measured": 5590,
-   "estimated": 5,
+   "measured": 5587,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4009,7 +3990,7 @@
    "name": "118 S Main St",
    "id": "A0305",
    "measured": 3765,
-   "estimated": 184,
+   "estimated": 254,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4017,15 +3998,15 @@
    "name": "612 S Flower St",
    "id": "A0306",
    "measured": 74838,
-   "estimated": 1220,
+   "estimated": 535,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "626 Wilshire Blvd",
    "id": "A0307",
-   "measured": 31495,
-   "estimated": 139,
+   "measured": 31496,
+   "estimated": 119,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -4033,7 +4014,7 @@
    "name": "Structure (no parcel)",
    "id": "A0308",
    "measured": 2022,
-   "estimated": 14,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4049,15 +4030,15 @@
    "name": "Building on Office Buildings parcel",
    "id": "A0310",
    "measured": 7940,
-   "estimated": 123,
+   "estimated": 115,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "218 Boyd St",
    "id": "A0311",
-   "measured": 6375,
-   "estimated": 7,
+   "measured": 6371,
+   "estimated": 16,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4065,7 +4046,7 @@
    "name": "648 S Broadway",
    "id": "A0312",
    "measured": 8494,
-   "estimated": 157,
+   "estimated": 126,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4078,18 +4059,18 @@
    "storey_from": "default"
   },
   {
-   "name": "224 E 4th St",
+   "name": "221 E 5th St",
    "id": "A0314",
-   "measured": 9480,
-   "estimated": 27,
+   "measured": 12160,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
-   "name": "221 E 5th St",
+   "name": "224 E 4th St",
    "id": "A0315",
-   "measured": 12645,
-   "estimated": 20,
+   "measured": 9480,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4097,7 +4078,7 @@
    "name": "630 S Spring St",
    "id": "A0316",
    "measured": 12842,
-   "estimated": 126,
+   "estimated": 154,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4105,7 +4086,7 @@
    "name": "145 N Broadway",
    "id": "A0317",
    "measured": 6749,
-   "estimated": 54,
+   "estimated": 99,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4113,7 +4094,7 @@
    "name": "526 S Los Angeles St",
    "id": "A0318",
    "measured": 234,
-   "estimated": 3,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4121,7 +4102,7 @@
    "name": "218 E 3rd St",
    "id": "A0319",
    "measured": 7526,
-   "estimated": 15,
+   "estimated": 28,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4129,7 +4110,7 @@
    "name": "102 W 1st St",
    "id": "A0320",
    "measured": 910,
-   "estimated": 5,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4137,14 +4118,14 @@
    "name": "110 S Main St",
    "id": "A0321",
    "measured": 19573,
-   "estimated": 565,
+   "estimated": 561,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Government Parcel parcel",
    "id": "A0322",
-   "measured": 4800,
+   "measured": 4798,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -4158,34 +4139,34 @@
    "storey_from": "default"
   },
   {
-   "name": "236 S Los Angeles St",
+   "name": "Building on Government Parcel parcel",
    "id": "A0324",
+   "measured": 7708,
+   "estimated": 38,
+   "storey_m": 4.0,
+   "storey_from": "default"
+  },
+  {
+   "name": "236 S Los Angeles St",
+   "id": "A0325",
    "measured": 101052,
-   "estimated": 343,
+   "estimated": 348,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "500 S Los Angeles St",
-   "id": "A0325",
-   "measured": 74975,
-   "estimated": 42,
+   "id": "A0326",
+   "measured": 74955,
+   "estimated": 44,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "649 S Spring St",
-   "id": "A0326",
-   "measured": 774,
-   "estimated": 24,
-   "storey_m": 4.0,
-   "storey_from": "default"
-  },
-  {
-   "name": "Building on Government Parcel parcel",
    "id": "A0327",
-   "measured": 7154,
-   "estimated": 21,
+   "measured": 774,
+   "estimated": 34,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4193,7 +4174,7 @@
    "name": "611 W 7th St",
    "id": "A0328",
    "measured": 6707,
-   "estimated": 94,
+   "estimated": 96,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4201,15 +4182,15 @@
    "name": "219 W 7th St",
    "id": "A0329",
    "measured": 17607,
-   "estimated": 102,
+   "estimated": 137,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "224 Boyd St",
    "id": "A0330",
-   "measured": 10289,
-   "estimated": 25,
+   "measured": 10297,
+   "estimated": 34,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4217,7 +4198,7 @@
    "name": "800 W 6th St",
    "id": "A0331",
    "measured": 20933,
-   "estimated": 433,
+   "estimated": 651,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -4225,15 +4206,15 @@
    "name": "235 Winston St",
    "id": "A0332",
    "measured": 19151,
-   "estimated": 29,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "617 W 7th St",
    "id": "A0333",
-   "measured": 37194,
-   "estimated": 361,
+   "measured": 37193,
+   "estimated": 163,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -4241,7 +4222,7 @@
    "name": "220 E 2nd St",
    "id": "A0334",
    "measured": 53936,
-   "estimated": 146,
+   "estimated": 136,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4249,7 +4230,7 @@
    "name": "515 S Figueroa St",
    "id": "A0335",
    "measured": 37259,
-   "estimated": 458,
+   "estimated": 1019,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4320,8 +4301,8 @@
   {
    "name": "234 Winston St",
    "id": "A0344",
-   "measured": 21244,
-   "estimated": 18,
+   "measured": 21168,
+   "estimated": 17,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4329,7 +4310,7 @@
    "name": "229 Boyd St",
    "id": "A0345",
    "measured": 7312,
-   "estimated": 6,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4337,7 +4318,7 @@
    "name": "410 W 7th St",
    "id": "A0346",
    "measured": 18055,
-   "estimated": 62,
+   "estimated": 55,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4353,7 +4334,7 @@
    "name": "712 S Olive St",
    "id": "A0348",
    "measured": 36190,
-   "estimated": 107,
+   "estimated": 116,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4361,7 +4342,7 @@
    "name": "Structure (no parcel)",
    "id": "A0349",
    "measured": 775,
-   "estimated": 11,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4369,31 +4350,31 @@
    "name": "404 W 7th St",
    "id": "A0350",
    "measured": 26792,
-   "estimated": 156,
+   "estimated": 242,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "339 Wall St",
    "id": "A0352",
-   "measured": 9629,
+   "measured": 9617,
    "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
-   "name": "341 Wall St",
-   "id": "A0354",
-   "measured": 11473,
-   "estimated": 15,
+   "name": "316 W 7th St",
+   "id": "A0353",
+   "measured": 6543,
+   "estimated": 18,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
-   "name": "316 W 7th St",
+   "name": "341 Wall St",
    "id": "A0355",
-   "measured": 6650,
-   "estimated": 7,
+   "measured": 11478,
+   "estimated": 18,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4401,15 +4382,15 @@
    "name": "231 E 3rd St",
    "id": "A0356",
    "measured": 60364,
-   "estimated": 298,
+   "estimated": 152,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "542 S Los Angeles St",
    "id": "A0357",
-   "measured": 8391,
-   "estimated": 21,
+   "measured": 8385,
+   "estimated": 29,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4417,7 +4398,7 @@
    "name": "500 W 7th St",
    "id": "A0359",
    "measured": 46918,
-   "estimated": 75,
+   "estimated": 110,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4425,7 +4406,7 @@
    "name": "520 W 7th St",
    "id": "A0360",
    "measured": 31597,
-   "estimated": 73,
+   "estimated": 91,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -4433,7 +4414,7 @@
    "name": "241 Winston St",
    "id": "A0361",
    "measured": 24294,
-   "estimated": 25,
+   "estimated": 21,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4441,7 +4422,7 @@
    "name": "101 S Los Angeles St",
    "id": "A0362",
    "measured": 9211,
-   "estimated": 230,
+   "estimated": 414,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4449,7 +4430,7 @@
    "name": "Building on Single parcel",
    "id": "A0363",
    "measured": 5069,
-   "estimated": 52,
+   "estimated": 49,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4457,7 +4438,7 @@
    "name": "600 S Main St",
    "id": "A0364",
    "measured": 71420,
-   "estimated": 983,
+   "estimated": 721,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4465,31 +4446,31 @@
    "name": "117 W 7th St",
    "id": "A0365",
    "measured": 30196,
-   "estimated": 631,
+   "estimated": 698,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
   {
    "name": "507 Maple Ave",
    "id": "A0366",
-   "measured": 6357,
-   "estimated": 8,
+   "measured": 6376,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "546 S Los Angeles St",
    "id": "A0367",
-   "measured": 6624,
-   "estimated": 21,
+   "measured": 6679,
+   "estimated": 47,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "233 E 5th St",
    "id": "A0368",
-   "measured": 8605,
-   "estimated": 9,
+   "measured": 8608,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4505,7 +4486,7 @@
    "name": "655 S Hope St",
    "id": "A0370",
    "measured": 17572,
-   "estimated": 302,
+   "estimated": 384,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4513,7 +4494,7 @@
    "name": "701 S Broadway",
    "id": "A0371",
    "measured": 52382,
-   "estimated": 228,
+   "estimated": 173,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4521,7 +4502,7 @@
    "name": "811 Wilshire Blvd",
    "id": "A0372",
    "measured": 43239,
-   "estimated": 429,
+   "estimated": 305,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4529,14 +4510,14 @@
    "name": "770 Wilshire Blvd",
    "id": "A0373",
    "measured": 20641,
-   "estimated": 181,
+   "estimated": 196,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
   {
    "name": "529 Maple Ave",
    "id": "A0374",
-   "measured": 15352,
+   "measured": 15349,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -4544,15 +4525,15 @@
   {
    "name": "714 S Hill St",
    "id": "A0375",
-   "measured": 28008,
-   "estimated": 307,
+   "measured": 28115,
+   "estimated": 187,
    "storey_m": 4.5,
    "storey_from": "measured walls"
   },
   {
    "name": "405 Wall St",
    "id": "A0376",
-   "measured": 12771,
+   "measured": 12722,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -4561,23 +4542,23 @@
    "name": "300 E 3rd St",
    "id": "A0378",
    "measured": 8861,
-   "estimated": 14,
+   "estimated": 22,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "620 S Main St",
    "id": "A0379",
-   "measured": 14428,
-   "estimated": 159,
+   "measured": 14455,
+   "estimated": 100,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
   {
    "name": "560 S Los Angeles St",
    "id": "A0380",
-   "measured": 65626,
-   "estimated": 63,
+   "measured": 65580,
+   "estimated": 77,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4585,7 +4566,7 @@
    "name": "888 W 6th St",
    "id": "A0381",
    "measured": 18082,
-   "estimated": 180,
+   "estimated": 131,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4593,7 +4574,7 @@
    "name": "Structure (no parcel)",
    "id": "A0382",
    "measured": 9172,
-   "estimated": 6,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4601,15 +4582,15 @@
    "name": "700 S Broadway",
    "id": "A0383",
    "measured": 24811,
-   "estimated": 80,
+   "estimated": 64,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "241 E 5th St",
    "id": "A0384",
-   "measured": 15982,
-   "estimated": 17,
+   "measured": 16018,
+   "estimated": 16,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4625,7 +4606,7 @@
    "name": "Structure (no parcel)",
    "id": "A0386",
    "measured": 25710,
-   "estimated": 143,
+   "estimated": 123,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4633,22 +4614,22 @@
    "name": "545 S Figueroa St",
    "id": "A0387",
    "measured": 69500,
-   "estimated": 190,
+   "estimated": 216,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "413 Wall St",
    "id": "A0388",
-   "measured": 15988,
-   "estimated": 41,
+   "measured": 16036,
+   "estimated": 52,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "630 S Main St",
    "id": "A0389",
-   "measured": 1912,
+   "measured": 1878,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -4657,7 +4638,7 @@
    "name": "111 W 7th St",
    "id": "A0390",
    "measured": 33757,
-   "estimated": 379,
+   "estimated": 564,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4665,15 +4646,15 @@
    "name": "Structure (no parcel)",
    "id": "A0391",
    "measured": 332,
-   "estimated": 7,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "301 Boyd St",
    "id": "A0392",
-   "measured": 18573,
-   "estimated": 33,
+   "measured": 18574,
+   "estimated": 35,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4681,7 +4662,7 @@
    "name": "330 Wall St",
    "id": "A0393",
    "measured": 8837,
-   "estimated": 11,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4689,7 +4670,7 @@
    "name": "716 S Olive St",
    "id": "A0394",
    "measured": 21826,
-   "estimated": 60,
+   "estimated": 61,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4705,7 +4686,7 @@
    "name": "421 Wall St",
    "id": "A0396",
    "measured": 7234,
-   "estimated": 21,
+   "estimated": 51,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4713,7 +4694,7 @@
    "name": "308 E 3rd St",
    "id": "A0397",
    "measured": 7458,
-   "estimated": 27,
+   "estimated": 26,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4721,7 +4702,7 @@
    "name": "616 S Figueroa St",
    "id": "A0398",
    "measured": 18533,
-   "estimated": 63,
+   "estimated": 141,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4729,15 +4710,15 @@
    "name": "727 W 7th St",
    "id": "A0399",
    "measured": 58961,
-   "estimated": 926,
+   "estimated": 512,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "111 E 001 St",
    "id": "A0400",
-   "measured": 31213,
-   "estimated": 223,
+   "measured": 31279,
+   "estimated": 117,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4745,7 +4726,7 @@
    "name": "120 S Los Angeles St",
    "id": "A0401",
    "measured": 52268,
-   "estimated": 250,
+   "estimated": 380,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4753,7 +4734,7 @@
    "name": "718 S Hill St",
    "id": "A0402",
    "measured": 10558,
-   "estimated": 154,
+   "estimated": 145,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4761,15 +4742,15 @@
    "name": "425 Wall St",
    "id": "A0403",
    "measured": 16356,
-   "estimated": 20,
+   "estimated": 18,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "301 E 4th St",
    "id": "A0404",
-   "measured": 11241,
-   "estimated": 24,
+   "measured": 11242,
+   "estimated": 39,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4785,7 +4766,7 @@
    "name": "123 S Figueroa St",
    "id": "A0406",
    "measured": 175806,
-   "estimated": 316,
+   "estimated": 351,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4800,8 +4781,8 @@
   {
    "name": "710 S Broadway",
    "id": "A0408",
-   "measured": 11609,
-   "estimated": 95,
+   "measured": 11610,
+   "estimated": 92,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4809,7 +4790,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0409",
    "measured": 7906,
-   "estimated": 9,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4817,7 +4798,7 @@
    "name": "600 W 7th St",
    "id": "A0410",
    "measured": 115087,
-   "estimated": 903,
+   "estimated": 1471,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4825,7 +4806,7 @@
    "name": "719 S Broadway",
    "id": "A0411",
    "measured": 13075,
-   "estimated": 121,
+   "estimated": 51,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4840,24 +4821,24 @@
   {
    "name": "640 S Main St",
    "id": "A0413",
-   "measured": 20807,
-   "estimated": 130,
+   "measured": 20811,
+   "estimated": 199,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "623 S Los Angeles St",
    "id": "A0414",
-   "measured": 8994,
-   "estimated": 61,
+   "measured": 9051,
+   "estimated": 54,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0415",
-   "measured": 9694,
-   "estimated": 21,
+   "measured": 9686,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4865,7 +4846,7 @@
    "name": "227 E 2nd St",
    "id": "A0416",
    "measured": 40409,
-   "estimated": 91,
+   "estimated": 113,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4873,7 +4854,7 @@
    "name": "310 E 3rd St",
    "id": "A0417",
    "measured": 7467,
-   "estimated": 24,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4881,14 +4862,14 @@
    "name": "210 W 7th St",
    "id": "A0418",
    "measured": 49192,
-   "estimated": 386,
+   "estimated": 394,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
   {
    "name": "256 Winston St",
    "id": "A0420",
-   "measured": 32943,
+   "measured": 32907,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -4897,7 +4878,7 @@
    "name": "Structure (no parcel)",
    "id": "A0421",
    "measured": 5422,
-   "estimated": 14,
+   "estimated": 16,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4905,15 +4886,15 @@
    "name": "Structure (no parcel)",
    "id": "A0422",
    "measured": 6851,
-   "estimated": 15,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "305 E 4th St",
    "id": "A0424",
-   "measured": 9180,
-   "estimated": 19,
+   "measured": 9183,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4921,7 +4902,7 @@
    "name": "835 Wilshire Blvd",
    "id": "A0425",
    "measured": 14771,
-   "estimated": 44,
+   "estimated": 71,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4937,7 +4918,7 @@
    "name": "800 Wilshire Blvd",
    "id": "A0427",
    "measured": 27861,
-   "estimated": 211,
+   "estimated": 219,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4945,7 +4926,7 @@
    "name": "728 S Hill St",
    "id": "A0428",
    "measured": 20844,
-   "estimated": 114,
+   "estimated": 173,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -4953,15 +4934,15 @@
    "name": "232 E 2nd St",
    "id": "A0429",
    "measured": 92164,
-   "estimated": 66,
+   "estimated": 44,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "716 S Broadway",
    "id": "A0430",
-   "measured": 17132,
-   "estimated": 95,
+   "measured": 17131,
+   "estimated": 195,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4969,7 +4950,7 @@
    "name": "Structure (no parcel)",
    "id": "A0431",
    "measured": 20380,
-   "estimated": 23,
+   "estimated": 52,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -4993,7 +4974,7 @@
    "name": "Structure (no parcel)",
    "id": "A0434",
    "measured": 386,
-   "estimated": 3,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5001,7 +4982,7 @@
    "name": "704 S Spring St",
    "id": "A0435",
    "measured": 19803,
-   "estimated": 97,
+   "estimated": 94,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -5009,15 +4990,15 @@
    "name": "Structure (no parcel)",
    "id": "A0436",
    "measured": 335,
-   "estimated": 10,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0437",
-   "measured": 11697,
-   "estimated": 4,
+   "measured": 11684,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5025,7 +5006,7 @@
    "name": "235 S San Pedro St",
    "id": "A0438",
    "measured": 68850,
-   "estimated": 48,
+   "estimated": 117,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5041,7 +5022,7 @@
    "name": "734 S Hill St",
    "id": "A0440",
    "measured": 1314,
-   "estimated": 281,
+   "estimated": 248,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5049,7 +5030,7 @@
    "name": "725 S Broadway",
    "id": "A0441",
    "measured": 14247,
-   "estimated": 106,
+   "estimated": 97,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5057,7 +5038,7 @@
    "name": "533 S Fremont Ave",
    "id": "A0442",
    "measured": 16739,
-   "estimated": 150,
+   "estimated": 210,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -5065,7 +5046,7 @@
    "name": "267 S San Pedro St",
    "id": "A0444",
    "measured": 76088,
-   "estimated": 204,
+   "estimated": 203,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5088,8 +5069,8 @@
   {
    "name": "641 S Los Angeles St",
    "id": "A0447",
-   "measured": 18439,
-   "estimated": 6,
+   "measured": 18382,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5097,14 +5078,14 @@
    "name": "723 S Grand Ave",
    "id": "A0448",
    "measured": 5828,
-   "estimated": 52,
+   "estimated": 45,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "311 Boyd St",
    "id": "A0449",
-   "measured": 28832,
+   "measured": 28689,
    "estimated": 29,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -5121,7 +5102,7 @@
    "name": "731 S Broadway",
    "id": "A0451",
    "measured": 7827,
-   "estimated": 91,
+   "estimated": 46,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5136,7 +5117,7 @@
   {
    "name": "311 E 4th St",
    "id": "A0453",
-   "measured": 16911,
+   "measured": 16907,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -5144,8 +5125,8 @@
   {
    "name": "818 Wilshire Blvd",
    "id": "A0454",
-   "measured": 4890,
-   "estimated": 71,
+   "measured": 4897,
+   "estimated": 45,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5153,7 +5134,7 @@
    "name": "719 S Spring St",
    "id": "A0455",
    "measured": 15710,
-   "estimated": 101,
+   "estimated": 95,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -5161,7 +5142,7 @@
    "name": "320 W Temple St",
    "id": "A0456",
    "measured": 45841,
-   "estimated": 492,
+   "estimated": 433,
    "storey_m": 4.5,
    "storey_from": "measured walls"
   },
@@ -5169,7 +5150,7 @@
    "name": "770 S Grand Ave",
    "id": "A0457",
    "measured": 215441,
-   "estimated": 432,
+   "estimated": 301,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5177,7 +5158,7 @@
    "name": "701 S Main St",
    "id": "A0458",
    "measured": 7143,
-   "estimated": 14,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5185,7 +5166,7 @@
    "name": "722 S Broadway",
    "id": "A0459",
    "measured": 14687,
-   "estimated": 307,
+   "estimated": 218,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5193,7 +5174,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0460",
    "measured": 5954,
-   "estimated": 66,
+   "estimated": 36,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5201,15 +5182,15 @@
    "name": "652 S Main St",
    "id": "A0461",
    "measured": 11566,
-   "estimated": 9,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "416 Wall St",
    "id": "A0462",
-   "measured": 22858,
-   "estimated": 23,
+   "measured": 22872,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5217,7 +5198,7 @@
    "name": "735 S Broadway",
    "id": "A0465",
    "measured": 6862,
-   "estimated": 112,
+   "estimated": 55,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5225,7 +5206,7 @@
    "name": "807 W 7th St",
    "id": "A0466",
    "measured": 29855,
-   "estimated": 113,
+   "estimated": 171,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -5233,7 +5214,7 @@
    "name": "326 E 3rd St",
    "id": "A0467",
    "measured": 5997,
-   "estimated": 4,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5241,7 +5222,7 @@
    "name": "218 E 1st St",
    "id": "A0468",
    "measured": 2979,
-   "estimated": 4,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5249,23 +5230,23 @@
    "name": "645 S Los Angeles St",
    "id": "A0470",
    "measured": 5283,
-   "estimated": 14,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "412 Wall St",
    "id": "A0471",
-   "measured": 17028,
-   "estimated": 19,
+   "measured": 17014,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "740 S Olive St",
    "id": "A0472",
-   "measured": 51097,
-   "estimated": 131,
+   "measured": 51113,
+   "estimated": 94,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -5273,15 +5254,15 @@
    "name": "Building (no parcel)",
    "id": "A0474",
    "measured": 2290,
-   "estimated": 21,
+   "estimated": 23,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "888 Wilshire Blvd",
    "id": "A0475",
-   "measured": 4383,
-   "estimated": 8,
+   "measured": 4324,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5313,7 +5294,7 @@
    "name": "228 E 1st St",
    "id": "A0479",
    "measured": 3536,
-   "estimated": 6,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5321,7 +5302,7 @@
    "name": "725 S Spring St",
    "id": "A0480",
    "measured": 12785,
-   "estimated": 72,
+   "estimated": 77,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5329,7 +5310,7 @@
    "name": "550 Maple Ave",
    "id": "A0481",
    "measured": 123606,
-   "estimated": 213,
+   "estimated": 109,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5368,8 +5349,8 @@
   {
    "name": "644 S Figueroa St",
    "id": "A0486",
-   "measured": 7993,
-   "estimated": 90,
+   "measured": 8045,
+   "estimated": 100,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5377,7 +5358,7 @@
    "name": "Structure (no parcel)",
    "id": "A0487",
    "measured": 173,
-   "estimated": 1,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5385,7 +5366,7 @@
    "name": "Structure (no parcel)",
    "id": "A0488",
    "measured": 12205,
-   "estimated": 61,
+   "estimated": 51,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5393,7 +5374,7 @@
    "name": "734 S Hope St",
    "id": "A0489",
    "measured": 5697,
-   "estimated": 5,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5401,15 +5382,15 @@
    "name": "730 S Broadway",
    "id": "A0491",
    "measured": 21173,
-   "estimated": 64,
+   "estimated": 33,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0492",
-   "measured": 17839,
-   "estimated": 12,
+   "measured": 17482,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5425,23 +5406,23 @@
    "name": "Structure (no parcel)",
    "id": "A0494",
    "measured": 258,
-   "estimated": 4,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "118 S Astronaut Ellison S Onizuka St 201",
    "id": "A0495",
-   "measured": 16420,
-   "estimated": 64,
+   "measured": 16425,
+   "estimated": 56,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
   {
    "name": "713 S Main St",
    "id": "A0496",
-   "measured": 15775,
-   "estimated": 23,
+   "measured": 15760,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5449,7 +5430,7 @@
    "name": "653 S Los Angeles St",
    "id": "A0497",
    "measured": 14035,
-   "estimated": 10,
+   "estimated": 20,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5465,7 +5446,7 @@
    "name": "742 S Hill St",
    "id": "A0499",
    "measured": 20010,
-   "estimated": 118,
+   "estimated": 171,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -5473,7 +5454,7 @@
    "name": "724 S Spring St",
    "id": "A0500",
    "measured": 13690,
-   "estimated": 118,
+   "estimated": 87,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -5481,7 +5462,7 @@
    "name": "332 E 3rd St",
    "id": "A0501",
    "measured": 12476,
-   "estimated": 6,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5489,14 +5470,14 @@
    "name": "731 S Spring St",
    "id": "A0503",
    "measured": 10339,
-   "estimated": 116,
+   "estimated": 123,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "325 E 4th St",
    "id": "A0504",
-   "measured": 6881,
+   "measured": 6855,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -5505,15 +5486,15 @@
    "name": "303 E 5th St",
    "id": "A0505",
    "measured": 55479,
-   "estimated": 101,
+   "estimated": 75,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "313 S San Pedro St",
    "id": "A0506",
-   "measured": 14580,
-   "estimated": 15,
+   "measured": 14754,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5521,15 +5502,15 @@
    "name": "Structure (no parcel)",
    "id": "A0507",
    "measured": 12454,
-   "estimated": 56,
+   "estimated": 39,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0508",
-   "measured": 51062,
-   "estimated": 41,
+   "measured": 51064,
+   "estimated": 67,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5537,22 +5518,22 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0509",
    "measured": 1444,
-   "estimated": 5,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "745 S Broadway",
    "id": "A0510",
-   "measured": 14647,
-   "estimated": 183,
+   "measured": 14684,
+   "estimated": 186,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
   {
    "name": "309 S San Pedro St",
    "id": "A0511",
-   "measured": 7053,
+   "measured": 7016,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -5560,8 +5541,8 @@
   {
    "name": "230 E 6th St",
    "id": "A0512",
-   "measured": 191995,
-   "estimated": 175,
+   "measured": 191954,
+   "estimated": 111,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5569,7 +5550,7 @@
    "name": "654 S Figueroa St",
    "id": "A0513",
    "measured": 48910,
-   "estimated": 261,
+   "estimated": 255,
    "storey_m": 4.75,
    "storey_from": "measured walls"
   },
@@ -5584,16 +5565,16 @@
   {
    "name": "238 E 1st St",
    "id": "A0515",
-   "measured": 2517,
-   "estimated": 6,
+   "measured": 2512,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "324 E 4th St",
    "id": "A0516",
-   "measured": 8779,
-   "estimated": 10,
+   "measured": 8774,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5601,15 +5582,15 @@
    "name": "Structure (no parcel)",
    "id": "A0517",
    "measured": 561,
-   "estimated": 4,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "721 S Main St",
    "id": "A0518",
-   "measured": 7325,
-   "estimated": 45,
+   "measured": 7328,
+   "estimated": 19,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5617,7 +5598,7 @@
    "name": "300 E 5th St",
    "id": "A0519",
    "measured": 11017,
-   "estimated": 20,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5625,31 +5606,31 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0520",
    "measured": 1452,
-   "estimated": 1,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "200 N Main St",
    "id": "A0521",
-   "measured": 65019,
-   "estimated": 549,
+   "measured": 64953,
+   "estimated": 373,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
   {
    "name": "335 E 4th St",
    "id": "A0522",
-   "measured": 9401,
-   "estimated": 9,
+   "measured": 9427,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "250 E 1st St",
    "id": "A0523",
-   "measured": 33525,
-   "estimated": 53,
+   "measured": 33527,
+   "estimated": 103,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5657,7 +5638,7 @@
    "name": "700 S Main St",
    "id": "A0524",
    "measured": 44448,
-   "estimated": 97,
+   "estimated": 87,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5665,7 +5646,7 @@
    "name": "740 S Broadway",
    "id": "A0525",
    "measured": 25393,
-   "estimated": 254,
+   "estimated": 109,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -5673,30 +5654,30 @@
    "name": "729 S Main St",
    "id": "A0527",
    "measured": 7585,
-   "estimated": 139,
+   "estimated": 114,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "419 1/2 W 8th St",
    "id": "A0529",
-   "measured": 3947,
-   "estimated": 15,
+   "measured": 3848,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "242 E 1st St",
    "id": "A0530",
-   "measured": 4917,
-   "estimated": 12,
+   "measured": 4915,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "325 Winston St",
    "id": "A0531",
-   "measured": 10516,
+   "measured": 10482,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -5704,8 +5685,8 @@
   {
    "name": "749 S Broadway",
    "id": "A0532",
-   "measured": 9857,
-   "estimated": 70,
+   "measured": 9869,
+   "estimated": 81,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5713,23 +5694,23 @@
    "name": "900 Wilshire Blvd",
    "id": "A0533",
    "measured": 1046,
-   "estimated": 88,
+   "estimated": 128,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
   {
    "name": "427 W 8th St",
    "id": "A0534",
-   "measured": 9572,
-   "estimated": 14,
+   "measured": 9531,
+   "estimated": 20,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "423 W 8th St",
    "id": "A0535",
-   "measured": 9537,
-   "estimated": 54,
+   "measured": 9586,
+   "estimated": 32,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -5737,7 +5718,7 @@
    "name": "760 S Hill St",
    "id": "A0536",
    "measured": 28864,
-   "estimated": 311,
+   "estimated": 272,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -5745,7 +5726,7 @@
    "name": "510 Wall St",
    "id": "A0537",
    "measured": 7744,
-   "estimated": 8,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5760,16 +5741,16 @@
   {
    "name": "403 W 8th St",
    "id": "A0540",
-   "measured": 24949,
-   "estimated": 20,
+   "measured": 25024,
+   "estimated": 53,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "317 W 8th St",
    "id": "A0541",
-   "measured": 9591,
-   "estimated": 47,
+   "measured": 9599,
+   "estimated": 105,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5777,7 +5758,7 @@
    "name": "330 E 4th St",
    "id": "A0542",
    "measured": 7144,
-   "estimated": 2,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5792,8 +5773,8 @@
   {
    "name": "313 W 8th St",
    "id": "A0544",
-   "measured": 7938,
-   "estimated": 29,
+   "measured": 7801,
+   "estimated": 19,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5801,23 +5782,23 @@
    "name": "333 S San Pedro St",
    "id": "A0545",
    "measured": 5385,
-   "estimated": 5,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "200 S San Pedro St",
    "id": "A0546",
-   "measured": 17335,
-   "estimated": 125,
+   "measured": 17336,
+   "estimated": 102,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0547",
-   "measured": 7835,
-   "estimated": 6,
+   "measured": 7833,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5825,23 +5806,23 @@
    "name": "Structure (no parcel)",
    "id": "A0548",
    "measured": 224,
-   "estimated": 1,
-   "storey_m": 4.0,
-   "storey_from": "default"
-  },
-  {
-   "name": "742 S Hope St",
-   "id": "A0549",
-   "measured": 26040,
-   "estimated": 37,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "520 Wall St",
-   "id": "A0550",
+   "id": "A0549",
    "measured": 14846,
-   "estimated": 14,
+   "estimated": 11,
+   "storey_m": 4.0,
+   "storey_from": "default"
+  },
+  {
+   "name": "742 S Hope St",
+   "id": "A0550",
+   "measured": 26212,
+   "estimated": 28,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5849,7 +5830,7 @@
    "name": "308 E 5th St",
    "id": "A0551",
    "measured": 9572,
-   "estimated": 5,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5857,7 +5838,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0552",
    "measured": 22062,
-   "estimated": 27,
+   "estimated": 16,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5865,14 +5846,14 @@
    "name": "150 N Los Angeles St",
    "id": "A0554",
    "measured": 35206,
-   "estimated": 46,
+   "estimated": 74,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "329 Winston St",
    "id": "A0555",
-   "measured": 10117,
+   "measured": 10104,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -5881,7 +5862,7 @@
    "name": "800 W 7th St",
    "id": "A0556",
    "measured": 85733,
-   "estimated": 148,
+   "estimated": 142,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5889,15 +5870,15 @@
    "name": "Structure (no parcel)",
    "id": "A0557",
    "measured": 3216,
-   "estimated": 162,
+   "estimated": 339,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "656 S Los Angeles St",
    "id": "A0558",
-   "measured": 9135,
-   "estimated": 50,
+   "measured": 9176,
+   "estimated": 27,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5913,15 +5894,15 @@
    "name": "122 E 7th St",
    "id": "A0560",
    "measured": 14699,
-   "estimated": 48,
+   "estimated": 51,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "301 W 8th St",
    "id": "A0562",
-   "measured": 17979,
-   "estimated": 58,
+   "measured": 18059,
+   "estimated": 88,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5937,7 +5918,7 @@
    "name": "345 S San Pedro St",
    "id": "A0564",
    "measured": 10200,
-   "estimated": 66,
+   "estimated": 40,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5945,14 +5926,14 @@
    "name": "323 E 5th St",
    "id": "A0565",
    "measured": 10077,
-   "estimated": 6,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "314 E 2nd St",
    "id": "A0566",
-   "measured": 2686,
+   "measured": 2671,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -5961,7 +5942,7 @@
    "name": "755 S Spring St",
    "id": "A0567",
    "measured": 60797,
-   "estimated": 253,
+   "estimated": 313,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5976,8 +5957,8 @@
   {
    "name": "415 S San Pedro St",
    "id": "A0569",
-   "measured": 22197,
-   "estimated": 4,
+   "measured": 22302,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5985,7 +5966,7 @@
    "name": "233 S Beaudry Ave",
    "id": "A0570",
    "measured": 93718,
-   "estimated": 344,
+   "estimated": 238,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -5993,7 +5974,7 @@
    "name": "915 Wilshire Blvd",
    "id": "A0571",
    "measured": 60311,
-   "estimated": 168,
+   "estimated": 150,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -6009,15 +5990,15 @@
    "name": "528 Wall St",
    "id": "A0573",
    "measured": 5187,
-   "estimated": 11,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "335 Winston St",
    "id": "A0574",
-   "measured": 10255,
-   "estimated": 4,
+   "measured": 10240,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6025,7 +6006,7 @@
    "name": "240 E 6th St",
    "id": "A0575",
    "measured": 28324,
-   "estimated": 58,
+   "estimated": 52,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6033,7 +6014,7 @@
    "name": "403 E 5th St",
    "id": "A0576",
    "measured": 15802,
-   "estimated": 12,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6041,7 +6022,7 @@
    "name": "732 S Spring St",
    "id": "A0577",
    "measured": 65358,
-   "estimated": 452,
+   "estimated": 249,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6049,7 +6030,7 @@
    "name": "818 W 7th St",
    "id": "A0578",
    "measured": 571,
-   "estimated": 2,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6065,7 +6046,7 @@
    "name": "756 S Broadway",
    "id": "A0580",
    "measured": 35073,
-   "estimated": 162,
+   "estimated": 222,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6080,8 +6061,8 @@
   {
    "name": "316 E 2nd St",
    "id": "A0582",
-   "measured": 4133,
-   "estimated": 12,
+   "measured": 4147,
+   "estimated": 26,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6089,7 +6070,7 @@
    "name": "Structure (no parcel)",
    "id": "A0583",
    "measured": 260,
-   "estimated": 26,
+   "estimated": 22,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6097,7 +6078,7 @@
    "name": "534 Wall St",
    "id": "A0584",
    "measured": 6781,
-   "estimated": 8,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6105,7 +6086,7 @@
    "name": "328 Winston St",
    "id": "A0585",
    "measured": 9114,
-   "estimated": 2,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6121,7 +6102,7 @@
    "name": "244 S San Pedro St",
    "id": "A0587",
    "measured": 20682,
-   "estimated": 92,
+   "estimated": 82,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -6129,7 +6110,7 @@
    "name": "120 S San Pedro St",
    "id": "A0588",
    "measured": 15276,
-   "estimated": 62,
+   "estimated": 101,
    "storey_m": 4.25,
    "storey_from": "measured walls"
   },
@@ -6137,7 +6118,7 @@
    "name": "639 Maple Ave",
    "id": "A0589",
    "measured": 6442,
-   "estimated": 6,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6145,7 +6126,7 @@
    "name": "1100 W 2nd St",
    "id": "A0590",
    "measured": 2875,
-   "estimated": 28,
+   "estimated": 30,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6153,7 +6134,7 @@
    "name": "523 San Julian St",
    "id": "A0591",
    "measured": 6759,
-   "estimated": 13,
+   "estimated": 16,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6161,15 +6142,15 @@
    "name": "723 S Flower St",
    "id": "A0592",
    "measured": 21320,
-   "estimated": 15,
+   "estimated": 16,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "754 S Hope St",
    "id": "A0593",
-   "measured": 28125,
-   "estimated": 4,
+   "measured": 27950,
+   "estimated": 15,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6177,7 +6158,7 @@
    "name": "538 Wall St",
    "id": "A0594",
    "measured": 6970,
-   "estimated": 13,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6185,7 +6166,7 @@
    "name": "521 San Julian St",
    "id": "A0595",
    "measured": 14843,
-   "estimated": 6,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6200,8 +6181,8 @@
   {
    "name": "320 E 2nd St",
    "id": "A0597",
-   "measured": 6916,
-   "estimated": 2,
+   "measured": 6919,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6209,15 +6190,15 @@
    "name": "416 W 8th St",
    "id": "A0599",
    "measured": 23599,
-   "estimated": 40,
+   "estimated": 38,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "405 S San Pedro St",
    "id": "A0600",
-   "measured": 5837,
-   "estimated": 3,
+   "measured": 5828,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6233,7 +6214,7 @@
    "name": "734 S Main St",
    "id": "A0602",
    "measured": 9167,
-   "estimated": 8,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6241,7 +6222,7 @@
    "name": "401 E 3rd St",
    "id": "A0603",
    "measured": 23350,
-   "estimated": 17,
+   "estimated": 21,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6249,7 +6230,7 @@
    "name": "301 N Broadway",
    "id": "A0604",
    "measured": 48384,
-   "estimated": 684,
+   "estimated": 576,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6257,7 +6238,7 @@
    "name": "Structure (no parcel)",
    "id": "A0605",
    "measured": 256,
-   "estimated": 23,
+   "estimated": 15,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6265,7 +6246,7 @@
    "name": "1141 Huntley Dr",
    "id": "A0606",
    "measured": 2581,
-   "estimated": 81,
+   "estimated": 87,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6289,7 +6270,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0609",
    "measured": 787,
-   "estimated": 5,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6297,7 +6278,7 @@
    "name": "312 E 1st St",
    "id": "A0610",
    "measured": 8557,
-   "estimated": 30,
+   "estimated": 55,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6305,22 +6286,22 @@
    "name": "221 N Figueroa St",
    "id": "A0611",
    "measured": 65924,
-   "estimated": 233,
+   "estimated": 131,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
   {
    "name": "417 S San Pedro St",
    "id": "A0612",
-   "measured": 17240,
-   "estimated": 19,
+   "measured": 17209,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "411 E 5th St",
    "id": "A0613",
-   "measured": 9049,
+   "measured": 9030,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -6328,8 +6309,8 @@
   {
    "name": "Structure (no parcel)",
    "id": "A0615",
-   "measured": 34705,
-   "estimated": 13,
+   "measured": 34697,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6344,8 +6325,8 @@
   {
    "name": "326 E 2nd St",
    "id": "A0617",
-   "measured": 7697,
-   "estimated": 8,
+   "measured": 7694,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6353,7 +6334,7 @@
    "name": "815 S Hill St",
    "id": "A0619",
    "measured": 59943,
-   "estimated": 199,
+   "estimated": 159,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6369,7 +6350,7 @@
    "name": "400 E 5th St",
    "id": "A0621",
    "measured": 4351,
-   "estimated": 2,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6385,7 +6366,7 @@
    "name": "Structure (no parcel)",
    "id": "A0623",
    "measured": 541,
-   "estimated": 2,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6393,7 +6374,7 @@
    "name": "321 E 2nd St",
    "id": "A0624",
    "measured": 15578,
-   "estimated": 59,
+   "estimated": 40,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6401,7 +6382,7 @@
    "name": "1000 W 6th St",
    "id": "A0625",
    "measured": 26830,
-   "estimated": 87,
+   "estimated": 73,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6409,7 +6390,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0626",
    "measured": 2491,
-   "estimated": 27,
+   "estimated": 18,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6417,7 +6398,7 @@
    "name": "Building on Single parcel",
    "id": "A0627",
    "measured": 3563,
-   "estimated": 54,
+   "estimated": 63,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6425,15 +6406,15 @@
    "name": "531 San Julian St",
    "id": "A0628",
    "measured": 19397,
-   "estimated": 14,
+   "estimated": 17,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Government Parcel parcel",
    "id": "A0629",
-   "measured": 1723,
-   "estimated": 3,
+   "measured": 1722,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6441,7 +6422,7 @@
    "name": "314 W 1st St",
    "id": "A0630",
    "measured": 6453,
-   "estimated": 3,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6449,15 +6430,15 @@
    "name": "Structure (no parcel)",
    "id": "A0631",
    "measured": 297,
-   "estimated": 2,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "420 E 3rd St",
    "id": "A0632",
-   "measured": 76209,
-   "estimated": 213,
+   "measured": 76210,
+   "estimated": 83,
    "storey_m": 4.75,
    "storey_from": "measured walls"
   },
@@ -6465,7 +6446,7 @@
    "name": "330 E 2nd St",
    "id": "A0633",
    "measured": 4855,
-   "estimated": 6,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6473,7 +6454,7 @@
    "name": "800 S Broadway",
    "id": "A0634",
    "measured": 13347,
-   "estimated": 53,
+   "estimated": 31,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6489,7 +6470,7 @@
    "name": "812 S Grand Ave",
    "id": "A0636",
    "measured": 30237,
-   "estimated": 25,
+   "estimated": 17,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6505,15 +6486,15 @@
    "name": "729 S Los Angeles St",
    "id": "A0639",
    "measured": 14326,
-   "estimated": 2,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "417 E 5th St",
    "id": "A0640",
-   "measured": 7852,
-   "estimated": 7,
+   "measured": 7870,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6521,7 +6502,7 @@
    "name": "506 S San Julian St",
    "id": "A0641",
    "measured": 11520,
-   "estimated": 14,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6529,7 +6510,7 @@
    "name": "220 E Market",
    "id": "A0642",
    "measured": 41770,
-   "estimated": 137,
+   "estimated": 185,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6537,7 +6518,7 @@
    "name": "Building (no parcel)",
    "id": "A0643",
    "measured": 3201,
-   "estimated": 31,
+   "estimated": 63,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6561,15 +6542,15 @@
    "name": "756 S Spring St",
    "id": "A0646",
    "measured": 17917,
-   "estimated": 96,
+   "estimated": 92,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "319 E 2nd St",
    "id": "A0647",
-   "measured": 25710,
-   "estimated": 59,
+   "measured": 25718,
+   "estimated": 81,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -6577,15 +6558,15 @@
    "name": "229 E 7th St",
    "id": "A0648",
    "measured": 9932,
-   "estimated": 3,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "443 S San Pedro St",
    "id": "A0649",
-   "measured": 27876,
-   "estimated": 6,
+   "measured": 27886,
+   "estimated": 13,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -6593,7 +6574,7 @@
    "name": "801 S Broadway",
    "id": "A0650",
    "measured": 130581,
-   "estimated": 231,
+   "estimated": 390,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6601,7 +6582,7 @@
    "name": "405 E 4th St",
    "id": "A0651",
    "measured": 15677,
-   "estimated": 8,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6609,7 +6590,7 @@
    "name": "636 Maple Ave",
    "id": "A0652",
    "measured": 26468,
-   "estimated": 57,
+   "estimated": 39,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6617,14 +6598,14 @@
    "name": "801 S Olive St",
    "id": "A0653",
    "measured": 70567,
-   "estimated": 446,
+   "estimated": 368,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "303 E 1st St",
    "id": "A0654",
-   "measured": 4961,
+   "measured": 4929,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -6633,7 +6614,7 @@
    "name": "208 W 8th St",
    "id": "A0655",
    "measured": 23058,
-   "estimated": 41,
+   "estimated": 33,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -6641,7 +6622,7 @@
    "name": "806 S Broadway",
    "id": "A0656",
    "measured": 18266,
-   "estimated": 40,
+   "estimated": 16,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -6649,7 +6630,7 @@
    "name": "412 E 5th St",
    "id": "A0657",
    "measured": 9164,
-   "estimated": 30,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6657,7 +6638,7 @@
    "name": "518 San Julian St",
    "id": "A0658",
    "measured": 4801,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6665,7 +6646,7 @@
    "name": "Building on Warehousing, Distribution, Storage parcel",
    "id": "A0659",
    "measured": 7262,
-   "estimated": 5,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6673,7 +6654,7 @@
    "name": "324 E 1st St",
    "id": "A0660",
    "measured": 4267,
-   "estimated": 25,
+   "estimated": 34,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6689,7 +6670,7 @@
    "name": "400 S San Pedro St",
    "id": "A0662",
    "measured": 5631,
-   "estimated": 5,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6697,23 +6678,23 @@
    "name": "710 S Los Angeles St",
    "id": "A0663",
    "measured": 62870,
-   "estimated": 70,
+   "estimated": 99,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "601 W Temple St",
    "id": "A0664",
-   "measured": 36446,
-   "estimated": 47,
+   "measured": 36444,
+   "estimated": 51,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Office Buildings parcel",
    "id": "A0665",
-   "measured": 9090,
-   "estimated": 0,
+   "measured": 9082,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6721,15 +6702,15 @@
    "name": "752 S Main St",
    "id": "A0666",
    "measured": 40240,
-   "estimated": 21,
+   "estimated": 40,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "333 S Boylston St",
    "id": "A0667",
-   "measured": 30030,
-   "estimated": 19,
+   "measured": 30028,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6737,15 +6718,15 @@
    "name": "Structure (no parcel)",
    "id": "A0668",
    "measured": 268,
-   "estimated": 23,
+   "estimated": 17,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "427 E 5th St",
    "id": "A0669",
-   "measured": 11672,
-   "estimated": 8,
+   "measured": 11662,
+   "estimated": 17,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6753,15 +6734,15 @@
    "name": "244 S San Pedro St",
    "id": "A0670",
    "measured": 27226,
-   "estimated": 38,
+   "estimated": 48,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "309 E 1st St",
    "id": "A0671",
-   "measured": 5662,
-   "estimated": 14,
+   "measured": 5694,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6785,7 +6766,7 @@
    "name": "520 San Julian St",
    "id": "A0674",
    "measured": 12523,
-   "estimated": 9,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6793,7 +6774,7 @@
    "name": "1000 Wilshire Blvd",
    "id": "A0675",
    "measured": 840,
-   "estimated": 1,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6801,7 +6782,7 @@
    "name": "810 S Broadway",
    "id": "A0676",
    "measured": 6725,
-   "estimated": 24,
+   "estimated": 19,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6809,7 +6790,7 @@
    "name": "400 S San Pedro St",
    "id": "A0677",
    "measured": 4473,
-   "estimated": 6,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6817,14 +6798,14 @@
    "name": "816 S Grand Ave",
    "id": "A0678",
    "measured": 21467,
-   "estimated": 30,
+   "estimated": 47,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "346 N Fremont Ave",
    "id": "A0679",
-   "measured": 36383,
+   "measured": 36286,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -6848,8 +6829,8 @@
   {
    "name": "313 N Figueroa St",
    "id": "A0682",
-   "measured": 89511,
-   "estimated": 22,
+   "measured": 88735,
+   "estimated": 25,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6881,7 +6862,7 @@
    "name": "350 E 2nd St",
    "id": "A0686",
    "measured": 28718,
-   "estimated": 58,
+   "estimated": 38,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6889,15 +6870,15 @@
    "name": "330 E 2nd St",
    "id": "A0687",
    "measured": 12837,
-   "estimated": 23,
+   "estimated": 27,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "411 E 4th St",
    "id": "A0688",
-   "measured": 10967,
-   "estimated": 4,
+   "measured": 10968,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6913,7 +6894,7 @@
    "name": "800 S Hope St",
    "id": "A0690",
    "measured": 48435,
-   "estimated": 184,
+   "estimated": 96,
    "storey_m": 4.75,
    "storey_from": "measured walls"
   },
@@ -6921,7 +6902,7 @@
    "name": "817 W 8th St",
    "id": "A0691",
    "measured": 66062,
-   "estimated": 454,
+   "estimated": 393,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -6937,7 +6918,7 @@
    "name": "612 Wall St",
    "id": "A0693",
    "measured": 11749,
-   "estimated": 5,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6945,7 +6926,7 @@
    "name": "810 S Spring St",
    "id": "A0694",
    "measured": 24082,
-   "estimated": 38,
+   "estimated": 28,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -6953,7 +6934,7 @@
    "name": "420 Boyd St",
    "id": "A0695",
    "measured": 25054,
-   "estimated": 7,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6961,7 +6942,7 @@
    "name": "826 S Hill St",
    "id": "A0696",
    "measured": 31504,
-   "estimated": 238,
+   "estimated": 227,
    "storey_m": 4.75,
    "storey_from": "measured walls"
   },
@@ -6969,7 +6950,7 @@
    "name": "1130 W 2nd St",
    "id": "A0697",
    "measured": 13706,
-   "estimated": 5,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6977,7 +6958,7 @@
    "name": "730 S Los Angeles St",
    "id": "A0698",
    "measured": 22167,
-   "estimated": 17,
+   "estimated": 34,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -6985,7 +6966,7 @@
    "name": "600 St Paul Ave",
    "id": "A0699",
    "measured": 24576,
-   "estimated": 19,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6993,7 +6974,7 @@
    "name": "814 S Broadway",
    "id": "A0700",
    "measured": 18267,
-   "estimated": 27,
+   "estimated": 30,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7001,7 +6982,7 @@
    "name": "505 S San Pedro St",
    "id": "A0701",
    "measured": 25513,
-   "estimated": 60,
+   "estimated": 45,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7009,7 +6990,7 @@
    "name": "400 S San Pedro St",
    "id": "A0702",
    "measured": 4934,
-   "estimated": 14,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7017,7 +6998,7 @@
    "name": "328 E 1st St",
    "id": "A0703",
    "measured": 17521,
-   "estimated": 45,
+   "estimated": 24,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7025,7 +7006,7 @@
    "name": "801 S Grand Ave",
    "id": "A0705",
    "measured": 75885,
-   "estimated": 243,
+   "estimated": 367,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7033,15 +7014,15 @@
    "name": "757 S Flower St",
    "id": "A0706",
    "measured": 38019,
-   "estimated": 45,
+   "estimated": 31,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "825 S Hill St",
    "id": "A0708",
-   "measured": 100321,
-   "estimated": 518,
+   "measured": 100362,
+   "estimated": 481,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7049,7 +7030,7 @@
    "name": "461 S Boylston St",
    "id": "A0709",
    "measured": 116007,
-   "estimated": 162,
+   "estimated": 103,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7073,7 +7054,7 @@
    "name": "110 S San Pedro St",
    "id": "A0712",
    "measured": 11307,
-   "estimated": 4,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7081,7 +7062,7 @@
    "name": "Structure (no parcel)",
    "id": "A0713",
    "measured": 24291,
-   "estimated": 8,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7089,7 +7070,7 @@
    "name": "1210 W 4th St",
    "id": "A0714",
    "measured": 95400,
-   "estimated": 72,
+   "estimated": 108,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7104,8 +7085,8 @@
   {
    "name": "442 E 3rd St",
    "id": "A0716",
-   "measured": 26552,
-   "estimated": 47,
+   "measured": 26551,
+   "estimated": 17,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7113,7 +7094,7 @@
    "name": "342 E 1st St",
    "id": "A0717",
    "measured": 11903,
-   "estimated": 3,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7137,22 +7118,22 @@
    "name": "323 E 1st St",
    "id": "A0720",
    "measured": 5739,
-   "estimated": 8,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "755 S Los Angeles St",
    "id": "A0721",
-   "measured": 28187,
-   "estimated": 16,
+   "measured": 28287,
+   "estimated": 3,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "427 E 4th St",
    "id": "A0722",
-   "measured": 6529,
+   "measured": 6528,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -7161,7 +7142,7 @@
    "name": "120 S San Pedro St",
    "id": "A0723",
    "measured": 7261,
-   "estimated": 8,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7177,7 +7158,7 @@
    "name": "521 S San Pedro St",
    "id": "A0725",
    "measured": 16334,
-   "estimated": 16,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7185,7 +7166,7 @@
    "name": "820 S Broadway",
    "id": "A0726",
    "measured": 11801,
-   "estimated": 36,
+   "estimated": 42,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -7193,15 +7174,15 @@
    "name": "1207 Miramar St",
    "id": "A0727",
    "measured": 34596,
-   "estimated": 8,
+   "estimated": 18,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "830 1/2 S Olive St",
    "id": "A0728",
-   "measured": 6653,
-   "estimated": 3,
+   "measured": 6608,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7209,7 +7190,7 @@
    "name": "649 S Wall St",
    "id": "A0729",
    "measured": 12921,
-   "estimated": 121,
+   "estimated": 118,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7217,7 +7198,7 @@
    "name": "Building on Stores parcel",
    "id": "A0730",
    "measured": 4648,
-   "estimated": 7,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7225,7 +7206,7 @@
    "name": "801 S Hope St A",
    "id": "A0731",
    "measured": 66230,
-   "estimated": 167,
+   "estimated": 341,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7233,7 +7214,7 @@
    "name": "Building on Commercial parcel",
    "id": "A0732",
    "measured": 101344,
-   "estimated": 200,
+   "estimated": 104,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7241,7 +7222,7 @@
    "name": "434 S San Pedro St",
    "id": "A0733",
    "measured": 27215,
-   "estimated": 12,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -7249,7 +7230,7 @@
    "name": "325 E 1st St",
    "id": "A0734",
    "measured": 5939,
-   "estimated": 15,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7257,7 +7238,7 @@
    "name": "812 S Spring St",
    "id": "A0735",
    "measured": 3859,
-   "estimated": 36,
+   "estimated": 25,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7265,7 +7246,7 @@
    "name": "201 N Los Angeles St",
    "id": "A0736",
    "measured": 33368,
-   "estimated": 96,
+   "estimated": 31,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7273,15 +7254,15 @@
    "name": "324 E 6th St",
    "id": "A0737",
    "measured": 9141,
-   "estimated": 3,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0738",
-   "measured": 39274,
-   "estimated": 24,
+   "measured": 39236,
+   "estimated": 28,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7289,31 +7270,31 @@
    "name": "340 E 1st St",
    "id": "A0739",
    "measured": 2593,
-   "estimated": 2,
-   "storey_m": 4.0,
-   "storey_from": "default"
-  },
-  {
-   "name": "763 S Los Angeles St",
-   "id": "A0740",
-   "measured": 9748,
-   "estimated": 0,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on unaddressed parcel",
-   "id": "A0741",
-   "measured": 3978,
+   "id": "A0740",
+   "measured": 3973,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "818 S Spring St",
-   "id": "A0742",
+   "id": "A0741",
    "measured": 2045,
-   "estimated": 28,
+   "estimated": 22,
+   "storey_m": 4.0,
+   "storey_from": "default"
+  },
+  {
+   "name": "763 S Los Angeles St",
+   "id": "A0742",
+   "measured": 9648,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7321,7 +7302,7 @@
    "name": "Structure (no parcel)",
    "id": "A0743",
    "measured": 250,
-   "estimated": 1,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7329,7 +7310,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0744",
    "measured": 1680,
-   "estimated": 21,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7337,7 +7318,7 @@
    "name": "545 S San Pedro St",
    "id": "A0745",
    "measured": 67651,
-   "estimated": 124,
+   "estimated": 119,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7353,7 +7334,7 @@
    "name": "1221 W 3rd St",
    "id": "A0747",
    "measured": 62959,
-   "estimated": 225,
+   "estimated": 332,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7361,15 +7342,15 @@
    "name": "746 S Los Angeles St 1",
    "id": "A0748",
    "measured": 61697,
-   "estimated": 6,
+   "estimated": 97,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
   {
    "name": "832 S Hill St",
    "id": "A0749",
-   "measured": 41783,
-   "estimated": 170,
+   "measured": 42083,
+   "estimated": 112,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -7377,7 +7358,7 @@
    "name": "622 Wall St",
    "id": "A0750",
    "measured": 22649,
-   "estimated": 43,
+   "estimated": 20,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7385,7 +7366,7 @@
    "name": "Structure (no parcel)",
    "id": "A0751",
    "measured": 1218,
-   "estimated": 6,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7393,7 +7374,7 @@
    "name": "455 E 3rd St",
    "id": "A0752",
    "measured": 37514,
-   "estimated": 78,
+   "estimated": 36,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7401,7 +7382,7 @@
    "name": "331 E 1st St",
    "id": "A0753",
    "measured": 6570,
-   "estimated": 3,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7409,7 +7390,7 @@
    "name": "820 S Spring St",
    "id": "A0755",
    "measured": 2589,
-   "estimated": 6,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7417,7 +7398,7 @@
    "name": "401 E 6th St",
    "id": "A0756",
    "measured": 14899,
-   "estimated": 61,
+   "estimated": 72,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7425,7 +7406,7 @@
    "name": "138 N Beaudry Ave",
    "id": "A0757",
    "measured": 112219,
-   "estimated": 60,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7441,15 +7422,15 @@
    "name": "810 S Flower St",
    "id": "A0759",
    "measured": 69178,
-   "estimated": 133,
+   "estimated": 121,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0760",
-   "measured": 10585,
-   "estimated": 0,
+   "measured": 10584,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7457,7 +7438,7 @@
    "name": "342 E 1st St",
    "id": "A0761",
    "measured": 2266,
-   "estimated": 3,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7465,14 +7446,14 @@
    "name": "Building on Shopping Centers (Neighborhood, community) parcel",
    "id": "A0762",
    "measured": 13059,
-   "estimated": 10,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "804 S Main St",
    "id": "A0763",
-   "measured": 37560,
+   "measured": 37545,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -7481,7 +7462,7 @@
    "name": "717 W Temple St",
    "id": "A0764",
    "measured": 25968,
-   "estimated": 41,
+   "estimated": 54,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7489,23 +7470,23 @@
    "name": "Structure (no parcel)",
    "id": "A0765",
    "measured": 429,
-   "estimated": 7,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "752 S Los Angeles St",
    "id": "A0766",
-   "measured": 10747,
-   "estimated": 8,
-   "storey_m": 3.75,
+   "measured": 11120,
+   "estimated": 14,
+   "storey_m": 3.5,
    "storey_from": "measured walls"
   },
   {
    "name": "420 S San Pedro St",
    "id": "A0767",
    "measured": 93452,
-   "estimated": 110,
+   "estimated": 101,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7513,7 +7494,7 @@
    "name": "830 S Broadway",
    "id": "A0768",
    "measured": 19620,
-   "estimated": 49,
+   "estimated": 67,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7521,7 +7502,7 @@
    "name": "Building on Shopping Centers (Neighborhood, community) parcel",
    "id": "A0769",
    "measured": 57580,
-   "estimated": 43,
+   "estimated": 27,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7529,7 +7510,7 @@
    "name": "801 S Flower St",
    "id": "A0771",
    "measured": 13976,
-   "estimated": 24,
+   "estimated": 15,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7537,7 +7518,7 @@
    "name": "Structure (no parcel)",
    "id": "A0772",
    "measured": 1029,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7552,16 +7533,16 @@
   {
    "name": "451 E 4th St",
    "id": "A0774",
-   "measured": 8102,
-   "estimated": 3,
+   "measured": 8098,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "337 E 1st St",
    "id": "A0775",
-   "measured": 5988,
-   "estimated": 6,
+   "measured": 5978,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7569,7 +7550,7 @@
    "name": "450 E 4th St",
    "id": "A0776",
    "measured": 6248,
-   "estimated": 2,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7577,7 +7558,7 @@
    "name": "838 S Grand Ave",
    "id": "A0777",
    "measured": 22461,
-   "estimated": 8,
+   "estimated": 15,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7585,14 +7566,14 @@
    "name": "1001 Wilshire Blvd",
    "id": "A0778",
    "measured": 8661,
-   "estimated": 6,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "627 San Julian St",
    "id": "A0780",
-   "measured": 3406,
+   "measured": 3405,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -7601,15 +7582,15 @@
    "name": "Structure (no parcel)",
    "id": "A0781",
    "measured": 1370,
-   "estimated": 23,
+   "estimated": 31,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0782",
-   "measured": 22330,
-   "estimated": 14,
+   "measured": 22322,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7617,7 +7598,7 @@
    "name": "300 N Los Angeles St",
    "id": "A0783",
    "measured": 75590,
-   "estimated": 55,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7625,15 +7606,15 @@
    "name": "834 S Spring St",
    "id": "A0784",
    "measured": 8042,
-   "estimated": 17,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "345 E 1st St",
    "id": "A0785",
-   "measured": 4539,
-   "estimated": 1,
+   "measured": 4549,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7649,7 +7630,7 @@
    "name": "312 Omar St",
    "id": "A0787",
    "measured": 12399,
-   "estimated": 5,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7657,14 +7638,14 @@
    "name": "401 E 7th St",
    "id": "A0788",
    "measured": 16496,
-   "estimated": 32,
+   "estimated": 51,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "772 S Los Angeles St",
    "id": "A0789",
-   "measured": 14524,
+   "measured": 14151,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -7672,8 +7653,8 @@
   {
    "name": "765 S Santee St.",
    "id": "A0790",
-   "measured": 3546,
-   "estimated": 2,
+   "measured": 3470,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7681,31 +7662,31 @@
    "name": "888 S Olive St",
    "id": "A0791",
    "measured": 78297,
-   "estimated": 254,
+   "estimated": 124,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "843 S Broadway",
    "id": "A0792",
-   "measured": 20489,
-   "estimated": 14,
-   "storey_m": 3.5,
-   "storey_from": "measured walls"
+   "measured": 19603,
+   "estimated": 6,
+   "storey_m": 4.0,
+   "storey_from": "default"
   },
   {
    "name": "1216 Huntley Dr",
    "id": "A0793",
    "measured": 34564,
-   "estimated": 44,
+   "estimated": 38,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0795",
-   "measured": 694,
-   "estimated": 0,
+   "measured": 682,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7713,7 +7694,7 @@
    "name": "809 S Flower St",
    "id": "A0796",
    "measured": 8283,
-   "estimated": 8,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7721,7 +7702,7 @@
    "name": "1230 W 3rd St",
    "id": "A0797",
    "measured": 9265,
-   "estimated": 58,
+   "estimated": 75,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7729,7 +7710,7 @@
    "name": "Building (no parcel)",
    "id": "A0798",
    "measured": 399,
-   "estimated": 2,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7745,7 +7726,7 @@
    "name": "741 Maple Ave",
    "id": "A0800",
    "measured": 13329,
-   "estimated": 0,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7776,8 +7757,8 @@
   {
    "name": "818 S Main St",
    "id": "A0804",
-   "measured": 18847,
-   "estimated": 1,
+   "measured": 18848,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7793,15 +7774,15 @@
    "name": "Structure (no parcel)",
    "id": "A0806",
    "measured": 677,
-   "estimated": 10,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0808",
-   "measured": 15211,
-   "estimated": 0,
+   "measured": 15203,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7809,14 +7790,14 @@
    "name": "813 S Flower St",
    "id": "A0809",
    "measured": 16456,
-   "estimated": 31,
+   "estimated": 25,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0811",
-   "measured": 3238,
+   "measured": 3237,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -7824,16 +7805,16 @@
   {
    "name": "347 E 1st St",
    "id": "A0812",
-   "measured": 5144,
-   "estimated": 4,
+   "measured": 5138,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "211 E 8th St",
    "id": "A0813",
-   "measured": 9466,
-   "estimated": 0,
+   "measured": 9320,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7841,7 +7822,7 @@
    "name": "846 S Broadway",
    "id": "A0815",
    "measured": 34104,
-   "estimated": 110,
+   "estimated": 108,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7849,15 +7830,15 @@
    "name": "421 E 6th St",
    "id": "A0816",
    "measured": 31998,
-   "estimated": 31,
+   "estimated": 30,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "521 E 5th St",
    "id": "A0817",
-   "measured": 27183,
-   "estimated": 6,
+   "measured": 27102,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7865,7 +7846,7 @@
    "name": "375 E 2nd St",
    "id": "A0818",
    "measured": 30590,
-   "estimated": 9,
+   "estimated": 24,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7873,7 +7854,7 @@
    "name": "Building on Single parcel",
    "id": "A0819",
    "measured": 106327,
-   "estimated": 56,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7881,7 +7862,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0820",
    "measured": 13607,
-   "estimated": 15,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7889,7 +7870,7 @@
    "name": "Structure (no parcel)",
    "id": "A0821",
    "measured": 464,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7921,7 +7902,7 @@
    "name": "462 E 4th St",
    "id": "A0826",
    "measured": 3043,
-   "estimated": 0,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7929,7 +7910,7 @@
    "name": "360 E 2nd St",
    "id": "A0827",
    "measured": 54298,
-   "estimated": 119,
+   "estimated": 179,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7937,15 +7918,15 @@
    "name": "851 S Grand Ave",
    "id": "A0828",
    "measured": 39772,
-   "estimated": 104,
+   "estimated": 141,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Government Parcel parcel",
    "id": "A0829",
-   "measured": 145141,
-   "estimated": 766,
+   "measured": 145124,
+   "estimated": 359,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7953,7 +7934,7 @@
    "name": "709 Wall St",
    "id": "A0830",
    "measured": 3706,
-   "estimated": 0,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7961,7 +7942,7 @@
    "name": "830 S Flower St",
    "id": "A0831",
    "measured": 53582,
-   "estimated": 104,
+   "estimated": 53,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7969,7 +7950,7 @@
    "name": "Structure (no parcel)",
    "id": "A0832",
    "measured": 424,
-   "estimated": 1,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7985,31 +7966,31 @@
    "name": "413 E 7th St",
    "id": "A0835",
    "measured": 6205,
-   "estimated": 5,
-   "storey_m": 4.0,
-   "storey_from": "default"
-  },
-  {
-   "name": "217 E 8th St",
-   "id": "A0837",
-   "measured": 16653,
-   "estimated": 7,
-   "storey_m": 3.5,
-   "storey_from": "measured walls"
-  },
-  {
-   "name": "Structure (no parcel)",
-   "id": "A0838",
-   "measured": 3463,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
+   "name": "Structure (no parcel)",
+   "id": "A0837",
+   "measured": 3451,
+   "estimated": 0,
+   "storey_m": 4.0,
+   "storey_from": "default"
+  },
+  {
+   "name": "217 E 8th St",
+   "id": "A0838",
+   "measured": 16875,
+   "estimated": 0,
+   "storey_m": 3.5,
+   "storey_from": "measured walls"
+  },
+  {
    "name": "800 S Figueroa St",
    "id": "A0839",
    "measured": 29546,
-   "estimated": 172,
+   "estimated": 107,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8017,7 +7998,7 @@
    "name": "828 S Main St",
    "id": "A0840",
    "measured": 9080,
-   "estimated": 0,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8033,7 +8014,7 @@
    "name": "819 S Flower St",
    "id": "A0842",
    "measured": 9435,
-   "estimated": 19,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8049,15 +8030,15 @@
    "name": "466 E 4th St",
    "id": "A0844",
    "measured": 3084,
-   "estimated": 2,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Churches parcel",
    "id": "A0845",
-   "measured": 18915,
-   "estimated": 13,
+   "measured": 18920,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8065,7 +8046,7 @@
    "name": "300 N Los Angeles St",
    "id": "A0846",
    "measured": 58709,
-   "estimated": 0,
+   "estimated": 24,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8073,7 +8054,7 @@
    "name": "855 S Hill St",
    "id": "A0847",
    "measured": 36485,
-   "estimated": 54,
+   "estimated": 38,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8081,7 +8062,7 @@
    "name": "317 Crocker St",
    "id": "A0848",
    "measured": 52237,
-   "estimated": 10,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8097,7 +8078,7 @@
    "name": "464 E 3rd St",
    "id": "A0850",
    "measured": 4487,
-   "estimated": 4,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8105,13 +8086,21 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0851",
    "measured": 34108,
-   "estimated": 238,
+   "estimated": 194,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
-   "name": "417 E 7th St",
+   "name": "849 S Broadway",
    "id": "A0852",
+   "measured": 46101,
+   "estimated": 112,
+   "storey_m": 3.5,
+   "storey_from": "measured walls"
+  },
+  {
+   "name": "417 E 7th St",
+   "id": "A0853",
    "measured": 5587,
    "estimated": 0,
    "storey_m": 4.0,
@@ -8119,25 +8108,17 @@
   },
   {
    "name": "404 S Bixel St",
-   "id": "A0853",
+   "id": "A0854",
    "measured": 23787,
-   "estimated": 7,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
-  },
-  {
-   "name": "849 S Broadway",
-   "id": "A0854",
-   "measured": 45515,
-   "estimated": 4,
-   "storey_m": 3.5,
-   "storey_from": "measured walls"
   },
   {
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0855",
    "measured": 51863,
-   "estimated": 13,
+   "estimated": 31,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8153,21 +8134,29 @@
    "name": "888 S Hope St",
    "id": "A0857",
    "measured": 90299,
-   "estimated": 203,
+   "estimated": 246,
+   "storey_m": 4.0,
+   "storey_from": "default"
+  },
+  {
+   "name": "531 E 5th St",
+   "id": "A0858",
+   "measured": 5913,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "472 E 4th St",
-   "id": "A0858",
+   "id": "A0859",
    "measured": 5945,
-   "estimated": 3,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
-   "id": "A0859",
+   "id": "A0860",
    "measured": 160,
    "estimated": 0,
    "storey_m": 4.0,
@@ -8175,17 +8164,9 @@
   },
   {
    "name": "1027 W Wilshire Blvd",
-   "id": "A0860",
-   "measured": 120390,
-   "estimated": 167,
-   "storey_m": 4.0,
-   "storey_from": "default"
-  },
-  {
-   "name": "531 E 5th St",
    "id": "A0861",
-   "measured": 5833,
-   "estimated": 3,
+   "measured": 120390,
+   "estimated": 73,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8209,14 +8190,14 @@
    "name": "Structure (no parcel)",
    "id": "A0864",
    "measured": 6950,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "443 Crocker St",
    "id": "A0865",
-   "measured": 5339,
+   "measured": 5340,
    "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -8225,7 +8206,7 @@
    "name": "350 S Bixel St",
    "id": "A0866",
    "measured": 35827,
-   "estimated": 12,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8233,7 +8214,7 @@
    "name": "423 E 7th St",
    "id": "A0867",
    "measured": 8873,
-   "estimated": 6,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8241,7 +8222,7 @@
    "name": "223 S Central Ave",
    "id": "A0868",
    "measured": 20899,
-   "estimated": 44,
+   "estimated": 84,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8249,7 +8230,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0869",
    "measured": 5062,
-   "estimated": 23,
+   "estimated": 16,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8257,14 +8238,14 @@
    "name": "Structure (no parcel)",
    "id": "A0870",
    "measured": 287,
-   "estimated": 1,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Government Parcel parcel",
    "id": "A0871",
-   "measured": 34888,
+   "measured": 34331,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -8273,7 +8254,7 @@
    "name": "850 S Broadway",
    "id": "A0873",
    "measured": 29167,
-   "estimated": 36,
+   "estimated": 49,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8281,7 +8262,7 @@
    "name": "816 S Figueroa St",
    "id": "A0875",
    "measured": 10064,
-   "estimated": 52,
+   "estimated": 41,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8289,7 +8270,7 @@
    "name": "Building on Commercial parcel",
    "id": "A0876",
    "measured": 56889,
-   "estimated": 0,
+   "estimated": 227,
    "storey_m": 4.75,
    "storey_from": "measured walls"
   },
@@ -8297,7 +8278,7 @@
    "name": "309 E 8th St",
    "id": "A0877",
    "measured": 21413,
-   "estimated": 0,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8305,7 +8286,7 @@
    "name": "625 S San Pedro St",
    "id": "A0878",
    "measured": 13810,
-   "estimated": 5,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8313,7 +8294,7 @@
    "name": "541 Crocker St",
    "id": "A0879",
    "measured": 10843,
-   "estimated": 4,
+   "estimated": 10,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8321,7 +8302,7 @@
    "name": "540 S San Pedro St",
    "id": "A0880",
    "measured": 15611,
-   "estimated": 0,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8337,7 +8318,7 @@
    "name": "1010 Wilshire Blvd",
    "id": "A0882",
    "measured": 56852,
-   "estimated": 8,
+   "estimated": 6,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -8353,14 +8334,14 @@
    "name": "833 S Flower St",
    "id": "A0884",
    "measured": 38220,
-   "estimated": 29,
+   "estimated": 17,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "628 San Julian St",
    "id": "A0885",
-   "measured": 6025,
+   "measured": 6015,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -8369,7 +8350,7 @@
    "name": "544 S San Pedro St",
    "id": "A0886",
    "measured": 24781,
-   "estimated": 2,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8377,7 +8358,7 @@
    "name": "909 W Temple St",
    "id": "A0887",
    "measured": 129880,
-   "estimated": 83,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8385,7 +8366,7 @@
    "name": "Structure (no parcel)",
    "id": "A0888",
    "measured": 13094,
-   "estimated": 7,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8393,7 +8374,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0889",
    "measured": 4500,
-   "estimated": 23,
+   "estimated": 21,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8409,7 +8390,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0891",
    "measured": 9114,
-   "estimated": 23,
+   "estimated": 41,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8417,7 +8398,7 @@
    "name": "Structure (no parcel)",
    "id": "A0892",
    "measured": 226,
-   "estimated": 2,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8433,7 +8414,7 @@
    "name": "526 E 5th St",
    "id": "A0894",
    "measured": 17153,
-   "estimated": 2,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8449,14 +8430,14 @@
    "name": "Structure (no parcel)",
    "id": "A0896",
    "measured": 464,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "638 San Julian St",
    "id": "A0897",
-   "measured": 4169,
+   "measured": 4168,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -8465,7 +8446,7 @@
    "name": "1108 Mignonette St",
    "id": "A0898",
    "measured": 129323,
-   "estimated": 123,
+   "estimated": 58,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8481,7 +8462,7 @@
    "name": "632 Bixel St",
    "id": "A0900",
    "measured": 148799,
-   "estimated": 25,
+   "estimated": 24,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8489,7 +8470,7 @@
    "name": "117 W 9th St",
    "id": "A0901",
    "measured": 24729,
-   "estimated": 12,
+   "estimated": 0,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -8497,7 +8478,7 @@
    "name": "645 W 9th St",
    "id": "A0902",
    "measured": 114280,
-   "estimated": 124,
+   "estimated": 120,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8512,8 +8493,8 @@
   {
    "name": "318 W 9th St",
    "id": "A0904",
-   "measured": 26983,
-   "estimated": 4,
+   "measured": 27351,
+   "estimated": 18,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -8521,7 +8502,7 @@
    "name": "450 N Grand Ave",
    "id": "A0905",
    "measured": 139050,
-   "estimated": 166,
+   "estimated": 19,
    "storey_m": 4.5,
    "storey_from": "measured walls"
   },
@@ -8537,7 +8518,7 @@
    "name": "315 E 8th St",
    "id": "A0907",
    "measured": 17270,
-   "estimated": 0,
+   "estimated": 8,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -8545,7 +8526,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0908",
    "measured": 4830,
-   "estimated": 20,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8553,7 +8534,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0910",
    "measured": 6322,
-   "estimated": 19,
+   "estimated": 22,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8561,7 +8542,7 @@
    "name": "500 E 4th St",
    "id": "A0911",
    "measured": 9811,
-   "estimated": 2,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8577,7 +8558,7 @@
    "name": "500 E 3rd St",
    "id": "A0914",
    "measured": 1618,
-   "estimated": 0,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8585,7 +8566,7 @@
    "name": "320 Crocker St",
    "id": "A0915",
    "measured": 6342,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8600,7 +8581,7 @@
   {
    "name": "824 S Los Angeles St",
    "id": "A0917",
-   "measured": 15933,
+   "measured": 16013,
    "estimated": 0,
    "storey_m": 3.75,
    "storey_from": "measured walls"
@@ -8609,7 +8590,7 @@
    "name": "555 Crocker St",
    "id": "A0918",
    "measured": 41153,
-   "estimated": 6,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8617,7 +8598,7 @@
    "name": "511 E 6th St",
    "id": "A0919",
    "measured": 18259,
-   "estimated": 0,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8640,8 +8621,8 @@
   {
    "name": "843 S Los Angeles St",
    "id": "A0923",
-   "measured": 19324,
-   "estimated": 8,
+   "measured": 19355,
+   "estimated": 0,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -8649,7 +8630,7 @@
    "name": "627 S San Pedro St",
    "id": "A0924",
    "measured": 4629,
-   "estimated": 3,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8657,7 +8638,7 @@
    "name": "Building on Government Parcel parcel",
    "id": "A0925",
    "measured": 60370,
-   "estimated": 10,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8665,7 +8646,7 @@
    "name": "Structure (no parcel)",
    "id": "A0926",
    "measured": 32311,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8673,7 +8654,7 @@
    "name": "400 W 9th St",
    "id": "A0927",
    "measured": 59323,
-   "estimated": 9,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8681,7 +8662,7 @@
    "name": "912 S Hill St",
    "id": "A0928",
    "measured": 36856,
-   "estimated": 0,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8696,7 +8677,7 @@
   {
    "name": "601 E 5th St",
    "id": "A0930",
-   "measured": 8918,
+   "measured": 8865,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -8705,7 +8686,7 @@
    "name": "501 S Hill St",
    "id": "A0931",
    "measured": 36953,
-   "estimated": 20,
+   "estimated": 15,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8713,7 +8694,7 @@
    "name": "463 S Bixel St",
    "id": "A0932",
    "measured": 4476,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8721,7 +8702,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0933",
    "measured": 4460,
-   "estimated": 21,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8737,7 +8718,7 @@
    "name": "900 S Broadway",
    "id": "A0935",
    "measured": 9326,
-   "estimated": 6,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8745,7 +8726,7 @@
    "name": "633 S San Pedro St",
    "id": "A0936",
    "measured": 2157,
-   "estimated": 3,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8761,7 +8742,7 @@
    "name": "369 E First St Los Angeles 90012",
    "id": "A0938",
    "measured": 54133,
-   "estimated": 30,
+   "estimated": 21,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8769,23 +8750,23 @@
    "name": "631 S San Pedro St",
    "id": "A0939",
    "measured": 2509,
-   "estimated": 0,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "912 S Olive St",
    "id": "A0941",
-   "measured": 8669,
-   "estimated": 1,
+   "measured": 8301,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Building on Government Parcel parcel",
    "id": "A0943",
-   "measured": 45371,
-   "estimated": 1,
+   "measured": 45367,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8801,15 +8782,15 @@
    "name": "1300 W 4th St",
    "id": "A0945",
    "measured": 8714,
-   "estimated": 0,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "Structure (no parcel)",
    "id": "A0946",
-   "measured": 18898,
-   "estimated": 12,
+   "measured": 18897,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8824,8 +8805,8 @@
   {
    "name": "501 S Bixel St",
    "id": "A0948",
-   "measured": 15459,
-   "estimated": 1,
+   "measured": 15445,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8833,7 +8814,7 @@
    "name": "Building on Government Parcel parcel",
    "id": "A0949",
    "measured": 8467,
-   "estimated": 2,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8857,14 +8838,14 @@
    "name": "501 E 7th St",
    "id": "A0952",
    "measured": 13720,
-   "estimated": 4,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "830 S Los Angeles St",
    "id": "A0953",
-   "measured": 11540,
+   "measured": 11465,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -8881,15 +8862,15 @@
    "name": "732 Wall St",
    "id": "A0955",
    "measured": 9129,
-   "estimated": 3,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "609 E 5th St",
    "id": "A0956",
-   "measured": 9658,
-   "estimated": 1,
+   "measured": 9711,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8897,14 +8878,14 @@
    "name": "Building on Commercial parcel",
    "id": "A0957",
    "measured": 597,
-   "estimated": 4,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "425 Towne Ave",
    "id": "A0958",
-   "measured": 5176,
+   "measured": 5175,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -8913,7 +8894,7 @@
    "name": "1125 W 6th St",
    "id": "A0960",
    "measured": 18869,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8937,7 +8918,7 @@
    "name": "888 S Figueroa St",
    "id": "A0964",
    "measured": 79463,
-   "estimated": 18,
+   "estimated": 77,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -8953,7 +8934,7 @@
    "name": "441 Towne Ave",
    "id": "A0966",
    "measured": 17490,
-   "estimated": 2,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8969,7 +8950,7 @@
    "name": "Building on Department Stores parcel",
    "id": "A0968",
    "measured": 36710,
-   "estimated": 4,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9016,7 +8997,7 @@
   {
    "name": "825 Santee St",
    "id": "A0974",
-   "measured": 951,
+   "measured": 948,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -9033,7 +9014,7 @@
    "name": "617 E 5th St",
    "id": "A0979",
    "measured": 8957,
-   "estimated": 1,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9041,7 +9022,7 @@
    "name": "224 Emerald St",
    "id": "A0980",
    "measured": 354,
-   "estimated": 2,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9049,14 +9030,14 @@
    "name": "600 S San Pedro St",
    "id": "A0981",
    "measured": 3241,
-   "estimated": 10,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "653 S San Pedro St",
    "id": "A0982",
-   "measured": 3916,
+   "measured": 3819,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -9064,8 +9045,8 @@
   {
    "name": "Building on Government Parcel parcel",
    "id": "A0983",
-   "measured": 27782,
-   "estimated": 7,
+   "measured": 27783,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9073,15 +9054,15 @@
    "name": "Structure (no parcel)",
    "id": "A0984",
    "measured": 20669,
-   "estimated": 9,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "919 S Grand Ave",
    "id": "A0985",
-   "measured": 56689,
-   "estimated": 11,
+   "measured": 56692,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -9104,7 +9085,7 @@
   {
    "name": "527 N Spring St",
    "id": "A0988",
-   "measured": 1803,
+   "measured": 1802,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -9112,8 +9093,8 @@
   {
    "name": "Building on unaddressed parcel",
    "id": "A0989",
-   "measured": 14554,
-   "estimated": 13,
+   "measured": 14552,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9137,7 +9118,7 @@
    "name": "990 W 8th St",
    "id": "A0993",
    "measured": 58043,
-   "estimated": 0,
+   "estimated": 18,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9153,7 +9134,7 @@
    "name": "445 Towne Ave",
    "id": "A0995",
    "measured": 10702,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9161,22 +9142,22 @@
    "name": "550 N Figueroa St",
    "id": "A0996",
    "measured": 1792,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "845 S Figueroa St",
    "id": "A0997",
-   "measured": 39159,
-   "estimated": 29,
+   "measured": 39169,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
   {
    "name": "1246 W 2nd St",
    "id": "A0998",
-   "measured": 4863,
+   "measured": 4795,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -9201,7 +9182,7 @@
    "name": "117 S Bixel St",
    "id": "A1001",
    "measured": 1323,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9217,7 +9198,7 @@
    "name": "1254 W 2nd St",
    "id": "A1003",
    "measured": 6944,
-   "estimated": 3,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9233,7 +9214,7 @@
    "name": "432 E 2nd St",
    "id": "A1005",
    "measured": 34454,
-   "estimated": 4,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9257,7 +9238,7 @@
    "name": "600 W 9th St",
    "id": "A1008",
    "measured": 67489,
-   "estimated": 0,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9265,7 +9246,7 @@
    "name": "1304 W 3rd St",
    "id": "A1009",
    "measured": 61481,
-   "estimated": 15,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9305,7 +9286,7 @@
    "name": "Building (no parcel)",
    "id": "A1014",
    "measured": 101686,
-   "estimated": 0,
+   "estimated": 32,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9329,15 +9310,15 @@
    "name": "1246 W 1st St",
    "id": "A1017",
    "measured": 19785,
-   "estimated": 3,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
   {
    "name": "700 W 9th St",
    "id": "A1018",
-   "measured": 34588,
-   "estimated": 47,
+   "measured": 34597,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9345,7 +9326,7 @@
    "name": "939 S Broadway",
    "id": "A1019",
    "measured": 26060,
-   "estimated": 16,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9361,7 +9342,7 @@
    "name": "1263 W 2nd St",
    "id": "A1021",
    "measured": 2810,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9376,7 +9357,7 @@
   {
    "name": "940 S Hill St",
    "id": "A1023",
-   "measured": 38569,
+   "measured": 38371,
    "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
@@ -9385,7 +9366,7 @@
    "name": "1252 W 1st St",
    "id": "A1024",
    "measured": 6327,
-   "estimated": 0,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9401,7 +9382,7 @@
    "name": "100 S Alameda St",
    "id": "A1026",
    "measured": 101176,
-   "estimated": 9,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9409,7 +9390,7 @@
    "name": "Structure (no parcel)",
    "id": "A1027",
    "measured": 7939,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9424,8 +9405,8 @@
   {
    "name": "950 S Broadway",
    "id": "A1029",
-   "measured": 7423,
-   "estimated": 1,
+   "measured": 7501,
+   "estimated": 0,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -9433,7 +9414,7 @@
    "name": "901 S Flower St",
    "id": "A1030",
    "measured": 23665,
-   "estimated": 2,
+   "estimated": 5,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -9457,7 +9438,7 @@
    "name": "811 James M Wood Blvd",
    "id": "A1033",
    "measured": 9353,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9465,7 +9446,7 @@
    "name": "901 S Flower St",
    "id": "A1034",
    "measured": 25528,
-   "estimated": 48,
+   "estimated": 36,
    "storey_m": 4.5,
    "storey_from": "measured walls"
   },
@@ -9504,8 +9485,8 @@
   {
    "name": "1345 Miramar St",
    "id": "A1039",
-   "measured": 6034,
-   "estimated": 1,
+   "measured": 6024,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   }

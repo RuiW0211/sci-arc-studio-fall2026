@@ -373,6 +373,58 @@ def other(r_near=1.5, h_min=2.0, r_outline=3.0, min_struct=150):
           f" new structures {tot[4]:,}; left {tot[0] - tot[1:].sum():,}")
 
 
+def strays(p95_max=15.0, above=5.0, share=0.05, r_near=3.0):
+    """A low building's few high points (user, 2026-10-15: a parking booth 3 m tall reached 17 m, low Broadway buildings
+    25 m): in a building / structure object whose points are 95 % under p95_max m above the ground, the points more than
+    `above` m over that, if they are at most `share` of it, are mostly the wall of the taller building next door (LARIAC
+    outlines overlap a little) or the edge of a street tree's crown. Each goes to the nearest point (within r_near m, 3D)
+    of another building, structure, landmark or tree; with none near it stays (a penthouse or a sign on the roof is the
+    building's own). Towers' crowns and antennas are not touched (their p95 is high). Writes work/stage/points/<chunk>__strays.npz, applied last by pack_wide.load_chunk (run after other)."""
+    from scipy.spatial import cKDTree
+    from pack_wide import load_chunk
+    (STAGE / "points").mkdir(exist_ok=True)
+    tot = np.zeros(3, int)
+    for c in chunks():
+        nm_ = c["file"][:-4]
+        out = STAGE / "points" / f"{nm_}__strays.npz"
+        if out.exists():
+            out.unlink()
+        z = load_chunk(nm_)                      # with the car / truck and __other relabels applied
+        names = z["names"]; ni = z["name"]
+        x = z["X"] * 0.01 - OX; n = z["Y"] * 0.01 - OY; Z = z["Z"] * 0.01; h = z["hag"] * 0.1
+        kind = np.array([str(s).split("_")[0] for s in names])
+        lay_of = np.asarray(z["layers"], dtype=object)[z["layer"]]
+        bld = np.isin(kind[ni], ["BLD", "PC", "AF", "MOCA", "Metro"])
+        order = np.argsort(ni, kind="stable"); bounds = np.searchsorted(ni[order], np.arange(len(names) + 1))
+        moved = []
+        for o in np.unique(ni[bld]):
+            if kind[o] not in ("BLD", "PC"):
+                continue
+            sel = order[bounds[o]:bounds[o + 1]]
+            if len(sel) < 30:
+                continue
+            p95 = np.percentile(h[sel], 95)
+            if p95 >= p95_max:
+                continue
+            hi = sel[h[sel] > p95 + above]
+            if 0 < len(hi) <= share * len(sel):
+                moved.append(hi)
+        if not moved:
+            continue
+        idx = np.concatenate(moved)
+        others = np.flatnonzero((bld | (kind[ni] == "Tree")) & ~np.isin(np.arange(len(ni)), idx))
+        P = np.c_[x, n, Z]
+        d, j = cKDTree(P[others]).query(P[idx], distance_upper_bound=r_near)
+        ok = np.isfinite(d)
+        tgt = others[np.minimum(j, len(others) - 1)]
+        ok &= ni[tgt] != ni[idx]
+        if ok.any():
+            np.savez(out, idx=idx[ok], name=names[ni[tgt[ok]]].astype(object), layer=lay_of[tgt[ok]].astype(object))
+        tot += [len(idx), ok.sum(), (~ok).sum()]
+        print(f"{nm_}: {len(idx)} high points of low buildings: {ok.sum()} to a neighbour, {(~ok).sum()} kept", flush=True)
+    print(f"total {tot[0]:,}: to a neighbour {tot[1]:,}, kept (no neighbour near) {tot[2]:,}")
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
     if args and args[0] == "trees":
@@ -380,6 +432,8 @@ if __name__ == "__main__":
         trees(d, "--report" in args)
     elif args and args[0] == "other":
         other()
+    elif args and args[0] == "strays":
+        strays()
     elif args and args[0] == "shrubs":
         patches("Shrub_", float(args[args.index("--gap") + 1]) if "--gap" in args else 0.5)
     elif args and args[0] == "vehicles":

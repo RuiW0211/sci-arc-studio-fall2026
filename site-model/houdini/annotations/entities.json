@@ -1133,8 +1133,8 @@
    "name": "Building with a roof structure, Broadway east side (10 m)",
    "parts": [
     "BLD_201700195171",
-    "BLD_noid1898009",
-    "BLD_noid1898010"
+    "BLD_noid1898010",
+    "BLD_noid1898009"
    ],
    "use": "shops (Blue Moon Electrical / Sigma labels nearby)",
    "source": "Google Earth 3D + Google Maps labels, viewed 2026-10-08",
@@ -1154,8 +1154,8 @@
    "address": "356 S Broadway, Los Angeles, CA 90013",
    "address_source": "LA County Assessor parcels (public.gis.lacounty.gov, downloaded 2026-10-08), matched by the entity's LiDAR points",
    "auto_parts": [
-    "BLD_noid1898009",
-    "BLD_noid1898010"
+    "BLD_noid1898010",
+    "BLD_noid1898009"
    ]
   },
   {
@@ -1322,9 +1322,9 @@
     "PC_-300_-220",
     "PC_-294_-247",
     "PC_-281_-223",
-    "PC_-351_-237",
-    "PC_-350_-225",
     "PC_-283_-175",
+    "PC_-350_-225",
+    "PC_-351_-237",
     "PC_-300_-301"
    ],
    "use": "office tower",
@@ -1347,9 +1347,9 @@
    "note": "Google listing: Bank of America Financial Center, 333 S Hope St",
    "auto_parts": [
     "PC_-281_-223",
-    "PC_-351_-237",
-    "PC_-350_-225",
     "PC_-283_-175",
+    "PC_-350_-225",
+    "PC_-351_-237",
     "PC_-300_-301"
    ]
   },
@@ -1412,8 +1412,8 @@
    "name": "Walt Disney Concert Hall",
    "parts": [
     "BLD_486079842670",
-    "PC_122_-507",
-    "BLD_noid1896177"
+    "BLD_noid1896177",
+    "PC_122_-507"
    ],
    "use": "concert hall",
    "status": "confirmed",
@@ -1433,8 +1433,8 @@
     "floor_area_sqft": null
    },
    "auto_parts": [
-    "PC_122_-507",
-    "BLD_noid1896177"
+    "BLD_noid1896177",
+    "PC_122_-507"
    ]
   },
   {
@@ -1757,8 +1757,8 @@
     "PC_-805_-17",
     "PC_-824_-21",
     "PC_-828_57",
-    "PC_-839_43",
-    "PC_-834_-4"
+    "PC_-834_-4",
+    "PC_-839_43"
    ],
    "use": "office tower",
    "status": "confirmed",
@@ -1778,8 +1778,8 @@
     "floor_area_sqft": 949529
    },
    "auto_parts": [
-    "PC_-839_43",
-    "PC_-834_-4"
+    "PC_-834_-4",
+    "PC_-839_43"
    ]
   },
   {
@@ -2354,7 +2354,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 1.0,
+   "height_m": 0.9,
    "dist_m": 252,
    "name": "Structure (no parcel)",
    "use": "unknown"
@@ -2470,7 +2470,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 7.6,
+   "height_m": 7.3,
    "dist_m": 271,
    "name": "248 S Broadway",
    "use": "stores",
@@ -2678,9 +2678,9 @@
    "id": "A0022",
    "parts": [
     "BLD_486295841846",
-    "BLD_486324841799",
     "BLD_486235841729",
-    "BLD_486404841919"
+    "BLD_486404841919",
+    "BLD_486324841799"
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
@@ -2728,24 +2728,12 @@
   {
    "id": "A0024",
    "parts": [
-    "PC_3_-297"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 0.9,
-   "dist_m": 297,
-   "name": "Structure (no parcel)",
-   "use": "unknown"
-  },
-  {
-   "id": "A0025",
-   "parts": [
     "BLD_486729841130"
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
    "height_m": 19.9,
-   "dist_m": 297,
+   "dist_m": 296,
    "name": "240 S Broadway",
    "use": "five or more apartments",
    "address": "240 S Broadway, Los Angeles, CA 90012",
@@ -2759,6 +2747,18 @@
     "units": 38,
     "floor_area_sqft": 41180
    }
+  },
+  {
+   "id": "A0025",
+   "parts": [
+    "PC_3_-297"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 0.9,
+   "dist_m": 297,
+   "name": "Structure (no parcel)",
+   "use": "unknown"
   },
   {
    "id": "A0026",
@@ -2814,7 +2814,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 13.7,
+   "height_m": 13.8,
    "dist_m": 305,
    "name": "440 S Broadway",
    "use": "stores",
@@ -2953,7 +2953,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 4.7,
+   "height_m": 3.8,
    "dist_m": 322,
    "name": "450 S Broadway",
    "use": "stores",
@@ -3891,7 +3891,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 18.2,
+   "height_m": 9.3,
    "dist_m": 406,
    "name": "533 S Broadway",
    "use": "stores",
@@ -3983,7 +3983,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 10.2,
+   "height_m": 10.0,
    "dist_m": 413,
    "name": "535 S Broadway",
    "use": "store combination",
@@ -4482,7 +4482,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 12.2,
+   "height_m": 11.2,
    "dist_m": 442,
    "name": "543 S Broadway",
    "use": "stores",
@@ -4563,7 +4563,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 2.2,
+   "height_m": 1.4,
    "dist_m": 450,
    "name": "212 S Spring St",
    "use": "stores",
@@ -5482,7 +5482,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 12.8,
+   "height_m": 1.2,
    "dist_m": 511,
    "name": "Structure (no parcel)",
    "use": "unknown"
@@ -5947,7 +5947,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 9.4,
+   "height_m": 8.5,
    "dist_m": 539,
    "name": "105 E 5th St",
    "use": "stores",
@@ -6182,7 +6182,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 49.2,
+   "height_m": 49.3,
    "dist_m": 555,
    "name": "619 S Olive St",
    "use": "office buildings",
@@ -6205,7 +6205,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 5.1,
+   "height_m": 5.0,
    "dist_m": 556,
    "name": "122 Winston St",
    "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
@@ -6298,7 +6298,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 9.0,
+   "height_m": 3.6,
    "dist_m": 561,
    "name": "425 S Los Angeles St",
    "use": "stores",
@@ -6585,7 +6585,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 7.7,
+   "height_m": 6.3,
    "dist_m": 569,
    "name": "615 S Grand Ave",
    "use": "banks savings & loan",
@@ -6746,7 +6746,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 13.9,
+   "height_m": 13.8,
    "dist_m": 574,
    "name": "514 S Main St",
    "use": "store combination",
@@ -7049,7 +7049,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 24.8,
+   "height_m": 7.3,
    "dist_m": 590,
    "name": "633 S Olive St",
    "use": "restaurants, cocktail lounges",
@@ -7072,7 +7072,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 7.4,
+   "height_m": 7.3,
    "dist_m": 590,
    "name": "116 E 5th St",
    "use": "store combination",
@@ -7316,7 +7316,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 36.1,
+   "height_m": 6.8,
    "dist_m": 607,
    "name": "635 S Broadway",
    "use": "stores",
@@ -8017,7 +8017,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 4.5,
+   "height_m": 4.4,
    "dist_m": 630,
    "name": "300 S Los Angeles St",
    "use": "industrial",
@@ -8052,7 +8052,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 21.1,
+   "height_m": 7.1,
    "dist_m": 635,
    "name": "529 S Los Angeles St",
    "use": "stores",
@@ -8391,7 +8391,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 32.5,
+   "height_m": 32.4,
    "dist_m": 647,
    "name": "533 S Los Angeles St",
    "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
@@ -8736,7 +8736,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 11.5,
+   "height_m": 3.5,
    "dist_m": 661,
    "name": "Structure (no parcel)",
    "use": "unknown"
@@ -9130,6 +9130,29 @@
   {
    "id": "A0314",
    "parts": [
+    "BLD_486957839194"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 3.6,
+   "dist_m": 673,
+   "name": "221 E 5th St",
+   "use": "stores",
+   "address": "221 E 5th St, Los Angeles, CA 90013",
+   "parcel": {
+    "apn": [
+     "5148-010-011"
+    ],
+    "n_parcels": 1,
+    "use": "Stores",
+    "year_built": "1919",
+    "units": null,
+    "floor_area_sqft": 8400
+   }
+  },
+  {
+   "id": "A0315",
+   "parts": [
     "BLD_487259839423"
    ],
    "status": "auto",
@@ -9148,29 +9171,6 @@
     "year_built": "1912",
     "units": null,
     "floor_area_sqft": 10272
-   }
-  },
-  {
-   "id": "A0315",
-   "parts": [
-    "BLD_486957839194"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 12.5,
-   "dist_m": 674,
-   "name": "221 E 5th St",
-   "use": "stores",
-   "address": "221 E 5th St, Los Angeles, CA 90013",
-   "parcel": {
-    "apn": [
-     "5148-010-011"
-    ],
-    "n_parcels": 1,
-    "use": "Stores",
-    "year_built": "1919",
-    "units": null,
-    "floor_area_sqft": 8400
    }
   },
   {
@@ -9353,6 +9353,28 @@
   {
    "id": "A0324",
    "parts": [
+    "BLD_486927839108"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 14.0,
+   "dist_m": 685,
+   "name": "Building on Government Parcel parcel",
+   "use": "government parcel",
+   "parcel": {
+    "apn": [
+     "5148-010-900"
+    ],
+    "n_parcels": 1,
+    "use": "Government Parcel",
+    "year_built": null,
+    "units": null,
+    "floor_area_sqft": null
+   }
+  },
+  {
+   "id": "A0325",
+   "parts": [
     "BLD_201700195128"
    ],
    "status": "auto",
@@ -9374,7 +9396,7 @@
    }
   },
   {
-   "id": "A0325",
+   "id": "A0326",
    "parts": [
     "BLD_486604839075"
    ],
@@ -9397,7 +9419,7 @@
    }
   },
   {
-   "id": "A0326",
+   "id": "A0327",
    "parts": [
     "BLD_485316838859",
     "BLD_485289838823"
@@ -9418,28 +9440,6 @@
     "year_built": null,
     "units": null,
     "floor_area_sqft": 7636
-   }
-  },
-  {
-   "id": "A0327",
-   "parts": [
-    "BLD_486927839108"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 14.0,
-   "dist_m": 686,
-   "name": "Building on Government Parcel parcel",
-   "use": "government parcel",
-   "parcel": {
-    "apn": [
-     "5148-010-900"
-    ],
-    "n_parcels": 1,
-    "use": "Government Parcel",
-    "year_built": null,
-    "units": null,
-    "floor_area_sqft": null
    }
   },
   {
@@ -9824,7 +9824,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 12.0,
+   "height_m": 11.7,
    "dist_m": 702,
    "name": "234 Winston St",
    "use": "stores",
@@ -10008,6 +10008,29 @@
   {
    "id": "A0353",
    "parts": [
+    "BLD_484661839008"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 4.7,
+   "dist_m": 707,
+   "name": "316 W 7th St",
+   "use": "stores",
+   "address": "316 W 7th St, Los Angeles, CA 90014",
+   "parcel": {
+    "apn": [
+     "5144-014-042"
+    ],
+    "n_parcels": 1,
+    "use": "Stores",
+    "year_built": "1910",
+    "units": null,
+    "floor_area_sqft": 5274
+   }
+  },
+  {
+   "id": "A0354",
+   "parts": [
     "PC_458_536"
    ],
    "status": "auto",
@@ -10018,7 +10041,7 @@
    "use": "unknown"
   },
   {
-   "id": "A0354",
+   "id": "A0355",
    "parts": [
     "BLD_487499839600"
    ],
@@ -10038,29 +10061,6 @@
     "year_built": "1910",
     "units": null,
     "floor_area_sqft": 27068
-   }
-  },
-  {
-   "id": "A0355",
-   "parts": [
-    "BLD_484661839008"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 15.9,
-   "dist_m": 708,
-   "name": "316 W 7th St",
-   "use": "stores",
-   "address": "316 W 7th St, Los Angeles, CA 90014",
-   "parcel": {
-    "apn": [
-     "5144-014-042"
-    ],
-    "n_parcels": 1,
-    "use": "Stores",
-    "year_built": "1910",
-    "units": null,
-    "floor_area_sqft": 5274
    }
   },
   {
@@ -10292,7 +10292,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 12.2,
+   "height_m": 12.1,
    "dist_m": 718,
    "name": "507 Maple Ave",
    "use": "hotel & motels",
@@ -10534,7 +10534,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 2.5,
+   "height_m": 2.0,
    "dist_m": 728,
    "name": "405 Wall St",
    "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
@@ -10592,7 +10592,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 24.3,
+   "height_m": 24.2,
    "dist_m": 730,
    "name": "620 S Main St",
    "use": "single",
@@ -11358,7 +11358,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 26.7,
+   "height_m": 26.6,
    "dist_m": 758,
    "name": "623 S Los Angeles St",
    "use": "stores",
@@ -11381,7 +11381,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 5.2,
+   "height_m": 2.5,
    "dist_m": 759,
    "name": "Structure (no parcel)",
    "use": "unknown"
@@ -12090,7 +12090,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 9.1,
+   "height_m": 8.9,
    "dist_m": 783,
    "name": "311 Boyd St",
    "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
@@ -12649,7 +12649,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 16.0,
+   "height_m": 12.0,
    "dist_m": 807,
    "name": "888 Wilshire Blvd",
    "use": "restaurants, cocktail lounges",
@@ -12882,7 +12882,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 44.0,
+   "height_m": 43.6,
    "dist_m": 813,
    "name": "644 S Figueroa St",
    "use": "office buildings",
@@ -12989,7 +12989,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 15.7,
+   "height_m": 7.4,
    "dist_m": 816,
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "use": "parking lots (commercial use properties)",
@@ -13244,7 +13244,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 4.7,
+   "height_m": 4.5,
    "dist_m": 826,
    "name": "325 E 4th St",
    "use": "warehousing, distribution, storage",
@@ -13392,7 +13392,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 10.5,
+   "height_m": 1.8,
    "dist_m": 831,
    "name": "309 S San Pedro St",
    "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
@@ -13780,7 +13780,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 31.8,
+   "height_m": 9.0,
    "dist_m": 846,
    "name": "419 1/2 W 8th St",
    "use": "store combination",
@@ -13826,7 +13826,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 1.8,
+   "height_m": 1.7,
    "dist_m": 847,
    "name": "325 Winston St",
    "use": "warehousing, distribution, storage",
@@ -14137,7 +14137,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 17.9,
+   "height_m": 9.2,
    "dist_m": 855,
    "name": "313 W 8th St",
    "use": "stores",
@@ -14226,29 +14226,6 @@
   {
    "id": "A0549",
    "parts": [
-    "BLD_483396839470"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 25.5,
-   "dist_m": 859,
-   "name": "742 S Hope St",
-   "use": "parking lots (commercial use properties)",
-   "address": "742 S Hope St, Los Angeles, CA 90017",
-   "parcel": {
-    "apn": [
-     "5144-011-010"
-    ],
-    "n_parcels": 1,
-    "use": "Parking Lots (Commercial Use Properties)",
-    "year_built": "1925",
-    "units": null,
-    "floor_area_sqft": 123840
-   }
-  },
-  {
-   "id": "A0550",
-   "parts": [
     "BLD_487077838579",
     "BLD_noid1875649"
    ],
@@ -14268,6 +14245,29 @@
     "year_built": "1995",
     "units": 97,
     "floor_area_sqft": 30194
+   }
+  },
+  {
+   "id": "A0550",
+   "parts": [
+    "BLD_483396839470"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 25.5,
+   "dist_m": 860,
+   "name": "742 S Hope St",
+   "use": "parking lots (commercial use properties)",
+   "address": "742 S Hope St, Los Angeles, CA 90017",
+   "parcel": {
+    "apn": [
+     "5144-011-010"
+    ],
+    "n_parcels": 1,
+    "use": "Parking Lots (Commercial Use Properties)",
+    "year_built": "1925",
+    "units": null,
+    "floor_area_sqft": 123840
    }
   },
   {
@@ -14569,7 +14569,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 7.2,
+   "height_m": 3.4,
    "dist_m": 871,
    "name": "314 E 2nd St",
    "use": "stores",
@@ -14755,7 +14755,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 4.3,
+   "height_m": 4.2,
    "dist_m": 876,
    "name": "335 Winston St",
    "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
@@ -14942,7 +14942,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 8.4,
+   "height_m": 8.3,
    "dist_m": 879,
    "name": "316 E 2nd St",
    "use": "store combination",
@@ -15336,7 +15336,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 5.9,
+   "height_m": 5.7,
    "dist_m": 891,
    "name": "405 S San Pedro St",
    "use": "stores",
@@ -15620,7 +15620,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 4.5,
+   "height_m": 3.3,
    "dist_m": 899,
    "name": "411 E 5th St",
    "use": "stores",
@@ -18391,29 +18391,6 @@
   {
    "id": "A0740",
    "parts": [
-    "BLD_201700091889"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 6.4,
-   "dist_m": 989,
-   "name": "763 S Los Angeles St",
-   "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
-   "address": "763 S Los Angeles St, Los Angeles, CA 90014",
-   "parcel": {
-    "apn": [
-     "5145-001-014"
-    ],
-    "n_parcels": 1,
-    "use": "Lgt Manf.Sm. EQPT. Manuf Sm.Shps Instr.Manuf. Prnt Plnts",
-    "year_built": "1910",
-    "units": null,
-    "floor_area_sqft": 13950
-   }
-  },
-  {
-   "id": "A0741",
-   "parts": [
     "BLD_488956841080",
     "BLD_489036841067",
     "BLD_489103841320"
@@ -18443,7 +18420,7 @@
    }
   },
   {
-   "id": "A0742",
+   "id": "A0741",
    "parts": [
     "BLD_484765837969"
    ],
@@ -18463,6 +18440,29 @@
     "year_built": "1905",
     "units": null,
     "floor_area_sqft": 5398
+   }
+  },
+  {
+   "id": "A0742",
+   "parts": [
+    "BLD_201700091889"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 6.2,
+   "dist_m": 990,
+   "name": "763 S Los Angeles St",
+   "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
+   "address": "763 S Los Angeles St, Los Angeles, CA 90014",
+   "parcel": {
+    "apn": [
+     "5145-001-014"
+    ],
+    "n_parcels": 1,
+    "use": "Lgt Manf.Sm. EQPT. Manuf Sm.Shps Instr.Manuf. Prnt Plnts",
+    "year_built": "1910",
+    "units": null,
+    "floor_area_sqft": 13950
    }
   },
   {
@@ -19467,7 +19467,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 23.6,
+   "height_m": 5.8,
    "dist_m": 1021,
    "name": "765 S Santee St.",
    "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
@@ -19514,7 +19514,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 28.5,
+   "height_m": 9.2,
    "dist_m": 1022,
    "name": "843 S Broadway",
    "use": "parking lots (commercial use properties)",
@@ -19893,7 +19893,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 10.1,
+   "height_m": 9.7,
    "dist_m": 1036,
    "name": "211 E 8th St",
    "use": "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts",
@@ -19974,7 +19974,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 2.2,
+   "height_m": 2.1,
    "dist_m": 1038,
    "name": "521 E 5th St",
    "use": "food processing plants",
@@ -20229,7 +20229,6 @@
     "BLD_483969844367",
     "BLD_484342844015",
     "BLD_484050844186",
-    "BLD_484142843809",
     "BLD_484431844074",
     "PC_-572_-962",
     "BLD_483886844402",
@@ -20245,6 +20244,7 @@
     "PC_-432_-842",
     "BLD_484044843952",
     "PC_-391_-843",
+    "BLD_484142843809",
     "PC_-440_-808",
     "PC_-475_-853"
    ],
@@ -20399,11 +20399,23 @@
   {
    "id": "A0837",
    "parts": [
+    "PC_844_-619"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 4.2,
+   "dist_m": 1046,
+   "name": "Structure (no parcel)",
+   "use": "unknown"
+  },
+  {
+   "id": "A0838",
+   "parts": [
     "BLD_485438837640"
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 45.5,
+   "height_m": 45.4,
    "dist_m": 1047,
    "name": "217 E 8th St",
    "use": "store combination",
@@ -20418,18 +20430,6 @@
     "units": 77,
     "floor_area_sqft": 92241
    }
-  },
-  {
-   "id": "A0838",
-   "parts": [
-    "PC_844_-619"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 16.7,
-   "dist_m": 1047,
-   "name": "Structure (no parcel)",
-   "use": "unknown"
   },
   {
    "id": "A0839",
@@ -20724,59 +20724,13 @@
   {
    "id": "A0852",
    "parts": [
-    "BLD_486606837697"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 4.2,
-   "dist_m": 1056,
-   "name": "417 E 7th St",
-   "use": "warehousing, distribution, storage",
-   "address": "417 E 7th St, Los Angeles, CA 90014",
-   "parcel": {
-    "apn": [
-     "5148-024-028"
-    ],
-    "n_parcels": 1,
-    "use": "Warehousing, Distribution, Storage",
-    "year_built": "1980",
-    "units": null,
-    "floor_area_sqft": 5076
-   }
-  },
-  {
-   "id": "A0853",
-   "parts": [
-    "BLD_482869842970"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 8.6,
-   "dist_m": 1057,
-   "name": "404 S Bixel St",
-   "use": "commercial",
-   "address": "404 S Bixel St, Los Angeles, CA 90017",
-   "parcel": {
-    "apn": [
-     "5152-015-019"
-    ],
-    "n_parcels": 1,
-    "use": "Commercial",
-    "year_built": null,
-    "units": null,
-    "floor_area_sqft": null
-   }
-  },
-  {
-   "id": "A0854",
-   "parts": [
     "BLD_2014092853510000",
     "PC_-566_895"
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 68.9,
-   "dist_m": 1057,
+   "height_m": 68.8,
+   "dist_m": 1056,
    "name": "849 S Broadway",
    "use": "single",
    "address": "849 S Broadway, Los Angeles, CA 90014",
@@ -20800,6 +20754,52 @@
     "year_built": "1930",
     "units": 151,
     "floor_area_sqft": 17120
+   }
+  },
+  {
+   "id": "A0853",
+   "parts": [
+    "BLD_486606837697"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 4.2,
+   "dist_m": 1056,
+   "name": "417 E 7th St",
+   "use": "warehousing, distribution, storage",
+   "address": "417 E 7th St, Los Angeles, CA 90014",
+   "parcel": {
+    "apn": [
+     "5148-024-028"
+    ],
+    "n_parcels": 1,
+    "use": "Warehousing, Distribution, Storage",
+    "year_built": "1980",
+    "units": null,
+    "floor_area_sqft": 5076
+   }
+  },
+  {
+   "id": "A0854",
+   "parts": [
+    "BLD_482869842970"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 8.6,
+   "dist_m": 1057,
+   "name": "404 S Bixel St",
+   "use": "commercial",
+   "address": "404 S Bixel St, Los Angeles, CA 90017",
+   "parcel": {
+    "apn": [
+     "5152-015-019"
+    ],
+    "n_parcels": 1,
+    "use": "Commercial",
+    "year_built": null,
+    "units": null,
+    "floor_area_sqft": null
    }
   },
   {
@@ -20874,6 +20874,29 @@
   {
    "id": "A0858",
    "parts": [
+    "BLD_488097838451"
+   ],
+   "status": "auto",
+   "source": "automatic: LA County Assessor lot of its LiDAR parts",
+   "height_m": 15.8,
+   "dist_m": 1061,
+   "name": "531 E 5th St",
+   "use": "industrial",
+   "address": "531 E 5th St, Los Angeles, CA 90013",
+   "parcel": {
+    "apn": [
+     "5147-008-031"
+    ],
+    "n_parcels": 1,
+    "use": "Industrial",
+    "year_built": null,
+    "units": null,
+    "floor_area_sqft": null
+   }
+  },
+  {
+   "id": "A0859",
+   "parts": [
     "BLD_488412838784"
    ],
    "status": "auto",
@@ -20895,7 +20918,7 @@
    }
   },
   {
-   "id": "A0859",
+   "id": "A0860",
    "parts": [
     "PC_-1002_355"
    ],
@@ -20907,7 +20930,7 @@
    "use": "unknown"
   },
   {
-   "id": "A0860",
+   "id": "A0861",
    "parts": [
     "BLD_202000039776",
     "BLD_noid2231012",
@@ -20929,29 +20952,6 @@
     "year_built": "2022",
     "units": 376,
     "floor_area_sqft": 402981
-   }
-  },
-  {
-   "id": "A0861",
-   "parts": [
-    "BLD_488097838451"
-   ],
-   "status": "auto",
-   "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 15.8,
-   "dist_m": 1062,
-   "name": "531 E 5th St",
-   "use": "industrial",
-   "address": "531 E 5th St, Los Angeles, CA 90013",
-   "parcel": {
-    "apn": [
-     "5147-008-031"
-    ],
-    "n_parcels": 1,
-    "use": "Industrial",
-    "year_built": null,
-    "units": null,
-    "floor_area_sqft": null
    }
   },
   {
@@ -21138,7 +21138,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 6.8,
+   "height_m": 1.6,
    "dist_m": 1072,
    "name": "Building on Government Parcel parcel",
    "use": "government parcel",
@@ -22685,7 +22685,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 33.3,
+   "height_m": 3.1,
    "dist_m": 1119,
    "name": "912 S Olive St",
    "use": "stores",
@@ -23889,7 +23889,7 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 6.4,
+   "height_m": 1.2,
    "dist_m": 1170,
    "name": "1246 W 2nd St",
    "use": "stores",
@@ -24439,8 +24439,8 @@
    ],
    "status": "auto",
    "source": "automatic: LA County Assessor lot of its LiDAR parts",
-   "height_m": 7.1,
-   "dist_m": 1225,
+   "height_m": 4.4,
+   "dist_m": 1226,
    "name": "940 S Hill St",
    "use": "stores",
    "address": "940 S Hill St, Los Angeles, CA 90015",
