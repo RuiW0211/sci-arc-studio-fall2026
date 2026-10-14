@@ -1121,14 +1121,14 @@ function stepTour(dt, frac) {
   invalidate();
 }
 function endTour() { if (tour) { tour = null; controls.enableDamping = true; } }
-for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, endTour, { passive: true });
+for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => handBack(), { passive: true });
 // years a second: 8 to 1950, then 2 (a building about 2.5 s going up), 1 while an unbuilt scheme is on the site
 const ghostSpans = [...ghostYears.values()].flat();
 const rate = (y) => (ghostSpans.some(([a, b]) => y >= a - 0.5 && y < b + 1) ? 1 : y < 1950 ? 8 : 2);
 let playDur = 0;
 for (let y = 1867; y < 2026; y += 0.05) playDur += 0.05 / rate(y);
 let playing = null;
-function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null; $("#timePlay").textContent = "Play"; endTour(); }
+function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null; $("#timePlay").textContent = "Play"; endTour(); endCine(); }
 function startPlay(withTour) {
   if (playing) stopPlay();
   let y = +$("#timeRange").value >= 2025.9 ? 1867 : +$("#timeRange").value, last = performance.now(), el = 0;
@@ -1139,13 +1139,91 @@ function startPlay(withTour) {
     y = Math.min(2026, y + dt * rate(y));
     setYear(y);
     stepTour(dt, Math.min(el / playDur, 1));
-    if (y >= 2026) { playing = null; $("#timePlay").textContent = "Play"; endTour(); return; }
+    if (y >= 2026) {   // the end: if the camera was left to the tour, it goes on filming (startCine)
+      playing = null; $("#timePlay").textContent = "Play";
+      const toured = Boolean(tour); endTour(); if (toured && CINE.on !== false) startCine();
+      return;
+    }
     playing = requestAnimationFrame(step);
   };
   playing = requestAnimationFrame(step);
 }
 $("#timePlay").onclick = () => (playing ? stopPlay() : startPlay(false));
 setYear(2026);
+
+// ---------- after the opening: the camera keeps filming (user, 2026-10-13) ----------
+// When the opening has played to the end with the camera untouched, the camera goes on as a loop of shots, the way a
+// film is cut: a wide establishing orbit of the whole site; a cut to a hero tower, low and close, craning up as it arcs
+// round it; a flight back out to the whole site; a crane down onto Y-1; and so on. Every shot moves (an arc, a push, a
+// crane), eases in and out, and lasts shotS seconds; into a close-up it cuts (a short dip to black), out of one it flies
+// (blendS). The labels settle to one faint opacity; the hero of a shot comes up. Any drag or scroll hands the camera
+// back. config.json time.cinema.
+const CINE = { shotS: 10, blendS: 3.5, heroes: 4, heroWithinM: 700, wideR: 1300, wideTilt: 46, labelOpacity: 0.3, ...(cfg.time?.cinema || {}) };
+let cine = null;
+const cutEl = document.createElement("div"); cutEl.id = "cut"; document.body.append(cutEl);
+const D2R = Math.PI / 180;
+function cineShots() {
+  const near = (it) => Math.hypot((it.box[0] + it.box[3]) / 2, (it.box[2] + it.box[5]) / 2) < CINE.heroWithinM;
+  const heroes = (tlItems || []).filter((it) => it.kind === "built" && near(it)).sort((u, v) => v.h - u.h).slice(0, CINE.heroes);
+  const wide = { target: TOUR.target, r: [CINE.wideR, CINE.wideR * 0.9], tilt: [CINE.wideTilt, CINE.wideTilt + 4], turn: 25 };
+  const y1 = { target: TOUR.target, r: [900, 380], tilt: [26, 58], turn: 40 };   // crane down onto Y-1
+  // a hero: the camera a little below 70 % of its height (looking up), close, rising and arcing round it
+  const hero = (it) => ({ key: it.key, cut: true, turn: 35, tilt: [93, 83],
+    target: [(it.box[0] + it.box[3]) / 2, it.box[1] + 0.7 * it.h, (it.box[2] + it.box[5]) / 2],
+    r: [Math.max(2.4 * it.h, 220), Math.max(1.5 * it.h, 150)] });
+  const s = [wide];
+  heroes.forEach((it, k) => s.push(hero(it), k % 2 ? y1 : wide));
+  return s;
+}
+function cinePose(sh, t, th0, dir) {
+  const e = tlEase(t), m = 0.5 * t + 0.5 * e;   // the arc keeps moving; distance and tilt ease
+  return { target: sh.target, r: Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e),
+           phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + dir * sh.turn * D2R * m };
+}
+function cineApply(P) {
+  controls.target.fromArray(P.target);
+  _sph.set(P.r, P.phi, P.th);
+  camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
+  camera.lookAt(controls.target);
+}
+function startCine() {
+  const shots = cineShots(); if (!shots.length) return;
+  controls.enableDamping = false;
+  const th = sphOf(camera.position, controls.target).th;
+  cine = { shots, i: 0, phase: "shot", t0: performance.now(), th0: th, dir: 1, from: null, op0: performance.now() };
+}
+function endCine() {
+  if (!cine) return;
+  cine = null; cutEl.classList.remove("on"); controls.enableDamping = true; invalidate();
+}
+function nextShot(now, P) {
+  const c = cine, sh = c.shots[(c.i + 1) % c.shots.length];
+  c.i = (c.i + 1) % c.shots.length; c.dir = -c.dir; c.th0 = P.th;
+  if (sh.cut) {   // dip to black, jump, come up on the new shot
+    c.phase = "cut"; c.t0 = now; cutEl.classList.add("on");
+  } else { c.phase = "blend"; c.t0 = now; c.from = P; }
+}
+function stepCine(now) {
+  const c = cine, sh = c.shots[c.i];
+  if (c.phase === "cut") {
+    if (now - c.t0 < 280) return;   // the screen is going dark
+    c.phase = "shot"; c.t0 = now; cutEl.classList.remove("on");
+  }
+  if (c.phase === "blend") {
+    const k = Math.min((now - c.t0) / (CINE.blendS * 1000), 1), e = k < 0.5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2;
+    const A = c.from, B = cinePose(sh, 0, c.th0, c.dir);
+    let dth = B.th - A.th; dth = Math.atan2(Math.sin(dth), Math.cos(dth));
+    const T = A.target.map((v, j) => v + (B.target[j] - v) * e);
+    const P = { target: T, r: Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e), phi: A.phi + (B.phi - A.phi) * e, th: A.th + dth * e };
+    cineApply(P);
+    if (k >= 1) { c.phase = "shot"; c.t0 = now; c.th0 = P.th; }
+    return;
+  }
+  const t = Math.min((now - c.t0) / (CINE.shotS * 1000), 1), P = cinePose(sh, t, c.th0, c.dir);
+  cineApply(P);
+  if (t >= 1) nextShot(now, P);
+}
+function handBack() { endTour(); endCine(); }
 
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
@@ -1353,14 +1431,18 @@ function updateTags() {
 // ---------- Time module: labels on the buildings going up ----------
 // (user, 2026-10-13: the buildings that go up get their name and year, floating, after the Connections page's blob
 // tracking) a tracking frame locks on to each building as it starts to rise and grows with it, a readout beside it
-// (name, year, height); only named buildings and landmarks (user, 2026-10-13: 300 labels by address were a mess). A building once labelled keeps its frame and label after it is finished (user, 2026-10-13: the
-// opening of the viewer ends on the whole site, every labelled tower named; no connecting curves). At most
+// (name, year, height); only named buildings and landmarks (user, 2026-10-13: 300 labels by address were a mess). A
+// building once labelled keeps its frame and text after it is finished, fading slowly (fadeYears) to doneOpacity; once
+// the opening is over and the camera films (startCine) they all settle to one opacity, so the buildings stand out, and
+// the hero of a shot comes up (user, 2026-10-13). A text with no free place hides (it keeps its place while it can,
+// so labels do not hop about). No connecting curves. At most
 // time.labels.max new ones going up at once, the tallest first; unbuilt towers always. Screen space, after every render.
 const TL = { max: 6, holdYears: 2, minHeightM: 25, ...(cfg.time?.labels || {}) };
 const tlLayer = document.createElement("div"); tlLayer.id = "tlabels"; document.body.append(tlLayer);
 let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1, z1], h }
 const tlShown = new Map();   // key -> { el }
 const tlEver = new Set();    // labelled once: kept while the year is past its start
+let tlLast = 0;
 function tlBuild() {
   tlItems = [];
   const ents = ENTITIES?.entities ?? [], nE = ents.length, B = new Float32Array(nE * 6);
@@ -1378,8 +1460,6 @@ function tlBuild() {
     const h = B[o + 4] - B[o + 1]; if (h < TL.minHeightM) return;
     tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y, box: Array.from(B.subarray(o, o + 6)), h });
   });
-  // the tallest keep their text once built (time.labels.keepText); the others keep their frame only
-  [...tlItems].sort((u, v) => v.h - u.h).slice(0, TL.keepText ?? 15).forEach((it) => (it.top = true));
   for (const g of ghostLabels) tlItems.push(g);
 }
 const tlEase = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * (3 - 2 * t); };
@@ -1400,9 +1480,8 @@ function updateTimeTags() {
       const ever = tlEver.has(it.key);
       if (!ever && Y > it.year + TL.holdYears) continue;
       p = tlEase((Y - it.year + Bd) / Bd);
-      const done = Y > it.year + TL.holdYears;
-      txt = !done || Boolean(it.top);
-      a = Math.min(1, (Y - it.year + Bd) / 0.4) * (Y > it.year ? (txt ? TL.doneOpacity ?? 0.7 : TL.frameOpacity ?? 0.45) : 1);
+      const done = Y > it.year + TL.holdYears, fade = tlEase((Y - it.year) / (TL.fadeYears ?? 8));
+      a = Math.min(1, (Y - it.year + Bd) / 0.4) * (1 + ((TL.doneOpacity ?? 0.45) - 1) * fade);
       if (ever) { kept.push({ it, p, a, txt, rising: !done }); continue; }
     }
     live.push({ it, p, a, txt, rising: true });
@@ -1416,8 +1495,11 @@ function updateTimeTags() {
   }
   const placed = [], ui = $("#ui").getBoundingClientRect();
   // texts placed in order of importance: going up and unbuilt first, then the tallest; a text with no free place hides
-  const rank = (l) => (l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : l.txt ? 2 : 3);
-  for (const { it, p, a, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
+  const rank = (l) => (cine && l.it.key === cine.shots[cine.i].key ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
+  const now = performance.now(), dt = Math.min((now - (tlLast || now)) / 1000, 0.1); tlLast = now;
+  for (const { it, p, a: a0, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
+    // while filming: every label at one opacity, the shot's hero full; shown opacity eases to its target
+    const a = cine ? (it.key === cine.shots[cine.i].key ? 1 : CINE.labelOpacity) : a0;
     let s = tlShown.get(it.key);
     if (!s) {
       const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
@@ -1438,17 +1520,22 @@ function updateTimeTags() {
     if (off) continue;
     const w = Math.max(sx1 - sx0, 6), h = Math.max(sy1 - sy0, 6);
     s.el.style.translate = `${sx0}px ${sy0}px`; s.el.style.width = `${w}px`; s.el.style.height = `${h}px`;
-    s.el.style.opacity = a.toFixed(3);
+    s.op = s.op === undefined ? a : s.op + (a - s.op) * Math.min(1, dt * 2.5);
+    if (Math.abs(a - s.op) > 0.004) invalidate();
+    s.el.style.opacity = s.op.toFixed(3);
     // the readout: beside the frame's top, on the side away from the screen's centre, clear of the panel and the others
     const r = s.el.firstChild;
     if (!txt) { r.classList.add("hid"); continue; }
     const rw = r.offsetWidth, rh = r.offsetHeight, pref = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
     const free = (rx, ay) => rx > 4 && rx + rw < W - 4 && !placed.some((q) => rx < q.x + q.w + 4 && rx + rw + 4 > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y);
     let spot = null;
-    for (const left of [pref, !pref]) for (const ry of [0, rh + 4, -(rh + 4)]) {
+    const tries = [[pref, 0], [pref, rh + 4], [pref, -(rh + 4)], [!pref, 0], [!pref, rh + 4], [!pref, -(rh + 4)]];
+    if (s.spot) tries.unshift([s.spot.left, s.spot.ry]);   // where it was, first
+    for (const [left, ry] of tries) {
       const rx = left ? sx1 + 6 : sx0 - 6 - rw;
       if (!spot && free(rx, sy0 + ry)) spot = { left, ry, rx };
     }
+    if (spot) s.spot = spot;
     r.classList.toggle("hid", !spot);
     if (!spot) continue;
     r.classList.toggle("r", spot.left); r.style.top = `${spot.ry}px`;
@@ -1655,6 +1742,7 @@ let glassPending = false;
 setInterval(() => { if (glassPending) { dirty = true; } }, GLASS_EVERY);   // re-check once the camera stops
 renderer.setAnimationLoop((now) => {
   if (tween) { stepTween(now); dirty = true; lastMove = now; }
+  if (cine) { stepCine(now); dirty = true; lastMove = now; }
   if (controls.update()) { dirty = true; lastMove = now; }   // damping keeps moving the camera after the drag ends
   // LiDAR level of detail: recomputed whenever the view changed or a chunk is still easing to its target
   if (lidar && mode === "cloud" && (dirty || lodEasing)) { lodEasing = updateLod(); if (lodEasing) dirty = true; }
@@ -1668,7 +1756,7 @@ renderer.setAnimationLoop((now) => {
 });
 window.__viewer = {
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, updateTimeTags,   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
