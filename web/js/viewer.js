@@ -1135,7 +1135,7 @@ function startPlay(withTour) {
   if (withTour || y <= 1867) startTour();
   $("#timePlay").textContent = "Pause";
   const step = (now) => {   // about a minute in all
-    const dt = Math.min((now - last) / 1000, 0.1); last = now; el += dt;
+    const dt = Math.min(Math.max((now - last) / 1000, 0), 0.1); last = now; el += dt;   // a frame stamped before the start: 0
     y = Math.min(2026, y + dt * rate(y));
     setYear(y);
     stepTour(dt, Math.min(el / playDur, 1));
@@ -1353,13 +1353,14 @@ function updateTags() {
 // ---------- Time module: labels on the buildings going up ----------
 // (user, 2026-10-13: the buildings that go up get their name and year, floating, after the Connections page's blob
 // tracking) a tracking frame locks on to each building as it starts to rise and grows with it, a readout beside it
-// (name, year, height); a thin curve links it to the labelled building finished just before it, a thread through the
-// years. At most time.labels.max at once, the tallest first; unbuilt towers always. Screen space, after every render.
+// (name, year, height); only named buildings and landmarks (user, 2026-10-13: 300 labels by address were a mess). A building once labelled keeps its frame and label after it is finished (user, 2026-10-13: the
+// opening of the viewer ends on the whole site, every labelled tower named; no connecting curves). At most
+// time.labels.max new ones going up at once, the tallest first; unbuilt towers always. Screen space, after every render.
 const TL = { max: 6, holdYears: 2, minHeightM: 25, ...(cfg.time?.labels || {}) };
 const tlLayer = document.createElement("div"); tlLayer.id = "tlabels"; document.body.append(tlLayer);
-const tlSvg = document.createElementNS(svgNS, "svg"); tlSvg.id = "tlinks"; document.body.append(tlSvg);
 let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1, z1], h }
-const tlShown = new Map();   // key -> { el, path }
+const tlShown = new Map();   // key -> { el }
+const tlEver = new Set();    // labelled once: kept while the year is past its start
 function tlBuild() {
   tlItems = [];
   const ents = ENTITIES?.entities ?? [], nE = ents.length, B = new Float32Array(nE * 6);
@@ -1373,9 +1374,12 @@ function tlBuild() {
   ents.forEach((e, i) => {
     const y = parseInt(e.built?.[0] ?? e.parcel?.year_built, 10), o = 6 * i;
     if (!(y > 1000) || B[o] > 1e8) return;
+    if (TL.namedOnly !== false && e.status === "auto" && !e.landmark) return;   // automatic entities are only an address
     const h = B[o + 4] - B[o + 1]; if (h < TL.minHeightM) return;
     tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y, box: Array.from(B.subarray(o, o + 6)), h });
   });
+  // the tallest keep their text once built (time.labels.keepText); the others keep their frame only
+  [...tlItems].sort((u, v) => v.h - u.h).slice(0, TL.keepText ?? 15).forEach((it) => (it.top = true));
   for (const g of ghostLabels) tlItems.push(g);
 }
 const tlEase = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * (3 - 2 * t); };
@@ -1383,36 +1387,43 @@ function updateTimeTags() {
   const Y = TIME.year.value, Bd = TIME.build.value, on = TIME.on.value > 0.5 && lidar && mode === "cloud";
   if (on && !tlItems) tlBuild();
   const W = innerWidth, H = innerHeight;
-  tlSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  // who is up now: rising, or finished within holdYears; unbuilt towers while on the site
-  const live = [];
+  // who is up now: rising (or finished within holdYears), or labelled before; unbuilt towers while on the site
+  const live = [], kept = [];
   if (on) for (const it of tlItems) {
-    let p, a;
+    let p, a, txt = true;
     if (it.kind === "unbuilt") {
       const sp = it.end - it.year + 1, up = Math.min(Bd, 0.6 * sp), dn = Math.min(1.5, 0.3 * sp);
       if (Y < it.year || Y >= it.year + sp) continue;
       p = tlEase(Math.min((Y - it.year) / up, (it.year + sp - Y) / dn)); a = Math.min(1, (Y - it.year) / 0.4, (it.year + sp - Y) / dn);
     } else {
-      if (Y < it.year - Bd || Y > it.year + TL.holdYears) continue;
-      p = tlEase((Y - it.year + Bd) / Bd); a = Math.min(1, (Y - it.year + Bd) / 0.4, (it.year + TL.holdYears - Y) / 1);
+      if (Y < it.year - Bd) { tlEver.delete(it.key); continue; }
+      const ever = tlEver.has(it.key);
+      if (!ever && Y > it.year + TL.holdYears) continue;
+      p = tlEase((Y - it.year + Bd) / Bd);
+      const done = Y > it.year + TL.holdYears;
+      txt = !done || Boolean(it.top);
+      a = Math.min(1, (Y - it.year + Bd) / 0.4) * (Y > it.year ? (txt ? TL.doneOpacity ?? 0.7 : TL.frameOpacity ?? 0.45) : 1);
+      if (ever) { kept.push({ it, p, a, txt, rising: !done }); continue; }
     }
-    live.push({ it, p, a });
+    live.push({ it, p, a, txt, rising: true });
   }
   live.sort((u, v) => (v.it.kind === "unbuilt") - (u.it.kind === "unbuilt") || v.it.h - u.it.h);
-  const keep = live.slice(0, TL.max), keys = new Set(keep.map((l) => l.it.key));
+  const keep = kept.concat(live.slice(0, TL.max)), keys = new Set(keep.map((l) => l.it.key));
+  for (const l of keep) if (l.it.kind !== "unbuilt") tlEver.add(l.it.key);
   for (const [k, s] of tlShown) if (!keys.has(k)) {   // gone: fade out, then leave
-    tlShown.delete(k); s.el.classList.add("out"); s.path.classList.add("out");
-    setTimeout(() => { s.el.remove(); s.path.remove(); }, 450);
+    tlShown.delete(k); s.el.classList.add("out");
+    setTimeout(() => s.el.remove(), 450);
   }
   const placed = [], ui = $("#ui").getBoundingClientRect();
-  for (const { it, p, a } of keep.sort((u, v) => u.it.year - v.it.year)) {
+  // texts placed in order of importance: going up and unbuilt first, then the tallest; a text with no free place hides
+  const rank = (l) => (l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : l.txt ? 2 : 3);
+  for (const { it, p, a, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
     let s = tlShown.get(it.key);
     if (!s) {
       const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
       el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "unbuilt" ? `Unbuilt · ${it.year}–${it.end}` : `Built ${it.year}`} · ${len(it.h)}</i>`;
       tlLayer.append(el);
-      const path = document.createElementNS(svgNS, "path"); tlSvg.append(path);
-      tlShown.set(it.key, (s = { el, path }));
+      tlShown.set(it.key, (s = { el }));
     }
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
@@ -1423,31 +1434,25 @@ function updateTimeTags() {
       sx0 = Math.min(sx0, sx); sx1 = Math.max(sx1, sx); sy0 = Math.min(sy0, sy); sy1 = Math.max(sy1, sy);
     }
     const off = behind || sx1 < 0 || sx0 > W || sy1 < 0 || sy0 > H;
-    s.el.style.display = off ? "none" : ""; s.path.style.display = off ? "none" : "";
-    if (off) { s.at = null; continue; }
+    s.el.style.display = off ? "none" : "";
+    if (off) continue;
     const w = Math.max(sx1 - sx0, 6), h = Math.max(sy1 - sy0, 6);
     s.el.style.translate = `${sx0}px ${sy0}px`; s.el.style.width = `${w}px`; s.el.style.height = `${h}px`;
     s.el.style.opacity = a.toFixed(3);
     // the readout: beside the frame's top, on the side away from the screen's centre, clear of the panel and the others
-    const left = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
-    const r = s.el.firstChild, rw = r.offsetWidth, rh = r.offsetHeight;
-    let ry = 0;
-    for (let k = 0; k < 6; k++) {
-      const rx = left ? sx1 + 6 : sx0 - 6 - rw, ay = sy0 + ry;
-      if (!placed.some((q) => rx < q.x + q.w && rx + rw > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y)) break;
-      ry += rh + 4;
+    const r = s.el.firstChild;
+    if (!txt) { r.classList.add("hid"); continue; }
+    const rw = r.offsetWidth, rh = r.offsetHeight, pref = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
+    const free = (rx, ay) => rx > 4 && rx + rw < W - 4 && !placed.some((q) => rx < q.x + q.w + 4 && rx + rw + 4 > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y);
+    let spot = null;
+    for (const left of [pref, !pref]) for (const ry of [0, rh + 4, -(rh + 4)]) {
+      const rx = left ? sx1 + 6 : sx0 - 6 - rw;
+      if (!spot && free(rx, sy0 + ry)) spot = { left, ry, rx };
     }
-    r.classList.toggle("r", left); r.style.top = `${ry}px`;
-    placed.push({ x: left ? sx1 + 6 : sx0 - 6 - rw, y: sy0 + ry, w: rw, h: rh });
-    s.at = [sx0 + w / 2, sy0];
-    // the thread: a curve from the top of the labelled building finished before it
-    const prev = [...tlShown.values()].filter((q) => q !== s && q.at && q.year < it.year).sort((u, v) => v.year - u.year)[0];
-    s.year = it.year;
-    if (prev) {
-      const [ax, ay] = prev.at, [bx, by] = s.at, mx = (ax + bx) / 2, my = Math.min(ay, by) - Math.max(30, Math.abs(bx - ax) * 0.25);
-      s.path.setAttribute("d", `M${ax.toFixed(1)},${ay.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)}`);
-      s.path.style.opacity = (a * 0.6).toFixed(3);
-    } else s.path.setAttribute("d", "");
+    r.classList.toggle("hid", !spot);
+    if (!spot) continue;
+    r.classList.toggle("r", spot.left); r.style.top = `${spot.ry}px`;
+    placed.push({ x: spot.rx, y: sy0 + spot.ry, w: rw, h: rh });
   }
 }
 // a plain object (tree, car, wall ...), or a point of the ground / unassigned
@@ -1604,6 +1609,9 @@ wakeTags();
 wake();
 
 await setMode("cloud");
+// the opening (user, 2026-10-13): the viewer opens in the Time module, playing from 1867 with the camera tour;
+// ?time=0 or config.json time.opening false opens on today
+if (cfg.time?.opening !== false && urlq.get("time") !== "0") { $("#timeOn").checked = true; $("#timeOn").onchange({ target: $("#timeOn") }); }
 if (urlq.get("earth")) setEarthView(urlq.get("earth"));   // ?earth=<Google Earth URL>: the same camera here
 status("");
 let lodEasing = true;
@@ -1660,7 +1668,7 @@ renderer.setAnimationLoop((now) => {
 });
 window.__viewer = {
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, updateTimeTags,   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();

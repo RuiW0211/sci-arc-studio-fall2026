@@ -3,6 +3,7 @@
   "designs": "assets/models.json",
   "time": {
     "_comment": "The Time module (user, 2026-10-13): buildings by the year they were built, each rising from the ground over the buildYears before it, with a soft front (front: its depth, as a share of the building's height). Buildings and landmarks turn white and opaque and stay; the rest goes to contextGrey at contextOpacity; the unbuilt towers keep their colour. undatedDim: the white of buildings with no year.",
+    "opening": true,
     "undatedDim": 0.55,
     "buildYears": 5,
     "front": 0.25,
@@ -14,18 +15,22 @@
       "radiusM": 20
     },
     "labels": {
-      "_comment": "Labels on the buildings going up (blob-tracking frames): at most max at once, the tallest first, for buildings at least minHeightM tall, kept holdYears after completion; unbuilt towers always.",
+      "_comment": "Labels on the buildings going up (blob-tracking frames): at most max new ones at once, the tallest first, for named buildings and landmarks (namedOnly) at least minHeightM tall; a labelled building keeps its frame once built (frameOpacity), and its text too if among the keepText tallest (doneOpacity); a text with no free place hides; one that could not get a label is still eligible holdYears after completion; unbuilt towers always.",
       "max": 6,
+      "doneOpacity": 0.7,
+      "namedOnly": true,
+      "keepText": 15,
+      "frameOpacity": 0.45,
       "holdYears": 2,
       "minHeightM": 25
     },
     "tour": {
-      "_comment": "The camera while it plays from 1867: turnDeg round the site, distance r0 -> r1 (m) and tilt0 -> tilt1 (degrees from straight down), about target.",
+      "_comment": "The camera while it plays from 1867 (the viewer's opening; opening false = start on today): it ends far out, on the whole site. turnDeg round the site, distance r0 -> r1 (m) and tilt0 -> tilt1 (degrees from straight down), about target.",
       "turnDeg": 220,
       "r0": 420,
-      "r1": 820,
+      "r1": 1300,
       "tilt0": 64,
-      "tilt1": 52,
+      "tilt1": 46,
       "target": [0, 95, 0]
     }
   },
