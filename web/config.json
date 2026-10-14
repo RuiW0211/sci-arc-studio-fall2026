@@ -13,6 +13,12 @@
       "cellM": 2,
       "radiusM": 20
     },
+    "labels": {
+      "_comment": "Labels on the buildings going up (blob-tracking frames): at most max at once, the tallest first, for buildings at least minHeightM tall, kept holdYears after completion; unbuilt towers always.",
+      "max": 6,
+      "holdYears": 2,
+      "minHeightM": 25
+    },
     "tour": {
       "_comment": "The camera while it plays from 1867: turnDeg round the site, distance r0 -> r1 (m) and tilt0 -> tilt1 (degrees from straight down), about target.",
       "turnDeg": 220,

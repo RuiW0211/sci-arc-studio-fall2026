@@ -151,6 +151,7 @@ try {
 // per tower answers clicks in the mesh view.
 const ghostPts = [];   // { name, base, layer, pos: three.js order }
 const ghostYears = new Map();   // unbuilt layer -> [[from, to], ...]: shown with the Time module, in those years
+const ghostLabels = [];   // the Time module's labels for the unbuilt towers (updateTimeTags)
 try {
   const G = cfg.ghosts, gd = await (await fetch(G.data)).json();
   let seed = G.seed ?? 11;
@@ -184,6 +185,8 @@ try {
       if (inside(x, n)) { pos.push(x, t.top_z, -n); k--; }
     }
     ghostPts.push({ name: t.name, base: t.base_z, layer: sc.layer || "Unbuilt", years: sc.years, pos: new Float32Array(pos) });
+    ghostLabels.push({ key: `g:${t.name}`, name: t.name.replace(/ \(schematic\)$/, ""), kind: "unbuilt", year: sc.years[0], end: sc.years[1],
+                       box: [minX, t.base_z, -maxN, maxX, t.top_z, -minN], h: t.top_z - t.base_z });
     const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
     const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }));
@@ -1143,6 +1146,7 @@ function startPlay(withTour) {
 }
 $("#timePlay").onclick = () => (playing ? stopPlay() : startPlay(false));
 setYear(2026);
+
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
 // a clicked person's modeled day (population.js story()) as a floating tag that follows them. how: "only" (Alt + click),
@@ -1344,6 +1348,106 @@ function updateTags() {
     s.el.style.transform = `translate(${bx}px, ${by}px) translateY(-100%)`;
     const ex = left ? bx + w : bx;
     s.line.setAttribute("x1", sx); s.line.setAttribute("y1", sy); s.line.setAttribute("x2", ex); s.line.setAttribute("y2", by);
+  }
+}
+// ---------- Time module: labels on the buildings going up ----------
+// (user, 2026-10-13: the buildings that go up get their name and year, floating, after the Connections page's blob
+// tracking) a tracking frame locks on to each building as it starts to rise and grows with it, a readout beside it
+// (name, year, height); a thin curve links it to the labelled building finished just before it, a thread through the
+// years. At most time.labels.max at once, the tallest first; unbuilt towers always. Screen space, after every render.
+const TL = { max: 6, holdYears: 2, minHeightM: 25, ...(cfg.time?.labels || {}) };
+const tlLayer = document.createElement("div"); tlLayer.id = "tlabels"; document.body.append(tlLayer);
+const tlSvg = document.createElementNS(svgNS, "svg"); tlSvg.id = "tlinks"; document.body.append(tlSvg);
+let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1, z1], h }
+const tlShown = new Map();   // key -> { el, path }
+function tlBuild() {
+  tlItems = [];
+  const ents = ENTITIES?.entities ?? [], nE = ents.length, B = new Float32Array(nE * 6);
+  for (let i = 0; i < nE; i++) B.set([1e9, 1e9, 1e9, -1e9, -1e9, -1e9], 6 * i);
+  for (const p of lidar.parts) for (let i = 0; i < p.n; i++) {
+    const e = lidar.objEntity[p.ob[i]]; if (e < 0 || lidar.objLayers[p.ob[i]] === "Terrain") continue;
+    const x = p.pos[3 * i], y = p.pos[3 * i + 1], z = p.pos[3 * i + 2], o = 6 * e;
+    if (x < B[o]) B[o] = x; if (y < B[o + 1]) B[o + 1] = y; if (z < B[o + 2]) B[o + 2] = z;
+    if (x > B[o + 3]) B[o + 3] = x; if (y > B[o + 4]) B[o + 4] = y; if (z > B[o + 5]) B[o + 5] = z;
+  }
+  ents.forEach((e, i) => {
+    const y = parseInt(e.built?.[0] ?? e.parcel?.year_built, 10), o = 6 * i;
+    if (!(y > 1000) || B[o] > 1e8) return;
+    const h = B[o + 4] - B[o + 1]; if (h < TL.minHeightM) return;
+    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y, box: Array.from(B.subarray(o, o + 6)), h });
+  });
+  for (const g of ghostLabels) tlItems.push(g);
+}
+const tlEase = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * (3 - 2 * t); };
+function updateTimeTags() {
+  const Y = TIME.year.value, Bd = TIME.build.value, on = TIME.on.value > 0.5 && lidar && mode === "cloud";
+  if (on && !tlItems) tlBuild();
+  const W = innerWidth, H = innerHeight;
+  tlSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  // who is up now: rising, or finished within holdYears; unbuilt towers while on the site
+  const live = [];
+  if (on) for (const it of tlItems) {
+    let p, a;
+    if (it.kind === "unbuilt") {
+      const sp = it.end - it.year + 1, up = Math.min(Bd, 0.6 * sp), dn = Math.min(1.5, 0.3 * sp);
+      if (Y < it.year || Y >= it.year + sp) continue;
+      p = tlEase(Math.min((Y - it.year) / up, (it.year + sp - Y) / dn)); a = Math.min(1, (Y - it.year) / 0.4, (it.year + sp - Y) / dn);
+    } else {
+      if (Y < it.year - Bd || Y > it.year + TL.holdYears) continue;
+      p = tlEase((Y - it.year + Bd) / Bd); a = Math.min(1, (Y - it.year + Bd) / 0.4, (it.year + TL.holdYears - Y) / 1);
+    }
+    live.push({ it, p, a });
+  }
+  live.sort((u, v) => (v.it.kind === "unbuilt") - (u.it.kind === "unbuilt") || v.it.h - u.it.h);
+  const keep = live.slice(0, TL.max), keys = new Set(keep.map((l) => l.it.key));
+  for (const [k, s] of tlShown) if (!keys.has(k)) {   // gone: fade out, then leave
+    tlShown.delete(k); s.el.classList.add("out"); s.path.classList.add("out");
+    setTimeout(() => { s.el.remove(); s.path.remove(); }, 450);
+  }
+  const placed = [], ui = $("#ui").getBoundingClientRect();
+  for (const { it, p, a } of keep.sort((u, v) => u.it.year - v.it.year)) {
+    let s = tlShown.get(it.key);
+    if (!s) {
+      const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
+      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "unbuilt" ? `Unbuilt · ${it.year}–${it.end}` : `Built ${it.year}`} · ${len(it.h)}</i>`;
+      tlLayer.append(el);
+      const path = document.createElementNS(svgNS, "path"); tlSvg.append(path);
+      tlShown.set(it.key, (s = { el, path }));
+    }
+    // the frame: the building's box up to the height it has reached, projected
+    const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
+    let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
+    for (const x of [x0, x1]) for (const y of [y0, top]) for (const z of [z0, z1]) {
+      _tv.set(x, y, z).project(camera); if (_tv.z > 1) behind = true;
+      const sx = ((_tv.x + 1) / 2) * W, sy = ((1 - _tv.y) / 2) * H;
+      sx0 = Math.min(sx0, sx); sx1 = Math.max(sx1, sx); sy0 = Math.min(sy0, sy); sy1 = Math.max(sy1, sy);
+    }
+    const off = behind || sx1 < 0 || sx0 > W || sy1 < 0 || sy0 > H;
+    s.el.style.display = off ? "none" : ""; s.path.style.display = off ? "none" : "";
+    if (off) { s.at = null; continue; }
+    const w = Math.max(sx1 - sx0, 6), h = Math.max(sy1 - sy0, 6);
+    s.el.style.translate = `${sx0}px ${sy0}px`; s.el.style.width = `${w}px`; s.el.style.height = `${h}px`;
+    s.el.style.opacity = a.toFixed(3);
+    // the readout: beside the frame's top, on the side away from the screen's centre, clear of the panel and the others
+    const left = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
+    const r = s.el.firstChild, rw = r.offsetWidth, rh = r.offsetHeight;
+    let ry = 0;
+    for (let k = 0; k < 6; k++) {
+      const rx = left ? sx1 + 6 : sx0 - 6 - rw, ay = sy0 + ry;
+      if (!placed.some((q) => rx < q.x + q.w && rx + rw > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y)) break;
+      ry += rh + 4;
+    }
+    r.classList.toggle("r", left); r.style.top = `${ry}px`;
+    placed.push({ x: left ? sx1 + 6 : sx0 - 6 - rw, y: sy0 + ry, w: rw, h: rh });
+    s.at = [sx0 + w / 2, sy0];
+    // the thread: a curve from the top of the labelled building finished before it
+    const prev = [...tlShown.values()].filter((q) => q !== s && q.at && q.year < it.year).sort((u, v) => v.year - u.year)[0];
+    s.year = it.year;
+    if (prev) {
+      const [ax, ay] = prev.at, [bx, by] = s.at, mx = (ax + bx) / 2, my = Math.min(ay, by) - Math.max(30, Math.abs(bx - ax) * 0.25);
+      s.path.setAttribute("d", `M${ax.toFixed(1)},${ay.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)}`);
+      s.path.style.opacity = (a * 0.6).toFixed(3);
+    } else s.path.setAttribute("d", "");
   }
 }
 // a plain object (tree, car, wall ...), or a point of the ground / unassigned
@@ -1551,7 +1655,7 @@ renderer.setAnimationLoop((now) => {
   if (!dirty) return;
   dirty = false;
   renderer.render(scene, camera);
-  updateTags();
+  updateTags(); updateTimeTags();
   adaptGlass(now);
 });
 window.__viewer = {

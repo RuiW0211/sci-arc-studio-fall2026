@@ -225,6 +225,28 @@
   .tag.left .dd > summary::after { content: "‹"; }
   .tag.left .dd[open] > summary::after { transform: rotate(-90deg); }
   .tag.left dl { text-align: left; }
+  /* Time module labels (user, 2026-10-13, after the Connections page's blob tracking): a frame of corner brackets
+     that locks on to a building going up and grows with it; a readout beside it; a thin curve back to the one before */
+  #tlabels { position: fixed; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
+  .tblob { position: absolute; left: 0; top: 0; --k: rgba(255, 255, 255, .9); --l: 6px; will-change: translate;
+    background: linear-gradient(var(--k), var(--k)) top left / var(--l) 1px, linear-gradient(var(--k), var(--k)) top left / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) top right / var(--l) 1px, linear-gradient(var(--k), var(--k)) top right / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) bottom left / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom left / 1px var(--l),
+      linear-gradient(var(--k), var(--k)) bottom right / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom right / 1px var(--l);
+    background-repeat: no-repeat; animation: tLock var(--t-in) ease-out both; }
+  .tblob.ghost { --k: #B5CDEA; }
+  .tblob.out { animation: tOut .45s ease-in both; }
+  @keyframes tLock { from { opacity: 0; scale: 1.8; } to { opacity: 1; scale: 1; } }
+  @keyframes tOut { to { opacity: 0; scale: 1.25; } }
+  .tblob i { position: absolute; right: calc(100% + 6px); top: 0; text-align: right; white-space: nowrap; font-style: normal;
+    font: 10px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .02em; color: rgba(244, 244, 246, .7);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
+  .tblob i.r { right: auto; left: calc(100% + 6px); text-align: left; }
+  .tblob i b { display: block; font-size: 13px; font-weight: 300; line-height: 1.25; color: #fff; letter-spacing: .01em; }
+  .tblob.ghost i b { color: #B5CDEA; }
+  #tlinks { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+  #tlinks path { fill: none; stroke: rgba(255, 255, 255, .8); stroke-width: 1; stroke-dasharray: 2 3; transition: opacity .3s; }
+  #tlinks path.out { opacity: 0 !important; }
   #leads { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; transition: opacity var(--t-in) ease; }
   #leads line { stroke: var(--tag); stroke-width: 1; }
   body.idle-tags .tag, body.idle-tags #leads { opacity: 0; pointer-events: none; transition: opacity var(--t-idle) ease; }
