@@ -15,16 +15,17 @@
       "radiusM": 20
     },
     "labels": {
-      "_comment": "Labels on the buildings going up (blob-tracking frames): at most max new ones at once, the tallest first, for named buildings and landmarks (namedOnly) at least minHeightM tall; a labelled building keeps its frame and text once built, fading over fadeYears to doneOpacity; a text with no free place hides; one that could not get a label is still eligible holdYears after completion; unbuilt towers always.",
+      "_comment": "Labels on the buildings going up (blob-tracking frames): at most max new ones at once, the tallest first, for named buildings and landmarks (namedOnly) at least minHeightM tall; a labelled building keeps its frame and text once built, fading over fadeYears to doneOpacity; behind another building it fades to hiddenOpacity (line of sight), far ones are quieter; a text with no free place hides; one that could not get a label is still eligible holdYears after completion; unbuilt towers always.",
       "max": 6,
       "doneOpacity": 0.45,
       "namedOnly": true,
       "fadeYears": 8,
+      "hiddenOpacity": 0.15,
       "holdYears": 2,
       "minHeightM": 25
     },
     "cinema": {
-      "_comment": "After the opening, if the camera was not touched: a loop of shots (wide orbit, cut to a hero tower filmed low and close, fly back out, crane down onto Y-1 ...). shotS / blendS seconds; heroes = the tallest labelled towers within heroWithinM of Y-1; labelOpacity = every label while filming (the hero full). on false = stop at the end.",
+      "_comment": "After the opening, if the camera was not touched: a loop of shots (wide orbit, cut to a hero tower filmed low and close, fly back out, Angels Flight and the other heroNames close up, a low pass over Angels Knoll, crane down onto Y-1 ...). shotS / blendS seconds; heroes = the tallest labelled towers within heroWithinM of Y-1; labelOpacity = every label while filming (the hero full). on false = stop at the end.",
       "on": true,
       "shotS": 10,
       "blendS": 3.5,
@@ -32,7 +33,8 @@
       "heroWithinM": 700,
       "wideR": 1300,
       "wideTilt": 46,
-      "labelOpacity": 0.3
+      "labelOpacity": 0.3,
+      "heroNames": ["Angels Flight"]
     },
     "tour": {
       "_comment": "The camera while it plays from 1867 (the viewer's opening; opening false = start on today): it ends far out, on the whole site. turnDeg round the site, distance r0 -> r1 (m) and tilt0 -> tilt1 (degrees from straight down), about target.",

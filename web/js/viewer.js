@@ -1158,7 +1158,8 @@ setYear(2026);
 // crane), eases in and out, and lasts shotS seconds; into a close-up it cuts (a short dip to black), out of one it flies
 // (blendS). The labels settle to one faint opacity; the hero of a shot comes up. Any drag or scroll hands the camera
 // back. config.json time.cinema.
-const CINE = { shotS: 10, blendS: 3.5, heroes: 4, heroWithinM: 700, wideR: 1300, wideTilt: 46, labelOpacity: 0.3, ...(cfg.time?.cinema || {}) };
+const CINE = { shotS: 10, blendS: 3.5, heroes: 4, heroWithinM: 700, wideR: 1300, wideTilt: 46, labelOpacity: 0.3,
+               heroNames: ["Angels Flight"], ...(cfg.time?.cinema || {}) };
 let cine = null;
 const cutEl = document.createElement("div"); cutEl.id = "cut"; document.body.append(cutEl);
 const D2R = Math.PI / 180;
@@ -1171,8 +1172,21 @@ function cineShots() {
   const hero = (it) => ({ key: it.key, cut: true, turn: 35, tilt: [93, 83],
     target: [(it.box[0] + it.box[3]) / 2, it.box[1] + 0.7 * it.h, (it.box[2] + it.box[5]) / 2],
     r: [Math.max(2.4 * it.h, 220), Math.max(1.5 * it.h, 150)] });
+  // the named heroes (Angels Flight): close and low, whatever their height; Angels Knoll: a low pass over the parcel
+  const named = (CINE.heroNames || []).map((n) => (tlItems || []).find((it) => it.name.toLowerCase() === n.toLowerCase())).filter(Boolean);
+  const small = (it) => ({ key: it.key, cut: true, turn: 40, tilt: [82, 72],
+    target: [(it.box[0] + it.box[3]) / 2, it.box[1] + 0.5 * it.h, (it.box[2] + it.box[5]) / 2],
+    r: [Math.max(3 * it.h, 110), Math.max(2 * it.h, 75)] });
+  const site = (tlItems || []).find((it) => it.kind === "site");
+  const knoll = site && { key: site.key, turn: 50, tilt: [70, 63],
+    target: [(site.box[0] + site.box[3]) / 2, site.box[1] + 0.6 * site.h, (site.box[2] + site.box[5]) / 2], r: [300, 190] };
+  // wide, tower, wide, Angels Flight, Angels Knoll, tower, crane onto Y-1, tower, wide, tower, crane ...
   const s = [wide];
-  heroes.forEach((it, k) => s.push(hero(it), k % 2 ? y1 : wide));
+  heroes.forEach((it, k) => {
+    s.push(hero(it));
+    if (k === 0 && named.length) { s.push(wide); for (const n of named) s.push(small(n)); if (knoll) s.push(knoll); }
+    else s.push(k % 2 ? y1 : wide);
+  });
   return s;
 }
 function cinePose(sh, t, th0, dir) {
@@ -1439,7 +1453,11 @@ function updateTags() {
 // time.labels.max new ones going up at once, the tallest first; unbuilt towers always. Screen space, after every render.
 const TL = { max: 6, holdYears: 2, minHeightM: 25, ...(cfg.time?.labels || {}) };
 const tlLayer = document.createElement("div"); tlLayer.id = "tlabels"; document.body.append(tlLayer);
-let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1, z1], h }
+let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1, z1], h, ent }
+let tlOcc = [];       // every building's box, for the labels' line of sight: { box, year (0 = undated), ent }
+// the Y-1 parcel (population.json y1: [x east, y north]), for the Angels Knoll label and shot
+let y1Ring = null;
+if (cfg.population?.meta) fetch(cfg.population.meta).then((r) => r.json()).then((m) => { y1Ring = m.y1?.[0] ?? null; }).catch(() => {});
 const tlShown = new Map();   // key -> { el }
 const tlEver = new Set();    // labelled once: kept while the year is past its start
 let tlLast = 0;
@@ -1455,14 +1473,51 @@ function tlBuild() {
   }
   ents.forEach((e, i) => {
     const y = parseInt(e.built?.[0] ?? e.parcel?.year_built, 10), o = 6 * i;
-    if (!(y > 1000) || B[o] > 1e8) return;
+    if (B[o] > 1e8) return;
+    const h = B[o + 4] - B[o + 1], box = Array.from(B.subarray(o, o + 6));
+    if (h >= 6) tlOcc.push({ box, year: y > 1000 ? y : 0, ent: i });
+    if (!(y > 1000)) return;
     if (TL.namedOnly !== false && e.status === "auto" && !e.landmark) return;   // automatic entities are only an address
-    const h = B[o + 4] - B[o + 1]; if (h < TL.minHeightM) return;
-    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y, box: Array.from(B.subarray(o, o + 6)), h });
+    const always = (CINE.heroNames || []).some((n) => n.toLowerCase() === e.name.toLowerCase());   // a hero of the film
+    if (h < TL.minHeightM && !always) return;
+    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y, box, h, ent: i });
   });
+  // Angels Knoll, the Y-1 parcel: a frame over its ground (the terrain points inside the parcel)
+  if (y1Ring) {
+    const ring = y1Ring.map(([x, n]) => [x, -n]);
+    let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9, lo = 1e9, hi = -1e9;
+    for (const [x, z] of ring) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+    const inside = (x, z) => { let c = false; for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+      if ((ring[a][1] > z) !== (ring[b][1] > z) && x < ((ring[b][0] - ring[a][0]) * (z - ring[a][1])) / (ring[b][1] - ring[a][1]) + ring[a][0]) c = !c; } return c; };
+    for (const p of lidar.parts) {
+      if (p.name !== "Terrain" && p.name !== lidar.objLayers[lidar.objNames.indexOf("Terrain")]) continue;
+      for (let i = 0; i < p.n; i++) {
+        const x = p.pos[3 * i], z = p.pos[3 * i + 2]; if (x < x0 || x > x1 || z < z0 || z > z1 || !inside(x, z)) continue;
+        const y = p.pos[3 * i + 1]; if (y < lo) lo = y; if (y > hi) hi = y;
+      }
+    }
+    if (hi > lo) tlItems.push({ key: "site:y1", name: "Angels Knoll", kind: "site", sub: "Parcel Y-1", box: [x0, lo, z0, x1, hi, z1], h: hi - lo });
+  }
   for (const g of ghostLabels) tlItems.push(g);
 }
 const tlEase = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * (3 - 2 * t); };
+// 1 if the line from the camera to (x, y, z) passes no standing building (other than `own`), else 0. Boxes drawn in to
+// 80 % in plan: a building's box is larger than the building (it is not turned with it)
+function tlSees(x, y, z, own, Y) {
+  const o = camera.position, dx = x - o.x, dy = y - o.y, dz = z - o.z;
+  for (const b of tlOcc) {
+    if (b.ent === own || (b.year && b.year > Y)) continue;
+    const [x0, y0, z0, x1, y1, z1] = b.box, mx = (x1 - x0) * 0.1, mz = (z1 - z0) * 0.1;
+    let t0 = 0, t1 = 0.97;
+    for (const [oo, d, lo, hi] of [[o.x, dx, x0 + mx, x1 - mx], [o.y, dy, y0, y1], [o.z, dz, z0 + mz, z1 - mz]]) {
+      if (Math.abs(d) < 1e-9) { if (oo < lo || oo > hi) { t0 = 2; break; } continue; }
+      let a = (lo - oo) / d, c = (hi - oo) / d; if (a > c) [a, c] = [c, a];
+      if (a > t0) t0 = a; if (c < t1) t1 = c; if (t0 > t1) break;
+    }
+    if (t0 <= t1) return 0;
+  }
+  return 1;
+}
 function updateTimeTags() {
   const Y = TIME.year.value, Bd = TIME.build.value, on = TIME.on.value > 0.5 && lidar && mode === "cloud";
   if (on && !tlItems) tlBuild();
@@ -1471,7 +1526,9 @@ function updateTimeTags() {
   const live = [], kept = [];
   if (on) for (const it of tlItems) {
     let p, a, txt = true;
-    if (it.kind === "unbuilt") {
+    if (it.kind === "site") {   // Angels Knoll: always there, as quiet as a finished building
+      p = 1; a = TL.doneOpacity ?? 0.45; kept.push({ it, p, a, txt, rising: false }); continue;
+    } else if (it.kind === "unbuilt") {
       const sp = it.end - it.year + 1, up = Math.min(Bd, 0.6 * sp), dn = Math.min(1.5, 0.3 * sp);
       if (Y < it.year || Y >= it.year + sp) continue;
       p = tlEase(Math.min((Y - it.year) / up, (it.year + sp - Y) / dn)); a = Math.min(1, (Y - it.year) / 0.4, (it.year + sp - Y) / dn);
@@ -1498,12 +1555,23 @@ function updateTimeTags() {
   const rank = (l) => (cine && l.it.key === cine.shots[cine.i].key ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
   const now = performance.now(), dt = Math.min((now - (tlLast || now)) / 1000, 0.1); tlLast = now;
   for (const { it, p, a: a0, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
-    // while filming: every label at one opacity, the shot's hero full; shown opacity eases to its target
-    const a = cine ? (it.key === cine.shots[cine.i].key ? 1 : CINE.labelOpacity) : a0;
+    // while filming: every label at one opacity, the shot's hero full
+    const hero = cine && it.key === cine.shots[cine.i].key;
+    let a = cine ? (hero ? 1 : CINE.labelOpacity) : a0;
+    // depth (user, 2026-10-13: labels sat over the buildings, near and far alike): a label whose building is hidden
+    // behind a standing building fades (lines of sight to its top and its middle against the other buildings' boxes,
+    // drawn in a little); far ones are quieter; near ones are drawn over far ones
+    const [bx0, by0, bz0, bx1, by1, bz1] = it.box, cx = (bx0 + bx1) / 2, cz = (bz0 + bz1) / 2, ty = by0 + (by1 - by0) * Math.max(p, 0.02);
+    const dist = camera.position.distanceTo(_tv.set(cx, (by0 + ty) / 2, cz));
+    const seen = (tlSees(cx, ty, cz, it.ent, Y) + tlSees(cx, (by0 + ty) / 2, cz, it.ent, Y)) / 2;
+    const ref = camera.position.distanceTo(controls.target);
+    a *= (TL.hiddenOpacity ?? 0.15) + (1 - (TL.hiddenOpacity ?? 0.15)) * seen;
+    a *= Math.min(1, Math.max(0.45, 1.25 - 0.25 * dist / ref));
+    if (hero) a = Math.max(a, 0.6);
     let s = tlShown.get(it.key);
     if (!s) {
       const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
-      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "unbuilt" ? `Unbuilt · ${it.year}–${it.end}` : `Built ${it.year}`} · ${len(it.h)}</i>`;
+      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : `${it.kind === "unbuilt" ? `Unbuilt · ${it.year}–${it.end}` : `Built ${it.year}`} · ${len(it.h)}`}</i>`;
       tlLayer.append(el);
       tlShown.set(it.key, (s = { el }));
     }
@@ -1520,6 +1588,7 @@ function updateTimeTags() {
     if (off) continue;
     const w = Math.max(sx1 - sx0, 6), h = Math.max(sy1 - sy0, 6);
     s.el.style.translate = `${sx0}px ${sy0}px`; s.el.style.width = `${w}px`; s.el.style.height = `${h}px`;
+    s.el.style.zIndex = String(Math.max(1, Math.round(100000 - dist)));
     s.op = s.op === undefined ? a : s.op + (a - s.op) * Math.min(1, dt * 2.5);
     if (Math.abs(a - s.op) > 0.004) invalidate();
     s.el.style.opacity = s.op.toFixed(3);
