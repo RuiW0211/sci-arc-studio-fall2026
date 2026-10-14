@@ -1106,6 +1106,8 @@ function setHistory(on, resume) {
     return;
   }
   setYear(resume ? resume.year : 1867);   // (user, 2026-10-13) it starts in 1867 and plays, the camera going round
+  // no people while the buildings go up (user, 2026-10-15): they come on with the film, after its first wide shot
+  if ($("#popOn").checked) { $("#popOn").checked = false; $("#popOn").onchange({ target: $("#popOn") }); }
   startPlay(true);
 }
 $("#timeOn").onchange = (e) => setHistory(e.target.checked);
