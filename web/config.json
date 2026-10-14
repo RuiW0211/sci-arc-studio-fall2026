@@ -2,8 +2,9 @@
   "_comment": "Viewer settings. Layers come from the point cloud (data/lidar_points.json, written by site-model/houdini/tools/pack_wide.py) and from the design files; this file only gives display names, order, default visibility and colours. Unknown layers still appear under their own name (grey). Design files site-model/exports/design_<name>.glb load on top of the point cloud (listed in assets/models.json); their layers default to the Design style, visible. Camera values are three.js coordinates: x = east, y = up (m, NAVD88), z = -north, from the site origin E 384580 / N 3768520.",
   "designs": "assets/models.json",
   "time": {
-    "_comment": "The Time module (user, 2026-10-13): buildings by the year they were built, each rising from the ground over the buildYears before it, with a soft front (front: its depth, as a share of the building's height). Buildings and landmarks turn white and opaque and stay; the rest goes to contextGrey at contextOpacity; the unbuilt towers keep their colour. undatedDim: the white of buildings with no year.",
+    "_comment": "The Time module (user, 2026-10-13; Space pauses / resumes the opening and the film after it, and after a look around while paused the camera eases back over rejoinS seconds): buildings by the year they were built, each rising from the ground over the buildYears before it, with a soft front (front: its depth, as a share of the building's height). Buildings and landmarks turn white and opaque and stay; the rest goes to contextGrey at contextOpacity; the unbuilt towers keep their colour. undatedDim: the white of buildings with no year.",
     "opening": true,
+    "rejoinS": 2.5,
     "undatedDim": 0.55,
     "buildYears": 5,
     "front": 0.25,
@@ -21,6 +22,7 @@
       "namedOnly": true,
       "fadeYears": 8,
       "hiddenOpacity": 0.15,
+      "noHeight": ["Angels Flight"],
       "holdYears": 2,
       "minHeightM": 25
     },
