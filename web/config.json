@@ -31,7 +31,7 @@
       "minHeightM": 25
     },
     "cinema": {
-      "_comment": "After the opening: the film, shots in order (type wide / crane / low / orbit / track; members = entity names or Angels Knoll, their tags lit; cut = dip to black in, else fly; s = seconds). Groups of places near each other: Y-1 (Angels Knoll, Angels Flight, the Metro), California Plaza and MOCA, Grand Avenue, Civic Center, Broadway, the west towers. thenPeople: after one round, Time off and People on, the camera circling. shotS / blendS seconds; heroes = the tallest labelled towers within heroWithinM of Y-1; labelOpacity = every label while filming (the hero full). on false = stop at the end.",
+      "_comment": "After the opening: the film, shots in order (type wide / crane / low / orbit / track; members = entity names or Angels Knoll, their tags lit; cut = dip to black in, else fly; s = seconds). Groups of places near each other: Y-1 (Angels Knoll, Angels Flight, the Metro), California Plaza and MOCA, Grand Avenue, Civic Center, Broadway, the west towers. thenPeople: People comes on after shot peopleAfter (0 = the first wide shot) and the film goes on. shotS / blendS seconds; heroes = the tallest labelled towers within heroWithinM of Y-1; labelOpacity = every label while filming (the hero full). on false = stop at the end.",
       "on": true,
       "shotS": 10,
       "blendS": 3.5,
@@ -41,6 +41,7 @@
       "wideTilt": 46,
       "labelOpacity": 0.6,
       "thenPeople": true,
+      "peopleAfter": 0,
       "shots": [
         { "type": "wide" },
         { "type": "crane", "members": ["Angels Knoll", "Angels Flight", "Pershing Square Station entrance (4th & Hill, Metro)"] },

@@ -1072,10 +1072,12 @@ $("#popOn").onchange = async (e) => {
 // the cloud turns grey for Highlight people, and with the Time module (user, 2026-10-13: as Population does)
 let whiteNow = false;
 function updateWhite() {
-  const want = ($("#popOn").checked && $("#popWhite").checked) || $("#timeOn").checked;
+  // (user, 2026-10-14: Highlight people removed; the grey cloud is now the History module's only)
+  const want = $("#timeOn").checked;
   if (want !== whiteNow) { whiteNow = want; setWhiteCloud(want); }
 }
-$("#popWhite").onchange = () => updateWhite();
+// the History module's Tags switch (user, 2026-10-14): the tags fade out and back in
+$("#timeTags").onchange = (e) => { tlLayer.classList.toggle("off", !e.target.checked); };
 // ---------- Time module ----------
 // buildings with a year, for the count under the slider
 const datedYears = (ENTITIES?.entities ?? []).map((e) => parseInt(e.built?.[0] ?? e.parcel?.year_built, 10)).filter((y) => y > 1000).sort((a, b) => a - b);
@@ -1291,8 +1293,10 @@ function endCine() {
 }
 function nextShot(now, P) {
   const c = cine;
-  // the film has been round once (user, 2026-10-13): the Population module takes over, the camera circling high
-  if (c.i + 1 >= c.shots.length && CINE.thenPeople !== false && !c.people) return toPeople();
+  // after the first wide shot (user, 2026-10-14) People comes on, and the film goes on with them
+  if (c.i === (CINE.peopleAfter ?? 0) && CINE.thenPeople !== false && !$("#popOn").checked) {
+    $("#popOn").checked = true; $("#popOn").onchange({ target: $("#popOn") });
+  }
   const sh = c.shots[(c.i + 1) % c.shots.length];
   c.i = (c.i + 1) % c.shots.length; c.dir = -c.dir; c.th0 = P.th;
   if (sh.cut) {   // dip to black, jump, come up on the new shot
@@ -1312,16 +1316,6 @@ function stepCine(now) {
   if (P.k >= 1) nextShot(now, P);
 }
 function handBack() { endTour(); endCine(); }
-// leave the Time module (today's model, in colour) and turn People on; the camera goes on circling the whole site
-function toPeople() {
-  const th = sphOf(camera.position, controls.target).th;
-  $("#timeOn").checked = false; $("#timeOn").onchange({ target: $("#timeOn") });   // ends the film
-  if (!$("#popOn").checked) { $("#popOn").checked = true; $("#popOn").onchange({ target: $("#popOn") }); }
-  const ring = { target: TOUR.target, r: [CINE.wideR, CINE.wideR], tilt: [CINE.wideTilt, CINE.wideTilt], turn: 30, keys: [], s: 20 };
-  controls.enableDamping = false;
-  cine = { shots: [ring], i: 0, phase: "shot", t0: performance.now(), th0: th, dir: 1, from: null, people: true };
-  timeState();
-}
 
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
