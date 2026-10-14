@@ -1625,11 +1625,12 @@ function updateTimeTags() {
     // drawn in a little); far ones are quieter; near ones are drawn over far ones
     const [bx0, by0, bz0, bx1, by1, bz1] = it.box, cx = (bx0 + bx1) / 2, cz = (bz0 + bz1) / 2, ty = by0 + (by1 - by0) * Math.max(p, 0.02);
     const dist = camera.position.distanceTo(_tv.set(cx, (by0 + ty) / 2, cz));
-    const seen = (tlSees(cx, ty, cz, it.ent, Y) + tlSees(cx, (by0 + ty) / 2, cz, it.ent, Y)) / 2;
+    // four lines of sight (top, three quarters, middle, a quarter up), so a building half hidden gives a half, and the
+    // share is eased (tag.seen) rather than flipping as a line grazes a corner (user, 2026-10-13: tags flickered)
+    const hy = ty - by0;
+    const seen = (tlSees(cx, ty, cz, it.ent, Y) + tlSees(cx, by0 + 0.75 * hy, cz, it.ent, Y)
+                + tlSees(cx, by0 + 0.5 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.25 * hy, cz, it.ent, Y)) / 4;
     const ref = camera.position.distanceTo(controls.target);
-    a *= (TL.hiddenOpacity ?? 0.15) + (1 - (TL.hiddenOpacity ?? 0.15)) * seen;
-    a *= Math.min(1, Math.max(0.45, 1.25 - 0.25 * dist / ref));
-    if (hero) a = Math.max(a, 0.6);
     let s = tlShown.get(it.key);
     if (!s) {
       const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
@@ -1637,8 +1638,15 @@ function updateTimeTags() {
       const noH = (TL.noHeight || []).some((n) => n.toLowerCase() === it.name.toLowerCase());
       el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : `${it.kind === "unbuilt" ? `Unbuilt · ${it.year}–${it.end}` : `Built ${it.year}`}${noH ? "" : ` · ${len(it.h)}`}`}</i>`;
       tlLayer.append(el);
-      tlShown.set(it.key, (s = { el }));
+      // the lock-on plays once: after it the frame is "locked", so showing it again does not replay it
+      el.addEventListener("animationend", () => el.classList.add("locked"), { once: true });
+      tlShown.set(it.key, (s = { el, seen }));
     }
+    const ease = (tau) => 1 - Math.exp(-dt / tau);   // exponential easing, tau seconds
+    s.seen += (seen - s.seen) * ease(0.35);
+    a *= (TL.hiddenOpacity ?? 0.15) + (1 - (TL.hiddenOpacity ?? 0.15)) * s.seen;
+    a *= Math.min(1, Math.max(0.45, 1.25 - 0.25 * dist / ref));
+    if (hero) a = Math.max(a, 0.6);
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
     let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
@@ -1647,19 +1655,23 @@ function updateTimeTags() {
       const sx = ((_tv.x + 1) / 2) * W, sy = ((1 - _tv.y) / 2) * H;
       sx0 = Math.min(sx0, sx); sx1 = Math.max(sx1, sx); sy0 = Math.min(sy0, sy); sy1 = Math.max(sy1, sy);
     }
+    // out of view: it fades out where it is (no display: none, which made it blink and replay its lock-on)
     const off = behind || sx1 < 0 || sx0 > W || sy1 < 0 || sy0 > H;
-    s.el.style.display = off ? "none" : "";
-    if (off) continue;
+    if (off) a = 0;
+    s.op = s.op === undefined ? a : s.op + (a - s.op) * ease(0.3);
+    if (Math.abs(a - s.op) > 0.004) invalidate();
+    s.el.style.opacity = s.op.toFixed(3);
+    s.el.style.visibility = s.op < 0.01 ? "hidden" : "";
+    if (behind) continue;   // its projection means nothing: it stays where it was while it fades
     const w = Math.max(sx1 - sx0, 6), h = Math.max(sy1 - sy0, 6);
     s.el.style.translate = `${sx0}px ${sy0}px`; s.el.style.width = `${w}px`; s.el.style.height = `${h}px`;
     s.el.style.zIndex = String(Math.max(1, Math.round(100000 - dist)));
-    s.op = s.op === undefined ? a : s.op + (a - s.op) * Math.min(1, dt * 2.5);
-    if (Math.abs(a - s.op) > 0.004) invalidate();
-    s.el.style.opacity = s.op.toFixed(3);
+    if (off) continue;
     // the readout: beside the frame's top, on the side away from the screen's centre, clear of the panel and the others
     const r = s.el.firstChild;
     if (!txt) { r.classList.add("hid"); continue; }
-    const rw = r.offsetWidth, rh = r.offsetHeight, pref = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
+    if (!s.rw) { s.rw = r.offsetWidth; s.rh = r.offsetHeight; }   // measured once (its text does not change)
+    const rw = s.rw, rh = s.rh, pref = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
     const free = (rx, ay) => rx > 4 && rx + rw < W - 4 && !placed.some((q) => rx < q.x + q.w + 4 && rx + rw + 4 > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y);
     let spot = null;
     const tries = [[pref, 0], [pref, rh + 4], [pref, -(rh + 4)], [!pref, 0], [!pref, rh + 4], [!pref, -(rh + 4)]];
@@ -1668,11 +1680,18 @@ function updateTimeTags() {
       const rx = left ? sx1 + 6 : sx0 - 6 - rw;
       if (!spot && free(rx, sy0 + ry)) spot = { left, ry, rx };
     }
-    if (spot) s.spot = spot;
-    r.classList.toggle("hid", !spot);
-    if (!spot) continue;
-    r.classList.toggle("r", spot.left); r.style.top = `${spot.ry}px`;
-    placed.push({ x: spot.rx, y: sy0 + spot.ry, w: rw, h: rh });
+    // the text hides or comes back only after it has had (or lacked) a free place for a moment (hysteresis), and fades
+    // (CSS). A shown text stays where it is; it moves only while hidden, so it never hops about.
+    const shown = !r.classList.contains("hid");
+    const oldFree = s.spot && free(s.spot.left ? sx1 + 6 : sx0 - 6 - rw, sy0 + s.spot.ry);
+    const want = shown ? Boolean(oldFree || (!s.spot && spot)) : Boolean(spot);
+    s.wait = want === shown ? 0 : (s.wait || 0) + dt;
+    if (s.wait > (want ? 0.5 : 0.35)) { r.classList.toggle("hid", !want); s.wait = 0; if (want) s.spot = spot; }
+    else if (!s.spot && spot) s.spot = spot;
+    if (r.classList.contains("hid") || !s.spot) continue;
+    const sp = s.spot, rx = sp.left ? sx1 + 6 : sx0 - 6 - rw;
+    r.classList.toggle("r", sp.left); r.style.top = `${sp.ry}px`;
+    placed.push({ x: rx, y: sy0 + sp.ry, w: rw, h: rh });
   }
 }
 // a plain object (tree, car, wall ...), or a point of the ground / unassigned

@@ -235,13 +235,14 @@
       linear-gradient(var(--k), var(--k)) bottom right / var(--l) 1px, linear-gradient(var(--k), var(--k)) bottom right / 1px var(--l);
     background-repeat: no-repeat; animation: tLock var(--t-in) ease-out both; }
   .tblob.ghost { --k: #B5CDEA; }
+  .tblob.locked { animation: none; }
   .tblob.out { animation: tOut .45s ease-in both; }
   @keyframes tLock { from { opacity: 0; scale: 1.8; } to { opacity: 1; scale: 1; } }
   @keyframes tOut { to { opacity: 0; scale: 1.25; } }
   .tblob i { position: absolute; right: calc(100% + 6px); top: 0; text-align: right; white-space: nowrap; font-style: normal;
     font: 10px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .02em; color: rgba(244, 244, 246, .7);
     text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
-  .tblob i { transition: opacity .4s ease; }
+  .tblob i { transition: opacity .6s ease; }
   /* the cut between two shots of the film after the opening (viewer.js stepCine): a short dip to black */
   #cut { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 6; transition: opacity .28s ease; }
   #cut.on { opacity: 1; }
