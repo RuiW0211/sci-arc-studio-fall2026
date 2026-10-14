@@ -1271,11 +1271,18 @@ addEventListener("keydown", (e) => {
 // a drag or scroll while the camera plays pauses it (user, 2026-10-13: it used to hand the camera back for good and the
 // orbit never came back): a look around, after which it goes on by itself (autoResumeS) or with Space
 for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused && (tour || cine)) setPaused(true); }, { passive: true });
-// years a second (user, 2026-10-14: the opening in a minute): 7.5 to 1950, then 1.9 (a building about 2.6 s going up), 0.9 while an
-// unbuilt scheme is on the site; config.json time.rates
+// years a second (user, 2026-10-15: the opening in about 53 s, the time where the building is): see RATE_TABLE below;
+// 0.9 while an unbuilt scheme is on the site; config.json time.rates
 const ghostSpans = [...ghostYears.values()].flat();
 const RATES = { early: 7.5, late: 1.9, unbuilt: 0.9, ...(cfg.time?.rates || {}) };
-const rate = (y) => (ghostSpans.some(([a, b]) => y >= a - 0.5 && y < b + 1) ? RATES.unbuilt : y < 1950 ? RATES.early : RATES.late);
+// (user, 2026-10-15: time where the building is) years a second by period, config.json time.rates.table [[from, rate], ...]:
+// quick through the empty early years, slower for the 1900-1930 boom and the towers of 1960-1980, quick again in between;
+// the unbuilt schemes' years always at rates.unbuilt
+const RATE_TABLE = (RATES.table || [[1867, RATES.early], [1950, RATES.late]]).slice().sort((p, q) => p[0] - q[0]);
+const rate = (y) => {
+  if (ghostSpans.some(([a, b]) => y >= a - 0.5 && y < b + 1)) return RATES.unbuilt;
+  let r = RATE_TABLE[0][1]; for (const [from, v] of RATE_TABLE) if (y >= from) r = v; return r;
+};
 let playDur = 0;
 for (let y = 1867; y < 2026; y += 0.05) playDur += 0.05 / rate(y);
 let playing = null;

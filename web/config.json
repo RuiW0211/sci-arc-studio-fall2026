@@ -19,7 +19,7 @@
     },
     "rejoinS": 2.5,
     "autoResumeS": 4,
-    "rates": { "early": 7.5, "late": 1.9, "unbuilt": 0.9 },
+    "rates": { "unbuilt": 0.9, "table": [[1867, 15], [1895, 4], [1930, 10], [1960, 2], [1991, 2.5]] },
     "undatedDim": 0.55,
     "buildYears": 5,
     "front": 0.25,
