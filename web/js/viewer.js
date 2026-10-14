@@ -1753,7 +1753,9 @@ function tlBuild() {
     if (!(y > 1000) && !filmNames.has(e.name.toLowerCase())) return;   // undated: only the film's members (always there)
     if (TL.namedOnly !== false && e.status === "auto" && !e.landmark) return;   // automatic entities are only an address
     if (h < TL.minHeightM && !filmNames.has(e.name.toLowerCase())) return;   // a member of a film shot: tagged anyway
-    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i });
+    // keep: a building the film is about (a member of time.cinema.shots) keeps its tag once built; the others show
+    // theirs while they go up and fade out after (user, 2026-10-15: too many tags during the building)
+    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i, keep: filmNames.has(e.name.toLowerCase()) });
   });
   // Angels Knoll, the Y-1 parcel: a frame over its ground (the terrain points inside the parcel)
   if (y1Ring) {
@@ -1799,19 +1801,23 @@ function updateTimeTags() {
   const live = [], kept = [];
   if (on) for (const it of tlItems) {
     let p, a, txt = true;
-    if (it.kind === "site" || (it.kind === "built" && !it.year)) {   // Angels Knoll, undated members: always there, quiet
-      p = 1; a = TL.doneOpacity ?? 0.7; kept.push({ it, p, a, txt, rising: false }); continue;
+    if (it.kind === "site" || (it.kind === "built" && !it.year)) {   // Angels Knoll, undated members: quiet, and only
+      // once the building is over (2026), so no tag stands on a site before its time (user, 2026-10-15)
+      if (Y < 2025) continue;
+      p = 1; a = (TL.doneOpacity ?? 0.7) * Math.min(1, Y - 2025); kept.push({ it, p, a, txt, rising: false }); continue;
     } else if (it.kind === "unbuilt") {
       const sp = it.end - it.year + 1, up = Math.min(Bd, 0.6 * sp), dn = Math.min(1.5, 0.3 * sp);
       if (Y < it.year || Y >= it.year + sp) continue;
       p = tlEase(Math.min((Y - it.year) / up, (it.year + sp - Y) / dn)); a = Math.min(1, (Y - it.year) / 0.4, (it.year + sp - Y) / dn);
     } else {
       if (Y < it.year - Bd) { tlEver.delete(it.key); continue; }
-      const ever = tlEver.has(it.key);
-      if (!ever && Y > it.year + TL.holdYears) continue;
+      const ever = it.keep && (tlEver.has(it.key) || Y > it.year);   // only the film's buildings stay, labelled or not while rising
+      const outY = it.year + TL.holdYears + (TL.fadeOutYears ?? 1.5);   // the others: gone by then
+      if (!ever && Y > (it.keep ? it.year + TL.holdYears : outY)) continue;
       p = tlEase((Y - it.year + Bd) / Bd);
       const done = Y > it.year + TL.holdYears, fade = tlEase((Y - it.year) / (TL.fadeYears ?? 8));
       a = Math.min(1, (Y - it.year + Bd) / 0.4) * (1 + ((TL.doneOpacity ?? 0.7) - 1) * fade);
+      if (!it.keep) a *= Math.min(1, Math.max(0, (outY - Y) / (TL.fadeOutYears ?? 1.5)));   // fading out once built
       if (ever) { kept.push({ it, p, a, txt, rising: !done }); continue; }
     }
     live.push({ it, p, a, txt, rising: true });
