@@ -1107,13 +1107,78 @@ $("#timeRange").oninput = (e) => { stopPlay(); setYear(+e.target.value); };
 // from straight down) at the start and the end. Any drag or scroll hands the camera back.
 let tour = null;
 const TOUR = { turnDeg: 220, r0: 420, r1: 820, tilt0: 64, tilt1: 52, target: [0, 95, 0], ...(cfg.time?.tour || {}) };
-function startTour() {
-  const tgt = new THREE.Vector3().fromArray(TOUR.target), th = sphOf(camera.position, controls.target).th;
+// ---------- the opening, plan B (user, 2026-10-14): the camera goes where the city is being built ----------
+// The opening is cut into shots by years (config.json time.openingShots). For each, ahead of time: the buildings that
+// go up in its years, weighted by height; the densest cluster of them (the spot with the most height within
+// clusterM), framed closer when it is tight and farther when it is spread out; a shot marked y1 also keeps Y-1 in the
+// frame (the unbuilt towers' years). The camera holds each shot's framing through the middle of its years and eases
+// (quintic) to the next across the change, always turning the same way at an even speed; the last shot pulls out to the
+// whole site. All as a function of the year (yearTime), so a pause holds the camera too. openingMode "A" = the old tour.
+const OPEN = { mode: "B", turnDeg: 160, clusterM: 300, shots: [
+  { from: 1867, to: 1910 }, { from: 1910, to: 1935 }, { from: 1935, to: 1980 }, { from: 1980, to: 2000, y1: true },
+  { from: 2000, to: 2026, y1: true }], ...(cfg.time?.openingB || {}), mode: cfg.time?.openingMode ?? "B" };
+let openAnchors = null;   // [{ hs, he, pose }]: held from hs to he seconds into the opening
+const yearT = [];         // seconds into the opening at 1867 + 0.05 k
+function yearTime(y) {
+  if (!yearT.length) { let t = 0; for (let u = 1867; u <= 2026.05; u += 0.05) { yearT.push(t); t += 0.05 / rate(u); } }
+  const f = Math.min(Math.max((y - 1867) / 0.05, 0), yearT.length - 1), k = Math.floor(f);
+  return yearT[k] + (yearT[Math.min(k + 1, yearT.length - 1)] - yearT[k]) * (f - k);
+}
+function buildOpening() {
+  if (!tlItems) tlBuild();
+  const pts = tlOcc.filter((o) => o.year > 0).map((o) => ({ x: (o.box[0] + o.box[3]) / 2, z: (o.box[2] + o.box[5]) / 2, y0: o.box[1], h: o.box[4] - o.box[1], year: o.year }));
+  const Y1 = TOUR.target, Rc = OPEN.clusterM, wide = { target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R };
+  const frame = (sh) => {
+    const ps = pts.filter((p) => p.year >= sh.from && p.year < sh.to);
+    if (!ps.length) return wide;
+    let best = ps[0], bw = -1;   // the densest spot: most height within clusterM
+    for (const p of ps) { let w = 0; for (const q of ps) if (Math.hypot(p.x - q.x, p.z - q.z) < Rc) w += q.h; if (w > bw) { bw = w; best = p; } }
+    const cl = ps.filter((q) => Math.hypot(best.x - q.x, best.z - q.z) < Rc), W = cl.reduce((s, q) => s + q.h, 0);
+    let cx = cl.reduce((s, q) => s + q.x * q.h, 0) / W, cz = cl.reduce((s, q) => s + q.z * q.h, 0) / W;
+    const spread = Math.sqrt(cl.reduce((s, q) => s + q.h * ((q.x - cx) ** 2 + (q.z - cz) ** 2), 0) / W);
+    const hmax = Math.max(...cl.map((q) => q.h)), gy = cl.reduce((s, q) => s + q.y0 * q.h, 0) / W;
+    let r = Math.min(Math.max(1.8 * spread + 1.2 * hmax + 120, 250), 1300), ty = gy + 0.3 * hmax;
+    if (sh.y1) {   // Y-1 in the frame too
+      const d = Math.hypot(cx - Y1[0], cz - Y1[2]);
+      cx = (cx + Y1[0]) / 2; cz = (cz + Y1[2]) / 2; ty = (ty + Y1[1]) / 2; r = Math.min(Math.max(r, 1.1 * d + 300), 1300);
+    }
+    const k = (r - 250) / (1300 - 250);
+    return { target: [cx, ty, cz], r, phi: (66 - 16 * k) * D2R };
+  };
+  const end = playDur;
+  openAnchors = OPEN.shots.map((sh, i) => {
+    const t0 = yearTime(sh.from), t1 = yearTime(sh.to), q = 0.25 * (t1 - t0);
+    return { hs: i === 0 ? 0 : t0 + q, he: i === OPEN.shots.length - 1 ? t0 + 2 * q : t1 - q, pose: frame(sh) };
+  });
+  openAnchors.push({ hs: end, he: end, pose: wide });   // and out to the whole site at the end
+}
+function openingPose(frac) {
+  const t = frac * playDur, A = openAnchors;
+  let P = A[A.length - 1].pose;
+  for (let i = 0; i < A.length; i++) {
+    if (t <= A[i].he) {
+      if (i === 0 || t >= A[i].hs) { P = A[i].pose; break; }
+      const a = A[i - 1], e = ease5((t - a.he) / Math.max(A[i].hs - a.he, 1e-3)), b = A[i].pose, p0 = a.pose;
+      P = { target: p0.target.map((v, j) => v + (b.target[j] - v) * e), r: Math.exp(Math.log(p0.r) + (Math.log(b.r) - Math.log(p0.r)) * e), phi: p0.phi + (b.phi - p0.phi) * e };
+      break;
+    }
+  }
+  return { ...P, th: tour.th + OPEN.turnDeg * D2R * frac };
+}
+function startTour(frac0 = 0) {
+  const th = sphOf(camera.position, controls.target).th;
+  if (OPEN.mode === "B") {   // fly to where the opening is at this year
+    // eased in from wherever the camera is (the same easing as after a pause), while the years already run
+    buildOpening(); tour = { th, t: 0 }; rejoin = { from: camPose(), t0: performance.now() };
+    return;
+  }
+  const tgt = new THREE.Vector3().fromArray(TOUR.target);
   _sph.set(TOUR.r0, (TOUR.tilt0 * Math.PI) / 180, th);
   goTo({ target: TOUR.target, position: tgt.clone().add(_off.setFromSpherical(_sph)).toArray() });
   tour = { th, t: 0 };
 }
 function tourPose(frac) {
+  if (OPEN.mode === "B" && openAnchors) return openingPose(frac);
   const e = frac * frac * (3 - 2 * frac);
   return { target: TOUR.target, r: TOUR.r0 + (TOUR.r1 - TOUR.r0) * e, phi: ((TOUR.tilt0 + (TOUR.tilt1 - TOUR.tilt0) * e) * Math.PI) / 180,
            th: tour.th + (TOUR.turnDeg * Math.PI / 180) * frac };
@@ -1191,7 +1256,7 @@ function timeState() {
 function startPlay(withTour) {
   if (playing) stopPlay();
   let y = +$("#timeRange").value >= 2025.9 ? 1867 : +$("#timeRange").value, last = performance.now(), el = 0;
-  if (withTour || y <= 1867) startTour();
+  if (withTour || y <= 1867) startTour(yearTime(y) / playDur);
   timeState();
   const step = (now) => {   // about a minute in all
     const dt = Math.min(Math.max((now - last) / 1000, 0), 0.1); last = now;   // a frame stamped before the start: 0
@@ -1199,7 +1264,7 @@ function startPlay(withTour) {
     el += dt;
     y = Math.min(2026, y + dt * rate(y));
     setYear(y);
-    stepTour(dt, Math.min(el / playDur, 1));
+    stepTour(dt, Math.min((OPEN.mode === "B" ? yearTime(y) : el) / playDur, 1));   // plan B: by the year
     if (y >= 2026) {   // the end: if the camera was left to the tour, it goes on filming (startCine)
       playing = null; timeState();
       const toured = Boolean(tour); endTour(); if (toured && CINE.on !== false) startCine();
@@ -1969,7 +2034,7 @@ renderer.setAnimationLoop((now) => {
 });
 window.__viewer = {
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();

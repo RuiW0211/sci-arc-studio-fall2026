@@ -4,6 +4,19 @@
   "time": {
     "_comment": "The Time module (user, 2026-10-13; Space pauses / resumes the opening and the film after it, and after a look around while paused the camera eases back over rejoinS seconds): buildings by the year they were built, each rising from the ground over the buildYears before it, with a soft front (front: its depth, as a share of the building's height). Buildings and landmarks turn white and opaque and stay; the rest goes to contextGrey at contextOpacity; the unbuilt towers keep their colour. undatedDim: the white of buildings with no year.",
     "opening": true,
+    "openingMode": "B",
+    "openingB": {
+      "_comment": "Plan B (user, 2026-10-14): the opening's camera follows the building. Shots by years; each frames the densest cluster (most height within clusterM) of the buildings going up in its years, nearer when tight, farther when spread; y1 keeps Y-1 in the frame; the last pulls out to the whole site; turnDeg in all. openingMode A = the old orbit (time.tour).",
+      "turnDeg": 160,
+      "clusterM": 300,
+      "shots": [
+        { "from": 1867, "to": 1910 },
+        { "from": 1910, "to": 1935 },
+        { "from": 1935, "to": 1980 },
+        { "from": 1980, "to": 2000, "y1": true },
+        { "from": 2000, "to": 2026, "y1": true }
+      ]
+    },
     "rejoinS": 2.5,
     "autoResumeS": 4,
     "rates": { "early": 7.5, "late": 1.9, "unbuilt": 0.9 },
