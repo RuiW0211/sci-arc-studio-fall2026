@@ -1,0 +1,250 @@
+{
+ "_comment": "Unbuilt schemes on Y-1 for the viewer, built by site-model/ghosts/build_angels_landing.py; see its notes.",
+ "frame": "local metres: x east, y north from E 384580 / N 3768520; z NAVD88 metres",
+ "schemes": [
+  {
+   "id": "angels-landing-2021",
+   "name": "Angels Landing (Draft EIR 2021; approved 2022)",
+   "years": [
+    2021,
+    2024
+   ],
+   "research": [
+    "ghost-005",
+    "ent-002",
+    "ent-004",
+    "lit-002"
+   ],
+   "source": "Angels Landing Draft EIR, ch. II, City of Los Angeles, Jan 2021: Figs. II-4 (heights, uses), II-8 and II-14 (floor plates, dimensions)",
+   "assumptions": [
+    "Heights are measured from Level PB1, the Hill Street Plaza (287 ft above sea level).",
+    "Floors are spread evenly between Level 6 (376 ft) and the parapet.",
+    "Floor plates are those of Level 6, kept for the whole height."
+   ],
+   "scale_m_per_pt": 0.27302,
+   "towers": [
+    {
+     "id": "angels-landing-2021-a",
+     "name": "Angels Landing, Tower A",
+     "ring": [
+      [
+       4.49,
+       10.38
+      ],
+      [
+       21.2,
+       -9.73
+      ],
+      [
+       36.43,
+       -17.32
+      ],
+      [
+       43.33,
+       -19.06
+      ],
+      [
+       55.21,
+       -4.12
+      ],
+      [
+       56.79,
+       0.32
+      ],
+      [
+       42.37,
+       17.68
+      ],
+      [
+       19.4,
+       29.13
+      ]
+     ],
+     "base_z": 87.48,
+     "top_z": 347.78,
+     "floors": 63,
+     "height_ft": 854,
+     "area_m2": 1428.7,
+     "bands": [
+      {
+       "use": "podium",
+       "levels": [
+        0,
+        5
+       ],
+       "z": [
+        87.48,
+        114.6
+       ]
+      },
+      {
+       "use": "hotel",
+       "levels": [
+        6,
+        18
+       ],
+       "z": [
+        114.6,
+        166.87
+       ]
+      },
+      {
+       "use": "lobby and amenity",
+       "levels": [
+        19,
+        21
+       ],
+       "z": [
+        166.87,
+        178.93
+       ]
+      },
+      {
+       "use": "apartments",
+       "levels": [
+        22,
+        27
+       ],
+       "z": [
+        178.93,
+        203.05
+       ]
+      },
+      {
+       "use": "condominiums",
+       "levels": [
+        28,
+        39
+       ],
+       "z": [
+        203.05,
+        251.29
+       ]
+      },
+      {
+       "use": "amenity",
+       "levels": [
+        40,
+        41
+       ],
+       "z": [
+        251.29,
+        259.33
+       ]
+      },
+      {
+       "use": "condominiums",
+       "levels": [
+        42,
+        61
+       ],
+       "z": [
+        259.33,
+        339.74
+       ]
+      },
+      {
+       "use": "top",
+       "levels": [
+        62,
+        63
+       ],
+       "z": [
+        339.74,
+        347.78
+       ]
+      }
+     ]
+    },
+    {
+     "id": "angels-landing-2021-b",
+     "name": "Angels Landing, Tower B",
+     "ring": [
+      [
+       -55.65,
+       2.9
+      ],
+      [
+       -62.22,
+       -13.79
+      ],
+      [
+       -32.65,
+       -37.32
+      ],
+      [
+       -15.34,
+       -24.48
+      ],
+      [
+       -50.0,
+       3.09
+      ]
+     ],
+     "base_z": 87.48,
+     "top_z": 238.05,
+     "floors": 42,
+     "height_ft": 494,
+     "area_m2": 901.0,
+     "bands": [
+      {
+       "use": "podium",
+       "levels": [
+        0,
+        6
+       ],
+       "z": [
+        87.48,
+        117.94
+       ]
+      },
+      {
+       "use": "hotel",
+       "levels": [
+        7,
+        21
+       ],
+       "z": [
+        117.94,
+        167.99
+       ]
+      },
+      {
+       "use": "amenity",
+       "levels": [
+        22,
+        22
+       ],
+       "z": [
+        167.99,
+        171.32
+       ]
+      },
+      {
+       "use": "apartments",
+       "levels": [
+        23,
+        40
+       ],
+       "z": [
+        171.32,
+        231.38
+       ]
+      },
+      {
+       "use": "roof deck",
+       "levels": [
+        41,
+        42
+       ],
+       "z": [
+        231.38,
+        238.05
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

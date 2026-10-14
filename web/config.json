@@ -1,6 +1,23 @@
 {
   "_comment": "Viewer settings. Layers come from the point cloud (data/lidar_points.json, written by site-model/houdini/tools/pack_wide.py) and from the design files; this file only gives display names, order, default visibility and colours. Unknown layers still appear under their own name (grey). Design files site-model/exports/design_<name>.glb load on top of the point cloud (listed in assets/models.json); their layers default to the Design style, visible. Camera values are three.js coordinates: x = east, y = up (m, NAVD88), z = -north, from the site origin E 384580 / N 3768520.",
   "designs": "assets/models.json",
+  "ghosts": {
+    "data": "data/ghosts.json",
+    "_comment": "Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: drawn as faint points on the walls and floor lines of each tower, coloured by use (Figure II-4 of the 2021 Draft EIR). opacity and pointSize (m) of those points; floorEvery: a floor line every n levels.",
+    "opacity": 0.55,
+    "pointSize": 0.7,
+    "floorEvery": 1,
+    "uses": {
+      "podium": "#B9AFC8",
+      "hotel": "#8FC7B8",
+      "lobby and amenity": "#E8C17A",
+      "apartments": "#7FAEDC",
+      "condominiums": "#B5CDEA",
+      "amenity": "#E28B7E",
+      "roof deck": "#E28B7E",
+      "top": "#D9D9D9"
+    }
+  },
   "facades": {
     "meta": "data/facades_estimated.json",
     "_comment": "Estimated wall points (site-model/houdini/tools/synth_facades.py), merged into the Buildings points when the LiDAR loads (user, 2026-10-10)."
@@ -51,6 +68,13 @@
       "order": 6,
       "visible": false,
       "color": "#DDE5B6"
+    },
+    "Unbuilt": {
+      "label": "Unbuilt schemes",
+      "order": 6.5,
+      "visible": false,
+      "color": "#B5CDEA",
+      "overlay": true
     }
   },
   "views": [

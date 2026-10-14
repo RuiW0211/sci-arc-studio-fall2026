@@ -142,6 +142,48 @@ try {
   }
 } catch (e) { /* no list (or no designs yet) */ }
 
+// unbuilt schemes on Y-1 (user, 2026-10-13: research into the viewer): each tower as faint points on its walls and floor
+// lines, coloured by use, over the cloud like the designs; an invisible prism inside makes it clickable
+try {
+  const G = cfg.ghosts, gd = await (await fetch(G.data)).json();
+  const tmpC = new THREE.Color();
+  for (const sc of gd.schemes) for (const t of sc.towers) {
+    const ring = t.ring;   // [x east, y north], metres
+    const pos = [], col = [];
+    const put = (x, n, z, c, k = 1) => { pos.push(x, z, -n); col.push(c.r * k, c.g * k, c.b * k); };
+    const perim = (z, step, c, k) => {
+      for (let i = 0; i < ring.length; i++) {
+        const [ax, an] = ring[i], [bx, bn] = ring[(i + 1) % ring.length], L = Math.hypot(bx - ax, bn - an);
+        for (let s = 0; s < L; s += step) put(ax + (bx - ax) * s / L, an + (bn - an) * s / L, z, c, k);
+      }
+    };
+    for (const b of t.bands) {
+      tmpC.set(G.uses[b.use] || "#cccccc");
+      const per = (b.z[1] - b.z[0]) / Math.max(1, b.levels[1] - b.levels[0] + 1);   // one storey
+      for (let z = b.z[0]; z < b.z[1] - 0.01; z += per) {
+        perim(z, 0.35, tmpC, 1);                                          // the floor line, dense
+        for (let zz = z + 1.3; zz < z + per - 0.4; zz += 1.3) perim(zz, 1.4, tmpC, 0.8);   // the wall between, sparse
+      }
+    }
+    tmpC.set(G.uses[t.bands.at(-1).use] || "#cccccc");
+    perim(t.top_z, 0.35, tmpC, 1);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    const pts = new THREE.Points(g, new THREE.PointsMaterial({ size: G.pointSize, vertexColors: true, sizeAttenuation: true,
+      transparent: true, opacity: G.opacity, depthWrite: false }));
+    const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
+    const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }));
+    prism.rotation.x = -Math.PI / 2; prism.position.y = t.base_z;
+    const grp = new THREE.Group();
+    grp.name = t.name;
+    grp.userData = { layer: "Unbuilt", ghost: { scheme: sc, tower: t } };
+    grp.add(pts, prism);
+    model.add(grp);
+  }
+} catch (e) { /* no ghosts file */ }
+
 const layers = new Map(); // name -> { cfg, objects, meshes, visible, points }
 model.traverse((o) => {
   const name = o.userData.layer;
@@ -916,13 +958,15 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   const add = e.shiftKey;     // shift + click: add to / take out of the selection
   const layerOf = (o) => { for (; o; o = o.parent) if (o.userData.layer) return o.userData.layer; };
   // over the point cloud only the design meshes are clickable (they are drawn on top of it)
-  const hit = ray.intersectObject(model, true).find((h) => visible(h.object) && (mode !== "cloud" || designLayers.has(layerOf(h.object))));
+  const hit = ray.intersectObject(model, true).find((h) => visible(h.object) && (mode !== "cloud" || designLayers.has(layerOf(h.object))
+    || layers.get(layerOf(h.object))?.cfg.overlay));
   if (mode === "cloud" && !hit) return pickLidar();
   if (!hit) return add ? undefined : hideInfo();
   let node = hit.object;
   while (node && !node.userData.layer) node = node.parent;
   node = node || hit.object;
   const en = entityOfName.get(node.name), a = anchorOfNode(node) || pointAnchor(hit.point);
+  if (node.userData.ghost) return select(`g:${node.name}`, a, ghostTag(node.userData.ghost), [], add);
   if (en) return select(`m:${en.id}`, a, entityTag(en), [], add);
   select(`m:${node.uuid}`, a, objectTag(node, hit.point, null), [], add);
 
@@ -1122,6 +1166,20 @@ function entityTag(e) {
       : `Checked in Google Earth / Maps${e.confidence ? `, ${e.confidence} confidence` : ""}${pc ? "; LA County Assessor" : ""}`]);
     return tagHTML(kicker || "Building", e.name, e.address || "", rows, e.note);
   };
+}
+// an unbuilt tower: the scheme, its size, its uses by level, where it comes from and what is assumed
+function ghostTag({ scheme, tower: t }) {
+  const FTM = 0.3048, uses = t.bands.filter((b) => b.use !== "podium" && b.use !== "top")
+    .map((b) => `${b.use} ${b.levels[0] === b.levels[1] ? b.levels[0] : b.levels.join("–")}`).join(", ");
+  return () => tagHTML("Unbuilt scheme", t.name, scheme.name, [
+    ["Floors", String(t.floors)],
+    ["Height", `${units === "ft" ? t.height_ft + " ft" : (t.height_ft * FTM).toFixed(1) + " m"} to the parapet`],
+    ["Top", len(t.top_z)],
+    ["Floor plate", units === "ft" ? `${Math.round(t.area_m2 * 10.7639).toLocaleString()} sq ft` : `${t.area_m2.toLocaleString()} m²`],
+    ["Uses (levels)", uses],
+    ["Source", scheme.source],
+    ["Research", scheme.research.join(", ")],
+  ], scheme.assumptions.join(" "));
 }
 function pointAnchor(point) { return { centre: point.clone(), topY: point.y, height: 0 }; }
 function hideInfo() { clearSelection(); }
