@@ -1377,7 +1377,11 @@ function nextShot(now, P) {
   const c = cine;
   // after the first wide shot (user, 2026-10-14) People comes on, and the film goes on with them
   if (c.i === (CINE.peopleAfter ?? 0) && CINE.thenPeople !== false && !$("#popOn").checked) {
-    $("#popOn").checked = true; $("#popOn").onchange({ target: $("#popOn") });
+    // the day starts before dawn (user, 2026-10-15): most people are at home, and the city wakes up as they set out
+    $("#popOn").checked = true;
+    Promise.resolve($("#popOn").onchange({ target: $("#popOn") })).then(() => {
+      const r = $("#popTime"); r.value = (CINE.peopleStartH ?? 5) * 3600; r.dispatchEvent(new Event("input"));
+    });
   }
   const prev = c.shots[c.i], sh = c.shots[(c.i + 1) % c.shots.length];
   c.i = (c.i + 1) % c.shots.length;   // the same way round every time (it used to turn back at each shot)
