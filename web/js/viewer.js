@@ -1260,23 +1260,30 @@ function cineShots() {
   }
   return out.length ? out : [wide];
 }
+// smoother camera (user, 2026-10-14): the arc turns at an even speed, always the same way round, so it never stops or
+// turns back; distance, tilt and the point looked at ease with a quintic (no jolt at either end)
+const ease5 = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * t * (t * (6 * t - 15) + 10); };
+const shotLen = (sh) => sh.s ?? CINE.shotS;
+const shotW = (sh, dir) => (dir * sh.turn * D2R) / shotLen(sh);   // its turning speed, radians a second
 function cinePose(sh, t, th0, dir) {
-  const e = tlEase(t), m = 0.5 * t + 0.5 * e;   // the arc keeps moving; distance and tilt ease
+  const e = ease5(t);
   const target = sh.target1 ? sh.target.map((v, j) => v + (sh.target1[j] - v) * e) : sh.target;
   return { target, r: Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e),
-           phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + dir * sh.turn * D2R * m };
+           phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + dir * sh.turn * D2R * t };
 }
 const cineApply = (P) => camApply(P);
 // where the film's camera is meant to be now (also for the rejoin after a pause)
 function cineNow(now) {
   const c = cine, sh = c.shots[c.i];
   if (c.phase === "blend" && c.from) {
-    const k = Math.min((now - c.t0) / (CINE.blendS * 1000), 1), e = k < 0.5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2;
-    const A = c.from, B = cinePose(sh, 0, c.th0, c.dir);
+    // the flight between two shots: the heading keeps turning, its speed going evenly from the last shot's to the next
+    // one's (th0 of the next shot was set so that they meet), the rest eases (quintic)
+    const T = CINE.blendS, tau = Math.min((now - c.t0) / 1000, T), k = tau / T, e = ease5(k);
+    const A = c.from, B = cinePose(sh, 0, c.th0, c.dir), w0 = c.wFrom ?? 0, w1 = shotW(sh, c.dir);
     return { target: A.target.map((v, j) => v + (B.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e),
-             phi: A.phi + (B.phi - A.phi) * e, th: A.th + wrapA(B.th - A.th) * e, k };
+             phi: A.phi + (B.phi - A.phi) * e, th: A.th + w0 * tau + ((w1 - w0) * tau * tau) / (2 * T), k };
   }
-  const len = (sh.s ?? CINE.shotS) * 1000;
+  const len = shotLen(sh) * 1000;
   return { ...cinePose(sh, Math.min((now - c.t0) / len, 1), c.th0, c.dir), k: (now - c.t0) / len };
 }
 function startCine() {
@@ -1297,11 +1304,15 @@ function nextShot(now, P) {
   if (c.i === (CINE.peopleAfter ?? 0) && CINE.thenPeople !== false && !$("#popOn").checked) {
     $("#popOn").checked = true; $("#popOn").onchange({ target: $("#popOn") });
   }
-  const sh = c.shots[(c.i + 1) % c.shots.length];
-  c.i = (c.i + 1) % c.shots.length; c.dir = -c.dir; c.th0 = P.th;
+  const prev = c.shots[c.i], sh = c.shots[(c.i + 1) % c.shots.length];
+  c.i = (c.i + 1) % c.shots.length;   // the same way round every time (it used to turn back at each shot)
   if (sh.cut) {   // dip to black, jump, come up on the new shot
-    c.phase = "cut"; c.t0 = now; cutEl.classList.add("on");
-  } else { c.phase = "blend"; c.t0 = now; c.from = P; }
+    c.th0 = P.th; c.phase = "cut"; c.t0 = now; cutEl.classList.add("on");
+  } else {
+    c.wFrom = shotW(prev, c.dir);
+    c.th0 = P.th + ((c.wFrom + shotW(sh, c.dir)) / 2) * CINE.blendS;   // where the even change of speed lands
+    c.phase = "blend"; c.t0 = now; c.from = P;
+  }
 }
 function stepCine(now) {
   const c = cine, sh = c.shots[c.i];
