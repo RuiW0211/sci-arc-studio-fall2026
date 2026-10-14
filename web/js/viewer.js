@@ -1081,6 +1081,7 @@ $("#popWhite").onchange = () => updateWhite();
 const datedYears = (ENTITIES?.entities ?? []).map((e) => parseInt(e.built?.[0] ?? e.parcel?.year_built, 10)).filter((y) => y > 1000).sort((a, b) => a - b);
 const undatedN = (ENTITIES?.entities ?? []).length - datedYears.length;
 function setYear(y) {
+  animAt = performance.now();   // the buildings are going up: the picture is changing, no glass read-back
   const r = $("#timeRange");
   TIME.year.value = y; r.value = y;
   r.style.setProperty("--p", `${(100 * (y - r.min)) / (r.max - r.min)}%`);
@@ -1141,6 +1142,9 @@ function camApply(P) {
   _sph.set(P.r, P.phi, P.th);
   camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
   camera.lookAt(controls.target);
+  // the camera is moving: no glass read-back now (user, 2026-10-13: the panel flickered as the tour moved, its glass
+  // switching light / dark under the moving picture, and each read-back stalls a frame)
+  lastMove = performance.now();
 }
 function setPaused(on) {
   if (on === paused) return;
@@ -1522,7 +1526,7 @@ let y1Ring = null;
 if (cfg.population?.meta) fetch(cfg.population.meta).then((r) => r.json()).then((m) => { y1Ring = m.y1?.[0] ?? null; }).catch(() => {});
 const tlShown = new Map();   // key -> { el }
 const tlEver = new Set();    // labelled once: kept while the year is past its start
-let tlLast = 0;
+let tlLast = 0, tlMaskKey = "";
 function tlBuild() {
   tlItems = [];
   const ents = ENTITIES?.entities ?? [], nE = ents.length, B = new Float32Array(nE * 6);
@@ -1618,13 +1622,21 @@ function updateTimeTags() {
   // frosted panel; a fade by the share under it was too weak), and no text goes under it
   const uiOp = ui.width > 0 ? +getComputedStyle($("#ui")).opacity : 0, uiOn = uiOp > 0.5;
   if (uiOp > 0.01 && on) {
-    const k = (1 - (TL.hiddenOpacity ?? 0.15)) * uiOp;   // xor with the full layer below: alpha 1 - k under the panel
-    tlLayer.style.maskImage = tlLayer.style.webkitMaskImage = `linear-gradient(rgba(0,0,0,${k.toFixed(3)}), rgba(0,0,0,${k.toFixed(3)})), linear-gradient(#000, #000)`;
-    tlLayer.style.maskSize = tlLayer.style.webkitMaskSize = `${ui.width}px ${ui.height}px, 100% 100%`;
-    tlLayer.style.maskPosition = tlLayer.style.webkitMaskPosition = `${ui.left}px ${ui.top}px, 0 0`;
-    tlLayer.style.maskRepeat = tlLayer.style.webkitMaskRepeat = "no-repeat";
-    tlLayer.style.maskComposite = "exclude"; tlLayer.style.webkitMaskComposite = "xor";
-  } else tlLayer.style.maskImage = tlLayer.style.webkitMaskImage = "none";
+    // an SVG mask the size of the window: opaque, with the panel's rounded rectangle at 1 - k (rebuilt only on change)
+    const k = (1 - (TL.hiddenOpacity ?? 0.15)) * uiOp, rad = parseFloat(getComputedStyle($("#ui")).borderTopLeftRadius) || 0;
+    const key = [W, H, ui.left, ui.top, ui.width, ui.height, rad, k.toFixed(2)].map((v) => Math.round(+v * 100) / 100).join();
+    if (key !== tlMaskKey) {
+      tlMaskKey = key;
+      const [x, y, w, h] = [ui.left, ui.top, ui.width, ui.height].map((v) => v.toFixed(1)), r0 = rad.toFixed(1);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><path fill-rule="evenodd" d="M0 0H${W}V${H}H0Z`
+        + `M${+x + +r0} ${y}H${+x + +w - +r0}A${r0} ${r0} 0 0 1 ${+x + +w} ${+y + +r0}V${+y + +h - +r0}A${r0} ${r0} 0 0 1 ${+x + +w - +r0} ${+y + +h}`
+        + `H${+x + +r0}A${r0} ${r0} 0 0 1 ${x} ${+y + +h - +r0}V${+y + +r0}A${r0} ${r0} 0 0 1 ${+x + +r0} ${y}Z"/>`
+        + `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r0}" fill-opacity="${(1 - k).toFixed(3)}"/></svg>`;
+      tlLayer.style.maskImage = tlLayer.style.webkitMaskImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+      tlLayer.style.maskSize = tlLayer.style.webkitMaskSize = "100% 100%";
+      tlLayer.style.maskRepeat = tlLayer.style.webkitMaskRepeat = "no-repeat";
+    }
+  } else if (tlMaskKey) { tlMaskKey = ""; tlLayer.style.maskImage = tlLayer.style.webkitMaskImage = "none"; }
   if (uiOp > 0.01 && uiOp < 0.99) invalidate();   // the panel is fading in or out: follow it
   const underUi = (x0, y0, x1, y1) => {
     if (!uiOn) return 0;
