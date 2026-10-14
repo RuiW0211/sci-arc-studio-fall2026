@@ -178,14 +178,14 @@ try {
       const x = minX + rnd() * (maxX - minX), n = minN + rnd() * (maxN - minN);
       if (inside(x, n)) { pos.push(x, t.top_z, -n); k--; }
     }
-    ghostPts.push({ name: t.name, base: t.base_z, pos: new Float32Array(pos) });
+    ghostPts.push({ name: t.name, base: t.base_z, layer: sc.layer || "Unbuilt", pos: new Float32Array(pos) });
     const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
     const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }));
     prism.rotation.x = -Math.PI / 2; prism.position.y = t.base_z;
     const grp = new THREE.Group();
     grp.name = t.name;
-    grp.userData = { layer: "Unbuilt", ghost: { scheme: sc, tower: t } };
+    grp.userData = { layer: sc.layer || "Unbuilt", ghost: { scheme: sc, tower: t } };
     grp.add(prism);
     model.add(grp);
   }
@@ -389,7 +389,7 @@ async function loadLidar() {
     P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
     let i = n;
     for (const g of ghostPts) {
-      const o = objNames.length; objNames.push(g.name); objLayers.push("Unbuilt");
+      const o = objNames.length; objNames.push(g.name); objLayers.push(g.layer);
       for (let j = 0; j < g.pos.length; j += 3, i++) {
         P2[3 * i] = g.pos[j]; P2[3 * i + 1] = g.pos[j + 1]; P2[3 * i + 2] = g.pos[j + 2];
         C2[i] = 6; O2[i] = o; I2[i] = 128; if (H2) H2[i] = Math.round((g.pos[j + 1] - g.base) * 10);

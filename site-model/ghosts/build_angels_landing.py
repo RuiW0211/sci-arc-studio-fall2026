@@ -45,6 +45,7 @@ DIM_U = (222.0, 573.0, 314.0)                # x of the 314'-0" dimension's ends
 DIM_V = (84.0, 434.0, 313.0 + 11 / 12)       # y of the 313'-11" dimension's ends (pt)
 HILL_BEARING = 38.5                          # deg east of north: the parcel's Hill Street side (minimum rotated rectangle)
 PB1_FT, L6_FT = 287.0, 376.0
+SITE_FT = (314.0, 313.0 + 11 / 12)           # the property line: along Hill Street, along 4th Street
 
 # (level from, level to, use) bottom to top, from Figure II-4; levels below 6 are the podium
 BANDS = {
@@ -137,6 +138,75 @@ def site_density():
                                     "plus the estimated facade points"}
 
 
+# Three California Plaza: the third office tower of California Plaza, planned for Y-1 (Phase 3A), on hold by 1990, never
+# drawn in anything we could reach (user, 2026-10-13: model it schematically from the sources and the two CCA images).
+# SCHEMATIC: every number is a choice within what the sources allow, all listed on its card.
+THREE_CAL = {
+    "plaza_ft": 385.0,         # the upper plaza level the tower would rise from (Angels Flight's top station raised from
+                               # 370 to 385 ft in 1989, LA Times 1989-06-09; plaza levels 385 / 370 ft, CCA ARCH82125-7)
+    "floors": 60,              # the 1981 DDA's maximum ("3 towers 37-60 stories", USC finding aid); the web gives 62-65
+    "floor_m": 4.44,           # the mean floor-to-floor of One (4.33 m) and Two (4.54 m) California Plaza, from the LiDAR
+    "office_sqft": 1_080_000,  # midpoint of what the 3.2M (1981 DDA) or 3.5M sq ft (LA Times 1987) totals leave after
+                               # One (1.0M) and Two (1.27M) California Plaza
+    "corner": 0.18,            # rounded corners, radius / side: the rounded square towers of the 1980 rendering and model
+    "setback_m": 8.0,          # from Olive Street and 4th Street
+}
+
+
+def three_cal_plaza():
+    """A rounded square on the Olive / 4th corner of Y-1 (SkyscraperPage: "Olive Street & 4th Street"; the 1980 CCA
+    rendering shows the lower, Hill Street side of Y-1 as a garden with Angels Flight), aligned with the street grid."""
+    import numpy as np
+    T = THREE_CAL
+    plate = T["office_sqft"] / T["floors"] / 10.7639
+    side = math.sqrt(plate / (1 - (4 - math.pi) * T["corner"] ** 2))
+    r, h = T["corner"] * side, side / 2
+    loop = []
+    for cx, cy, a0 in ((h - r, h - r, 0), (-(h - r), h - r, 90), (-(h - r), -(h - r), 180), (h - r, -(h - r), 270)):
+        for k in range(7):
+            a = math.radians(a0 + 15 * k)
+            loop.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    y1 = Polygon(json.loads((ROOT / "web/data/population.json").read_text(encoding="utf-8"))["y1"][0])
+    rect = y1.minimum_rotated_rectangle
+    cx, cy = rect.centroid.coords[0]
+    a = math.radians(90 - HILL_BEARING)
+    ux, uy = math.cos(a), math.sin(a)          # along Hill Street, north-east
+    vx, vy = uy, -ux                           # towards Hill Street, south-east
+    half_u = half_v = SITE_FT[0] * FT / 2
+    # the plan's top-left is the west corner (Olive and 4th): centre the square setback + side / 2 in from both
+    cu, cv = -half_u + T["setback_m"] + h, -half_v + T["setback_m"] + h
+    ring = [(round(cx + (cu + u) * ux + (cv + v) * vx, 2), round(cy + (cu + u) * uy + (cv + v) * vy, 2)) for u, v in loop]
+    assert Polygon(ring).within(y1), "Three California Plaza leaves the parcel"
+    # ground under it (Houdini terrain), for the podium below the plaza
+    tb = json.loads((ROOT / "site-model/houdini/handoff/buildings.json").read_text(encoding="utf-8"))["terrain"]
+    grid = np.load(ROOT / "site-model/houdini/handoff/terrain.npy")
+    px, py = Polygon(ring).centroid.coords[0]
+    ground = float(grid[int(round((tb["y0"] - py) / tb["step"])), int(round((px - tb["x0"]) / tb["step"]))])
+    base, plaza = ground, T["plaza_ft"] * FT
+    top = plaza + T["floors"] * T["floor_m"]
+    tower = {"id": "three-california-plaza", "name": "Three California Plaza (schematic)", "ring": ring,
+             "base_z": round(base, 2), "top_z": round(top, 2), "floors": T["floors"],
+             "height_ft": round((top - plaza) / FT), "area_m2": round(Polygon(ring).area, 1),
+             "bands": [{"use": "podium", "levels": [0, 0], "z": [round(base, 2), round(plaza, 2)]},
+                       {"use": "offices", "levels": [1, T["floors"]], "z": [round(plaza, 2), round(top, 2)]}]}
+    return {
+        "id": "three-california-plaza", "name": "Three California Plaza, Phase 3A of California Plaza (1981 plan; on hold by 1990)",
+        "layer": "Unbuilt_schematic", "years": [1981, 1990], "research": ["ghost-001", "plaza-006", "plaza-001"],
+        "source": "SCHEMATIC. 1981 DDA scope (USC Bunker Hill records, finding aid): 3 office towers, 37-60 stories, 3.2M sq ft; "
+                  "LA Times 1985, 1987, 1989 (sizes of the built towers, plaza at 385 ft, third phase with Angels Flight); "
+                  "1980 competition rendering and master-plan model (CCA, Arthur Erickson fonds) for the tower's form",
+        "assumptions": [
+            "No drawing of this tower was found: its plan, position, height and floors are all assumed.",
+            "60 floors, the 1981 DDA's maximum; other sources give 62, 63 or 65, and 853, 915 or 950 ft, all unsourced.",
+            "Floors 4.44 m apart, the mean of One and Two California Plaza; rising from the 385 ft plaza, a podium below.",
+            "About 1.08M sq ft of offices (what the 3.2M or 3.5M sq ft programmes leave after the two built towers), "
+            "18,000 sq ft a floor, as a rounded square like the towers of the 1980 rendering and model.",
+            "On the Olive and 4th corner of Y-1, 8 m from both streets; the Hill Street side left as the garden of the rendering.",
+            "The tower's own drawing (CCA ARCH254551, c.1985, 'footprint of tower three') has not been seen."],
+        "towers": [tower],
+    }
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
@@ -169,9 +239,14 @@ def main():
             "towers": towers,
         }],
     }
+    tc = three_cal_plaza()
+    tc["density"] = data["schemes"][0]["density"]
+    data["schemes"].insert(0, tc)
     OUT.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8", newline="\n")
-    for t in towers:
-        print(f"{t['name']}: {t['area_m2']} m2 plate, {t['floors']} floors, top {t['top_z']} m ({t['top_z'] / FT:.0f} ft)")
+    for sc in data["schemes"]:
+        for t in sc["towers"]:
+            print(f"{t['name']}: {t['area_m2']} m2 plate ({t['area_m2'] * 10.7639:,.0f} sq ft), {t['floors']} floors, "
+                  f"base {t['base_z']} m, top {t['top_z']} m ({t['top_z'] / FT:.0f} ft)")
 
 
 if __name__ == "__main__":

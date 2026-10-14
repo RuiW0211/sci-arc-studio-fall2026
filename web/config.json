@@ -65,6 +65,14 @@
       "visible": false,
       "color": "#B5CDEA",
       "overlay": true
+    },
+    "Unbuilt_schematic": {
+      "label": "Unbuilt, schematic",
+      "_comment": "Unbuilt schemes known only from descriptions (Three California Plaza): their own layer, apart from those traced from drawings.",
+      "order": 6.6,
+      "visible": false,
+      "color": "#B5CDEA",
+      "overlay": true
     }
   },
   "views": [
