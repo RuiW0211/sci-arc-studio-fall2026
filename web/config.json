@@ -66,8 +66,8 @@
         { "type": "low", "az": 75, "members": ["One California Plaza", "Two California Plaza", "Omni Los Angeles Hotel at California Plaza", "The Museum of Contemporary Art (MOCA Grand Avenue)", "Angelus Plaza"] },
         { "type": "low", "az": 150, "members": ["U.S. Bank Tower", "Wells Fargo Center - South Tower", "Wells Fargo Center - North Tower"] },
         { "type": "orbit", "az": 195, "members": ["The Broad", "Colburn School", "The Grand LA", "Walt Disney Concert Hall"] },
-        { "type": "orbit", "az": 255, "members": ["The Music Center (Dorothy Chandler Pavilion, Ahmanson Theatre, Mark Taper Forum)", "Cathedral of Our Lady of the Angels", "Los Angeles City Hall"] },
-        { "type": "track", "az": 300, "from": "Grand Central Market", "to": "Million Dollar Theater building (3rd & Broadway)", "members": ["Grand Central Market", "Million Dollar Theater building (3rd & Broadway)"] }
+        { "type": "orbit", "az": 240, "turn": 25, "members": ["The Music Center (Dorothy Chandler Pavilion, Ahmanson Theatre, Mark Taper Forum)", "Cathedral of Our Lady of the Angels", "Los Angeles City Hall"] },
+        { "type": "orbit", "az": 270, "turn": 30, "members": ["Grand Central Market", "Million Dollar Theater building (3rd & Broadway)", "Bradbury Building"] }
       ]
     },
     "tour": {

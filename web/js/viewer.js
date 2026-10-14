@@ -1360,6 +1360,8 @@ function cineShots() {
       out.push({ ...base, turn: 20, tilt: [80, 72], target: [A.cx, A.y0 + 12, A.cz], target1: [B.cx, B.y0 + 0.5 * B.h, B.cz], r: [160, 120] });
     }
   }
+  // a shot may set its own turn (degrees over the shot), e.g. a short arc so the next shot's heading follows on
+  (CINE.shots || []).filter((d) => d.type === "wide" || (d.members || []).some(find)).forEach((d, k) => { if (d.turn != null && out[k]) out[k].turn = d.turn; });
   return out.length ? out : [wide];
 }
 // smoother camera (user, 2026-10-14): the arc turns at an even speed, always the same way round, so it never stops or
@@ -2188,6 +2190,27 @@ const shotStudy = {
     const ws = rows.slice(1).map((r) => r.w);
     return { seconds: rows.length / fps, minTurnDegS: Math.min(...ws).toFixed(2), maxTurnDegS: Math.max(...ws).toFixed(2),
              maxSpeedMS: Math.round(Math.max(...rows.map((r) => r.v))), seen, rows };
+  },
+  // try a shot definition (as in config.json time.cinema.shots) at t from heading thDeg: how much of its members is in
+  // clear view, and how they sit in the frame (share of the screen their boxes cover, distance of their centre from the
+  // middle, share of them inside the window)
+  tryDef(def, t = 0.5, thDeg = 0) {
+    if (!tlItems) tlBuild();
+    const keep = CINE.shots; CINE.shots = [def]; const sh = cineShots()[0]; CINE.shots = keep;
+    endCine(); endTour(); camApply(cinePose(sh, t, thDeg * D2R, 1)); camera.updateMatrixWorld(); invalidate();
+    const W = innerWidth, H = innerHeight; let ok = 0, tot = 0, bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9, inside = 0, corners = 0;
+    for (const k of sh.keys || []) {
+      const it = tlItems.find((q) => q.key === k), [x0, y0, z0, x1, y1, z1] = it.box, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+      tot += 2; if (!tlBlockers(cx, y1, cz, it.ent, 2026).length) ok++; if (!tlBlockers(cx, (y0 + y1) / 2, cz, it.ent, 2026).length) ok++;
+      for (const x of [x0, x1]) for (const y of [y0, y1]) for (const z of [z0, z1]) {
+        _tv.set(x, y, z).project(camera); const sx = (_tv.x + 1) / 2 * W, sy = (1 - _tv.y) / 2 * H; corners++;
+        if (_tv.z < 1 && sx >= 0 && sx <= W && sy >= 0 && sy <= H) inside++;
+        bx0 = Math.min(bx0, sx); bx1 = Math.max(bx1, sx); by0 = Math.min(by0, sy); by1 = Math.max(by1, sy);
+      }
+    }
+    const cov = (Math.min(bx1, W) - Math.max(bx0, 0)) * (Math.min(by1, H) - Math.max(by0, 0)) / (W * H);
+    const off = Math.hypot((bx0 + bx1) / 2 / W - 0.5, (by0 + by1) / 2 / H - 0.5);
+    return { seen: +(ok / tot).toFixed(2), cover: +Math.max(cov, 0).toFixed(2), offCentre: +off.toFixed(2), inFrame: +(inside / corners).toFixed(2) };
   },
   opening(i, th = 0.6) {
     const P = openAnchors[i].pose; endCine(); endTour(); camApply({ ...P, th }); invalidate();
