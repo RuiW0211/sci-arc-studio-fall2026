@@ -1667,6 +1667,9 @@ function tlBuild() {
   ents.forEach((e, i) => {
     const y = parseInt(e.built?.[0] ?? e.parcel?.year_built, 10), o = 6 * i;
     if (B[o] > 1e8) return;
+    // an entity spread over more than maxExtentM is a data error, not a building (user, 2026-10-15: A0003 "411 N Boylston
+    // St" has one part scattered over 2 km, so its box hid half the site): no tag, no line-of-sight box
+    if (Math.max(B[o + 3] - B[o], B[o + 5] - B[o + 2]) > (TL.maxExtentM ?? 600)) return;
     const h = B[o + 4] - B[o + 1], box = Array.from(B.subarray(o, o + 6));
     if (h >= 6) tlOcc.push({ box, year: y > 1000 ? y : 0, ent: i });
     if (!(y > 1000) && !filmNames.has(e.name.toLowerCase())) return;   // undated: only the film's members (always there)
@@ -2090,7 +2093,48 @@ renderer.setAnimationLoop((now) => {
   updateTags(); updateTimeTags();
   adaptGlass(now);
 });
+// shot study (for checking the film, user, 2026-10-15: foregrounds hiding what a shot is about): the poses of every
+// shot of the opening and the film, and what stands between the camera and each of a shot's members
+function tlBlockers(x, y, z, own, Y) {
+  const o = camera.position, dx = x - o.x, dy = y - o.y, dz = z - o.z, hit = [];
+  for (const b of tlOcc) {
+    if (b.ent === own || (b.year && b.year > Y)) continue;
+    const [x0, y0, z0, x1, y1, z1] = b.box, mx = (x1 - x0) * 0.1, mz = (z1 - z0) * 0.1;
+    let t0 = 0, t1 = 0.97;
+    for (const [oo, d, lo, hi] of [[o.x, dx, x0 + mx, x1 - mx], [o.y, dy, y0, y1], [o.z, dz, z0 + mz, z1 - mz]]) {
+      if (Math.abs(d) < 1e-9) { if (oo < lo || oo > hi) { t0 = 2; break; } continue; }
+      let a = (lo - oo) / d, c = (hi - oo) / d; if (a > c) [a, c] = [c, a];
+      if (a > t0) t0 = a; if (c < t1) t1 = c; if (t0 > t1) break;
+    }
+    if (t0 <= t1) hit.push(ENTITIES.entities[b.ent]?.name ?? `#${b.ent}`);
+  }
+  return hit;
+}
+const shotStudy = {
+  list() {
+    if (!tlItems) tlBuild();
+    if (!openAnchors) { tour = tour || { th: 0, t: 0 }; buildOpening(); }
+    const film = cineShots();
+    return { opening: OPEN.shots.map((sh, i) => ({ i, years: `${sh.from}-${sh.to}`, pose: openAnchors[i].pose })),
+             film: film.map((sh, i) => ({ i, members: (sh.keys || []).map((k) => tlItems.find((t) => t.key === k)?.name), sh })) };
+  },
+  // put the camera where film shot i is at t (0..1), heading th (radians); returns what hides each member
+  film(i, t, th = 0.6) {
+    const sh = cineShots()[i]; endCine(); endTour();
+    camApply(cinePose(sh, t, th, 1)); invalidate();
+    return (sh.keys || []).map((k) => {
+      const it = tlItems.find((q) => q.key === k), [x0, y0, z0, x1, y1, z1] = it.box, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+      const top = tlBlockers(cx, y1, cz, it.ent, 2026), mid = tlBlockers(cx, (y0 + y1) / 2, cz, it.ent, 2026);
+      return { name: it.name, top, mid };
+    });
+  },
+  opening(i, th = 0.6) {
+    const P = openAnchors[i].pose; endCine(); endTour(); camApply({ ...P, th }); invalidate();
+    return P;
+  },
+};
 window.__viewer = {
+  shotStudy,
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
   camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
