@@ -1613,9 +1613,19 @@ function updateTimeTags() {
     setTimeout(() => s.el.remove(), 450);
   }
   const placed = [], ui = $("#ui").getBoundingClientRect();
-  // the left panel, while it shows (it fades out when idle): a tag under it fades as one behind a building, and no text
-  // goes under it (user, 2026-10-13: tags showed through the frosted panel)
-  const uiOn = ui.width > 0 && !document.body.classList.contains("idle");
+  // the left panel, while it shows (it fades out when idle): whatever part of a tag lies under it is dimmed to
+  // hiddenOpacity by a mask over the tag layer, as a building in front would (user, 2026-10-13: tags showed through the
+  // frosted panel; a fade by the share under it was too weak), and no text goes under it
+  const uiOp = ui.width > 0 ? +getComputedStyle($("#ui")).opacity : 0, uiOn = uiOp > 0.5;
+  if (uiOp > 0.01 && on) {
+    const k = (1 - (TL.hiddenOpacity ?? 0.15)) * uiOp;   // xor with the full layer below: alpha 1 - k under the panel
+    tlLayer.style.maskImage = tlLayer.style.webkitMaskImage = `linear-gradient(rgba(0,0,0,${k.toFixed(3)}), rgba(0,0,0,${k.toFixed(3)})), linear-gradient(#000, #000)`;
+    tlLayer.style.maskSize = tlLayer.style.webkitMaskSize = `${ui.width}px ${ui.height}px, 100% 100%`;
+    tlLayer.style.maskPosition = tlLayer.style.webkitMaskPosition = `${ui.left}px ${ui.top}px, 0 0`;
+    tlLayer.style.maskRepeat = tlLayer.style.webkitMaskRepeat = "no-repeat";
+    tlLayer.style.maskComposite = "exclude"; tlLayer.style.webkitMaskComposite = "xor";
+  } else tlLayer.style.maskImage = tlLayer.style.webkitMaskImage = "none";
+  if (uiOp > 0.01 && uiOp < 0.99) invalidate();   // the panel is fading in or out: follow it
   const underUi = (x0, y0, x1, y1) => {
     if (!uiOn) return 0;
     const w = Math.max(0, Math.min(x1, ui.right) - Math.max(x0, ui.left)), h = Math.max(0, Math.min(y1, ui.bottom) - Math.max(y0, ui.top));
@@ -1669,7 +1679,6 @@ function updateTimeTags() {
     // out of view: it fades out where it is (no display: none, which made it blink and replay its lock-on)
     const off = behind || sx1 < 0 || sx0 > W || sy1 < 0 || sy0 > H;
     if (off) a = 0;
-    else if (!hero) a *= 1 - (1 - (TL.hiddenOpacity ?? 0.15)) * underUi(Math.max(sx0, 0), Math.max(sy0, 0), Math.min(sx1, W), Math.min(sy1, H));
     s.op = s.op === undefined ? a : s.op + (a - s.op) * ease(0.3);
     if (Math.abs(a - s.op) > 0.004) invalidate();
     s.el.style.opacity = s.op.toFixed(3);
