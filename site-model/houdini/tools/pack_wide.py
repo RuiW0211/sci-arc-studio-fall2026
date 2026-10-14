@@ -146,11 +146,13 @@ SPLITS = {}      # object -> part centres, filled by plan()
 def load_chunk(nm):
     """A staged chunk as a dict, with the point relabels of work/stage/points/ applied in order:
     <chunk>.npz (tools/car_sweep.py apply: unassigned points that are cars / trucks get a new vehicle object) and
-    <chunk>__other.npz (tools/refine_objects.py other: unassigned points that belong to an existing building or tree).
+    <chunk>__other.npz (tools/refine_objects.py other: unassigned points that belong to an existing building or tree);
+    <chunk>__strays.npz (tools/refine_objects.py strays: a low building's few high points, given back to the taller
+    neighbour they belong to).
     Each file holds idx (point indices), name (object name per point) and layer (one layer, or one per point)."""
     z = np.load(STAGE / f"{nm}.npz", allow_pickle=True)
     d = {k: z[k] for k in z.files}
-    for pf in (STAGE / "points" / f"{nm}.npz", STAGE / "points" / f"{nm}__other.npz"):
+    for pf in (STAGE / "points" / f"{nm}.npz", STAGE / "points" / f"{nm}__other.npz", STAGE / "points" / f"{nm}__strays.npz"):
         if not pf.exists():
             continue
         p = np.load(pf, allow_pickle=True)

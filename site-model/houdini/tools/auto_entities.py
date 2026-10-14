@@ -60,8 +60,8 @@ def main():
     names, layers = meta["attributes"]["object"]["names"], meta["attributes"]["object"]["layers"]
     las = laspy.read(HZ.parents[1] / "web" / "data" / "lidar_points.laz")
     ob = np.asarray(las["object"]); X = np.asarray(las.x) + OX; Y = np.asarray(las.y) + OY; Z = np.asarray(las.z)
-    fp = {"BLD_" + str(f["properties"]["BLD_ID"]): shape(f["geometry"]).buffer(0)
-          for f in json.load(open(HZ / "in" / "lariac_3km.geojson"))["features"]}
+    fp = {(f"BLD_{f['properties']['BLD_ID']}" if f["properties"].get("BLD_ID") else f"BLD_noid{f['properties']['OBJECTID']}"):
+          shape(f["geometry"]).buffer(0) for f in json.load(open(HZ / "in" / "lariac_3km.geojson"))["features"]}   # as fetch_lariac_wide.py
 
     ann = json.load(open(ANN))
     manual = [e for e in ann["entities"] if not e["id"].startswith("A")]
