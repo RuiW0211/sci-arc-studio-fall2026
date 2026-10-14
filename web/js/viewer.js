@@ -1052,6 +1052,7 @@ for (const ev of ["keydown", "keyup"]) addEventListener(ev, (e) => {
 let lastHover = null;
 renderer.domElement.addEventListener("pointermove", (e) => { lastHover = { x: e.clientX, y: e.clientY }; });
 renderer.domElement.addEventListener("pointerleave", () => { pop?.hover(-1); renderer.domElement.style.cursor = ""; invalidate(); });
+let popStartT = null;   // seconds of the day to start at when People next comes on (set by the Guided film)
 $("#popOn").onchange = async (e) => {
   const on = e.target.checked;
   if (on && !pop) {
@@ -1064,6 +1065,8 @@ $("#popOn").onchange = async (e) => {
     e.target.disabled = false;
   }
   $("#popBox").hidden = !on;
+  // a start time asked for (the Guided film): set before they show, so nobody appears at the old time first
+  if (on && pop && popStartT !== null) { const r = $("#popTime"); r.value = popStartT; r.dispatchEvent(new Event("input")); popStartT = null; }
   pop?.setVisible(on);
   updateWhite();
   if (!on) for (const s of [...selection]) if (s.key.startsWith("pop:")) deselect(s.key);
@@ -1393,14 +1396,6 @@ function endCine() {
 }
 function nextShot(now, P) {
   const c = cine;
-  // after the first wide shot (user, 2026-10-14) People comes on, and the film goes on with them
-  if (c.i === (CINE.peopleAfter ?? 0) && CINE.thenPeople !== false && !$("#popOn").checked) {
-    // the day starts before dawn (user, 2026-10-15): most people are at home, and the city wakes up as they set out
-    $("#popOn").checked = true;
-    Promise.resolve($("#popOn").onchange({ target: $("#popOn") })).then(() => {
-      const r = $("#popTime"); r.value = (CINE.peopleStartH ?? 5) * 3600; r.dispatchEvent(new Event("input"));
-    });
-  }
   const prev = c.shots[c.i], sh = c.shots[(c.i + 1) % c.shots.length];
   c.i = (c.i + 1) % c.shots.length;   // the same way round every time (it used to turn back at each shot)
   if (sh.cut) {   // dip to black, jump, come up on the new shot
@@ -1411,9 +1406,20 @@ function nextShot(now, P) {
     c.phase = "blend"; c.t0 = now; c.from = P;
   }
 }
+// People comes on peopleDelayS into shot peopleAfter (user, 2026-10-15: 2 s into the first wide shot, once the camera
+// has settled after the opening), the film going on with them; its day starts before dawn (peopleStartH), most people
+// at home, and the city wakes up as they set out. The clock is set before they show (popStartT).
+function peopleOnNow() {
+  if ($("#popOn").checked) return;
+  popStartT = (CINE.peopleStartH ?? 5) * 3600;
+  $("#popOn").checked = true; $("#popOn").onchange({ target: $("#popOn") });
+}
 function stepCine(now) {
   const c = cine, sh = c.shots[c.i];
   if (paused) return;
+  if (!c.peopleDone && CINE.thenPeople !== false && c.i === (CINE.peopleAfter ?? 0) && c.phase === "shot" && now - c.t0 > (CINE.peopleDelayS ?? 2) * 1000) {
+    c.peopleDone = true; peopleOnNow();
+  }
   if (c.phase === "cut") {
     if (now - c.t0 < 280) return;   // the screen is going dark
     c.phase = "shot"; c.t0 = now; cutEl.classList.remove("on"); rejoin = null;
