@@ -6,7 +6,7 @@
     "opening": true,
     "rejoinS": 2.5,
     "autoResumeS": 4,
-    "rates": { "early": 5, "late": 1.25, "unbuilt": 0.6 },
+    "rates": { "early": 7.5, "late": 1.9, "unbuilt": 0.9 },
     "undatedDim": 0.55,
     "buildYears": 5,
     "front": 0.25,
@@ -43,7 +43,7 @@
       "thenPeople": true,
       "peopleAfter": 0,
       "shots": [
-        { "type": "wide" },
+        { "type": "wide", "s": 10 },
         { "type": "crane", "members": ["Angels Knoll", "Angels Flight", "Pershing Square Station entrance (4th & Hill, Metro)"] },
         { "type": "track", "from": "Pershing Square Station entrance (4th & Hill, Metro)", "to": "Angels Flight",
           "members": ["Angels Knoll", "Angels Flight", "Pershing Square Station entrance (4th & Hill, Metro)", "Pershing Square Station building (Metro, NE corner of 4th & Hill)"] },

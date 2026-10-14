@@ -1174,10 +1174,10 @@ addEventListener("keydown", (e) => {
 // a drag or scroll while the camera plays pauses it (user, 2026-10-13: it used to hand the camera back for good and the
 // orbit never came back): a look around, after which it goes on by itself (autoResumeS) or with Space
 for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused && (tour || cine)) setPaused(true); }, { passive: true });
-// years a second (user, 2026-10-13: slower): 5 to 1950, then 1.25 (a building about 4 s going up), 0.6 while an
+// years a second (user, 2026-10-14: the opening in a minute): 7.5 to 1950, then 1.9 (a building about 2.6 s going up), 0.9 while an
 // unbuilt scheme is on the site; config.json time.rates
 const ghostSpans = [...ghostYears.values()].flat();
-const RATES = { early: 5, late: 1.25, unbuilt: 0.6, ...(cfg.time?.rates || {}) };
+const RATES = { early: 7.5, late: 1.9, unbuilt: 0.9, ...(cfg.time?.rates || {}) };
 const rate = (y) => (ghostSpans.some(([a, b]) => y >= a - 0.5 && y < b + 1) ? RATES.unbuilt : y < 1950 ? RATES.early : RATES.late);
 let playDur = 0;
 for (let y = 1867; y < 2026; y += 0.05) playDur += 0.05 / rate(y);
