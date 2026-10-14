@@ -1107,11 +1107,23 @@ function setHistory(on, resume) {
   }
   setYear(resume ? resume.year : 1867);   // (user, 2026-10-13) it starts in 1867 and plays, the camera going round
   // no people while the buildings go up (user, 2026-10-15): they come on with the film, after its first wide shot
-  if ($("#popOn").checked) { $("#popOn").checked = false; $("#popOn").onchange({ target: $("#popOn") }); }
+  peopleOff();
   startPlay(true);
 }
 $("#timeOn").onchange = (e) => setHistory(e.target.checked);
-$("#timeRange").oninput = (e) => { stopPlay(); setYear(+e.target.value); };
+// moving the year by hand. In the Guided camera it is a pause (user, 2026-10-15: after the end, going back in time
+// left the people on and the camera standing still): no people before 2026, and a few seconds after the last input
+// the opening goes on from that year (from 2026: the film), as after any pause
+let scrubbed = false;
+$("#timeRange").oninput = (e) => {
+  stopPlay(); setYear(+e.target.value);
+  if (viewMode === "history") { scrubbed = true; pauseInput = performance.now(); if (+e.target.value < 2025.9) peopleOff(); timeState(); }
+};
+function peopleOff() { if ($("#popOn").checked) { $("#popOn").checked = false; $("#popOn").onchange({ target: $("#popOn") }); } }
+function goOnGuided() {   // after a scrub: from the slider's year, or the film from 2026
+  scrubbed = false;
+  if (+$("#timeRange").value >= 2025.9) startCine(); else startPlay(true);
+}
 // the camera tour while it plays from 1867 (user, 2026-10-13): round the site and slowly out, so the whole of it comes
 // into view as it is built. From the current heading; config.json time.tour: turn (degrees), distance and tilt (degrees
 // from straight down) at the start and the end. Any drag or scroll hands the camera back.
@@ -1244,7 +1256,9 @@ addEventListener("keydown", (e) => {
   if (e.code !== "Space" || texty || !($("#timeOn").checked || cine)) return;
   t?.blur?.();
   e.preventDefault();   // not a click on the focused checkbox, not a page scroll
-  if (playing || cine) setPaused(!paused); else if ($("#timeOn").checked) startPlay(false);   // stopped (the slider was moved, or the end): play
+  if (playing || cine) setPaused(!paused);
+  else if (scrubbed && viewMode === "history") goOnGuided();
+  else if ($("#timeOn").checked) startPlay(false);   // stopped (the slider was moved, or the end): play
 });
 // a drag or scroll while the camera plays pauses it (user, 2026-10-13: it used to hand the camera back for good and the
 // orbit never came back): a look around, after which it goes on by itself (autoResumeS) or with Space
@@ -1261,7 +1275,7 @@ function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null
 // no Play button (user, 2026-10-13): Space plays, pauses and goes on; the panel only says which
 function timeState() {
   const el = $("#timePlay"); if (!el) return;
-  el.textContent = paused ? "Paused · Space" : playing || cine ? "Playing · Space to pause" : "Space to play";
+  el.textContent = paused || scrubbed ? "Paused · Space" : playing || cine ? "Playing · Space to pause" : "Space to play";
 }
 function startPlay(withTour) {
   if (playing) stopPlay();
@@ -1291,7 +1305,11 @@ const AUTO_RESUME_S = cfg.time?.autoResumeS ?? 4;
 let pauseInput = 0;
 for (const ev of ["pointerdown", "wheel", "keydown"]) addEventListener(ev, () => { pauseInput = performance.now(); }, { passive: true, capture: true });
 addEventListener("pointermove", (e) => { if (e.buttons) pauseInput = performance.now(); }, { passive: true, capture: true });
-setInterval(() => { if (paused && AUTO_RESUME_S > 0 && performance.now() - pauseInput > AUTO_RESUME_S * 1000) setPaused(false); }, 250);
+setInterval(() => {
+  const idle = AUTO_RESUME_S > 0 && performance.now() - pauseInput > AUTO_RESUME_S * 1000;
+  if (paused && idle) setPaused(false);
+  else if (scrubbed && idle && viewMode === "history" && !playing && !cine) goOnGuided();
+}, 250);
 setYear(2026);
 
 // ---------- after the opening: the camera keeps filming (user, 2026-10-13) ----------
