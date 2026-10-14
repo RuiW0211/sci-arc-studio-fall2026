@@ -7,7 +7,21 @@
     "buildYears": 5,
     "front": 0.25,
     "contextGrey": 0.45,
-    "contextOpacity": 0.35
+    "contextOpacity": 0.35,
+    "groundFill": {
+      "_comment": "ESTIMATED ground under the dated buildings, shown only before they are built: cellM grid, density = the mean of the ground cells within radiusM.",
+      "cellM": 2,
+      "radiusM": 20
+    },
+    "tour": {
+      "_comment": "The camera while it plays from 1867: turnDeg round the site, distance r0 -> r1 (m) and tilt0 -> tilt1 (degrees from straight down), about target.",
+      "turnDeg": 220,
+      "r0": 420,
+      "r1": 820,
+      "tilt0": 64,
+      "tilt1": 52,
+      "target": [0, 95, 0]
+    }
   },
   "ghosts": {
     "data": "data/ghosts.json",

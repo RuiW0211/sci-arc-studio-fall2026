@@ -183,7 +183,7 @@ try {
       const x = minX + rnd() * (maxX - minX), n = minN + rnd() * (maxN - minN);
       if (inside(x, n)) { pos.push(x, t.top_z, -n); k--; }
     }
-    ghostPts.push({ name: t.name, base: t.base_z, layer: sc.layer || "Unbuilt", pos: new Float32Array(pos) });
+    ghostPts.push({ name: t.name, base: t.base_z, layer: sc.layer || "Unbuilt", years: sc.years, pos: new Float32Array(pos) });
     const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
     const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }));
@@ -234,7 +234,7 @@ let glassAt = -1e9;   // last adaptive-glass check (see adaptGlass); declared ea
 const lidarGroup = new THREE.Group();
 scene.add(lidarGroup);
 let lidar = null;
-let lidarDensityMatch = null, lidarPlazaPoints = 0;   // object -> ground / own density, for the moved structures (loadLidar)
+let lidarDensityMatch = null, lidarPlazaPoints = 0, lidarGroundFill = 0;   // object -> ground / own density, for the moved structures (loadLidar)
 
 // the Time module (user, 2026-10-13): off = today; on = the year of its slider. TIME feeds the point shader.
 const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.undatedDim ?? 0.4 },
@@ -305,14 +305,24 @@ function pointMaterial(sizeMetres) {
       // soft front (aRise: the point's height in its building, 0 at the foot, 1 at the top). Buildings and landmarks
       // are white, opaque, over the faint grey of the rest; an undated one stays, a dimmer white; the unbuilt towers
       // (aYear -2) keep their colour.
-      + "if (uTimeOn > 0.5) {\n"
-      + "  if (aYear > 0.5) {\n"
+      // the ground filled under a building (aYear 10000 + its year): only with the Time module, gone as the building is
+      // finished. An unbuilt tower rises the same way over its first years and sinks back over its last ones.
+      + "if (aYear > 9999.5) { float gk = uTimeOn * clamp(aYear - 10000.0 - uYear, 0.0, 1.0); gl_PointSize *= gk;"
+      + " if (gk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0); }\n"
+      + "else if (uTimeOn > 0.5) {\n"
+      + "  if (aYear < -99.5) {\n"
+      + "    float c = -aYear, s = floor(c / 100.0 + 0.001), sp = c - 100.0 * s + 1.0; s += 1800.0;\n"
+      + "    float up = min(uBuild, 0.6 * sp), dn = min(1.5, 0.3 * sp);\n"
+      + "    float p = min(clamp((uYear - s) / up, 0.0, 1.0), clamp((s + sp - uYear) / dn, 0.0, 1.0)); p = p * p * (3.0 - 2.0 * p);\n"
+      + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
+      + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
+      + "    vGhost = 1.0;\n"
+      + "  } else if (aYear > 0.5) {\n"
       + "    float p = clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0); p = p * p * (3.0 - 2.0 * p);\n"
       + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
       + "    vColor.rgb = mix(vColor.rgb, mix(vec3(1.0), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
-      + "  } else if (aYear < -1.5) vGhost = 1.0;\n"
-      + "  else if (aYear < -0.5) { vColor.rgb = mix(vColor.rgb, mix(vec3(uDim), vColor.rgb, vSel), uFocus); vBuild = 1.0; }\n"
+      + "  } else if (aYear < -0.5) { vColor.rgb = mix(vColor.rgb, mix(vec3(uDim), vColor.rgb, vSel), uFocus); vBuild = 1.0; }\n"
       + "}\n#include <fog_vertex>");
     // round points instead of squares
     shader.fragmentShader = shader.fragmentShader.replace(
@@ -419,6 +429,7 @@ async function loadLidar() {
     facadeData = null;   // memory
   }
   // the unbuilt towers' points join as objects of their own (layer Unbuilt), named as their towers
+  const ghostObjYears = new Map();   // object -> the years of its scheme
   if (ghostPts.length) {
     const m = ghostPts.reduce((a, g) => a + g.pos.length / 3, 0), N2 = n + m;
     const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2);
@@ -426,7 +437,7 @@ async function loadLidar() {
     P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
     let i = n;
     for (const g of ghostPts) {
-      const o = objNames.length; objNames.push(g.name); objLayers.push(g.layer);
+      const o = objNames.length; objNames.push(g.name); objLayers.push(g.layer); ghostObjYears.set(o, g.years);
       for (let j = 0; j < g.pos.length; j += 3, i++) {
         P2[3 * i] = g.pos[j]; P2[3 * i + 1] = g.pos[j + 1]; P2[3 * i + 2] = g.pos[j + 2];
         C2[i] = 6; O2[i] = o; I2[i] = 128; if (H2) H2[i] = Math.round((g.pos[j + 1] - g.base) * 10);
@@ -522,7 +533,7 @@ async function loadLidar() {
   // Per object: f = mean ground returns per 2 m cell around it (its box + 20 m, cells it covers left out) / its own
   // mean per cell (over cells with returns); f < 1 drops points at random down to the ground's density, f > 1 draws its points sqrt(f) times
   // larger (at most matchDensity.maxSize) so they cover the same share of the screen. Only the drawing changes.
-  const sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
+  let sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
   if (moved.size) {
     const CM = 2, PAD = 10, cellOf = (x, z) => (Math.floor(x / CM) + 32768) * 65536 + Math.floor(z / CM) + 32768;
     const own = new Map(), box = new Map();
@@ -565,6 +576,73 @@ async function loadLidar() {
     }
     lidarDensityMatch = f;   // for checks (__viewer)
   }
+  // per object: the year its building was built (the landmark's own year, else the Assessor's), -1 for a building with
+  // none, 0 for what is not a building (ground, trees, cars: always there for the Time module); an unbuilt tower:
+  // -(100 * (first year - 1800) + years it was alive), read back in the shader
+  const objYear = new Int16Array(objNames.length);
+  objNames.forEach((nm, k) => {
+    const gy = ghostObjYears.get(k);
+    if (gy) { objYear[k] = -(100 * (gy[0] - 1800) + Math.min(gy[1] - gy[0], 99)); return; }
+    if (objLayers[k] !== "Buildings" && objLayers[k] !== "Landmarks") return;
+    const e = entityOfName.get(nm), y = e ? parseInt(e.built?.[0] ?? e.parcel?.year_built, 10) : NaN;
+    objYear[k] = y > 1000 ? y : -1;
+  });
+  // the ground under the dated buildings (user, 2026-10-13: in 1867 the cloud showed black holes where today's buildings
+  // stand, the LiDAR seeing their roofs and not the ground). ESTIMATED: in every 2 m cell a dated building covers and
+  // the ground has no return, points at random at the ground's own density around it (the mean of the cells with ground
+  // returns within groundFill.radiusM), at the building's ground height (its points' height less their height above the
+  // ground). They draw with the ground, only with the Time module, until their building is up: per-point year code
+  // 10000 + the building's year (ptYear).
+  let ptYear = null;
+  const GF = cfg.time?.groundFill;
+  if (GF && HG && terrainObj >= 0) {
+    const CM = GF.cellM ?? 2, groundL = objLayers[terrainObj];
+    let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
+    for (let i = 0; i < n; i++) { const x = P[3 * i], z = P[3 * i + 2]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (z < z0) z0 = z; if (z > z1) z1 = z; }
+    const W = Math.ceil((x1 - x0) / CM) + 1, H = Math.ceil((z1 - z0) / CM) + 1, cellOf = (i) => Math.floor((P[3 * i] - x0) / CM) * H + Math.floor((P[3 * i + 2] - z0) / CM);
+    const tc = new Uint16Array(W * H);
+    let isum = 0, icnt = 0;
+    for (let i = 0; i < n; i++) if (objLayers[obj[i]] === groundL) { const c = cellOf(i); if (tc[c] < 65535) tc[c]++; isum += I[i]; icnt++; }
+    const cy = new Int16Array(W * H), gsum = new Float32Array(W * H), gn = new Uint16Array(W * H);   // earliest year over the cell
+    for (let i = 0; i < n; i++) {
+      const y = objYear[obj[i]]; if (y <= 0) continue;
+      const c = cellOf(i); if (tc[c]) continue;
+      if (!cy[c] || y < cy[c]) cy[c] = y;
+      gsum[c] += P[3 * i + 1] - HG[i] / 10; if (gn[c] < 65535) gn[c]++;
+    }
+    // summed-area tables of the ground counts and of the cells holding any, for the mean around each cell
+    const S = new Int32Array((W + 1) * (H + 1)), Z = new Int32Array((W + 1) * (H + 1)), ix = (a, b) => a * (H + 1) + b;
+    for (let a = 0; a < W; a++) for (let b = 0; b < H; b++) {
+      const c = a * H + b;
+      S[ix(a + 1, b + 1)] = tc[c] + S[ix(a, b + 1)] + S[ix(a + 1, b)] - S[ix(a, b)];
+      Z[ix(a + 1, b + 1)] = (tc[c] ? 1 : 0) + Z[ix(a, b + 1)] + Z[ix(a + 1, b)] - Z[ix(a, b)];
+    }
+    const rc = Math.round((GF.radiusM ?? 20) / CM), box = (T, a0, b0, a1, b1) => T[ix(a1, b1)] - T[ix(a0, b1)] - T[ix(a1, b0)] + T[ix(a0, b0)];
+    let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const add = [];   // x, y, z, year
+    for (let a = 0; a < W; a++) for (let b = 0; b < H; b++) {
+      const c = a * H + b; if (!cy[c]) continue;
+      const a0 = Math.max(a - rc, 0), b0 = Math.max(b - rc, 0), a1 = Math.min(a + rc + 1, W), b1 = Math.min(b + rc + 1, H);
+      const k = box(Z, a0, b0, a1, b1); if (!k) continue;
+      const d = box(S, a0, b0, a1, b1) / k, y = gsum[c] / gn[c];
+      for (let m = Math.floor(d + rnd()); m > 0; m--) add.push(x0 + (a + rnd()) * CM, y, z0 + (b + rnd()) * CM, cy[c]);
+    }
+    const m = add.length / 4, N2 = n + m, iMean = icnt ? Math.round(isum / icnt) : 128;
+    const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2), H2 = new HG.constructor(N2);
+    const S2 = new Uint8Array(N2).fill(64), D2 = new Uint8Array(N2);
+    P2.set(P); C2.set(C); I2.set(I); O2.set(obj); H2.set(HG); S2.set(sizeK); D2.set(drop);
+    ptYear = new Int16Array(N2);
+    for (let i = 0; i < n; i++) ptYear[i] = objYear[obj[i]];
+    for (let k = 0; k < m; k++) {
+      const i = n + k;
+      P2[3 * i] = add[4 * k]; P2[3 * i + 1] = add[4 * k + 1]; P2[3 * i + 2] = add[4 * k + 2];
+      C2[i] = 2; O2[i] = terrainObj; I2[i] = iMean; H2[i] = 0; ptYear[i] = 10000 + add[4 * k + 3];
+    }
+    P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
+    lidarGroundFill = m;   // for checks (__viewer)
+    sizeK = S2; drop = D2;
+  }
+  if (!ptYear) { ptYear = new Int16Array(n); for (let i = 0; i < n; i++) ptYear[i] = objYear[obj[i]]; }
   const material = pointMaterial(cfg.lidar.size ?? 0.3);
   // local density of each point's layer (returns per m2 of plan, from a 10 m grid, bilinear so it varies smoothly) and a
   // draw priority q = random * density^(1 - LOD_KEEP): the LOD draws the points with q below a target, so dense ground is
@@ -586,19 +664,10 @@ async function loadLidar() {
               + (grid[o + ix * gnz + iz + 1] * (1 - tx) + grid[o + (ix + 1) * gnz + iz + 1] * tx) * tz;
     q[i] = Math.random() * Math.max(rho, 1e-4) ** (1 - LOD_KEEP) * LOD_RHO0 ** LOD_KEEP;
   }
-  // per object: the year its building was built (the landmark's own year, else the Assessor's), -1 for a building with
-  // none, 0 for what is not a building (ground, trees, cars, unbuilt towers: always there for the Time module)
-  const objYear = new Int16Array(objNames.length);
-  objNames.forEach((nm, k) => {
-    if (ghostYears.has(objLayers[k])) { objYear[k] = -2; return; }   // unbuilt towers: their colour under the grey
-    if (objLayers[k] !== "Buildings" && objLayers[k] !== "Landmarks") return;
-    const e = entityOfName.get(nm), y = e ? parseInt(e.built?.[0] ?? e.parcel?.year_built, 10) : NaN;
-    objYear[k] = y > 1000 ? y : -1;
-  });
   // per object: the height of its lowest and highest point, so each point knows how far up its building it is (aRise)
   const objLo = new Float32Array(objNames.length).fill(1e9), objHi = new Float32Array(objNames.length).fill(-1e9);
   for (let i = 0; i < n; i++) {
-    const o = obj[i]; if (objYear[o] <= 0) continue;
+    const o = obj[i]; if (objYear[o] === 0 || objYear[o] === -1) continue;
     const y = P[3 * i + 1]; if (y < objLo[o]) objLo[o] = y; if (y > objHi[o]) objHi[o] = y;
   }
   // bucket point indices by layer and LOD chunk
@@ -619,8 +688,8 @@ async function loadLidar() {
     const sz = new Uint8Array(m), yr = new Int16Array(m), rise = new Uint8Array(m);
     for (let j = 0; j < m; j++) {
       const i = idx[j];
-      sz[j] = sizeK[i]; yr[j] = objYear[obj[i]];
-      if (yr[j] > 0) { const o = obj[i]; rise[j] = Math.round(255 * (P[3 * i + 1] - objLo[o]) / Math.max(objHi[o] - objLo[o], 0.1)); }
+      sz[j] = sizeK[i]; yr[j] = ptYear[i];
+      if ((yr[j] > 0 && yr[j] < 10000) || yr[j] < -99) { const o = obj[i]; rise[j] = Math.round(255 * (P[3 * i + 1] - objLo[o]) / Math.max(objHi[o] - objLo[o], 0.1)); }
       pos[3 * j] = P[3 * i]; pos[3 * j + 1] = P[3 * i + 1]; pos[3 * j + 2] = P[3 * i + 2];
       zs[j] = P[3 * i + 1]; cls[j] = C[i]; inten[j] = I[i]; ob[j] = obj[i]; qs[j] = q[i];
       if (hag) hag[j] = HG[i];
@@ -1022,25 +1091,58 @@ $("#timeOn").onchange = (e) => {
   $("#timeBox").hidden = !on;
   TIME.on.value = on ? 1 : 0;
   updateWhite();
-  if (!on) stopPlay();
-  setYear(+$("#timeRange").value);
+  if (!on) { stopPlay(); setYear(2026); return; }
+  setYear(1867);   // (user, 2026-10-13) it starts in 1867 and plays, the camera slowly going round the site
+  startPlay(true);
 };
 $("#timeRange").oninput = (e) => { stopPlay(); setYear(+e.target.value); };
+// the camera tour while it plays from 1867 (user, 2026-10-13): round the site and slowly out, so the whole of it comes
+// into view as it is built. From the current heading; config.json time.tour: turn (degrees), distance and tilt (degrees
+// from straight down) at the start and the end. Any drag or scroll hands the camera back.
+let tour = null;
+const TOUR = { turnDeg: 220, r0: 420, r1: 820, tilt0: 64, tilt1: 52, target: [0, 95, 0], ...(cfg.time?.tour || {}) };
+function startTour() {
+  const tgt = new THREE.Vector3().fromArray(TOUR.target), th = sphOf(camera.position, controls.target).th;
+  _sph.set(TOUR.r0, (TOUR.tilt0 * Math.PI) / 180, th);
+  goTo({ target: TOUR.target, position: tgt.clone().add(_off.setFromSpherical(_sph)).toArray() });
+  tour = { th, t: 0 };
+}
+function stepTour(dt, frac) {
+  if (!tour || tween) return;
+  controls.enableDamping = false;
+  const e = frac * frac * (3 - 2 * frac);
+  _sph.set(TOUR.r0 + (TOUR.r1 - TOUR.r0) * e, ((TOUR.tilt0 + (TOUR.tilt1 - TOUR.tilt0) * e) * Math.PI) / 180,
+           tour.th + (TOUR.turnDeg * Math.PI / 180) * frac);
+  controls.target.fromArray(TOUR.target);
+  camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
+  camera.lookAt(controls.target);
+  invalidate();
+}
+function endTour() { if (tour) { tour = null; controls.enableDamping = true; } }
+for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, endTour, { passive: true });
+// years a second: 8 to 1950, then 2 (a building about 2.5 s going up), 1 while an unbuilt scheme is on the site
+const ghostSpans = [...ghostYears.values()].flat();
+const rate = (y) => (ghostSpans.some(([a, b]) => y >= a - 0.5 && y < b + 1) ? 1 : y < 1950 ? 8 : 2);
+let playDur = 0;
+for (let y = 1867; y < 2026; y += 0.05) playDur += 0.05 / rate(y);
 let playing = null;
-function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null; $("#timePlay").textContent = "Play"; }
-$("#timePlay").onclick = () => {
-  if (playing) return stopPlay();
-  let y = +$("#timeRange").value >= 2025.9 ? 1867 : +$("#timeRange").value, last = performance.now();
+function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null; $("#timePlay").textContent = "Play"; endTour(); }
+function startPlay(withTour) {
+  if (playing) stopPlay();
+  let y = +$("#timeRange").value >= 2025.9 ? 1867 : +$("#timeRange").value, last = performance.now(), el = 0;
+  if (withTour || y <= 1867) startTour();
   $("#timePlay").textContent = "Pause";
-  const step = (now) => {   // about 50 s: 8 years a second to 1950, then 2, so a building takes about 2.5 s to go up
-    const dt = (now - last) / 1000; last = now;
-    y = Math.min(2026, y + dt * (y < 1950 ? 8 : 2));
+  const step = (now) => {   // about a minute in all
+    const dt = Math.min((now - last) / 1000, 0.1); last = now; el += dt;
+    y = Math.min(2026, y + dt * rate(y));
     setYear(y);
-    if (y >= 2026) return stopPlay();
+    stepTour(dt, Math.min(el / playDur, 1));
+    if (y >= 2026) { playing = null; $("#timePlay").textContent = "Play"; endTour(); return; }
     playing = requestAnimationFrame(step);
   };
   playing = requestAnimationFrame(step);
-};
+}
+$("#timePlay").onclick = () => (playing ? stopPlay() : startPlay(false));
 setYear(2026);
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
@@ -1455,7 +1557,7 @@ renderer.setAnimationLoop((now) => {
 });
 window.__viewer = {
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
