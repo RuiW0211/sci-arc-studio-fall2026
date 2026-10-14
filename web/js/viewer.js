@@ -1984,7 +1984,7 @@ wake();
 await setMode("cloud");
 // the opening (user, 2026-10-13): the viewer opens in the Time module, playing from 1867 with the camera tour;
 // ?time=0 or config.json time.opening false opens on today
-// History view / Free view (user, 2026-10-15): one switch at the top of the panel, the same model loaded once.
+// Guided camera / Free camera (user, 2026-10-15): one switch at the top of the panel, the same model loaded once.
 // History: the opening and the film (and A Day after the first wide shot); Free: today's model, the camera yours.
 // Back to History, it goes on where it was left. ?time=0 or time.opening false opens in Free.
 let viewMode = "free", historyLeft = null;
