@@ -266,6 +266,15 @@
   #popTrack { position: relative; margin-top: 6px; }
   #popChart { display: block; width: 100%; height: 56px; border-bottom: 1px solid var(--line); }
   #popTrack input[type=range] { position: absolute; left: 0; top: 0; width: 100%; height: 63px; margin: 0; }
+  /* the knob in the grey of the menus' selected thumb (user, 2026-10-14; .seg .thumb: --thumb over the panel), made
+     opaque so the chart does not show through it, with the same shadow and top highlight */
+  :root { --knob: #fdfdfd; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --knob: #5f5f62; } }
+  :root[data-theme="dark"] { --knob: #5f5f62; }
+  #popTrack input[type=range]::-webkit-slider-thumb { background: var(--knob);
+    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08); }
+  #popTrack input[type=range]::-moz-range-thumb { background: var(--knob);
+    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08); }
   #popTrack input[type=range]::-webkit-slider-runnable-track { height: 63px; background: none; }
   #popTrack input[type=range]::-webkit-slider-thumb { margin-top: 50px; }
   #popTrack input[type=range]::-moz-range-track { height: 63px; background: none; }
