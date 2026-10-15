@@ -592,7 +592,40 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const r = $("#popTime"); r.value = t;
     r.style.setProperty("--p", `${(100 * (r.value - r.min)) / (r.max - r.min)}%`);
   }
-  $("#popTime").oninput = (e) => { st.t = +e.target.value; st.dirty = true; setTimeSlider(st.t); };
+  // the knob deforms while dragged by hand (user, 2026-10-14): stretched across by the drag's speed (up to STRETCH_MAX,
+  // a little flatter as it does) and, once the hand slows or lets go, back to round on an underdamped spring, a little
+  // squashed on the way (a jelly wobble). Only the knob's shape: the time follows the hand directly. viewer.html reads
+  // --kx / --ky on the knob
+  const STRETCH_MAX = 0.35, STRETCH_PXS = 600, JELLY_W = 22, JELLY_Z = 0.38;   // full stretch at 600 px/s
+  const timeIn = $("#popTime");
+  let drag = null, jelly = null;   // drag: { v px/s, at, val }; jelly: { s, ds, last }
+  function jellyStep(now) {
+    const j = jelly;
+    const dt = Math.min(Math.max((now - j.last) / 1000, 0), 0.05); j.last = now;
+    if (drag && now - drag.at > 40) drag.v *= Math.exp(-dt * 14);   // the hand stopped: the speed dies away
+    const want = drag ? Math.min(Math.abs(drag.v) / STRETCH_PXS, 1) * STRETCH_MAX : 0;
+    const n = Math.max(1, Math.ceil(dt / 0.004)), h = dt / n;
+    for (let i = 0; i < n; i++) { j.ds += (-2 * JELLY_Z * JELLY_W * j.ds - JELLY_W * JELLY_W * (j.s - want)) * h; j.s += j.ds * h; }
+    timeIn.style.setProperty("--kx", (1 + j.s).toFixed(3)); timeIn.style.setProperty("--ky", (1 - 0.45 * j.s).toFixed(3));
+    if (!drag && Math.abs(j.s) < 0.002 && Math.abs(j.ds) < 0.02) {
+      jelly = null; timeIn.style.removeProperty("--kx"); timeIn.style.removeProperty("--ky"); timeIn.classList.remove("jelly"); return;
+    }
+    requestAnimationFrame(jellyStep);
+  }
+  timeIn.addEventListener("pointerdown", () => {
+    drag = { v: 0, at: performance.now(), val: +timeIn.value };
+    timeIn.classList.add("jelly");
+    if (!jelly) { jelly = { s: 0, ds: 0, last: performance.now() }; requestAnimationFrame(jellyStep); }
+  });
+  for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, () => { drag = null; });
+  timeIn.oninput = (e) => {
+    st.t = +e.target.value; st.dirty = true; setTimeSlider(st.t);
+    if (drag) {   // the drag's speed in screen px per second, smoothed
+      const now = performance.now(), dt = Math.max((now - drag.at) / 1000, 0.004);
+      const px = ((st.t - drag.val) / 86400) * timeIn.clientWidth;
+      drag.v += (px / dt - drag.v) * Math.min(1, dt * 20); drag.at = now; drag.val = st.t;
+    }
+  };
   $("#popPlay").onclick = () => { resumeAfter = false; setPlaying(!st.playing); };
   // Weekday / Weekend: a segmented control with a sliding thumb, like Color (viewer.js moveThumb)
   function dayThumb(instant) {

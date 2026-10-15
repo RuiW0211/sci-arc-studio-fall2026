@@ -272,6 +272,10 @@
   #popTrack input[type=range]::-moz-range-progress { background: none; }
   #popTrack input[type=range]::-moz-range-thumb { transform: translateY(25px); }
   #popTrack input[type=range]:hover::-moz-range-thumb, #popTrack input[type=range]:active::-moz-range-thumb { transform: translateY(25px) scale(1.18); }
+  /* while dragged by hand the knob stretches and wobbles back (population.js sets --kx / --ky every frame; no transition
+     then, or it would lag), on top of the hover / drag scale */
+  #popTrack input[type=range].jelly::-webkit-slider-thumb { transition: none; transform: scale(calc(1.18 * var(--kx, 1)), calc(1.18 * var(--ky, 1))); }
+  #popTrack input[type=range].jelly::-moz-range-thumb { transition: none; transform: translateY(25px) scale(calc(1.18 * var(--kx, 1)), calc(1.18 * var(--ky, 1))); }
   #popVs { font-size: 11px; color: var(--muted); text-align: right; margin-top: 8px; min-height: 1em; font-variant-numeric: tabular-nums; }
   /* Weekday / Weekend (population.js showCurve): the old curve dims while the new one is worked out, then morphs */
   #popChart { transition: opacity var(--t-feedback) ease; }
