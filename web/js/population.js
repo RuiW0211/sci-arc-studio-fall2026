@@ -592,35 +592,34 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const r = $("#popTime"); r.value = t;
     r.style.setProperty("--p", `${(100 * (r.value - r.min)) / (r.max - r.min)}%`);
   }
-  // the knob moves like the thumb of the Guided / Free switch (user, 2026-10-14): a click on the chart glides the time
-  // there over GLIDE_MS on the same spring curve (viewer.html .seg .thumb: cubic-bezier(.34, 1.25, .5, 1)), a little past
-  // and back, the marker, clock and people with it; a drag follows the pointer. Keys and the film set it at once
-  const GLIDE_MS = 420, D2 = 3;   // D2: px the pointer moves before a press is a drag
-  const spring = (x) => {   // cubic-bezier(.34, 1.25, .5, 1): solve x(t) = x by bisection, return y(t)
-    const bz = (t, p1, p2) => 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t;
-    let lo = 0, hi = 1;
-    for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (bz(m, 0.34, 0.5) < x) lo = m; else hi = m; }
-    return bz((lo + hi) / 2, 1.25, 1);
-  };
-  let glideAnim = 0, press = null;
-  function glideTo(to) {
-    const from = st.t, t0 = performance.now();
-    cancelAnimationFrame(glideAnim);
-    const step = (now) => {
-      const k = Math.min((now - t0) / GLIDE_MS, 1);
-      st.t = Math.min(Math.max(from + (to - from) * spring(k), 0), 86399); st.dirty = true; setTimeSlider(st.t);
-      glideAnim = k < 1 ? requestAnimationFrame(step) : 0;
-    };
-    glideAnim = requestAnimationFrame(step);
+  // the knob moves like the thumb of the Guided / Free switch (user, 2026-10-14: while dragging by hand, not only on a
+  // click): the pointer sets a target and the knob follows it on a damped spring, a little behind while it moves and a
+  // little past and back when it stops, the time, marker, clock and people with it. SPRING_W / SPRING_Z: about the
+  // switch's 0.42 s cubic-bezier(.34, 1.25, .5, 1) (settles in ~0.4 s, ~2 % past). Keys and the film set it at once
+  const SPRING_W = 12, SPRING_Z = 0.78;
+  let follow = null, press = false;   // follow: { x, v, target, last } (seconds of the day, and per second)
+  function followTo(target) {
+    if (follow) { follow.target = target; return; }
+    follow = { x: st.t, v: 0, target, last: performance.now() };
+    requestAnimationFrame(stepFollow);
+  }
+  function stepFollow(now) {
+    const f = follow;
+    if (!f) return;
+    const dt = Math.min(Math.max((now - f.last) / 1000, 0), 0.05), n = Math.max(1, Math.ceil(dt / 0.004)), h = dt / n;
+    f.last = now;
+    for (let i = 0; i < n; i++) { f.v += (-2 * SPRING_Z * SPRING_W * f.v - SPRING_W * SPRING_W * (f.x - f.target)) * h; f.x += f.v * h; }
+    const done = !press && Math.abs(f.x - f.target) < 1 && Math.abs(f.v) < 5;
+    st.t = Math.min(Math.max(done ? f.target : f.x, 0), 86399); st.dirty = true; setTimeSlider(st.t);
+    if (done) { follow = null; return; }
+    requestAnimationFrame(stepFollow);
   }
   const timeIn = $("#popTime");
-  timeIn.addEventListener("pointerdown", (e) => { press = { x: e.clientX, drag: false }; });
-  addEventListener("pointermove", (e) => { if (press && !press.drag && Math.abs(e.clientX - press.x) > D2) press.drag = true; });
-  for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, () => { press = null; });
+  timeIn.addEventListener("pointerdown", () => { press = true; });
+  for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, () => { press = false; });
   timeIn.oninput = (e) => {
     const v = +e.target.value;
-    if (press && !press.drag) { setTimeSlider(st.t); glideTo(v); return; }   // a click: glide (from where it is now)
-    cancelAnimationFrame(glideAnim); glideAnim = 0;
+    if (press || follow) { setTimeSlider(st.t); followTo(v); return; }   // by hand: the knob follows on the spring
     st.t = v; st.dirty = true; setTimeSlider(st.t);
   };
   $("#popPlay").onclick = () => { resumeAfter = false; setPlaying(!st.playing); };
