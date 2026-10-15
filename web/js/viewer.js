@@ -67,7 +67,7 @@ controls.target.fromArray(v0.target);
 // point it turns round). Sharp within focusRange of it (a share of the focus distance), blurred towards maxBlurPx in
 // front and behind (aperture: how fast). Gathered on a golden-angle disc; a sample only counts where its own blur
 // reaches it, so a sharp subject does not bleed into the blurred ground behind it. config.json dof
-const DOF = { on: true, aperture: 1.0, focusRange: 0.15, maxBlurPx: 5, ...(cfg.dof || {}) };
+const DOF = { on: true, aperture: 0.7, focusRange: 0.35, maxBlurPx: 3, ...(cfg.dof || {}) };
 if (urlq.has("dof")) DOF.on = urlq.get("dof") !== "0";
 const dofTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
 dofTarget.depthTexture = new THREE.DepthTexture(1, 1);
@@ -85,19 +85,24 @@ const dofQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMa
     }
     void main() {
       vec4 c0 = texture2D(tColor, vUv); float r0 = coc(vUv);
+      // the picture's depth, so the overlay (people) is still hidden by the buildings; pushed back a hair so a person standing
+      // on ground points (the same depth, give or take the copy) still shows
+      gl_FragDepth = min(texture2D(tDepth, vUv).x + 4e-6, 1.0);
+      if (any(isnan(c0)) || any(isinf(c0))) c0 = vec4(0.0, 0.0, 0.0, 1.0);   // a broken pixel must not spread
       if (r0 < 0.5) { gl_FragColor = c0; } else {
         vec4 sum = c0; float wsum = 1.0;
         for (int i = 0; i < 32; i++) {
           float fi = float(i) + 0.5, r = sqrt(fi / 32.0) * r0, a = fi * 2.39996;
           vec2 uv = vUv + vec2(cos(a), sin(a)) * r * texel;
-          float w = smoothstep(r - 1.0, r, coc(uv));
-          sum += texture2D(tColor, uv) * w; wsum += w;
+          vec4 s = texture2D(tColor, uv); float w = smoothstep(r - 1.0, r, coc(uv));
+          if (any(isnan(s)) || any(isinf(s))) continue;   // a NaN (e.g. pow of a negative in some shader) would blur into a black smear
+          sum += s * w; wsum += w;
         }
         gl_FragColor = sum / wsum;
       }
       #include <colorspace_fragment>
     }`,
-  depthTest: false, depthWrite: false }));
+  depthTest: true, depthFunc: THREE.AlwaysDepth, depthWrite: true }));   // with the test off, WebGL would not write the depth
 const dofScene = new THREE.Scene(), dofCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 dofQuad.frustumCulled = false; dofScene.add(dofQuad);
 function dofResize() {
@@ -108,13 +113,22 @@ dofResize();
 { const box = document.querySelector("#dofOn");   // the panel switch (Views)
   if (box) { box.checked = DOF.on; box.onchange = () => { DOF.on = box.checked; invalidate(); }; } }
 renderer.info.autoReset = false;   // two renders a frame with DOF: the frame's counts are reset once, in the loop
+// Layer 1 (OVERLAY): the people, their trails and markers (population.js) are drawn after the pass, sharp, against the
+// depth the pass writes back
+camera.layers.enable(1);
 function renderFrame() {
   if (!DOF.on) { renderer.render(scene, camera); return; }
   const U = dofQuad.material.uniforms, dpr = renderer.getPixelRatio();
   U.focus.value = camera.position.distanceTo(controls.target); U.near.value = camera.near; U.far.value = camera.far;
   U.maxBlur.value = DOF.maxBlurPx * dpr; U.aperture.value = DOF.aperture; U.range.value = DOF.focusRange;
+  camera.layers.disable(1);
   renderer.setRenderTarget(dofTarget); renderer.render(scene, camera);
   renderer.setRenderTarget(null); renderer.render(dofScene, dofCam);
+  camera.layers.set(1);
+  const ac = renderer.autoClear, bg = scene.background;
+  renderer.autoClear = false; scene.background = null;
+  renderer.render(scene, camera);
+  renderer.autoClear = ac; scene.background = bg; camera.layers.enable(0);
 }
 
 // ---------- overlays: the design files ----------
@@ -2459,7 +2473,7 @@ const shotStudy = {
 window.__viewer = {
   shotStudy,
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; }, dof: { DOF, target: dofTarget, quad: dofQuad, renderFrame },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
