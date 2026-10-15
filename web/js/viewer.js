@@ -9,6 +9,11 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 const $ = (s) => document.querySelector(s);
 const status = (t) => { $("#status").textContent = t || ""; };
 const cfg = await (await fetch("config.json")).json();
+// (2026-10-15, load time) the small files are all asked for at once, then read where they are needed (they used to be
+// fetched one after another: ~1.5 s before the point cloud even started)
+const ask = (u) => (u ? fetch(u).catch(() => null) : Promise.resolve(null));
+const PRE = { entities: ask(cfg.entities), facades: ask(cfg.facades?.meta), designs: ask(cfg.designs), ghosts: ask(cfg.ghosts?.data),
+              lidarMeta: ask(cfg.lidar.meta) };
 // ---------- display units: every length goes through len() (user, 2026-10-08: m / ft switch in the panel; ft is the
 // default, config.json "units" can change it; the data and all files stay in metres) ----------
 const FT = 0.3048;
@@ -16,12 +21,22 @@ let units = (() => { try { return localStorage.getItem("y1-viewer-units") || cfg
 const toUnit = (m) => (units === "ft" ? m / FT : m);
 const len = (m, digits = 1) => `${toUnit(m).toFixed(digits)} ${units}`;
 // building / landmark entities (which LiDAR objects make up one real building, and what it is): optional
-const ENTITIES = cfg.entities ? await fetch(cfg.entities).then((r) => (r.ok ? r.json() : null)).catch(() => null) : null;
+const ENTITIES = await PRE.entities.then((r) => (r?.ok ? r.json() : null)).catch(() => null);
 const entityOfName = new Map();
 for (const e of ENTITIES?.entities ?? []) for (const p of e.parts) entityOfName.set(p, e);
 // Display settings (panel section): ?px= ?keep= ?cap= ?size= override config.json "lidar" for this page only (lodPixels,
 // lodKeepDensity, pointCap, size), so settings can be tried before they go into config.json
 const urlq = new URLSearchParams(location.search);
+// ?seed=N (for checks, 2026-10-14): Math.random becomes a fixed sequence, so two loads draw the same LOD priorities
+// and can be compared point by point
+if (urlq.has("seed")) { let sd = +urlq.get("seed") || 1; Math.random = () => (sd = (sd * 16807) % 2147483647) / 2147483647; }
+// (the ?perf panel, defined here so a click during loading finds it; see perfFrame)
+const PERF = urlq.has("perf") ? { acc: {}, n: 0, last: 0, t0: performance.now(), el: null, click: null } : null;
+if (PERF) {
+  PERF.el = document.createElement("div");
+  PERF.el.style.cssText = "position:fixed;left:8px;bottom:28px;z-index:9;font:11px/1.35 ui-monospace,Consolas,monospace;color:#cfe;background:rgba(0,0,0,.6);padding:6px 8px;border-radius:6px;white-space:pre;pointer-events:none";
+  document.body.append(PERF.el);
+}
 for (const [k, key] of [["px", "lodPixels"], ["keep", "lodKeepDensity"], ["cap", "pointCap"], ["size", "size"]])
   if (urlq.has(k)) cfg.lidar[key] = +urlq.get(k);
 
@@ -46,6 +61,90 @@ const v0 = cfg.views[0];
 camera.position.fromArray(v0.position);
 controls.target.fromArray(v0.target);
 
+// ---------- fisheye (user, 2026-10-15: a 75 degree fisheye lens, a switch for Guided and Free: the ground curves, the towers lean) ----------
+// Done per vertex, not on the picture: the point cloud is points, so moving each one to where a fisheye lens puts it is
+// exact and costs nothing (a picture pass would have to blur the centre). FISH.F is the field of view the eye reads
+// (vertical, degrees), FISH.s the fisheye share (0 = an ordinary lens, 1 = equidistant: a point's distance from the
+// centre of the picture goes with its angle from the view's axis, not the tangent). The camera itself renders wider
+// (camera.fov from FISH, enough for the corners, at most maxDeg off the axis: beyond that the corners stay empty), and
+// every vertex shader moves its points in (fishPos); everything that turns a 3D point into a screen point (tags,
+// picking, the people) goes through projectNdc, and a click through unprojectNdc. camera.userData.viewFov is FISH.F,
+// for what reads the field of view (the LOD, point sizes).
+const D2R = Math.PI / 180;
+const FISH = { s: 0, F: camera.fov, maxDeg: cfg.perspective?.maxDeg ?? 80 };
+const FISH_U = { uFishS: { value: 0 }, uFishTs: { value: 1 }, uFishTo: { value: 1 }, uFishHalf: { value: 0.4 }, uFishAsp: { value: 1 }, uFishM: { value: 1 } };
+// fishSizeK (set by fishPos): how much the lens shrinks the picture around the point, against its centre (the square root
+// of the radial and the tangential scale), for its size (user, 2026-10-15: big points at the edges of the fisheye: the
+// edges are squeezed, the points were not). uFishM: how much nearer the lens brings the camera (LENS), for sizes in
+// pixels per metre of depth (the cloud's), which grow by it
+const FISH_GLSL = `uniform float uFishS, uFishTs, uFishTo, uFishHalf, uFishAsp, uFishM;
+float fishSizeK = 1.0;
+vec4 fishPos(vec4 c) {
+  fishSizeK = 1.0;
+  if (uFishS <= 0.0001 || c.w <= 0.0) return c;
+  vec2 p = c.xy / c.w; p.x *= uFishAsp; float r = length(p); if (r < 1e-6) return c;
+  float t = r * uFishTs, rho = mix(t / uFishTo, atan(t) / uFishHalf, uFishS);
+  float c0 = mix(1.0 / uFishTo, 1.0 / uFishHalf, uFishS), d = mix(1.0 / uFishTo, 1.0 / (uFishHalf * (1.0 + t * t)), uFishS);
+  fishSizeK = sqrt(max(rho / t * d, 0.0)) / c0;
+  p *= rho / r; p.x /= uFishAsp; c.xy = p * c.w; return c;
+}
+`;
+const fishOn = () => FISH.s > 1e-4;
+// a built-in material (points, meshes, lines): its points through fishPos
+function fishPatch(mat) {
+  if (!mat || mat.userData.fish) return mat;
+  mat.userData.fish = true;
+  const prev = mat.onBeforeCompile;
+  mat.onBeforeCompile = (sh, r) => {
+    prev?.call(mat, sh, r);
+    Object.assign(sh.uniforms, FISH_U);
+    sh.vertexShader = FISH_GLSL + sh.vertexShader.replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
+  };
+  mat.needsUpdate = true;
+  return mat;
+}
+// a hand-written vertex shader (population.js): fishPos at the end of main
+const fishShader = (src) => { const i = src.lastIndexOf("}"), size = /gl_PointSize/.test(src) ? " gl_PointSize *= fishSizeK;" : "";
+  return FISH_GLSL + src.slice(0, i) + "  gl_Position = fishPos(gl_Position);" + size + "\n}" + src.slice(i + 1); };
+function fishGeom() {   // tan of the view's half angle, and the lens: rho(theta) and back
+  const half = FISH.F * D2R / 2, To = Math.tan(half), sh = FISH.s;
+  const rhoOf = (th) => (1 - sh) * Math.tan(th) / To + sh * th / half;
+  const thetaOf = (rho) => { let lo = 0, hi = 89.9 * D2R; for (let k = 0; k < 40; k++) { const m = (lo + hi) / 2; if (rhoOf(m) < rho) lo = m; else hi = m; } return (lo + hi) / 2; };
+  return { half, To, rhoOf, thetaOf };
+}
+function applyFish() {
+  const { half, To, thetaOf } = fishGeom(), asp = camera.aspect, cap = FISH.maxDeg * D2R;
+  let Ts = To;
+  if (fishOn()) {
+    const th = (rho) => Math.min(thetaOf(rho), cap), rc = Math.hypot(asp, 1);
+    Ts = Math.max(Math.tan(th(1)), Math.tan(th(asp)) / asp, Math.tan(th(rc)) / rc);
+  }
+  const fov = 2 * Math.atan(Ts) / D2R;
+  if (Math.abs(camera.fov - fov) > 1e-4) { camera.fov = fov; camera.updateProjectionMatrix(); }
+  camera.userData.viewFov = FISH.F;
+  Object.assign(FISH, { Ts, To, half });
+  FISH_U.uFishS.value = FISH.s; FISH_U.uFishTs.value = Ts; FISH_U.uFishTo.value = To; FISH_U.uFishHalf.value = half; FISH_U.uFishAsp.value = asp;
+}
+applyFish();
+// a 3D point to NDC as drawn (v.project, then the lens), in place
+function projectNdc(v) {
+  v.project(camera);
+  if (!fishOn() || v.z > 1) return v;
+  const asp = camera.aspect, px = v.x * asp, py = v.y, r = Math.hypot(px, py);
+  if (r < 1e-9) return v;
+  const t = r * FISH.Ts, rho = (1 - FISH.s) * t / FISH.To + FISH.s * Math.atan(t) / FISH.half;
+  v.x = px * rho / r / asp; v.y = py * rho / r; return v;
+}
+// NDC on the screen (a click) back to the camera's NDC, for a ray
+function unprojectNdc(x, y) {
+  if (!fishOn()) return new THREE.Vector2(x, y);
+  const asp = camera.aspect, qx = x * asp, qy = y, rho = Math.hypot(qx, qy);
+  if (rho < 1e-9) return new THREE.Vector2(x, y);
+  const r = Math.tan(fishGeom().thetaOf(rho)) / FISH.Ts;
+  return new THREE.Vector2(qx * r / rho / asp, qy * r / rho);
+}
+const viewFov = () => camera.userData.viewFov ?? camera.fov;
+
 // ---------- overlays: the design files ----------
 const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/");
 const model = new THREE.Group();   // everything drawn as geometry over the point cloud
@@ -59,7 +158,6 @@ const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getP
 // into the new ones as uColorMix goes 0 -> 1 over --t-out
 const COLOR_MIX = { value: 1 };
 let mixAnim = 0;
-let animAt = -1e9;   // last frame of a fade (colours, selection, Highlight people): adaptGlass waits for them to end
 function crossFade() {
   const t0 = performance.now(), dur = tms("--t-out");
   COLOR_MIX.value = 0;
@@ -67,7 +165,7 @@ function crossFade() {
   const step = (now) => {
     const k = dur ? Math.min((now - t0) / dur, 1) : 1;
     COLOR_MIX.value = k * k * (3 - 2 * k);
-    invalidate(); animAt = now;
+    invalidate();
     if (k < 1) mixAnim = requestAnimationFrame(step);
   };
   mixAnim = requestAnimationFrame(step);
@@ -100,7 +198,7 @@ function setWhiteCloud(on) {
     const dur = tms("--t-out"), k = dur ? Math.min((now - t0) / dur, 1) : 1, e = k * k * (3 - 2 * k);
     FOCUS.value = from + (to - from) * e;
     pop?.highlight(FOCUS.value);   // people grow with it
-    invalidate(); animAt = now;
+    invalidate();
     if (k < 1) focusAnim = requestAnimationFrame(step);
     else if (!on) for (const m of focusMats) if (!m.userData.alwaysTransparent) { m.transparent = false; m.needsUpdate = true; }
   };
@@ -114,7 +212,7 @@ function setWhiteCloud(on) {
 // the ground. Here only the file is read.
 let facadeData = null;
 try {
-  const fm = await (await fetch(cfg.facades.meta)).json();
+  const fm = await (await PRE.facades).json();
   const buf = await (await fetch(cfg.facades.meta.replace(/[^/]*$/, "") + fm.file)).arrayBuffer();
   const m = fm.count;
   facadeData = { n: m, names: fm.objects || [], pos: new Float32Array(buf, 0, 3 * m),
@@ -126,7 +224,7 @@ try {
 // layer "Design_<name>". Design layers also show over the point cloud.
 const designLayers = new Set();
 try {
-  const list = await (await fetch(cfg.designs)).json();
+  const list = await (await PRE.designs).json();
   for (const file of list.filter((f) => /^design_.+\.glb$/i.test(f))) {
     const who = file.replace(/^design_|\.glb$/gi, "");
     status(`Loading ${file}…`);
@@ -139,6 +237,7 @@ try {
       if (!o.isMesh) return;
       if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();   // no normals: three.js would draw it black
       if (!o.material.name || o.material.name === "default") o.material = mat;
+      fishPatch(o.material);
     });
     d.updateMatrixWorld(true);
     model.add(d);
@@ -153,7 +252,7 @@ const ghostPts = [];   // { name, base, layer, pos: three.js order }
 const ghostYears = new Map();   // unbuilt layer -> [[from, to], ...]: shown with the Time module, in those years
 const ghostLabels = [];   // the Time module's labels for the unbuilt towers (updateTimeTags)
 try {
-  const G = cfg.ghosts, gd = await (await fetch(G.data)).json();
+  const G = cfg.ghosts, gd = await (await PRE.ghosts).json();
   let seed = G.seed ?? 11;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);   // the same scatter on every visit
   for (const sc of gd.schemes) (ghostYears.get(sc.layer || "Unbuilt") ?? ghostYears.set(sc.layer || "Unbuilt", []).get(sc.layer || "Unbuilt")).push(sc.years);
@@ -214,7 +313,7 @@ model.traverse((o) => {
   o.traverse((m) => m.isMesh && L.meshes.push(m));
 });
 // the point cloud's layers (from its meta, which is tiny) get their toggles
-const lidarMeta = await (await fetch(cfg.lidar.meta)).json();
+const lidarMeta = await (await PRE.lidarMeta).json();
 // a cloud thinned with distance (Houdini wide site) says so in the Point cloud button's tooltip
 const CLOUD_TIP = $('[data-mode="cloud"]').title;
 function cloudTip() {
@@ -233,10 +332,22 @@ for (const raw of new Set(lidarMeta.attributes?.object?.layers ?? [])) {
 const ordered = [...layers.values()].sort((a, b) => (a.cfg.order ?? 99) - (b.cfg.order ?? 99) || a.name.localeCompare(b.name));
 
 let mode = null;
-let glassAt = -1e9;   // last adaptive-glass check (see adaptGlass); declared early: setMode resets it
 const lidarGroup = new THREE.Group();
 scene.add(lidarGroup);
 let lidar = null;
+const loadTimes = {};   // ms from the start of loadLidar, by stage (__viewer.loadTimes; for performance checks)
+// after the cloud is up (L5, 2026-10-14): the first time a stage is passed (ms from the start of loadLidar), what a few
+// one-off steps take ("…, ms"), and for the first two minutes the long frames and long tasks (> 50 ms) with their times
+let loadT0 = 0;
+const ltick = (k) => { loadTimes[k] = Math.round(performance.now() - loadT0); };
+const lonce = (k) => { if (loadT0 && !(k in loadTimes)) ltick(k); };
+const ldur = (k, t) => { loadTimes[k] = (loadTimes[k] || 0) + Math.round(performance.now() - t); };
+loadTimes.longFrames = []; loadTimes.longTasks = [];
+try {
+  const lt = new PerformanceObserver((l) => { for (const e of l.getEntries()) if (loadT0 && e.startTime - loadT0 < 120000) loadTimes.longTasks.push([Math.round(e.startTime - loadT0), Math.round(e.duration)]); });
+  lt.observe({ type: "longtask", buffered: true });
+  setTimeout(() => lt.disconnect(), 180000);
+} catch { /* no long-task timing in this browser */ }
 let lidarDensityMatch = null, lidarPlazaPoints = 0, lidarGroundFill = 0;   // object -> ground / own density, for the moved structures (loadLidar)
 
 // the Time module (user, 2026-10-13): off = today; on = the year of its slider. TIME feeds the point shader.
@@ -263,9 +374,9 @@ function applyVisibility() {
 }
 
 // ---------- render on demand: only when something changed (camera, colours, visibility, size) ----------
-let dirty = true, lastMove = -1e9;
+let dirty = true;
 function invalidate() { dirty = true; }
-controls.addEventListener("change", () => { dirty = true; lastMove = performance.now(); });
+controls.addEventListener("change", () => { dirty = true; });
 
 $("#layers").innerHTML = "";
 for (const L of ordered) {
@@ -292,18 +403,19 @@ function pointMaterial(sizeMetres) {
   focusMats.push(mat);
   mat.onBeforeCompile = (shader) => {
     withFocus(shader);
+    Object.assign(shader.uniforms, FISH_U);   // the fisheye (fishPos, after the projection)
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
     shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
   vColor.rgb = mix(vColor.rgb, uHi, sw);
-  vSel = sw; vBuild = 0.0; vGhost = 0.0;`);
+  vSel = sw; vBuild = 0.0; vGhost = 0.0;`).replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
     shader.vertexShader = shader.vertexShader.replace(
-      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n"
+      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0 * fishSizeK / uFishM, 1.0);\n"
       // the Time module (user, 2026-10-13: buildings go up from the ground, slowly and softly, and stay once built):
       // over the uBuild years before its year a building rises, its points shown up to an eased height with a wide
       // soft front (aRise: the point's height in its building, 0 at the foot, 1 at the top). Buildings and landmarks
@@ -377,7 +489,10 @@ async function loadLidar() {
   const meta = lidarMeta;
   const base = cfg.lidar.meta.replace(/[^/]*$/, "");
   const objAttr = meta.attributes?.object;
+  const T0 = (loadT0 = performance.now()), tick = ltick;   // load profile
+  loadTimes.startAt = Math.round(T0);   // ms after the page started
   let { n, pos: P, cls: C, inten: I, obj, hag: HG } = await decodeLaz(base + meta.file, meta);
+  tick("decode (fetch + LAZ)");
   status("Preparing LiDAR…");
   // config.json mergeLayers folds LiDAR layers into others in the viewer (user, 2026-10-10: street furniture and the
   // unassigned points draw as Terrain); the objects keep their own names
@@ -408,6 +523,7 @@ async function loadLidar() {
       else if (objLayers[k] === "Landmarks") objLayers[k] = "Buildings";
     });
   }
+  tick("landmarks");
   // estimated facade points join the measured ones as ordinary building points: the object of their nearest return,
   // that object's mean intensity, class "building"; after this nothing tells them apart
   if (facadeData?.obj) {
@@ -415,12 +531,15 @@ async function loadLidar() {
     const map = facadeData.names.map((nm) => nameIdx.get(nm) ?? -1);
     const sum = new Float64Array(objNames.length), cnt = new Uint32Array(objNames.length);
     for (let i = 0; i < n; i++) { sum[obj[i]] += I[i]; cnt[obj[i]]++; }
+    tick("  facades: mean intensity per object");
     const keep = [];
     for (let j = 0; j < facadeData.n; j++) if (map[facadeData.obj[j]] >= 0) keep.push(j);
     const m = keep.length, N2 = n + m;
     const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2);
     const H2 = HG ? new HG.constructor(N2) : null;
+    tick("  facades: keep list + new arrays");
     P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
+    tick("  facades: copy the 10M points");
     keep.forEach((j, k) => {
       const i = n + k, o = map[facadeData.obj[j]];
       P2[3 * i] = facadeData.pos[3 * j]; P2[3 * i + 1] = facadeData.pos[3 * j + 1]; P2[3 * i + 2] = facadeData.pos[3 * j + 2];
@@ -429,6 +548,7 @@ async function loadLidar() {
     });
     P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
     facadeData = null;   // memory
+    tick("  facades: write the new points");
   }
   // the unbuilt towers' points join as objects of their own (layer Unbuilt), named as their towers
   const ghostObjYears = new Map();   // object -> the years of its scheme
@@ -437,6 +557,7 @@ async function loadLidar() {
     const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2);
     const H2 = HG ? new HG.constructor(N2) : null;
     P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
+    tick("  unbuilt: copy the 10M points");
     let i = n;
     for (const g of ghostPts) {
       const o = objNames.length; objNames.push(g.name); objLayers.push(g.layer); ghostObjYears.set(o, g.years);
@@ -454,11 +575,19 @@ async function loadLidar() {
   for (const CL of cfg.claims || []) {
     const lay = objAttr?.layers ?? [], g = CL.marginM, own = new Map();
     const key = (x, y, z) => ((Math.floor(x / g) + 4096) * 8192 + Math.floor(y / g) + 4096) * 8192 + Math.floor(z / g) + 4096;
-    for (let i = 0; i < n; i++) if (lay[obj[i]] === CL.layer) own.set(key(P[3 * i], P[3 * i + 1], P[3 * i + 2]), obj[i]);
+    // (2026-10-15, load time: this step took ~2 s) per object flags instead of comparing layer names point by point, and
+    // a coarse 8 m plan grid round the claiming points, so only points near them are looked up; same result
+    const isOwn = new Uint8Array(objNames.length), isFrom = new Uint8Array(objNames.length), from = new Set(CL.from);
+    for (let k = 0; k < objNames.length; k++) { isOwn[k] = lay[k] === CL.layer ? 1 : 0; isFrom[k] = from.has(lay[k]) ? 1 : 0; }
+    const CG = 8, near = new Set(), ck = (x, z) => (Math.floor(x / CG) + 32768) * 65536 + Math.floor(z / CG) + 32768;
+    for (let i = 0; i < n; i++) if (isOwn[obj[i]]) {
+      own.set(key(P[3 * i], P[3 * i + 1], P[3 * i + 2]), obj[i]);
+      const cx = Math.floor(P[3 * i] / CG), cz = Math.floor(P[3 * i + 2] / CG);
+      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) near.add((cx + dx + 32768) * 65536 + cz + dz + 32768);
+    }
     if (!own.size) continue;
-    const from = new Set(CL.from);
     for (let i = 0; i < n; i++) {
-      if (!from.has(lay[obj[i]])) continue;
+      if (!isFrom[obj[i]] || !near.has(ck(P[3 * i], P[3 * i + 2]))) continue;
       const x = Math.floor(P[3 * i] / g), y = Math.floor(P[3 * i + 1] / g), z = Math.floor(P[3 * i + 2] / g);
       search: for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
         const o = own.get(((x + dx + 4096) * 8192 + y + dy + 4096) * 8192 + z + dz + 4096);
@@ -466,6 +595,7 @@ async function loadLidar() {
       }
     }
   }
+  tick("landmark claims");
   // config.json plazas: the open ground around a tower that the building outline takes in (user, 2026-10-10, after Two
   // California Plaza: LARIAC draws the tower and its Watercourt plaza as one outline) goes back to the ground. In an
   // object of the layer at least minBuildingM tall, a cellM plan cell whose highest return is under maxHagM above the
@@ -535,6 +665,7 @@ async function loadLidar() {
   // Per object: f = mean ground returns per 2 m cell around it (its box + 20 m, cells it covers left out) / its own
   // mean per cell (over cells with returns); f < 1 drops points at random down to the ground's density, f > 1 draws its points sqrt(f) times
   // larger (at most matchDensity.maxSize) so they cover the same share of the screen. Only the drawing changes.
+  tick("claims + plazas + split layers");
   let sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
   if (moved.size) {
     const CM = 2, PAD = 10, cellOf = (x, z) => (Math.floor(x / CM) + 32768) * 65536 + Math.floor(z / CM) + 32768;
@@ -589,6 +720,7 @@ async function loadLidar() {
     const e = entityOfName.get(nm), y = e ? parseInt(e.built?.[0] ?? e.parcel?.year_built, 10) : NaN;
     objYear[k] = y > 1000 ? y : -1;
   });
+  tick("density match");
   // the ground under the buildings (user, 2026-10-13: in 1867 the cloud showed black holes where today's buildings
   // stand, the LiDAR seeing their roofs and not the ground). ESTIMATED: in every 2 m cell a building covers and
   // the ground has no return, points at random at the ground's own density around it (the mean of the cells with ground
@@ -652,6 +784,7 @@ async function loadLidar() {
     sizeK = S2; drop = D2;
   }
   if (!ptYear) { ptYear = new Int16Array(n); for (let i = 0; i < n; i++) ptYear[i] = objYear[obj[i]]; }
+  tick("ground fill");
   const material = pointMaterial(cfg.lidar.size ?? 0.3);
   // local density of each point's layer (returns per m2 of plan, from a 10 m grid, bilinear so it varies smoothly) and a
   // draw priority q = random * density^(1 - LOD_KEEP): the LOD draws the points with q below a target, so dense ground is
@@ -684,19 +817,51 @@ async function loadLidar() {
     }
     for (const [o, a] of hs) { a.sort((p, q) => p - q); objLo[o] = a[Math.floor(0.005 * (a.length - 1))]; objHi[o] = a[Math.ceil(0.995 * (a.length - 1))]; }
   }
-  // bucket point indices by layer and LOD chunk
-  const buckets = new Map();
+  tick("LOD priority + years + rise heights");
+  // bucket point indices by layer and LOD chunk, each chunk sorted by draw priority q (the first k points are the ones
+  // to keep when thinning). (L1, 2026-10-14: this took ~2.6 s with a string key per point and a comparison sort per
+  // chunk; now numeric chunk ids, a counting pass, and one stable radix sort of all points by q's bits, then by chunk:
+  // the same chunks in the same order, their points in the same order, ties in q as before in index order.) q >= 0, so
+  // its float bits sort as unsigned integers
+  const cellM = lodCell(), layerNames = [...layerIdx.keys()];
+  let cx0 = Infinity, cz0 = Infinity, cx1 = -Infinity, cz1 = -Infinity;
   for (let i = 0; i < n; i++) {
     if (drop[i]) continue;
-    const c = lodCell(P[3 * i], P[3 * i + 2]);
-    const key = `${objLayers[obj[i]]}|${c}|${Math.floor(P[3 * i] / c)}|${Math.floor(P[3 * i + 2] / c)}`;
-    let b = buckets.get(key); if (!b) buckets.set(key, (b = []));
-    b.push(i);
+    const cx = Math.floor(P[3 * i] / cellM), cz = Math.floor(P[3 * i + 2] / cellM);
+    if (cx < cx0) cx0 = cx; if (cx > cx1) cx1 = cx; if (cz < cz0) cz0 = cz; if (cz > cz1) cz1 = cz;
   }
+  const cw = cx1 - cx0 + 1, ch = cz1 - cz0 + 1, slot = new Int32Array(layerNames.length * cw * ch).fill(-1);
+  const chunkOf = new Int32Array(n), chunkSlot = [];   // point -> chunk id (-1 dropped); chunk id -> its slot
+  let kept = 0;
+  for (let i = 0; i < n; i++) {
+    if (drop[i]) { chunkOf[i] = -1; continue; }
+    const sl = (objL[obj[i]] * cw + Math.floor(P[3 * i] / cellM) - cx0) * ch + Math.floor(P[3 * i + 2] / cellM) - cz0;
+    let id = slot[sl]; if (id < 0) { id = slot[sl] = chunkSlot.length; chunkSlot.push(sl); }   // ids in order of first point
+    chunkOf[i] = id; kept++;
+  }
+  // the keys travel with the indices (reading q at random for every point and pass was the slow part)
+  const nChunks = chunkSlot.length, qBits = new Uint32Array(q.buffer, q.byteOffset, n);
+  let A = new Uint32Array(kept), B = new Uint32Array(kept), KA = new Uint32Array(kept), KB = new Uint32Array(kept);
+  for (let i = 0, k = 0; i < n; i++) if (chunkOf[i] >= 0) { A[k] = i; KA[k++] = qBits[i]; }
+  for (const [shift, size] of [[0, 2048], [11, 2048], [22, 1024]]) {   // LSD radix by q, stable
+    const cnt = new Uint32Array(size + 1), mask = size - 1;
+    for (let k = 0; k < kept; k++) cnt[((KA[k] >>> shift) & mask) + 1]++;
+    for (let d = 0; d < size; d++) cnt[d + 1] += cnt[d];
+    for (let k = 0; k < kept; k++) { const key = KA[k], at = cnt[(key >>> shift) & mask]++; B[at] = A[k]; KB[at] = key; }
+    [A, B] = [B, A]; [KA, KB] = [KB, KA];
+  }
+  const chunkStart = new Uint32Array(nChunks + 1);   // then by chunk, stable: within a chunk, by q
+  for (let k = 0; k < kept; k++) { const c = chunkOf[A[k]]; KA[k] = c; chunkStart[c + 1]++; }
+  for (let c = 0; c < nChunks; c++) chunkStart[c + 1] += chunkStart[c];
+  { const at = chunkStart.slice(0, nChunks); for (let k = 0; k < kept; k++) B[at[KA[k]]++] = A[k]; }
+  const order = B;
+  tick("  chunks: buckets + sort by q");
+  let tCopy = 0, tGeo = 0;   // L1 (2026-10-14): where the chunk step's time goes
   const parts = [];
-  for (const [key, idx] of buckets) {
-    const [name, cell] = key.split("|"), m = idx.length;
-    idx.sort((a, b) => q[a] - q[b]);   // by draw priority: the first k points are the ones to keep when thinning
+  for (let c = 0; c < nChunks; c++) {
+    const name = layerNames[Math.floor(chunkSlot[c] / (cw * ch))], cell = cellM;
+    const idx = order.subarray(chunkStart[c], chunkStart[c + 1]), m = idx.length;
+    let tt = performance.now();
     const pos = new Float32Array(m * 3), zs = new Float32Array(m), cls = new Uint8Array(m), inten = new Uint8Array(m), ob = new Uint16Array(m);
     const qs = new Float32Array(m), hag = HG ? new Int16Array(m) : null;   // height above ground, 0.1 m (Houdini LAZ)
     const sz = new Uint8Array(m), yr = new Int16Array(m), rise = new Uint8Array(m);
@@ -708,6 +873,7 @@ async function loadLidar() {
       zs[j] = P[3 * i + 1]; cls[j] = C[i]; inten[j] = I[i]; ob[j] = obj[i]; qs[j] = q[i];
       if (hag) hag[j] = HG[i];
     }
+    tCopy += performance.now() - tt; tt = performance.now();
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     const col = new Float32Array(m * 3);
@@ -725,7 +891,10 @@ async function loadLidar() {
     parts.push(pts.userData.part);
     const L = layers.get(name);
     if (L) (L.lidarParts ||= []).push(pts);
+    tGeo += performance.now() - tt;
   }
+  Object.assign(loadTimes, { "  chunks: copy into arrays, ms": Math.round(tCopy), "  chunks: geometry + scene, ms": Math.round(tGeo), "  chunks: count": parts.length });
+  tick("chunks (sort + geometry)");
   const objCount = new Uint32Array(objNames.length);
   for (let i = 0; i < n; i++) objCount[obj[i]]++;
   // per object: the chunks holding its points, so a click looks at a few chunks instead of all 9M points (user, 2026-10-12:
@@ -743,6 +912,7 @@ async function loadLidar() {
             // by layer only (user, 2026-10-10: the Color menu is gone); ?color=height / class / intensity / object still
             // works for checking the data
             how: urlq.get("color") ?? "layer", selected: -1, selMask: new Uint8Array(objNames.length) };
+  tick("index (objects, entities)");
   status("");
 }
 
@@ -761,7 +931,7 @@ const _c = new THREE.Vector3();
 const below = (q, t) => { let lo = 0, hi = q.length; while (lo < hi) { const m = (lo + hi) >> 1; if (q[m] < t) lo = m + 1; else hi = m; } return lo; };
 function updateLod() {
   if (!lidar) return false;
-  const focal = renderer.domElement.height / 2 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const focal = renderer.domElement.height / 2 / Math.tan(THREE.MathUtils.degToRad(viewFov() / 2));   // the field of view the eye reads (fisheye)
   const chunks = [];
   for (const p of lidarGroup.children) {
     if (!p.visible) continue;
@@ -877,7 +1047,7 @@ function paintSelection() {
   const step = (now) => {
     const k = dur ? Math.min((now - t0) / dur, 1) : 1;
     SEL_K.value = cssEase(k);
-    invalidate(); animAt = now;
+    invalidate();
     if (k < 1) selAnim = requestAnimationFrame(step);
   };
   selAnim = requestAnimationFrame(step);
@@ -916,10 +1086,11 @@ async function setMode(m) {
   if (prev !== m) hideInfo();  // also clears any highlight
   if (m === "cloud") paintCloud(how || lidar.how);
   else document.body.classList.remove("linked");
+  lonce("after: colours painted");
   applyVisibility();
   document.querySelectorAll("#modes button").forEach((b) => { b.disabled = false; b.classList.toggle("on", b.dataset.mode === m); });
   layerCounts();
-  glassAt = -1e9;   // the picture behind the panels changes completely: pick light / dark glass again right away
+  lonce("after: visibility + layer counts");
   busy = false;
 }
 document.querySelectorAll("#modes button").forEach((b) => (b.onclick = () => setMode(b.dataset.mode)));
@@ -933,10 +1104,17 @@ let tween = null;
 const _off = new THREE.Vector3(), _sph = new THREE.Spherical();
 const sphOf = (pos, tgt) => { _sph.setFromVector3(_off.subVectors(pos, tgt)); return { r: _sph.radius, phi: Math.max(_sph.phi, 0.001), th: _sph.theta }; };
 function goTo(v) {
+  // a view with "lens" (a saved view) is a camera position: from Guided it switches to Free (the film would
+  // take the camera straight back) and sets the lens; its position is as drawn. A view without (Default, Top) keeps the
+  // lens and is a base pose: brought in by it
+  if (v.lens !== undefined && viewMode === "history") setView("free");
+  if (v.lens !== undefined && (v.lens ? 1 : 0) !== LENS.to) setLens(v.lens);
   const q1 = new THREE.Vector3().fromArray(v.target), a = sphOf(camera.position, controls.target);
   const b = sphOf(new THREE.Vector3().fromArray(v.position), q1);
+  if (v.lens === undefined) b.r /= lensM(LENS.to);
   let dth = b.th - a.th; dth = Math.atan2(Math.sin(dth), Math.cos(dth));   // short way round
-  tween = { t0: performance.now(), dur: 1100, q0: controls.target.clone(), q1, a, b: { ...b, th: a.th + dth } };
+  tween = { t0: performance.now(), dur: v.lens !== undefined ? Math.max(1100, LENS.ms) : 1100, q0: controls.target.clone(), q1, a, b: { ...b, th: a.th + dth },
+            f0: baseFov, f1: v.fov ?? FOV0 };
   controls.enableDamping = false;
 }
 function stepTween(now) {
@@ -946,6 +1124,7 @@ function stepTween(now) {
   _sph.set(Math.exp(Math.log(a.r) + (Math.log(b.r) - Math.log(a.r)) * e), a.phi + (b.phi - a.phi) * e, a.th + (b.th - a.th) * e);
   camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
   camera.lookAt(controls.target);
+  setFov(tween.f0 + (tween.f1 - tween.f0) * e);
   if (t === 1) { tween = null; controls.enableDamping = true; }
 }
 // ---------- Google Earth camera <-> this view (for checking the grouping side by side; user, 2026-10-08) ----------
@@ -1000,6 +1179,8 @@ const SAVED_KEY = "y1-viewer-views";
 const loadSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch { return []; } };
 const storeSaved = (list) => { try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch { /* private mode: lives until reload */ } };
 let savedViews = loadSaved();
+// the views are drawn before LENS is set up (it needs FOV0): off until then
+const lensIsOn = () => { try { return LENS.to > 0.5; } catch { return false; } };
 function renderViews() {
   $("#views").innerHTML = "";
   const add = (v, saved, k) => {
@@ -1007,6 +1188,8 @@ function renderViews() {
     b.className = saved ? "view saved" : "view";
     b.textContent = v.name;
     b.onclick = () => goTo(v);
+    // a view marked noLens (Top: user, 2026-10-15, a plan needs no fisheye) cannot be chosen while the lens is on
+    if (v.noLens) { b.dataset.noLens = "1"; b.disabled = lensIsOn(); b.title = b.disabled ? "Not with the fisheye lens" : ""; }
     if (saved) {
       const x = document.createElement("span");
       x.className = "del"; x.textContent = "−"; x.title = `Delete the view “${v.name}”`;
@@ -1026,7 +1209,8 @@ function renderViews() {
     s.replaceWith(box);
     const inp = box.querySelector("input"), ok = () => {
       const name = inp.value.trim() || `View ${savedViews.length + 1}`;
-      savedViews.push({ name, position: camera.position.toArray().map((x) => +x.toFixed(2)), target: controls.target.toArray().map((x) => +x.toFixed(2)) });
+      savedViews.push({ name, position: camera.position.toArray().map((x) => +x.toFixed(2)), target: controls.target.toArray().map((x) => +x.toFixed(2)),
+                        lens: LENS.to > 0.5, ...(Math.abs(baseFov - FOV0) > 0.01 ? { fov: +baseFov.toFixed(1) } : {}) });
       storeSaved(savedViews); renderViews();
     };
     inp.onkeydown = (e) => { if (e.key === "Enter") ok(); if (e.key === "Escape") renderViews(); };
@@ -1036,6 +1220,7 @@ function renderViews() {
   $("#views").append(s);
 }
 renderViews();
+$("#lensOn").onchange = (e) => setLens(e.target.checked);   // the fisheye lens (LENS)
 
 // ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------
 let pop = null;
@@ -1064,14 +1249,27 @@ let lastHover = null;
 renderer.domElement.addEventListener("pointermove", (e) => { lastHover = { x: e.clientX, y: e.clientY }; });
 renderer.domElement.addEventListener("pointerleave", () => { pop?.hover(-1); renderer.domElement.style.cursor = ""; invalidate(); });
 let popStartT = null;   // seconds of the day to start at when People next comes on (set by the Guided film)
+let popShownAt = 0;     // when the people were first shown (load profile: the frames right after)
+// the population is made once, hidden (population.js), by whichever comes first: People turned on, or the load ahead of
+// time (below); both wait for the same promise
+let popLoading = null;
+function loadPop() {
+  return (popLoading ??= (async () => {
+    const tP = performance.now(); lonce("people: load started");
+    const { createPopulation } = await import("./population.js");
+    pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag,
+      fish: { uniforms: FISH_U, shader: fishShader, patch: fishPatch, project: projectNdc },
+      onDrop: (i) => { popSelecting = true; deselect(`pop:${i}`); popSelecting = false; } });   // Shift + Alt + click took i out
+    ldur("people: load + create, ms", tP);
+    return pop;
+  })());
+}
 $("#popOn").onchange = async (e) => {
   const on = e.target.checked;
   if (on && !pop) {
     e.target.disabled = true;
     status("Loading population…");
-    const { createPopulation } = await import("./population.js");
-    pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag,
-      onDrop: (i) => { popSelecting = true; deselect(`pop:${i}`); popSelecting = false; } });   // Shift + Alt + click took i out
+    await loadPop();
     status("");
     e.target.disabled = false;
   }
@@ -1079,6 +1277,7 @@ $("#popOn").onchange = async (e) => {
   // a start time asked for (the Guided film): set before they show, so nobody appears at the old time first
   if (on && pop && popStartT !== null) { const r = $("#popTime"); r.value = popStartT; r.dispatchEvent(new Event("input")); popStartT = null; }
   pop?.setVisible(on);
+  if (on && pop) { lonce("people: first shown"); popShownAt ||= performance.now(); }
   updateWhite();
   if (!on) for (const s of [...selection]) if (s.key.startsWith("pop:")) deselect(s.key);
   invalidate();
@@ -1097,7 +1296,6 @@ $("#timeTags").onchange = (e) => { tlLayer.classList.toggle("off", !e.target.che
 const datedYears = (ENTITIES?.entities ?? []).map((e) => parseInt(e.built?.[0] ?? e.parcel?.year_built, 10)).filter((y) => y > 1000).sort((a, b) => a - b);
 const undatedN = (ENTITIES?.entities ?? []).length - datedYears.length;
 function setYear(y) {
-  animAt = performance.now();   // the buildings are going up: the picture is changing, no glass read-back
   const r = $("#timeRange");
   TIME.year.value = y; r.value = y;
   r.style.setProperty("--p", `${(100 * (y - r.min)) / (r.max - r.min)}%`);
@@ -1161,9 +1359,10 @@ function yearTime(y) {
   return yearT[k] + (yearT[Math.min(k + 1, yearT.length - 1)] - yearT[k]) * (f - k);
 }
 function buildOpening() {
+  const tB = performance.now();
   if (!tlItems) tlBuild();
   const pts = tlOcc.filter((o) => o.year > 0).map((o) => ({ x: (o.box[0] + o.box[3]) / 2, z: (o.box[2] + o.box[5]) / 2, y0: o.box[1], h: o.box[4] - o.box[1], year: o.year }));
-  const Y1 = TOUR.target, Rc = OPEN.clusterM, wide = { target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R };
+  const Y1 = TOUR.target, Rc = OPEN.clusterM, wide = { target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R, lens: CINE.wideLens ?? 0.3 };
   const frame = (sh) => {
     const ps = pts.filter((p) => p.year >= sh.from && p.year < sh.to);
     if (!ps.length) return wide;
@@ -1187,6 +1386,7 @@ function buildOpening() {
     return { hs: i === 0 ? 0 : t0 + q, he: i === OPEN.shots.length - 1 ? t0 + 2 * q : t1 - q, pose: frame(sh) };
   });
   openAnchors.push({ hs: end, he: end, pose: wide });   // and out to the whole site at the end
+  ldur("opening shots (with tags data), ms", tB);
 }
 function openingPose(frac) {
   const t = frac * playDur, A = openAnchors;
@@ -1195,7 +1395,8 @@ function openingPose(frac) {
     if (t <= A[i].he) {
       if (i === 0 || t >= A[i].hs) { P = A[i].pose; break; }
       const a = A[i - 1], e = ease5((t - a.he) / Math.max(A[i].hs - a.he, 1e-3)), b = A[i].pose, p0 = a.pose;
-      P = { target: p0.target.map((v, j) => v + (b.target[j] - v) * e), r: Math.exp(Math.log(p0.r) + (Math.log(b.r) - Math.log(p0.r)) * e), phi: p0.phi + (b.phi - p0.phi) * e };
+      P = { target: p0.target.map((v, j) => v + (b.target[j] - v) * e), r: Math.exp(Math.log(p0.r) + (Math.log(b.r) - Math.log(p0.r)) * e), phi: p0.phi + (b.phi - p0.phi) * e,
+            lens: (p0.lens ?? 1) + ((b.lens ?? 1) - (p0.lens ?? 1)) * e };
       break;
     }
   }
@@ -1237,27 +1438,61 @@ function endTour() { if (tour) { tour = null; controls.enableDamping = true; } }
 // tilt and target ease over rejoinS seconds from the camera's to the shot's, so there is no jump.
 let paused = false, rejoin = null;
 const REJOIN_S = cfg.time?.rejoinS ?? 2.5;
-const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r, phi: a.phi, th: a.th, fov: camera.fov }; };
+const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r * lensM(), phi: a.phi, th: a.th, fov: baseFov, lens: LENS.k }; };   // the base pose (lens taken out)
 // the field of view (vertical, degrees) of the Guided camera's poses; a pose without one has FOV0 (user, 2026-10-15: a
 // dolly zoom on Y-1; the FOV only ever changes together with the distance, eased like the rest of the move)
-const FOV0 = camera.fov;
-function setFov(f) { if (Math.abs(camera.fov - f) > 1e-3) { camera.fov = f; camera.updateProjectionMatrix(); } }
+const FOV0 = FISH.F;
+// The fisheye lens (user, 2026-10-15, option B: a switch for Guided and Free): every camera pose here is a "base" pose,
+// for the ordinary FOV0 lens (the film's shots, the views, a drag); the lens turns it into what is drawn: the field of
+// view widened by LENS.G at the same centre scale (tan(F / 2) x m) and the camera that much closer (r / m), so the
+// subject keeps its size in the middle of the picture while the edges open up, lean and curve (FISH.s = L x fisheye).
+// m = 1 + L (G - 1), L eased 0..1 over LENS.ms. A dolly zoom stays a dolly zoom (r tan(F / 2) is kept).
+// k: the pose's share of the lens (user, 2026-10-15: the wide overview after the building, a fisheye over the whole
+// site, bent like a little planet): a film shot may ask for less (time.cinema.wideLens for the wide shots, a shot's
+// own "lens"), eased with the shot; Free has 1
+const LENS = { L: 0, to: 0, k: 1, fov: cfg.perspective?.fov ?? 75, amt: cfg.perspective?.fisheye ?? 1, ms: 1200 };
+LENS.G = Math.tan(LENS.fov * D2R / 2) / Math.tan(FOV0 * D2R / 2);
+let baseFov = FOV0;   // the base pose's field of view (setFov)
+const lensM = (L = LENS.L * LENS.k) => 1 + L * (LENS.G - 1);
+function applyLens() {
+  FISH.F = 2 * Math.atan(Math.tan(baseFov * D2R / 2) * lensM()) / D2R;
+  FISH_U.uFishM.value = lensM();
+  FISH.s = LENS.L * LENS.k * LENS.amt;
+  applyFish();
+}
+function setFov(f) { if (Math.abs(baseFov - f) > 1e-3 || FISH.s !== LENS.L * LENS.k * LENS.amt) { baseFov = f; applyLens(); } }   // the base field of view
+let lensAnim = 0;
+function setLens(on) {
+  LENS.to = on ? 1 : 0;
+  const box = $("#lensOn"); if (box) box.checked = !!on;
+  for (const b of document.querySelectorAll("#views button[data-no-lens]")) { b.disabled = !!on; b.title = on ? "Not with the fisheye lens" : ""; }
+  cancelAnimationFrame(lensAnim);
+  const L0 = LENS.L, t0 = performance.now();
+  const step = (now) => {
+    const k = Math.min((now - t0) / LENS.ms, 1), e = k * k * (3 - 2 * k), m0 = lensM();
+    LENS.L = L0 + (LENS.to - L0) * e;
+    // the drawn camera moves in / out about what it looks at (a view move or the film set it themselves)
+    if (!tween) camera.position.sub(controls.target).multiplyScalar(m0 / lensM()).add(controls.target);
+    applyLens(); invalidate();
+    lensAnim = k < 1 ? requestAnimationFrame(step) : 0;
+  };
+  lensAnim = requestAnimationFrame(step);
+}
 const wrapA = (d) => Math.atan2(Math.sin(d), Math.cos(d));
 function camApply(P) {
   if (rejoin) {
     const k = Math.min((performance.now() - rejoin.t0) / (REJOIN_S * 1000), 1), e = k * k * (3 - 2 * k), A = rejoin.from;
     P = { target: A.target.map((v, j) => v + (P.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(P.r) - Math.log(A.r)) * e),
-          phi: A.phi + (P.phi - A.phi) * e, th: A.th + wrapA(P.th - A.th) * e, fov: (A.fov ?? FOV0) + ((P.fov ?? FOV0) - (A.fov ?? FOV0)) * e };
+          phi: A.phi + (P.phi - A.phi) * e, th: A.th + wrapA(P.th - A.th) * e, fov: (A.fov ?? FOV0) + ((P.fov ?? FOV0) - (A.fov ?? FOV0)) * e,
+          lens: (A.lens ?? 1) + ((P.lens ?? 1) - (A.lens ?? 1)) * e };
     if (k >= 1) rejoin = null;
   }
-  setFov(P.fov ?? FOV0);
+  LENS.k = P.lens ?? 1;   // the shot's share of the lens
+  baseFov = -1; setFov(P.fov ?? FOV0);
   controls.target.fromArray(P.target);
-  _sph.set(P.r, P.phi, P.th);
+  _sph.set(P.r / lensM(), P.phi, P.th);   // a base pose: the lens brings the camera in
   camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
   camera.lookAt(controls.target);
-  // the camera is moving: no glass read-back now (user, 2026-10-13: the panel flickered as the tour moved, its glass
-  // switching light / dark under the moving picture, and each read-back stalls a frame)
-  lastMove = performance.now();
 }
 function setPaused(on) {
   if (on === paused) return;
@@ -1354,14 +1589,14 @@ const CINE = { shotS: 10, blendS: 3.5, heroes: 4, heroWithinM: 700, wideR: 1300,
                heroNames: ["Angels Flight"], ...(cfg.time?.cinema || {}) };
 let cine = null;
 const cutEl = document.createElement("div"); cutEl.id = "cut"; document.body.append(cutEl);
-const D2R = Math.PI / 180;
+// (D2R: degrees to radians, defined with the fisheye at the top)
 function cineShots() {
   // the film by groups of places near each other (user, 2026-10-13), config.json time.cinema.shots in order: each shot
   // frames the box round its members (entity names, or "Angels Knoll" for the parcel) and lights their tags.
   // type: wide (the whole site, high), crane (down onto the group), low (at about the middle of its height, looking a
   // little up, arcing round), orbit (an oblique arc over a spread-out group), track (the view moves from one member to
   // another, low). cut: a dip to black into the shot (otherwise the camera flies there).
-  const wide = { target: TOUR.target, r: [CINE.wideR, CINE.wideR * 0.9], tilt: [CINE.wideTilt, CINE.wideTilt + 4], turn: 25, keys: [] };
+  const wide = { target: TOUR.target, r: [CINE.wideR, CINE.wideR * 0.9], tilt: [CINE.wideTilt, CINE.wideTilt + 4], turn: 25, keys: [], lens: CINE.wideLens ?? 0.3 };
   const find = (n) => (tlItems || []).find((it) => it.name.toLowerCase() === n.toLowerCase());
   const boxOf = (items) => {
     const b = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9];
@@ -1371,10 +1606,10 @@ function cineShots() {
   const out = [];
   for (const def of CINE.shots || []) {
     const az = def.az == null ? null : def.az * D2R;   // the shot's heading at its start (0 = from the south, 90 = east)
-    if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold }); continue; }
+    if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold, lens: def.lens ?? wide.lens }); continue; }
     const items = (def.members || []).map(find).filter(Boolean);
     if (!items.length) continue;
-    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold };
+    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold, lens: def.lens ?? 1 };
     const n0 = out.length;   // (overrides below apply to the shot pushed now)
     // a crane with a dolly zoom (dolly: [fov from, fov to]): it lowers (tilt) and backs away as the view narrows
     if (def.type === "crane" && def.dolly) out.push({ ...base, turn: 30, tilt: def.tilt ?? [40, 70], target: [g.cx, g.y0 + 0.3 * g.h, g.cz],
@@ -1424,7 +1659,7 @@ function cinePose(sh, t, th0, dir) {
   // size on screen and what stands behind it grows
   const r = sh.dolly ? (sh.r[0] * Math.tan((sh.fov[0] * D2R) / 2)) / Math.tan((fov * D2R) / 2)
                      : Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e);
-  return { target, r, phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + a, fov };
+  return { target, r, phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + a, fov, lens: sh.lens ?? 1 };
 }
 const cineApply = (P) => camApply(P);
 // where the film's camera is meant to be now (also for the rejoin after a pause)
@@ -1440,7 +1675,7 @@ function cineNow(now) {
     const s = k, h00 = 2 * s ** 3 - 3 * s * s + 1, h10 = s ** 3 - 2 * s * s + s, h01 = -2 * s ** 3 + 3 * s * s, h11 = s ** 3 - s * s;
     return { target: A.target.map((v, j) => v + (B.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e),
              phi: A.phi + (B.phi - A.phi) * e, th: h00 * A.th + h10 * T * w0 + h01 * c.th0 + h11 * T * w1,
-             fov: (A.fov ?? FOV0) + ((B.fov ?? FOV0) - (A.fov ?? FOV0)) * e, k };
+             fov: (A.fov ?? FOV0) + ((B.fov ?? FOV0) - (A.fov ?? FOV0)) * e, lens: (A.lens ?? 1) + ((B.lens ?? 1) - (A.lens ?? 1)) * e, k };
   }
   const len = shotLen(sh) * 1000;
   return { ...cinePose(sh, Math.min((now - c.t0) / len, 1), c.th0, c.dir), k: (now - c.t0) / len };
@@ -1549,8 +1784,9 @@ const SKIP_KEYS = new Set(["layer", "name", "scatter5"]);
 let down = null;
 renderer.domElement.addEventListener("pointerdown", (e) => (down = [e.clientX, e.clientY]));
 renderer.domElement.addEventListener("pointerup", (e) => {
+  if (PERF) PERF.clickAt = performance.now();
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
-  ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
+  ray.setFromCamera(unprojectNdc((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);   // through the lens
   // Alt + click picks the person within PICK_PX on screen (user, 2026-10-09: a plain click is for buildings / points)
   // Shift + Alt + click adds the person (any person, also the faded ones) or takes them out (user, 2026-10-12)
   // (no one near: nothing happens, rather than adding the ground or a building to the selection)
@@ -1576,7 +1812,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   // fixed 0.6 m is less than a pixel gap seen from far away). Where a facade has no returns (glass) the click still
   // goes through to what is behind.
   function pickLidar() {
-    const perPx = (d) => (2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) / innerHeight;
+    const perPx = (d) => (2 * d * Math.tan(THREE.MathUtils.degToRad(viewFov() / 2))) / innerHeight;
     const tol = (d) => Math.max(0.6, perPx(d) * PICK_LIDAR_PX);
     ray.params.Points.threshold = tol(camera.position.distanceTo(controls.target) * 2);
     const hit = ray.intersectObjects(lidarGroup.children.filter((p) => p.visible), false).find((h) => h.distanceToRay <= tol(h.distance));
@@ -1652,6 +1888,7 @@ function fillTag(s) {
   };
 }
 function select(key, a, build, objs, add) {
+  if (PERF?.clickAt) { PERF.click = performance.now() - PERF.clickAt; PERF.clickAt = 0; }
   if (!add) clearSelection(false);   // painted once below: the old object fades out while the new one fades in
   const old = selection.find((s) => s.key === key);
   if (old) { if (add) deselect(key); return; }            // shift + click on a selected object: take it out
@@ -1689,7 +1926,7 @@ function updateTags() {
   const ui = $("#ui").getBoundingClientRect(), uiOn = ui.width > 0;   // also while it is faded out: labels do not jump when it returns
   leadSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   for (const s of selection) {
-    _tv.copy(s.a.centre).project(camera);
+    projectNdc(_tv.copy(s.a.centre));
     const sx = ((_tv.x + 1) / 2) * W, sy = ((1 - _tv.y) / 2) * H;
     const off = _tv.z > 1 || sx < -40 || sx > W + 40 || sy < -40 || sy > H + 40;    // its centre is not in view
     s.el.style.display = off ? "none" : ""; s.line.style.display = off ? "none" : "";
@@ -1743,6 +1980,7 @@ const tlShown = new Map();   // key -> { el }
 const tlEver = new Set();    // labelled once: kept while the year is past its start
 let tlLast = 0, tlMaskKey = "";
 function tlBuild() {
+  const tT = performance.now();
   tlItems = [];
   const filmNames = new Set((CINE.shots || []).flatMap((d) => d.members || []).map((n) => n.toLowerCase()));
   const ents = ENTITIES?.entities ?? [], nE = ents.length, B = new Float32Array(nE * 6);
@@ -1792,6 +2030,7 @@ function tlBuild() {
     if (hi > lo) tlItems.push({ key: "site:y1", name: "Angels Knoll", kind: "site", sub: "Parcel Y-1", box: [x0, lo, z0, x1, hi, z1], h: hi - lo });
   }
   for (const g of ghostLabels) tlItems.push(g);
+  lonce("tags data (tlBuild) at"); ldur("tags data (tlBuild), ms", tT);
 }
 const tlEase = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * (3 - 2 * t); };
 // 1 if the line from the camera to (x, y, z) passes no standing building (other than `own`), else 0. Boxes drawn in to
@@ -1916,7 +2155,7 @@ function updateTimeTags() {
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
     let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
     for (const x of [x0, x1]) for (const y of [y0, top]) for (const z of [z0, z1]) {
-      _tv.set(x, y, z).project(camera); if (_tv.z > 1) behind = true;
+      projectNdc(_tv.set(x, y, z)); if (_tv.z > 1) behind = true;
       const sx = ((_tv.x + 1) / 2) * W, sy = ((1 - _tv.y) / 2) * H;
       sx0 = Math.min(sx0, sx); sx1 = Math.max(sx1, sx); sy0 = Math.min(sy0, sy); sy1 = Math.max(sy1, sy);
     }
@@ -2034,7 +2273,7 @@ $("#ui").addEventListener("scroll", () => {
   clearTimeout(sbTimer); sbTimer = setTimeout(() => $("#ui").classList.remove("scrolling"), 400);
 }, { passive: true });
 if (innerWidth < 560) collapse(true);  // phones: start with the panel folded
-addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); invalidate(); });
+addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); applyFish(); renderer.setSize(innerWidth, innerHeight); invalidate(); });
 
 // ---------- point settings: no panel any more (user, 2026-10-10); config.json "lidar" or the URL (?px= ?keep= ?cap= ?size=,
 // read at the top) still set them ----------
@@ -2080,6 +2319,31 @@ let idleTimer = 0;
 const overPanel = () => document.querySelector("#ui:hover, #info:hover") !== null;
 addEventListener("keydown", (e) => { if (e.key === "Escape" && !typing()) clearSelection(); });
 const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") && document.activeElement.type !== "range";
+// full screen (user, 2026-10-14): the button left of the panel's "–", or F. Esc keeps its own job (clearing the selection,
+// user: "不能再点esc退出全屏"): in Edge / Chrome the keyboard lock hands a short Esc to the page and only a held Esc leaves
+// full screen (the browser's rule, it cannot be turned off); Firefox and Safari always leave on Esc. Hidden where the
+// browser has no full screen (iPhone Safari)
+{ const fsBtn = $("#fs");
+  if (fsBtn && document.fullscreenEnabled && document.documentElement.requestFullscreen) {
+    fsBtn.hidden = false;
+    const toggleFs = async () => {
+      if (document.fullscreenElement) { await document.exitFullscreen(); return; }
+      await document.documentElement.requestFullscreen({ navigationUI: "hide" });
+      try { await navigator.keyboard?.lock?.(["Escape"]); } catch { /* no keyboard lock here */ }
+    };
+    fsBtn.onclick = () => { toggleFs().catch(() => {}); fsBtn.blur(); };   // blur: Space stays play / pause, not this button
+    document.addEventListener("fullscreenchange", () => {
+      const on = !!document.fullscreenElement;
+      fsBtn.classList.toggle("on", on); fsBtn.title = on ? "Exit full screen (F)" : "Full screen (F)";
+      fsBtn.setAttribute("aria-label", on ? "Exit full screen" : "Full screen");
+      if (!on) navigator.keyboard?.unlock?.();
+    });
+    addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() !== "f" || e.ctrlKey || e.metaKey || e.altKey || e.repeat || typing()) return;
+      e.preventDefault(); toggleFs().catch(() => {});
+    });
+  }
+}
 function wake(ms = IDLE_MS) {
   if (typeof ms !== "number") ms = IDLE_MS;    // called as an event listener
   if (document.body.classList.contains("idle")) invalidate();   // the Time tags under the panel fade again
@@ -2132,72 +2396,81 @@ function setView(v) {
   if (v === "free") {
     historyLeft = $("#timeOn").checked ? { year: TIME.year.value, cine: cine && !cine.people ? cine : null, at: performance.now() } : null;
     paused = false; setHistory(false);
+    // Free has the whole lens: a shot's share (LENS.k) eases back to 1, the camera moving in or out about its target
+    if (LENS.k !== 1) { const k0 = LENS.k, t0k = performance.now();
+      const stepK = (now) => { const q = Math.min((now - t0k) / 800, 1), m0 = lensM(); LENS.k = k0 + (1 - k0) * q * q * (3 - 2 * q);
+        if (!tween) camera.position.sub(controls.target).multiplyScalar(m0 / lensM()).add(controls.target);
+        applyLens(); invalidate(); if (q < 1) requestAnimationFrame(stepK); };
+      requestAnimationFrame(stepK); }
     // the Free camera has the normal field of view: eased back over 0.8 s if a shot had changed it
-    const f0 = camera.fov, t0 = performance.now();
-    const ease = (now) => { const k = Math.min((now - t0) / 800, 1); setFov(f0 + (FOV0 - f0) * k * k * (3 - 2 * k)); invalidate(); if (k < 1) requestAnimationFrame(ease); };
+    const f0 = baseFov, t0 = performance.now();
+    const ease = (now) => { if (tween) return; const k = Math.min((now - t0) / 800, 1); setFov(f0 + (FOV0 - f0) * k * k * (3 - 2 * k)); invalidate(); if (k < 1) requestAnimationFrame(ease); };
     if (Math.abs(f0 - FOV0) > 0.01) requestAnimationFrame(ease);
-  } else setHistory(true, historyLeft);
+  } else setHistory(true, historyLeft);   // the lens stays as it is: the film plays through it
   invalidate();
 }
 document.querySelectorAll("#viewMode button").forEach((b) => (b.onclick = () => setView(b.dataset.v)));
 addEventListener("resize", () => moveThumb(true, "#viewMode"));
 setView(cfg.time?.opening !== false && urlq.get("time") !== "0" ? "history" : "free");
+lonce("after: Guided / Free started");
+// the population made ahead of time (2026-10-14: making it when the film turns People on, ~66 s in, stuttered):
+// population.preloadS seconds after the cloud is up, when the browser is idle; hidden, and its 24 h chart worked out in
+// slices, so People only has to show. false: made when People comes on, as before
+if (cfg.population?.meta && cfg.population.preloadS !== false) setTimeout(() => {
+  const go = () => { if (!pop) loadPop().then((p) => { p.prepare(); lonce("people: made ahead"); }).catch(() => {}); };
+  window.requestIdleCallback ? requestIdleCallback(go, { timeout: 3000 }) : go();
+}, (cfg.population.preloadS ?? 20) * 1000);
 if (viewMode === "free") { document.querySelectorAll("#viewMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === "free")); document.body.classList.add("v-free"); }
 moveThumb(true, "#viewMode");
 if (urlq.get("earth")) setEarthView(urlq.get("earth"));   // ?earth=<Google Earth URL>: the same camera here
 status("");
 let lodEasing = true;
-// ---------- adaptive glass: light or dark panel depending on what is right behind it ----------
-// After a render (the drawing buffer is still valid), read the canvas under each floating element, average its luminance
-// and give the element .on-light (bright picture behind: light glass, dark text) or .on-dark. Hysteresis (to light above
-// GLASS_HI, back to dark below GLASS_LO, on 0-255) keeps it from flickering; at most every GLASS_EVERY ms, and only once
-// the camera has been still for GLASS_SETTLE ms.
-const GLASS_HI = 150, GLASS_LO = 110, GLASS_EVERY = 250, GLASS_SETTLE = 200;
-const glassEls = ["#ui", "#info", "#hint"].map((q) => $(q));
-let glassBuf = new Uint8Array(0);
-function adaptGlass(now) {
-  // reading pixels back stalls the GPU pipeline (100+ ms frames during a view change), so only when the camera is still
-  // ... and not while the population plays (the picture changes every frame; checked again once it stops), nor during a
-  // fade (user, 2026-10-12: turning People off stuttered twice: two 100-180 ms read-backs in the 0.5 s fade-out)
-  if (tween || pop?.state.playing || pop?.state.fading || now - animAt < GLASS_SETTLE || now - lastMove < GLASS_SETTLE
-      || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
-  glassAt = now; glassPending = false;
-  const gl = renderer.getContext(), cv = renderer.domElement, sx = cv.width / cv.clientWidth, sy = cv.height / cv.clientHeight;
-  for (const el of glassEls) {
-    if (!el || el.offsetParent === null && getComputedStyle(el).position !== "fixed") continue;
-    const r = el.getBoundingClientRect();
-    if (r.width < 2 || r.height < 2 || getComputedStyle(el).display === "none") continue;
-    const x = Math.max(0, Math.floor(r.left * sx)), w = Math.min(cv.width - x, Math.ceil(r.width * sx));
-    const yTop = Math.max(0, Math.floor(r.top * sy)), h = Math.min(cv.height - yTop, Math.ceil(r.height * sy));
-    if (w < 1 || h < 1) continue;
-    if (glassBuf.length < w * h * 4) glassBuf = new Uint8Array(w * h * 4);
-    gl.readPixels(x, cv.height - yTop - h, w, h, gl.RGBA, gl.UNSIGNED_BYTE, glassBuf);
-    let sum = 0, k = 0;
-    const step = Math.max(1, Math.floor(Math.sqrt((w * h) / 2000)));   // ~2000 samples per element
-    for (let yy = 0; yy < h; yy += step) for (let xx = 0; xx < w; xx += step) {
-      const o = 4 * (yy * w + xx);
-      sum += 0.2126 * glassBuf[o] + 0.7152 * glassBuf[o + 1] + 0.0722 * glassBuf[o + 2]; k++;
-    }
-    const lum = sum / k, light = el.classList.contains("on-light"), dark = el.classList.contains("on-dark");
-    const toLight = light ? lum > GLASS_LO : dark ? lum > GLASS_HI : lum > (GLASS_HI + GLASS_LO) / 2;
-    el.classList.toggle("on-light", toLight); el.classList.toggle("on-dark", !toLight);
-  }
+// ?perf (2026-10-15, FPS and response): a small panel, bottom left, with the frame rate and where each frame's time goes
+// (camera, LOD, people, render, tags), points and draw calls, and the time from the last click to its tag. Off by default.
+const perfT = (k, f) => { if (!PERF) return f(); const t = performance.now(), r = f(); PERF.acc[k] = (PERF.acc[k] || 0) + performance.now() - t; return r; };
+function perfFrame(now, drew) {
+  if (!PERF) return;
+  if (PERF.last) { const dt = now - PERF.last; PERF.acc.frame = (PERF.acc.frame || 0) + dt; PERF.max = Math.max(PERF.max || 0, dt); PERF.n++; }
+  PERF.last = now; if (drew) PERF.drawn = (PERF.drawn || 0) + 1;
+  if (now - PERF.t0 < 1000 || !PERF.n) return;
+  const a = PERF.acc, n = PERF.n, f = (k) => ((a[k] || 0) / n).toFixed(1).padStart(5), info = renderer.info.render;
+  PERF.el.textContent = `fps ${(1000 * n / (now - PERF.t0)).toFixed(0)}  frame ${f("frame")} ms (max ${PERF.max.toFixed(0)})  drawn ${PERF.drawn || 0}/${n}
+`
+    + `camera ${f("camera")}  lod ${f("lod")}  people ${f("people")}  render ${f("render")}  tags ${f("tags")} ms (CPU)
+`
+    + `points ${(info.points / 1e6).toFixed(2)} M  draw calls ${info.calls}  px ratio ${renderer.getPixelRatio()}`
+    + (PERF.click ? `
+last click -> tag ${PERF.click.toFixed(0)} ms` : "");
+  PERF.acc = {}; PERF.n = 0; PERF.max = 0; PERF.drawn = 0; PERF.t0 = now;
 }
-let glassPending = false;
-setInterval(() => { if (glassPending) { dirty = true; } }, GLASS_EVERY);   // re-check once the camera stops
+// load profile: the first frame drawn after the cloud is up, and the long frames (> 50 ms) of the first two minutes, as
+// [ms from the start of loadLidar, frame ms, render ms of that frame, tags ms, 1 = within 3 s of the people first shown]
+let lfLast = 0, lfRender = 0, lfTags = 0;
+function logFrame(now) {
+  if (!loadT0 || !lidar || now - loadT0 > 120000) return;
+  if (!("first frame drawn" in loadTimes) && lfRender) { ltick("first frame drawn"); loadTimes["first frame: render, ms"] = Math.round(lfRender); }
+  if (lfLast && now - lfLast > 50) loadTimes.longFrames.push([Math.round(lfLast - loadT0), Math.round(now - lfLast), Math.round(lfRender), Math.round(lfTags), popShownAt && now - popShownAt < 3000 ? 1 : 0]);
+  lfLast = now; lfRender = lfTags = 0;
+}
 renderer.setAnimationLoop((now) => {
-  if (tween) { stepTween(now); dirty = true; lastMove = now; }
-  if (cine) { stepCine(now); dirty = true; lastMove = now; }
-  if (controls.update()) { dirty = true; lastMove = now; }   // damping keeps moving the camera after the drag ends
+  logFrame(now);
+  perfT("camera", () => {
+    if (tween) { stepTween(now); dirty = true; }
+    if (cine) { stepCine(now); dirty = true; }
+    if (controls.update()) dirty = true;   // damping keeps moving the camera after the drag ends
+  });
   // LiDAR level of detail: recomputed whenever the view changed or a chunk is still easing to its target
-  if (lidar && mode === "cloud" && (dirty || lodEasing)) { lodEasing = updateLod(); if (lodEasing) dirty = true; }
+  if (lidar && mode === "cloud" && (dirty || lodEasing)) perfT("lod", () => { lodEasing = updateLod(); if (lodEasing) dirty = true; });
   // the population plays on its own clock: draw while it plays or after one of its settings changed
-  if (pop && (pop.visible || pop.state.fading)) { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing || pop.state.fading) dirty = true; }
-  if (!dirty) return;
+  if (pop && (pop.visible || pop.state.fading)) perfT("people", () => { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing || pop.state.fading) dirty = true; });
+  if (!dirty) return perfFrame(now, false);
   dirty = false;
-  renderer.render(scene, camera);
-  updateTags(); updateTimeTags();
-  adaptGlass(now);
+  const tR = performance.now();
+  perfT("render", () => renderer.render(scene, camera));
+  const tG = performance.now();
+  perfT("tags", () => { updateTags(); updateTimeTags(); });
+  lfRender = tG - tR; lfTags = performance.now() - tG;
+  perfFrame(now, true);
 });
 // shot study (for checking the film, user, 2026-10-15: foregrounds hiding what a shot is about): the poses of every
 // shot of the opening and the film, and what stands between the camera and each of a shot's members
@@ -2299,7 +2572,7 @@ const shotStudy = {
 window.__viewer = {
   shotStudy,
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();

@@ -17,10 +17,18 @@ function hash(a, b) {
 }
 const hhmm = (s) => { const m = Math.floor(s / 60) % 1440; return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`; };
 
-export async function createPopulation({ cfg, scene, camera, renderer, layers, thinning, onInfo, onDrop, onStatus }) {
+export async function createPopulation({ cfg, scene, camera, renderer, layers, thinning, onInfo, onDrop, onStatus, fish }) {
+  // the Perspective view's fisheye (viewer.js): the people's shaders move their points like the cloud's, and screen
+  // points (picking a person) go through the same lens; without it, as before
+  const lens = fish ?? { uniforms: {}, shader: (v) => v, patch: (m) => m, project: (v) => v.project(camera) };
   const pc = cfg.population;
+  // load profile (2026-10-14, the stutter when the people come on): ms of the steps, the first few calls of each
+  const times = {}, tStart = performance.now();
+  const timed = (k, f) => { const t = performance.now(), r = f(); const a = (times[k] ??= []); if (a.length < 5) a.push(Math.round((performance.now() - t) * 10) / 10); return r; };
   const meta = await (await fetch(pc.meta)).json();
   const buf = await (await fetch(pc.meta.replace(/[^/]*$/, "") + meta.bin)).arrayBuffer();
+  times.fetch = Math.round(performance.now() - tStart);
+  const tSetup = performance.now();
   const sec = (name) => {
     const s = meta.sections[name];
     const T = { float32: Float32Array, uint32: Uint32Array, uint16: Uint16Array, int16: Int16Array, uint8: Uint8Array }[s.type];
@@ -169,7 +177,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 100, 0), 900);
   const uniforms = { size: { value: pc.size ?? 0.7 }, scale: { value: 1 }, minPx: { value: 2.0 }, alpha: { value: 1 },
                     r0: { value: TH.r0 }, pw: { value: TH.p }, jit: { value: TH.jitter }, keepMin: { value: TH.keepMin },
-                    edgeEnd: { value: TH.edgeEnd }, edgeW: { value: TH.edgeW } };
+                    edgeEnd: { value: TH.edgeEnd }, edgeW: { value: TH.edgeW }, ...lens.uniforms };
   const material = new THREE.ShaderMaterial({
     uniforms, vertexColors: true,
     // the same share() as above: a person outside their share is not drawn; the drawn ones fade with it
@@ -186,9 +194,13 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       void main() { if (vFade <= 0.0 || length(gl_PointCoord - vec2(0.5)) > 0.5) discard; gl_FragColor = vec4(vC, alpha * vFade); }`,
     transparent: true,
   });
+  material.vertexShader = lens.shader(material.vertexShader);   // the fisheye (viewer.js), for the clones below too
   const points = new THREE.Points(geo, material);
   points.frustumCulled = false;
   points.renderOrder = 2;
+  // hidden until setVisible(true): the viewer may make the population ahead of time (2026-10-14, while the opening
+  // plays), and nobody must show before People comes on
+  points.visible = false; st.shown = false;
   scene.add(points);
   // the selected people (Alt + click one, Shift + Alt + click adds / takes out; user, 2026-10-12): a bigger highlight
   // point each. sel = person indices in click order; st.selected = the last one, -1 when none
@@ -197,7 +209,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const selGeo = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(3 * MAXSEL), 3));
   selGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(3 * MAXSEL).map((_, k) => HILITE.toArray()[k % 3]), 3));
   const selMat = material.clone();
-  selMat.uniforms = { size: { value: 2.2 }, scale: uniforms.scale, minPx: { value: 9 }, alpha: { value: 1 } };
+  selMat.uniforms = { size: { value: 2.2 }, scale: uniforms.scale, minPx: { value: 9 }, alpha: { value: 1 }, ...lens.uniforms };
   const selPoint = new THREE.Points(selGeo, selMat);
   selPoint.visible = false;
   selPoint.frustumCulled = false;
@@ -209,7 +221,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const hovGeo = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(3), 3));
   hovGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(HILITE.toArray()), 3));
   const hovMat = material.clone();
-  hovMat.uniforms = { size: { value: 1.8 }, scale: uniforms.scale, minPx: { value: 7 }, alpha: { value: 0.85 } };
+  hovMat.uniforms = { size: { value: 1.8 }, scale: uniforms.scale, minPx: { value: 7 }, alpha: { value: 0.85 }, ...lens.uniforms };
   const hovPoint = new THREE.Points(hovGeo, hovMat);
   hovPoint.visible = false; hovPoint.frustumCulled = false; hovPoint.renderOrder = 3;
   scene.add(hovPoint);
@@ -222,7 +234,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const dim = sel.length > 0 && !any;   // while people are isolated only they count, unless adding (any: Shift held)
     for (let i = 0; i < A; i++) {
       if (pos[3 * i + 1] <= OFF / 2 || (dim && !selSet.has(i)) || !drawn(i)) continue;
-      _p.set(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]).project(camera);
+      lens.project(_p.set(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]));   // through the fisheye, as drawn
       if (_p.z > 1 || _p.z < -1) continue;
       const dx = (_p.x + 1) / 2 * w + r.left - cx, dy = (1 - _p.y) / 2 * h + r.top - cy, d = dx * dx + dy * dy;
       if (d < bd) { bd = d; best = i; }
@@ -232,18 +244,18 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // route = a thin line, plus an optional neon "light wall" and floor trace (Tron light-cycle trail):
   // faint for the rest of the day, lit where the person has already been, brightest at their current spot
   const NEON = new THREE.Color(pc.routeColor ?? "#00E5FF");
-  const routeU = { now: { value: 0 }, color: { value: NEON }, strength: { value: pc.neonStrength ?? 1 } };
+  const routeU = { now: { value: 0 }, color: { value: NEON }, strength: { value: pc.neonStrength ?? 1 }, ...lens.uniforms };
   const neonVert = `attribute float aT; attribute float aA; varying float vT; varying float vA;
     void main() { vT = aT; vA = aA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
   const neonFrag = (shape) => `uniform float now; uniform vec3 color; uniform float strength; varying float vT; varying float vA;
     void main() { float done = step(vT, now), head = done * exp(-(now - vT) / 150.0);
       float a = (${shape}) * (0.04 + 0.10 * done + 0.18 * head) * strength;
       gl_FragColor = vec4(mix(color, vec3(1.0), 0.5 * head), clamp(a, 0.0, 1.0)); }`;
-  const neonMat = (shape) => new THREE.ShaderMaterial({ uniforms: routeU, vertexShader: neonVert, fragmentShader: neonFrag(shape),
+  const neonMat = (shape) => new THREE.ShaderMaterial({ uniforms: routeU, vertexShader: lens.shader(neonVert), fragmentShader: neonFrag(shape),
     transparent: true, depthWrite: false, side: THREE.DoubleSide });
   const wall = new THREE.Mesh(new THREE.BufferGeometry(), neonMat("pow(1.0 - vA, 1.5) * (0.85 + 0.15 * step(0.5, fract(vA * 6.0)))"));
   const glow = new THREE.Mesh(new THREE.BufferGeometry(), neonMat("exp(-vA * vA * 4.0)"));
-  const line = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.7, depthTest: false }));
+  const line = new THREE.LineSegments(new THREE.BufferGeometry(), lens.patch(new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.7, depthTest: false })));
   const route = new THREE.Group();
   for (const o of [wall, glow, line]) { o.frustumCulled = false; o.renderOrder = 3; route.add(o); }
   route.visible = false;
@@ -262,14 +274,14 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   tGeo.setAttribute("aT", new THREE.BufferAttribute(tT, 1).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("aA", new THREE.BufferAttribute(tA, 1).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("aS", new THREE.BufferAttribute(tS, 1).setUsage(THREE.DynamicDrawUsage));   // 1 = the selected person
-  const trailU = { now: { value: 0 }, tail: { value: 600 }, strength: { value: pc.neonStrength ?? 1 }, dim: uniforms.alpha };   // people's opacity
+  const trailU = { now: { value: 0 }, tail: { value: 600 }, strength: { value: pc.neonStrength ?? 1 }, dim: uniforms.alpha, ...lens.uniforms };   // people's opacity
   const trails = new THREE.Mesh(tGeo, new THREE.ShaderMaterial({
     uniforms: trailU, vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-    vertexShader: `attribute float aT; attribute float aA; attribute float aS; varying float vT; varying float vA; varying float vS; varying vec3 vC;
-      void main() { vT = aT; vA = aA; vS = aS; vC = color; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    vertexShader: lens.shader(`attribute float aT; attribute float aA; attribute float aS; varying float vT; varying float vA; varying float vS; varying vec3 vC;
+      void main() { vT = aT; vA = aA; vS = aS; vC = color; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`),
     fragmentShader: `uniform float now; uniform float tail; uniform float strength; uniform float dim; varying float vT; varying float vA; varying float vS; varying vec3 vC;
       void main() { float age = clamp((now - vT) / tail, 0.0, 1.0);
-        float a = pow(1.0 - vA, 1.5) * (1.0 - age) * 0.22 * strength * (vS > 0.5 ? 1.0 : dim);
+        float a = pow(max(1.0 - vA, 0.0), 1.5) * (1.0 - age) * 0.22 * strength * (vS > 0.5 ? 1.0 : dim);
         gl_FragColor = vec4(mix(vC, vec3(1.0), 0.35 * (1.0 - age)), a); }`,
   }));
   trails.frustumCulled = false;
@@ -348,17 +360,32 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     ui.refresh();
   }
 
-  // 24 h curve for the current settings, by type (people on site per 15 min)
-  function curve() {
-    const D = days[st.day], out = meta.types.map(() => new Float32Array(96));
-    for (let b = 0; b < 96; b++) {
-      const T = (b + 0.5) * 900;
-      for (let i = 0; i < A; i++) {
-        const loc = locate(D, i, T);
-        if (loc.moving || loc.spot !== HIDDEN) out[GROUP[type[i]]][b] += weight[i];   // display groups
+  // 24 h curve for the current settings, by type (people on site per 15 min). In slices of CURVE_SLICE_MS, one after
+  // another (2026-10-14: in one go it took 112 ms, the stutter when the people came on); done(out) when complete. A new
+  // call cancels the one running, so a curve never mixes two days or two settings.
+  const CURVE_SLICE_MS = 6;
+  let curveJob = 0;
+  function curve(done, day = st.day) {
+    const job = ++curveJob, D = days[day], out = meta.types.map(() => new Float32Array(96)), t0 = performance.now();
+    let b = 0, i = 0, longest = 0;
+    const slice = () => {
+      if (job !== curveJob) return;
+      const s = performance.now();
+      while (b < 96 && performance.now() - s < CURVE_SLICE_MS) {
+        const T = (b + 0.5) * 900, end = Math.min(i + 4096, A);
+        for (; i < end; i++) {
+          const loc = locate(D, i, T);
+          if (loc.moving || loc.spot !== HIDDEN) out[GROUP[type[i]]][b] += weight[i];   // display groups
+        }
+        if (i >= A) { i = 0; b++; }
       }
-    }
-    return out;
+      longest = Math.max(longest, performance.now() - s);
+      if (b < 96) { setTimeout(slice, 0); return; }
+      (times["curve (24 h chart): longest slice, ms"] ??= []).push(Math.round(longest * 10) / 10);
+      (times["curve (24 h chart): start to done, ms"] ??= []).push(Math.round(performance.now() - t0));
+      done(out);
+    };
+    slice();
   }
 
   // ---------- see-through buildings (people indoors are visible in Model · Mesh) ----------
@@ -416,8 +443,12 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // isolating a person (user, 2026-10-10: no hard switches)
   const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) * 1000 || 0;
   let alphaAnim = 0;
-  function fadeAlpha(to, done) {
-    const from = uniforms.alpha.value, t0 = performance.now(), dur = tms("--t-out");
+  let dayTo = null;   // the day being switched to, while the people fade out (the Weekday / Weekend buttons)
+  function fadeAlpha(to, done, dur = tms("--t-out"), dayFade = false) {
+    // any other fade (People off, a person selected) cuts a day switch short: the new day applies at once, so the
+    // people never stay on the day the button no longer shows
+    if (!dayFade && dayTo) { const d = dayTo; dayTo = null; toDay(d); }
+    const from = uniforms.alpha.value, t0 = performance.now();
     cancelAnimationFrame(alphaAnim);
     st.fading = true;
     const step = (now) => {
@@ -454,8 +485,61 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // ---------- UI ----------
   const $ = (s) => document.querySelector(s);
   const chart = $("#popChart"), ctx = chart.getContext("2d");
-  let curveData = null, curveTimer = 0;
-  const recurve = () => { clearTimeout(curveTimer); curveTimer = setTimeout(() => { curveData = curve(); ui.drawChart(); }, 60); };
+  // The A Day chart (user, 2026-10-14) is the time slider's track: the shown day stacked by type, the other day's total
+  // as a dashed line, both on one scale, so the two days compare at a glance. Both days' curves are worked out (the
+  // shown day first, in slices) and kept in curves; a switch morphs the drawn curves (chartData, lineData) to the new
+  // day's over --t-in. Only while the asked-for day is still being worked out does the old chart dim (.pending).
+  // The first chart grows from the baseline.
+  const curves = {};                         // day -> curve (96 bins per display group)
+  const otherDay = (d) => (d === "weekday" ? "weekend" : "weekday");
+  let curveBusy = null, wantDay = null, shownDay = null, chartData = null, lineData = null, morphAnim = 0;
+  const totals = (c) => c && Float32Array.from({ length: 96 }, (_, b) => c.reduce((s, g) => s + g[b], 0));
+  // the chart's curves smoothed over the neighbouring bins (user, 2026-10-14: the weekend curve was jagged; with few trips,
+  // people far from Y-1 who stand for many (weight) make a bin jump): a Gaussian of population.chartSmoothBins bins
+  // (sigma, default 1.5 = ~22 min), round midnight, since the day wraps. The peak and the "% vs" use the same smoothed
+  // curves; the people in the model and the counts by type are not touched
+  const SMOOTH = pc.chartSmoothBins ?? 1.5;
+  function smoothCurve(out) {
+    if (!(SMOOTH > 0)) return out;
+    const R = Math.ceil(3 * SMOOTH), k = Array.from({ length: 2 * R + 1 }, (_, j) => Math.exp(-((j - R) ** 2) / (2 * SMOOTH * SMOOTH)));
+    const ks = k.reduce((a, v) => a + v, 0);
+    return out.map((c) => Float32Array.from({ length: 96 }, (_, b) => { let v = 0; for (let j = -R; j <= R; j++) v += c[(b + j + 96) % 96] * k[j + R]; return v / ks; }));
+  }
+  // work out the missing curves, `first` first, one at a time
+  function needCurves(first = st.day) {
+    if (curveBusy) return;
+    const d = [first, otherDay(first)].find((x) => !curves[x]);
+    if (!d) return;
+    curveBusy = d;
+    curve((out) => {
+      curves[d] = smoothCurve(out); curveBusy = null;
+      if (wantDay && curves[wantDay] && (shownDay !== wantDay || d === otherDay(wantDay))) showDay(wantDay);
+      needCurves(first);
+    }, d);
+  }
+  // show day d's chart: at once if worked out, else dim the old one until it is
+  function wantChart(d) {
+    wantDay = d;
+    if (curves[d]) showDay(d);
+    else { if (chartData) chart.classList.add("pending"); needCurves(d); }
+  }
+  function showDay(d) {
+    shownDay = d;
+    const to = curves[d], toLine = totals(curves[otherDay(d)]);
+    const from = chartData ?? to.map(() => new Float32Array(96)), fromLine = lineData ?? (toLine && new Float32Array(96));
+    const t0 = performance.now(), dur = tms("--t-in");
+    chart.classList.remove("pending");
+    cancelAnimationFrame(morphAnim);
+    const step = (now) => {
+      const k = dur ? Math.min((now - t0) / dur, 1) : 1, e = k * k * (3 - 2 * k);
+      chartData = to.map((c, g) => c.map((v, b) => from[g][b] + (v - from[g][b]) * e));
+      lineData = toLine && toLine.map((v, b) => fromLine[b] + (v - fromLine[b]) * e);
+      ui.drawChart(); ui.vs();
+      if (k < 1) morphAnim = requestAnimationFrame(step);
+    };
+    morphAnim = requestAnimationFrame(step);
+  }
+  const THUMB_R = 6.5;   // half the slider knob (viewer.html): the chart is inset by it, so knob, marker and curve line up
   const ui = {
     refresh() {
       $("#popClock").textContent = hhmm(st.t);
@@ -463,23 +547,48 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       const c = counts;
       const byGroup = (g) => meta.types.reduce((s, _, k) => s + (GROUP[k] === g ? c.byType[k] : 0), 0);
       $("#popCounts").innerHTML = SHOWN.map((g) => `<span><i class="sw" style="display:inline-block;background:${pc.colors[meta.types[g]]}"></i>${labelGroup[meta.types[g]]} ${Math.round(byGroup(g)).toLocaleString()}</span>`).join("");
-      ui.drawChart();
+      ui.drawChart(); ui.vs();
+    },
+    // the other day at the same hour, from the two curves (one definition of "on site" for both)
+    vs() {
+      const a = curves[st.day], b = curves[otherDay(st.day)], el = $("#popVs");
+      if (!a || !b) { el.textContent = ""; return; }
+      const k = Math.min(95, Math.floor(st.t / 900)), na = a.reduce((s, g) => s + g[k], 0), nb = b.reduce((s, g) => s + g[k], 0);
+      const pct = nb > 0 ? Math.round((100 * (na - nb)) / nb) : 0;
+      el.textContent = `${pct > 0 ? "+" : ""}${pct}% vs ${otherDay(st.day)} at this hour`;
     },
     drawChart() {
       const w = (chart.width = chart.clientWidth * devicePixelRatio), h = (chart.height = chart.clientHeight * devicePixelRatio);
       ctx.clearRect(0, 0, w, h);
+      const curveData = chartData;   // what is drawn (morphing, showDay)
       if (!curveData) return;
-      let max = 1;
-      for (let b = 0; b < 96; b++) { let s = 0; for (const c of curveData) s += c[b]; max = Math.max(max, s); }
-      for (let k = curveData.length - 1; k >= 0; k--) {
-        ctx.beginPath(); ctx.moveTo(0, h);
-        for (let b = 0; b < 96; b++) { let s = 0; for (let j = 0; j <= k; j++) s += curveData[j][b]; ctx.lineTo(((b + 0.5) / 96) * w, h - (s / max) * (h - 2)); }
-        ctx.lineTo(w, h); ctx.closePath(); ctx.fillStyle = pc.colors[meta.types[k]]; ctx.fill();
-      }
+      const pad = THUMB_R * devicePixelRatio, X = (f) => pad + f * (w - 2 * pad);   // f: share of the day
+      let max = 1, peak = 0;   // max: the scale (both days); peak: the shown day's, for the label
+      for (let b = 0; b < 96; b++) { let s = 0; for (const c of curveData) s += c[b]; peak = Math.max(peak, s); max = Math.max(max, s, lineData ? lineData[b] : 0); }
       const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg");
-      ctx.fillStyle = fg; ctx.fillRect((st.t / 86400) * w - devicePixelRatio / 2, 0, devicePixelRatio, h);
+      const Y = (v) => h - (v / max) * (h - 2), dpr = devicePixelRatio;
+      const outline = (vals) => { for (let b = 0; b < 96; b++) ctx[b ? "lineTo" : "moveTo"](X((b + 0.5) / 96), Y(vals[b])); };
+      const area = (vals) => { ctx.beginPath(); ctx.moveTo(X(0), h); for (let b = 0; b < 96; b++) ctx.lineTo(X((b + 0.5) / 96), Y(vals[b])); ctx.lineTo(X(1), h); ctx.closePath(); };
+      // the other day: a faint silhouette behind the stack and a thin dashed outline, in the text colour over the
+      // background and in the page colour where it crosses the fills (user, 2026-10-14: the first dashed line, over a
+      // halo and on the jagged curve, looked ugly)
+      if (lineData) { area(lineData); ctx.fillStyle = fg; ctx.globalAlpha = 0.09; ctx.fill(); ctx.globalAlpha = 1; }
+      for (let k = curveData.length - 1; k >= 0; k--) {
+        ctx.beginPath(); ctx.moveTo(X(0), h);
+        for (let b = 0; b < 96; b++) { let s = 0; for (let j = 0; j <= k; j++) s += curveData[j][b]; ctx.lineTo(X((b + 0.5) / 96), Y(s)); }
+        ctx.lineTo(X(1), h); ctx.closePath(); ctx.fillStyle = pc.colors[meta.types[k]]; ctx.fill();
+      }
+      if (lineData) {   // dashed (user, 2026-10-14, once smoothed); the two strokes share the dash pattern, so they line up
+        ctx.lineWidth = dpr; ctx.lineJoin = "round"; ctx.setLineDash([3 * dpr, 2.5 * dpr]);
+        ctx.beginPath(); outline(lineData); ctx.strokeStyle = fg; ctx.globalAlpha = 0.7; ctx.stroke();
+        ctx.save();
+        area(Float32Array.from({ length: 96 }, (_, b) => curveData.reduce((s, c) => s + c[b], 0))); ctx.clip();
+        ctx.beginPath(); outline(lineData); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--bg"); ctx.globalAlpha = 0.85; ctx.stroke();
+        ctx.restore(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      }
+      ctx.fillStyle = fg; ctx.fillRect(X(st.t / 86400) - devicePixelRatio / 2, 0, devicePixelRatio, h);
       ctx.font = `${10 * devicePixelRatio}px -apple-system, sans-serif`; ctx.globalAlpha = 0.7;
-      ctx.fillText(`peak ${Math.round(max).toLocaleString()}`, 3 * devicePixelRatio, 11 * devicePixelRatio); ctx.globalAlpha = 1;
+      ctx.fillText(`peak ${Math.round(peak).toLocaleString()}`, 3 * devicePixelRatio, 11 * devicePixelRatio); ctx.globalAlpha = 1;
     },
   };
   // the time slider: knob and the filled part of its track (--p, as viewer.js does for its sliders)
@@ -487,7 +596,40 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const r = $("#popTime"); r.value = t;
     r.style.setProperty("--p", `${(100 * (r.value - r.min)) / (r.max - r.min)}%`);
   }
-  $("#popTime").oninput = (e) => { st.t = +e.target.value; st.dirty = true; setTimeSlider(st.t); };
+  // the knob deforms while dragged by hand (user, 2026-10-14): stretched across by the drag's speed (up to STRETCH_MAX,
+  // a little flatter as it does) and, once the hand slows or lets go, back to round on an underdamped spring, a little
+  // squashed on the way (a jelly wobble). Only the knob's shape: the time follows the hand directly. viewer.html reads
+  // --kx / --ky on the knob
+  const STRETCH_MAX = 0.35, STRETCH_PXS = 600, JELLY_W = 22, JELLY_Z = 0.38;   // full stretch at 600 px/s
+  const timeIn = $("#popTime");
+  let drag = null, jelly = null;   // drag: { v px/s, at, val }; jelly: { s, ds, last }
+  function jellyStep(now) {
+    const j = jelly;
+    const dt = Math.min(Math.max((now - j.last) / 1000, 0), 0.05); j.last = now;
+    if (drag && now - drag.at > 40) drag.v *= Math.exp(-dt * 14);   // the hand stopped: the speed dies away
+    const want = drag ? Math.min(Math.abs(drag.v) / STRETCH_PXS, 1) * STRETCH_MAX : 0;
+    const n = Math.max(1, Math.ceil(dt / 0.004)), h = dt / n;
+    for (let i = 0; i < n; i++) { j.ds += (-2 * JELLY_Z * JELLY_W * j.ds - JELLY_W * JELLY_W * (j.s - want)) * h; j.s += j.ds * h; }
+    timeIn.style.setProperty("--kx", (1 + j.s).toFixed(3)); timeIn.style.setProperty("--ky", (1 - 0.45 * j.s).toFixed(3));
+    if (!drag && Math.abs(j.s) < 0.002 && Math.abs(j.ds) < 0.02) {
+      jelly = null; timeIn.style.removeProperty("--kx"); timeIn.style.removeProperty("--ky"); timeIn.classList.remove("jelly"); return;
+    }
+    requestAnimationFrame(jellyStep);
+  }
+  timeIn.addEventListener("pointerdown", () => {
+    drag = { v: 0, at: performance.now(), val: +timeIn.value };
+    timeIn.classList.add("jelly");
+    if (!jelly) { jelly = { s: 0, ds: 0, last: performance.now() }; requestAnimationFrame(jellyStep); }
+  });
+  for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, () => { drag = null; });
+  timeIn.oninput = (e) => {
+    st.t = +e.target.value; st.dirty = true; setTimeSlider(st.t);
+    if (drag) {   // the drag's speed in screen px per second, smoothed
+      const now = performance.now(), dt = Math.max((now - drag.at) / 1000, 0.004);
+      const px = ((st.t - drag.val) / 86400) * timeIn.clientWidth;
+      drag.v += (px / dt - drag.v) * Math.min(1, dt * 20); drag.at = now; drag.val = st.t;
+    }
+  };
   $("#popPlay").onclick = () => { resumeAfter = false; setPlaying(!st.playing); };
   // Weekday / Weekend: a segmented control with a sliding thumb, like Color (viewer.js moveThumb)
   function dayThumb(instant) {
@@ -498,11 +640,22 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     th.style.transform = `translateX(${on.offsetLeft}px)`;
     if (instant) requestAnimationFrame(() => th.classList.remove("instant"));
   }
+  // switching the day (user, 2026-10-14: smoothly): the people fade out (--t-feedback), move to where they are on the
+  // other day, and fade back in (--t-in), instead of jumping; the chart morphs to the other day (showDay). A second click
+  // during the fade cancels the first (fadeAlpha), so the last click wins
+  function toDay(d) {
+    st.day = d; st.dirty = true;
+    for (const j of sel) onInfo(story(j), posOf(j), j, "refresh");   // the labels show the new day
+  }
   document.querySelectorAll("#popDay button").forEach((b) => (b.onclick = () => {
-    st.day = b.dataset.d; st.dirty = true; recurve();
+    const d = b.dataset.d;
+    wantChart(d);
     document.querySelectorAll("#popDay button").forEach((x) => x.classList.toggle("on", x === b));
     dayThumb(false);
-    for (const j of sel) onInfo(story(j), posOf(j), j, "refresh");   // the labels show the new day
+    if (!api.visible) { dayTo = null; toDay(d); return; }
+    const back = sel.length ? pc.isolateAlpha ?? 0.15 : 1;
+    dayTo = d;
+    fadeAlpha(0, () => { dayTo = null; toDay(d); fadeAlpha(back, null, tms("--t-in"), true); }, tms("--t-feedback"), true);
   }));
   $(`#popDay button[data-d='${st.day}']`).classList.add("on");
   addEventListener("resize", () => dayThumb(true));
@@ -514,7 +667,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // "Highlight people" (viewer.js): people grow from size to highlightSize as the point cloud fades (k 0..1)
   const SIZE0 = pc.size ?? 0.7, SIZE1 = pc.highlightSize ?? 1.0;
   const api = {
-    meta, state: st,
+    meta, state: st, times,
     highlight(k) { uniforms.size.value = SIZE0 + (SIZE1 - SIZE0) * k; uniforms.minPx.value = 2 + k; st.dirty = true; },
     setVisible(on) {
       st.shown = on;
@@ -523,19 +676,21 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       if (!on) { hovered = -1; hovPoint.visible = false; }
       selPoint.visible = on && sel.length > 0;
       route.visible = false;
-      setXray(on && st.xray);
+      timed("setXray", () => setXray(on && st.xray));
       if (!on) trails.visible = false;
-      if (on) { st.dirty = true; if (!curveData) recurve(); requestAnimationFrame(() => dayThumb(true)); }
+      if (on) { st.dirty = true; wantChart(dayTo ?? st.day); requestAnimationFrame(() => dayThumb(true)); }
       setPlaying(on);   // turning the layer on plays the day (user, 2026-10-09); off pauses it
     },
     get visible() { return points.visible && st.shown !== false; },
+    // made ahead of time (viewer.js): work out the 24 h chart now, in slices, so it is there when People comes on
+    prepare() { needCurves(st.day); },
     tick(now) {
       const dt = lastNow ? Math.min((now - lastNow) / 1000, 0.25) : 0;
       lastNow = now;
-      uniforms.scale.value = renderer.domElement.height / (2 * Math.tan((camera.fov * Math.PI) / 360));
+      uniforms.scale.value = renderer.domElement.height / (2 * Math.tan(((camera.userData.viewFov ?? camera.fov) * Math.PI) / 360));   // the field of view the eye reads
       if (!points.visible) return;
       if (st.playing) { st.t = (st.t + dt * st.speed) % 86400; st.dirty = true; }
-      if (st.dirty) update();
+      if (st.dirty) timed("update (positions)", update);
       routeU.now.value = st.t;
     },
     // the person within maxPx of a screen point (client px), or -1 (user, 2026-10-08: screen distance, so picking a
@@ -558,6 +713,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     clearSelection() { if (sel.length) select(-1); },
     select,  // select(i): show person i's day (debugging / links)
   };
+  times.setup = Math.round(performance.now() - tSetup);
   onStatus?.("");
   return api;
 }

@@ -116,6 +116,13 @@
   #toggle, #toggle:hover { border: 0; background: none; box-shadow: none; }
   /* the collapse "–" sits on the same vertical line as the section chevrons: both are centred in a 14px box */
   #toggle { width: 14px; padding: 0; text-align: center; color: var(--muted); }
+  /* full screen (user, 2026-10-14): a twin of the "–", left of it, the same 14px box and muted colour; corners out to
+     go full screen, in to come back */
+  .head .hbtns { display: inline-flex; align-items: center; gap: 8px; }
+  #fs, #fs:hover { width: 14px; padding: 0; border: 0; background: none; box-shadow: none; color: var(--muted); line-height: 0; }
+  #fs svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  #fs .exit, #fs.on .enter { display: none; }
+  #fs.on .exit { display: inline; }
   /* the four colourings fit one row: buttons sized by their label */
   /* Units: a sliding switch sized and coloured like the Views buttons (user, 2026-10-10): glass pill track, pill thumb */
   .seg.pill { display: inline-flex; border-radius: 999px; padding: 2px; background: var(--chip); border: 1px solid var(--glass-rim);
@@ -143,18 +150,8 @@
   .saveview input { border-radius: 999px; border: 1px solid var(--glass-rim); background: var(--chip); padding: 3px 10px; }
   button.view .del { background: var(--glass); border-color: var(--glass-rim);
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-  /* adaptive glass, like Apple's: viewer.js measures how bright the picture right behind each panel is and puts it in light
-     glass with dark text (.on-light) or dark glass with light text (.on-dark), whatever the system theme; with hysteresis */
-  .on-light { --fg: #111; --muted: #4f4f55; --line: rgba(0,0,0,.14); --accent: #111;
-    --glass: rgba(255,255,255,.19); --glass-hi: rgba(255,255,255,.85); --glass-rim: rgba(255,255,255,.6); --glass-lo: rgba(255,255,255,.14);
-    --glass-shadow: 0 10px 34px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08);
-    --chip: rgba(120,120,128,.16); --thumb: rgba(255,255,255,.82); --thumb-fg: #111; --track: rgba(120,120,128,.22); }
-  .on-dark { --fg: #f2f2f2; --muted: #b4b4ba; --line: rgba(255,255,255,.16); --accent: #eee;
-    --glass: rgba(28,28,30,.22); --glass-hi: rgba(255,255,255,.30); --glass-rim: rgba(255,255,255,.16); --glass-lo: rgba(255,255,255,.04);
-    --glass-shadow: 0 12px 38px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
-    --chip: rgba(120,120,128,.22); --thumb: rgba(255,255,255,.30); --thumb-fg: #fff; --track: rgba(0,0,0,.32); }
-  .panel.on-light, .panel.on-dark { color: var(--fg); transition: background .35s, color .35s, box-shadow .35s; }
-  #hint.on-light, #hint.on-dark { color: var(--muted); transition: color .35s; }
+  /* (2026-10-14, user) the adaptive light / dark glass (.on-light / .on-dark from a read-back of the picture) is gone: it
+     was for the mesh mode; the panels follow the system theme */
   /* hierarchy (user, 2026-10-07): section titles strongest (13px semibold, text colour, sentence case,
      sections, no dividers - user removed them); options / labels middle; secondary buttons (.ghost: Default / Apply / + Save view), values, notes lightest */
   details.sec { margin-top: 0; padding: 10px 0 2px; }
@@ -261,11 +258,54 @@
   #popBox[hidden] { display: none; }
   #popBox .clock { display: flex; align-items: center; gap: 6px; margin: 4px 0 2px; }
   #popClock { font-size: 20px; font-variant-numeric: tabular-nums; margin-right: auto; }
-  #popChart { display: block; width: 100%; height: 56px; margin-top: 6px; border-bottom: 1px solid var(--line); }
+  /* the chart is the time slider's track (user, 2026-10-14): the slider lies over it, transparent, its knob on the
+     chart's baseline; the whole chart takes a click or a drag (population.js insets the chart by the knob's radius) */
+  #popTrack { position: relative; margin-top: 6px; }
+  #popChart { display: block; width: 100%; height: 56px; border-bottom: 1px solid var(--line); }
+  #popTrack input[type=range] { position: absolute; left: 0; top: 0; width: 100%; height: 63px; margin: 0; }
+  /* the knob follows the switches' logic (user, 2026-10-14): at rest it is the pill's track (--chip, rim), pressed or
+     dragged it is the selected thumb (--thumb over the track, the thumb's shadow and highlight), the same tokens, so it
+     changes with them. Under them an opaque panel colour (--knob-base, the panel as measured on screen), so the chart
+     does not show through */
+  :root { --knob-base: #eeeeec; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --knob-base: #535353; } }
+  :root[data-theme="dark"] { --knob-base: #535353; }
+  #popTrack input[type=range]::-webkit-slider-thumb {
+    background: linear-gradient(var(--chip), var(--chip)), var(--knob-base);
+    box-shadow: inset 0 0 0 1px var(--glass-rim), 0 1px 3px rgba(0,0,0,.25);
+    transition: transform var(--t-feedback) cubic-bezier(.34,1.4,.5,1), background var(--t-feedback) ease, box-shadow var(--t-feedback) ease; }
+  #popTrack input[type=range]::-moz-range-thumb {
+    background: linear-gradient(var(--chip), var(--chip)), var(--knob-base);
+    box-shadow: inset 0 0 0 1px var(--glass-rim), 0 1px 3px rgba(0,0,0,.25);
+    transition: transform var(--t-feedback) cubic-bezier(.34,1.4,.5,1), background var(--t-feedback) ease, box-shadow var(--t-feedback) ease; }
+  #popTrack input[type=range]:active::-webkit-slider-thumb, #popTrack input[type=range].jelly::-webkit-slider-thumb {
+    background: linear-gradient(var(--thumb), var(--thumb)), linear-gradient(var(--chip), var(--chip)), var(--knob-base);
+    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08); }
+  #popTrack input[type=range]:active::-moz-range-thumb, #popTrack input[type=range].jelly::-moz-range-thumb {
+    background: linear-gradient(var(--thumb), var(--thumb)), linear-gradient(var(--chip), var(--chip)), var(--knob-base);
+    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08); }
+  #popTrack input[type=range]::-webkit-slider-runnable-track { height: 63px; background: none; }
+  #popTrack input[type=range]::-webkit-slider-thumb { margin-top: 50px; }
+  #popTrack input[type=range]::-moz-range-track { height: 63px; background: none; }
+  #popTrack input[type=range]::-moz-range-progress { background: none; }
+  #popTrack input[type=range]::-moz-range-thumb { transform: translateY(25px); }
+  #popTrack input[type=range]:hover::-moz-range-thumb, #popTrack input[type=range]:active::-moz-range-thumb { transform: translateY(25px) scale(1.18); }
+  /* while dragged by hand the knob stretches and wobbles back (population.js sets --kx / --ky every frame; no transition
+     then, or it would lag), on top of the hover / drag scale */
+  #popTrack input[type=range].jelly::-webkit-slider-thumb { transition: box-shadow var(--t-feedback) ease; transform: scale(calc(1.18 * var(--kx, 1)), calc(1.18 * var(--ky, 1))); }
+  #popTrack input[type=range].jelly::-moz-range-thumb { transition: box-shadow var(--t-feedback) ease; transform: translateY(25px) scale(calc(1.18 * var(--kx, 1)), calc(1.18 * var(--ky, 1))); }
+  #popVs { font-size: 11px; color: var(--muted); text-align: right; margin-top: 8px; min-height: 1em; font-variant-numeric: tabular-nums; }
+  /* Weekday / Weekend (population.js showCurve): the old curve dims while the new one is worked out, then morphs */
+  #popChart { transition: opacity var(--t-feedback) ease; }
+  #popChart.pending { opacity: .55; }
   #popCounts { font-size: 11px; margin-top: 4px; }
   #popCounts span { display: inline-flex; align-items: center; gap: 4px; margin-right: 8px; }
   #popBox input[type=range] { width: 100%; margin: 0; }
+  /* one menu language (user, 2026-10-14): Weekday / Weekend is a pill switch like Guided / Free and Units (chip track,
+     rim, pill thumb), full width, the two halves equal */
   #popDay { margin: 6px 0 4px; }
+  #popDay.seg.pill { display: flex; }
+  #popDay.seg.pill button, #popDay.seg.pill button:last-child { flex: 1; }
   #viewMode { margin: 8px 0 2px; }
   body.v-free #timeSec { display: none; }   /* Free view: no History module */
   /* time section (user, 2026-10-13): a module like Population; the unbuilt schemes live here, shown only with it */
@@ -281,7 +321,7 @@
 </head>
 <body>
 <div id="ui" class="panel">
-  <div class="head"><h1>Angels Knoll</h1><button id="toggle" title="Collapse">–</button></div>
+  <div class="head"><h1>Angels Knoll</h1><span class="hbtns"><button id="fs" title="Full screen (F)" aria-label="Full screen" hidden><svg class="enter" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 4.5V1h3.5M7.5 1H11v3.5M11 7.5V11H7.5M4.5 11H1V7.5"/></svg><svg class="exit" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 1v3.5H1M11 4.5H7.5V1M7.5 11V7.5H11M1 7.5h3.5V11"/></svg></button><button id="toggle" title="Collapse">–</button></span></div>
   <div class="body">
     <div class="sub">Site model · <a href="./" style="color:inherit">home</a></div>
     <!-- two cameras on the same model (user, 2026-10-15): Guided, the opening and film; Free, today's model to explore -->
@@ -309,14 +349,18 @@
       <label class="layer" title="A modeled typical day: one point per person, from Census, survey and Assessor data"><input type="checkbox" id="popOn"><i class="sw" style="--c:#FFD166"></i><span class="nm">People</span> <span class="n" title="A modeled typical day, one point per person. Every person within 250 m of Y-1; farther out fewer and fainter, like the point cloud. The counts include everyone.">modeled typical day</span></label>
       <div id="popBox" hidden>
         <div class="clock"><span id="popClock">08:30</span><button id="popPlay" title="Plays at 5 minutes per second: the whole day in about 5 minutes">Play</button></div>
-        <div class="seg" id="popDay"><span class="thumb" aria-hidden="true"></span><button data-d="weekday">Weekday</button><button data-d="weekend">Weekend</button></div>
-        <input id="popTime" type="range" min="0" max="86399" step="60" aria-label="Time of day">
-        <canvas id="popChart" aria-label="People on site over 24 hours"></canvas>
+        <div class="seg pill" id="popDay"><span class="thumb" aria-hidden="true"></span><button data-d="weekday">Weekday</button><button data-d="weekend">Weekend</button></div>
+        <div id="popTrack">
+          <canvas id="popChart" aria-label="People on site over 24 hours: the day shown by type, the other day dashed"></canvas>
+          <input id="popTime" type="range" min="0" max="86399" step="60" aria-label="Time of day">
+        </div>
+        <div id="popVs"></div>
         <div id="popCounts"></div>
       </div>
     </details>
     <details class="sec" open><summary>Views</summary>
       <div class="row" id="views"></div>
+      <label class="layer" title="A 75° fisheye lens, in Guided and Free: wider, the towers lean, the ground curves; the camera comes in so the centre keeps its size"><input type="checkbox" id="lensOn"><i class="sw" style="--c:#FFFFFF"></i><span class="nm">Fisheye lens</span><span class="n">75°, curved</span></label>
     </details>
     <!-- units of every length the viewer shows (kept in this browser) -->
     <details class="sec" id="unitsSec" open><summary>Units</summary>

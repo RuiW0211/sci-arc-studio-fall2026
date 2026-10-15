@@ -58,6 +58,7 @@
       "heroes": 4,
       "heroWithinM": 700,
       "wideR": 1300,
+      "wideLens": 0.3,
       "wideTilt": 46,
       "labelOpacity": 0.6,
       "thenPeople": true,
@@ -186,7 +187,8 @@
         0,
         95,
         0
-      ]
+      ],
+      "noLens": true
     }
   ],
   "population": {
