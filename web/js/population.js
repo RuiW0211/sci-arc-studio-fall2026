@@ -490,6 +490,17 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const otherDay = (d) => (d === "weekday" ? "weekend" : "weekday");
   let curveBusy = null, wantDay = null, shownDay = null, chartData = null, lineData = null, morphAnim = 0;
   const totals = (c) => c && Float32Array.from({ length: 96 }, (_, b) => c.reduce((s, g) => s + g[b], 0));
+  // the chart's curves smoothed over the neighbouring bins (user, 2026-10-14: the weekend curve was jagged; with few trips,
+  // people far from Y-1 who stand for many (weight) make a bin jump): a Gaussian of population.chartSmoothBins bins
+  // (sigma, default 1.5 = ~22 min), round midnight, since the day wraps. The peak and the "% vs" use the same smoothed
+  // curves; the people in the model and the counts by type are not touched
+  const SMOOTH = pc.chartSmoothBins ?? 1.5;
+  function smoothCurve(out) {
+    if (!(SMOOTH > 0)) return out;
+    const R = Math.ceil(3 * SMOOTH), k = Array.from({ length: 2 * R + 1 }, (_, j) => Math.exp(-((j - R) ** 2) / (2 * SMOOTH * SMOOTH)));
+    const ks = k.reduce((a, v) => a + v, 0);
+    return out.map((c) => Float32Array.from({ length: 96 }, (_, b) => { let v = 0; for (let j = -R; j <= R; j++) v += c[(b + j + 96) % 96] * k[j + R]; return v / ks; }));
+  }
   // work out the missing curves, `first` first, one at a time
   function needCurves(first = st.day) {
     if (curveBusy) return;
@@ -497,7 +508,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     if (!d) return;
     curveBusy = d;
     curve((out) => {
-      curves[d] = out; curveBusy = null;
+      curves[d] = smoothCurve(out); curveBusy = null;
       if (wantDay && curves[wantDay] && (shownDay !== wantDay || d === otherDay(wantDay))) showDay(wantDay);
       needCurves(first);
     }, d);
