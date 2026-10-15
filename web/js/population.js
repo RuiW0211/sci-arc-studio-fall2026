@@ -361,8 +361,8 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // call cancels the one running, so a curve never mixes two days or two settings.
   const CURVE_SLICE_MS = 6;
   let curveJob = 0;
-  function curve(done) {
-    const job = ++curveJob, D = days[st.day], out = meta.types.map(() => new Float32Array(96)), t0 = performance.now();
+  function curve(done, day = st.day) {
+    const job = ++curveJob, D = days[day], out = meta.types.map(() => new Float32Array(96)), t0 = performance.now();
     let b = 0, i = 0, longest = 0;
     const slice = () => {
       if (job !== curveJob) return;
@@ -439,8 +439,12 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // isolating a person (user, 2026-10-10: no hard switches)
   const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) * 1000 || 0;
   let alphaAnim = 0;
-  function fadeAlpha(to, done) {
-    const from = uniforms.alpha.value, t0 = performance.now(), dur = tms("--t-out");
+  let dayTo = null;   // the day being switched to, while the people fade out (the Weekday / Weekend buttons)
+  function fadeAlpha(to, done, dur = tms("--t-out"), dayFade = false) {
+    // any other fade (People off, a person selected) cuts a day switch short: the new day applies at once, so the
+    // people never stay on the day the button no longer shows
+    if (!dayFade && dayTo) { const d = dayTo; dayTo = null; toDay(d); }
+    const from = uniforms.alpha.value, t0 = performance.now();
     cancelAnimationFrame(alphaAnim);
     st.fading = true;
     const step = (now) => {
@@ -477,9 +481,26 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // ---------- UI ----------
   const $ = (s) => document.querySelector(s);
   const chart = $("#popChart"), ctx = chart.getContext("2d");
-  let curveData = null, curveTimer = 0;
+  // curveData: the curve for the current settings; chartData: the one drawn, which morphs from the old curve to a new one
+  // over --t-in (user, 2026-10-14: Weekday / Weekend should switch smoothly; the new curve takes ~0.25 s to work out, so
+  // the old one dims at once and the new one grows out of it). The first curve grows from the baseline.
+  let curveData = null, chartData = null, curveTimer = 0, morphAnim = 0;
+  function showCurve(out) {
+    curveData = out;
+    const from = chartData ?? out.map(() => new Float32Array(96)), t0 = performance.now(), dur = tms("--t-in");
+    chart.classList.remove("pending");
+    cancelAnimationFrame(morphAnim);
+    const step = (now) => {
+      const k = dur ? Math.min((now - t0) / dur, 1) : 1, e = k * k * (3 - 2 * k);
+      chartData = out.map((c, g) => c.map((v, b) => from[g][b] + (v - from[g][b]) * e));
+      ui.drawChart();
+      if (k < 1) morphAnim = requestAnimationFrame(step);
+    };
+    morphAnim = requestAnimationFrame(step);
+  }
   let curvePending = false;   // a curve is on its way (prepare / setVisible need not start another)
-  const recurve = () => { clearTimeout(curveTimer); curvePending = true; curveTimer = setTimeout(() => curve((out) => { curveData = out; curvePending = false; timed("drawChart", ui.drawChart); }), 60); };
+  // day: the day to work out (a Weekday / Weekend click asks for the new day before the people have switched to it)
+  const recurve = (day = st.day) => { clearTimeout(curveTimer); curvePending = true; if (chartData) chart.classList.add("pending"); curveTimer = setTimeout(() => curve((out) => { curvePending = false; showCurve(out); }, day), 60); };
   const ui = {
     refresh() {
       $("#popClock").textContent = hhmm(st.t);
@@ -492,6 +513,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     drawChart() {
       const w = (chart.width = chart.clientWidth * devicePixelRatio), h = (chart.height = chart.clientHeight * devicePixelRatio);
       ctx.clearRect(0, 0, w, h);
+      const curveData = chartData;   // what is drawn (morphing, showCurve)
       if (!curveData) return;
       let max = 1;
       for (let b = 0; b < 96; b++) { let s = 0; for (const c of curveData) s += c[b]; max = Math.max(max, s); }
@@ -522,11 +544,22 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     th.style.transform = `translateX(${on.offsetLeft}px)`;
     if (instant) requestAnimationFrame(() => th.classList.remove("instant"));
   }
+  // switching the day (user, 2026-10-14: smoothly): the people fade out (--t-feedback), move to where they are on the
+  // other day, and fade back in (--t-in), instead of jumping; the chart dims and morphs (showCurve). A second click
+  // during the fade cancels the first (fadeAlpha), so the last click wins
+  function toDay(d) {
+    st.day = d; st.dirty = true;
+    for (const j of sel) onInfo(story(j), posOf(j), j, "refresh");   // the labels show the new day
+  }
   document.querySelectorAll("#popDay button").forEach((b) => (b.onclick = () => {
-    st.day = b.dataset.d; st.dirty = true; recurve();
+    const d = b.dataset.d;
+    recurve(d);
     document.querySelectorAll("#popDay button").forEach((x) => x.classList.toggle("on", x === b));
     dayThumb(false);
-    for (const j of sel) onInfo(story(j), posOf(j), j, "refresh");   // the labels show the new day
+    if (!api.visible) { dayTo = null; toDay(d); return; }
+    const back = sel.length ? pc.isolateAlpha ?? 0.15 : 1;
+    dayTo = d;
+    fadeAlpha(0, () => { dayTo = null; toDay(d); fadeAlpha(back, null, tms("--t-in"), true); }, tms("--t-feedback"), true);
   }));
   $(`#popDay button[data-d='${st.day}']`).classList.add("on");
   addEventListener("resize", () => dayThumb(true));

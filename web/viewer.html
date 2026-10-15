@@ -262,6 +262,9 @@
   #popBox .clock { display: flex; align-items: center; gap: 6px; margin: 4px 0 2px; }
   #popClock { font-size: 20px; font-variant-numeric: tabular-nums; margin-right: auto; }
   #popChart { display: block; width: 100%; height: 56px; margin-top: 6px; border-bottom: 1px solid var(--line); }
+  /* Weekday / Weekend (population.js showCurve): the old curve dims while the new one is worked out, then morphs */
+  #popChart { transition: opacity var(--t-feedback) ease; }
+  #popChart.pending { opacity: .55; }
   #popCounts { font-size: 11px; margin-top: 4px; }
   #popCounts span { display: inline-flex; align-items: center; gap: 4px; margin-right: 8px; }
   #popBox input[type=range] { width: 100%; margin: 0; }
