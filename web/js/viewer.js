@@ -1362,7 +1362,7 @@ function buildOpening() {
   const tB = performance.now();
   if (!tlItems) tlBuild();
   const pts = tlOcc.filter((o) => o.year > 0).map((o) => ({ x: (o.box[0] + o.box[3]) / 2, z: (o.box[2] + o.box[5]) / 2, y0: o.box[1], h: o.box[4] - o.box[1], year: o.year }));
-  const Y1 = TOUR.target, Rc = OPEN.clusterM, wide = { target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R };
+  const Y1 = TOUR.target, Rc = OPEN.clusterM, wide = { target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R, lens: CINE.wideLens ?? 0.3 };
   const frame = (sh) => {
     const ps = pts.filter((p) => p.year >= sh.from && p.year < sh.to);
     if (!ps.length) return wide;
@@ -1395,7 +1395,8 @@ function openingPose(frac) {
     if (t <= A[i].he) {
       if (i === 0 || t >= A[i].hs) { P = A[i].pose; break; }
       const a = A[i - 1], e = ease5((t - a.he) / Math.max(A[i].hs - a.he, 1e-3)), b = A[i].pose, p0 = a.pose;
-      P = { target: p0.target.map((v, j) => v + (b.target[j] - v) * e), r: Math.exp(Math.log(p0.r) + (Math.log(b.r) - Math.log(p0.r)) * e), phi: p0.phi + (b.phi - p0.phi) * e };
+      P = { target: p0.target.map((v, j) => v + (b.target[j] - v) * e), r: Math.exp(Math.log(p0.r) + (Math.log(b.r) - Math.log(p0.r)) * e), phi: p0.phi + (b.phi - p0.phi) * e,
+            lens: (p0.lens ?? 1) + ((b.lens ?? 1) - (p0.lens ?? 1)) * e };
       break;
     }
   }
@@ -1437,7 +1438,7 @@ function endTour() { if (tour) { tour = null; controls.enableDamping = true; } }
 // tilt and target ease over rejoinS seconds from the camera's to the shot's, so there is no jump.
 let paused = false, rejoin = null;
 const REJOIN_S = cfg.time?.rejoinS ?? 2.5;
-const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r * lensM(), phi: a.phi, th: a.th, fov: baseFov }; };   // the base pose (lens taken out)
+const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r * lensM(), phi: a.phi, th: a.th, fov: baseFov, lens: LENS.k }; };   // the base pose (lens taken out)
 // the field of view (vertical, degrees) of the Guided camera's poses; a pose without one has FOV0 (user, 2026-10-15: a
 // dolly zoom on Y-1; the FOV only ever changes together with the distance, eased like the rest of the move)
 const FOV0 = FISH.F;
@@ -1446,17 +1447,20 @@ const FOV0 = FISH.F;
 // view widened by LENS.G at the same centre scale (tan(F / 2) x m) and the camera that much closer (r / m), so the
 // subject keeps its size in the middle of the picture while the edges open up, lean and curve (FISH.s = L x fisheye).
 // m = 1 + L (G - 1), L eased 0..1 over LENS.ms. A dolly zoom stays a dolly zoom (r tan(F / 2) is kept).
-const LENS = { L: 0, to: 0, fov: cfg.perspective?.fov ?? 75, amt: cfg.perspective?.fisheye ?? 1, ms: 1200 };
+// k: the pose's share of the lens (user, 2026-10-15: the wide overview after the building, a fisheye over the whole
+// site, bent like a little planet): a film shot may ask for less (time.cinema.wideLens for the wide shots, a shot's
+// own "lens"), eased with the shot; Free has 1
+const LENS = { L: 0, to: 0, k: 1, fov: cfg.perspective?.fov ?? 75, amt: cfg.perspective?.fisheye ?? 1, ms: 1200 };
 LENS.G = Math.tan(LENS.fov * D2R / 2) / Math.tan(FOV0 * D2R / 2);
 let baseFov = FOV0;   // the base pose's field of view (setFov)
-const lensM = (L = LENS.L) => 1 + L * (LENS.G - 1);
+const lensM = (L = LENS.L * LENS.k) => 1 + L * (LENS.G - 1);
 function applyLens() {
   FISH.F = 2 * Math.atan(Math.tan(baseFov * D2R / 2) * lensM()) / D2R;
   FISH_U.uFishM.value = lensM();
-  FISH.s = LENS.L * LENS.amt;
+  FISH.s = LENS.L * LENS.k * LENS.amt;
   applyFish();
 }
-function setFov(f) { if (Math.abs(baseFov - f) > 1e-3 || FISH.s !== LENS.L * LENS.amt) { baseFov = f; applyLens(); } }   // the base field of view
+function setFov(f) { if (Math.abs(baseFov - f) > 1e-3 || FISH.s !== LENS.L * LENS.k * LENS.amt) { baseFov = f; applyLens(); } }   // the base field of view
 let lensAnim = 0;
 function setLens(on) {
   LENS.to = on ? 1 : 0;
@@ -1479,10 +1483,12 @@ function camApply(P) {
   if (rejoin) {
     const k = Math.min((performance.now() - rejoin.t0) / (REJOIN_S * 1000), 1), e = k * k * (3 - 2 * k), A = rejoin.from;
     P = { target: A.target.map((v, j) => v + (P.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(P.r) - Math.log(A.r)) * e),
-          phi: A.phi + (P.phi - A.phi) * e, th: A.th + wrapA(P.th - A.th) * e, fov: (A.fov ?? FOV0) + ((P.fov ?? FOV0) - (A.fov ?? FOV0)) * e };
+          phi: A.phi + (P.phi - A.phi) * e, th: A.th + wrapA(P.th - A.th) * e, fov: (A.fov ?? FOV0) + ((P.fov ?? FOV0) - (A.fov ?? FOV0)) * e,
+          lens: (A.lens ?? 1) + ((P.lens ?? 1) - (A.lens ?? 1)) * e };
     if (k >= 1) rejoin = null;
   }
-  setFov(P.fov ?? FOV0);
+  LENS.k = P.lens ?? 1;   // the shot's share of the lens
+  baseFov = -1; setFov(P.fov ?? FOV0);
   controls.target.fromArray(P.target);
   _sph.set(P.r / lensM(), P.phi, P.th);   // a base pose: the lens brings the camera in
   camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
@@ -1590,7 +1596,7 @@ function cineShots() {
   // type: wide (the whole site, high), crane (down onto the group), low (at about the middle of its height, looking a
   // little up, arcing round), orbit (an oblique arc over a spread-out group), track (the view moves from one member to
   // another, low). cut: a dip to black into the shot (otherwise the camera flies there).
-  const wide = { target: TOUR.target, r: [CINE.wideR, CINE.wideR * 0.9], tilt: [CINE.wideTilt, CINE.wideTilt + 4], turn: 25, keys: [] };
+  const wide = { target: TOUR.target, r: [CINE.wideR, CINE.wideR * 0.9], tilt: [CINE.wideTilt, CINE.wideTilt + 4], turn: 25, keys: [], lens: CINE.wideLens ?? 0.3 };
   const find = (n) => (tlItems || []).find((it) => it.name.toLowerCase() === n.toLowerCase());
   const boxOf = (items) => {
     const b = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9];
@@ -1600,10 +1606,10 @@ function cineShots() {
   const out = [];
   for (const def of CINE.shots || []) {
     const az = def.az == null ? null : def.az * D2R;   // the shot's heading at its start (0 = from the south, 90 = east)
-    if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold }); continue; }
+    if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold, lens: def.lens ?? wide.lens }); continue; }
     const items = (def.members || []).map(find).filter(Boolean);
     if (!items.length) continue;
-    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold };
+    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold, lens: def.lens ?? 1 };
     const n0 = out.length;   // (overrides below apply to the shot pushed now)
     // a crane with a dolly zoom (dolly: [fov from, fov to]): it lowers (tilt) and backs away as the view narrows
     if (def.type === "crane" && def.dolly) out.push({ ...base, turn: 30, tilt: def.tilt ?? [40, 70], target: [g.cx, g.y0 + 0.3 * g.h, g.cz],
@@ -1653,7 +1659,7 @@ function cinePose(sh, t, th0, dir) {
   // size on screen and what stands behind it grows
   const r = sh.dolly ? (sh.r[0] * Math.tan((sh.fov[0] * D2R) / 2)) / Math.tan((fov * D2R) / 2)
                      : Math.exp(Math.log(sh.r[0]) + (Math.log(sh.r[1]) - Math.log(sh.r[0])) * e);
-  return { target, r, phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + a, fov };
+  return { target, r, phi: (sh.tilt[0] + (sh.tilt[1] - sh.tilt[0]) * e) * D2R, th: th0 + a, fov, lens: sh.lens ?? 1 };
 }
 const cineApply = (P) => camApply(P);
 // where the film's camera is meant to be now (also for the rejoin after a pause)
@@ -1669,7 +1675,7 @@ function cineNow(now) {
     const s = k, h00 = 2 * s ** 3 - 3 * s * s + 1, h10 = s ** 3 - 2 * s * s + s, h01 = -2 * s ** 3 + 3 * s * s, h11 = s ** 3 - s * s;
     return { target: A.target.map((v, j) => v + (B.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e),
              phi: A.phi + (B.phi - A.phi) * e, th: h00 * A.th + h10 * T * w0 + h01 * c.th0 + h11 * T * w1,
-             fov: (A.fov ?? FOV0) + ((B.fov ?? FOV0) - (A.fov ?? FOV0)) * e, k };
+             fov: (A.fov ?? FOV0) + ((B.fov ?? FOV0) - (A.fov ?? FOV0)) * e, lens: (A.lens ?? 1) + ((B.lens ?? 1) - (A.lens ?? 1)) * e, k };
   }
   const len = shotLen(sh) * 1000;
   return { ...cinePose(sh, Math.min((now - c.t0) / len, 1), c.th0, c.dir), k: (now - c.t0) / len };
@@ -2390,6 +2396,12 @@ function setView(v) {
   if (v === "free") {
     historyLeft = $("#timeOn").checked ? { year: TIME.year.value, cine: cine && !cine.people ? cine : null, at: performance.now() } : null;
     paused = false; setHistory(false);
+    // Free has the whole lens: a shot's share (LENS.k) eases back to 1, the camera moving in or out about its target
+    if (LENS.k !== 1) { const k0 = LENS.k, t0k = performance.now();
+      const stepK = (now) => { const q = Math.min((now - t0k) / 800, 1), m0 = lensM(); LENS.k = k0 + (1 - k0) * q * q * (3 - 2 * q);
+        if (!tween) camera.position.sub(controls.target).multiplyScalar(m0 / lensM()).add(controls.target);
+        applyLens(); invalidate(); if (q < 1) requestAnimationFrame(stepK); };
+      requestAnimationFrame(stepK); }
     // the Free camera has the normal field of view: eased back over 0.8 s if a shot had changed it
     const f0 = baseFov, t0 = performance.now();
     const ease = (now) => { if (tween) return; const k = Math.min((now - t0) / 800, 1); setFov(f0 + (FOV0 - f0) * k * k * (3 - 2 * k)); invalidate(); if (k < 1) requestAnimationFrame(ease); };
