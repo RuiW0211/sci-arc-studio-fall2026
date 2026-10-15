@@ -22,6 +22,9 @@ Target density (half_density_m > 0, user 2026-10-16, item 15: "通过疏密来�
   per m2 of ground within area_window_m of the building (as scanned), T0 = the area_reference_percentile of A among the
   buildings within area_reference_radius_m of Y-1. Dense blocks thin more, open ground (parks, plazas) keeps more, so
   the amount on screen per m2 follows distance from Y-1 (the scanned city is heavier to the south: centre -73 m before).
+  The ground (Terrain, _other, street furniture) keeps at least the share of the building points around it (within
+  area_window_m), so a building that keeps more on open ground does not stand on thinner ground (user 2026-10-16: the
+  buildings at the edge looked as if floating).
 """
 import json
 import sys
@@ -51,6 +54,7 @@ DENSITY, DENSITY_INSIDE = 1.0, False
 HALF, AREA_W, AREA_PCT, AREA_REF_R = 0.0, 120.0, 90.0, 200.0
 AREA_LAYERS = ("Buildings", "Buildings_LiDAR_only", "Landmarks")
 AREA_T0 = None          # set by plan()
+GROUND_GRID = None      # set by plan(): (x0, step, grid of the kept share of the building points around each node)
 # site-model/houdini/thinning.json overrides the defaults above (see its "_" notes); command-line flags override both
 _cfg_path = HZ / "thinning.json"
 if _cfg_path.exists():
@@ -307,6 +311,20 @@ def plan(verbose=True):
         cx, cn = f["sx"] / f["n"], f["sn"] / f["n"]
         f["r"] = float(ratio(np.array(cx), np.array(cn), hash01(zlib.crc32(s.encode())), area.get(s)))
         f["name"] = newname.get(s, s)
+    global GROUND_GRID
+    GROUND_GRID = None
+    if HALF > 0:
+        # the kept share of the building points within AREA_W of each node of a 20 m grid, for the ground
+        br = np.array([final[s]["r"] for s in bs])
+        x0, step = -1600.0, 20.0
+        g = np.arange(x0, -x0 + step, step)
+        gx, gn = np.meshgrid(g, g, indexing="ij")
+        nodes = np.c_[gx.ravel(), gn.ravel()]
+        kept = np.zeros(len(nodes))
+        for k, j in enumerate(cKDTree(bp).query_ball_point(nodes, AREA_W)):
+            if j:
+                kept[k] = (bn[j] * br[j]).sum() / bn[j].sum()
+        GROUND_GRID = (x0, step, kept.reshape(gx.shape))
     est = sum(f["n"] * f["r"] for f in final.values())
     if verbose:
         print(f"{len(objects):,} chunk objects, {merged} seam splits joined -> {len(final):,} objects;"
@@ -319,7 +337,15 @@ def cell_ratio(x, n):
     per-object random replaced by a second smooth noise field (wavelength CELL m), so the fade forms irregular patches
     instead of squares."""
     u = 0.5 + 0.5 * noise(x, n, CELL, seed=11)
-    return ratio(x, n, u)
+    r = ratio(x, n, u)
+    if GROUND_GRID is not None:
+        # at least the share of the building points around it (bilinear between the 20 m grid nodes)
+        x0, step, G = GROUND_GRID
+        fx, fn = np.clip((x - x0) / step, 0, G.shape[0] - 1.001), np.clip((n - x0) / step, 0, G.shape[1] - 1.001)
+        i, j = fx.astype(int), fn.astype(int); a, b = fx - i, fn - j
+        gb = (G[i, j] * (1 - a) + G[i + 1, j] * a) * (1 - b) + (G[i, j + 1] * (1 - a) + G[i + 1, j + 1] * a) * b
+        r = np.maximum(r, gb)
+    return r
 
 
 def point_u(X, Y, Z):
@@ -438,7 +464,7 @@ def pack():
                      "then a faint mist that fades out itself." if HALF <= 0 else f"No full-density disc: each object keeps "
                      f"1 / (1 + (d / {HALF:.0f} m)^{P:g}) of its points (half at {HALF:.0f} m, a per-object random stretch); "
                      f"buildings also x {AREA_T0:.2f} / the building points per m2 within {AREA_W:.0f} m around them, so dense "
-                     "blocks thin more and open ground keeps more."},
+                     "blocks thin more and open ground keeps more; the ground keeps at least the share of the buildings around it."},
         "source": "USGS 3DEP CA_LosAngeles_B23 (2023), 9 tiles 11SLT0383-0385 / 3767-3769, public domain; labels by Houdini;"
                   " LAZ (LAS 1.2 format 0 + extra bytes), local frame, 1 cm",
     }

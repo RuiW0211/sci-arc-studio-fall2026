@@ -236,12 +236,16 @@
       "minHagM": 2,
       "maxHagM": 15,
       "uses": "street structure|bridge|walkway|deck|canopy",
+      "curved": {
+        "maxThickM": 4,
+        "maxHagM": 25
+      },
       "matchDensity": {
         "maxSize": 2.5
       }
     }
   },
-  "_splitLayers": "Objects of a layer sent to another (user, 2026-10-10): LiDAR-only structures whose entity's checked use matches 'uses', or that are thin (less than maxThickM between the 5th and 95th percentile of their heights) and sit on average minHagM-maxHagM above the ground: bridges, raised walkways, street and plaza decks, canopies, drawn with the ground and streets. matchDensity: the moved objects are drawn as densely as the ground around them (points dropped, or drawn larger up to maxSize times).",
+  "_splitLayers": "Objects of a layer sent to another (user, 2026-10-10): LiDAR-only structures whose entity's checked use matches 'uses', or that are thin (less than maxThickM between the 5th and 95th percentile of their heights) and sit on average minHagM-maxHagM above the ground: bridges, raised walkways, street and plaza decks, canopies, drawn with the ground and streets. curved (2026-10-16, freeway ramps and a skybridge near the 110): objects no one has checked by hand also go when they are thin about their own sloping or curving surface (under curved.maxThickM) and sit minHagM-curved.maxHagM above the ground. matchDensity: the moved objects are drawn as densely as the ground around them (points dropped, or drawn larger up to maxSize times).",
   "plazas": {
     "layer": "Buildings",
     "minBuildingM": 40,
