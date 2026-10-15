@@ -548,25 +548,31 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       const curveData = chartData;   // what is drawn (morphing, showDay)
       if (!curveData) return;
       const pad = THUMB_R * devicePixelRatio, X = (f) => pad + f * (w - 2 * pad);   // f: share of the day
-      let max = 1;
-      for (let b = 0; b < 96; b++) { let s = 0; for (const c of curveData) s += c[b]; max = Math.max(max, s, lineData ? lineData[b] : 0); }
+      let max = 1, peak = 0;   // max: the scale (both days); peak: the shown day's, for the label
+      for (let b = 0; b < 96; b++) { let s = 0; for (const c of curveData) s += c[b]; peak = Math.max(peak, s); max = Math.max(max, s, lineData ? lineData[b] : 0); }
+      const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg");
+      const Y = (v) => h - (v / max) * (h - 2), dpr = devicePixelRatio;
+      const outline = (vals) => { for (let b = 0; b < 96; b++) ctx[b ? "lineTo" : "moveTo"](X((b + 0.5) / 96), Y(vals[b])); };
+      const area = (vals) => { ctx.beginPath(); ctx.moveTo(X(0), h); for (let b = 0; b < 96; b++) ctx.lineTo(X((b + 0.5) / 96), Y(vals[b])); ctx.lineTo(X(1), h); ctx.closePath(); };
+      // the other day (user, 2026-10-14: the dashed line looked ugly): a faint silhouette behind the stack and a thin
+      // solid outline, in the text colour over the background and in the page colour where it crosses the fills
+      if (lineData) { area(lineData); ctx.fillStyle = fg; ctx.globalAlpha = 0.09; ctx.fill(); ctx.globalAlpha = 1; }
       for (let k = curveData.length - 1; k >= 0; k--) {
         ctx.beginPath(); ctx.moveTo(X(0), h);
-        for (let b = 0; b < 96; b++) { let s = 0; for (let j = 0; j <= k; j++) s += curveData[j][b]; ctx.lineTo(X((b + 0.5) / 96), h - (s / max) * (h - 2)); }
+        for (let b = 0; b < 96; b++) { let s = 0; for (let j = 0; j <= k; j++) s += curveData[j][b]; ctx.lineTo(X((b + 0.5) / 96), Y(s)); }
         ctx.lineTo(X(1), h); ctx.closePath(); ctx.fillStyle = pc.colors[meta.types[k]]; ctx.fill();
       }
-      const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg");
-      if (lineData) {   // the other day's total, dashed, over a halo in the page colour so it reads on the fills too
-        ctx.beginPath();
-        for (let b = 0; b < 96; b++) ctx[b ? "lineTo" : "moveTo"](X((b + 0.5) / 96), h - (lineData[b] / max) * (h - 2));
-        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--bg"); ctx.lineWidth = 3 * devicePixelRatio;
-        ctx.globalAlpha = 0.55; ctx.stroke();
-        ctx.strokeStyle = fg; ctx.lineWidth = 1.2 * devicePixelRatio; ctx.setLineDash([3 * devicePixelRatio, 2 * devicePixelRatio]);
-        ctx.globalAlpha = 0.9; ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      if (lineData) {
+        ctx.lineWidth = dpr; ctx.lineJoin = "round";
+        ctx.beginPath(); outline(lineData); ctx.strokeStyle = fg; ctx.globalAlpha = 0.6; ctx.stroke();
+        ctx.save();
+        area(Float32Array.from({ length: 96 }, (_, b) => curveData.reduce((s, c) => s + c[b], 0))); ctx.clip();
+        ctx.beginPath(); outline(lineData); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--bg"); ctx.globalAlpha = 0.8; ctx.stroke();
+        ctx.restore(); ctx.globalAlpha = 1;
       }
       ctx.fillStyle = fg; ctx.fillRect(X(st.t / 86400) - devicePixelRatio / 2, 0, devicePixelRatio, h);
       ctx.font = `${10 * devicePixelRatio}px -apple-system, sans-serif`; ctx.globalAlpha = 0.7;
-      ctx.fillText(`peak ${Math.round(max).toLocaleString()}`, 3 * devicePixelRatio, 11 * devicePixelRatio); ctx.globalAlpha = 1;
+      ctx.fillText(`peak ${Math.round(peak).toLocaleString()}`, 3 * devicePixelRatio, 11 * devicePixelRatio); ctx.globalAlpha = 1;
     },
   };
   // the time slider: knob and the filled part of its track (--p, as viewer.js does for its sliders)
