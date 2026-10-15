@@ -18,9 +18,6 @@ function hash(a, b) {
 const hhmm = (s) => { const m = Math.floor(s / 60) % 1440; return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`; };
 
 export async function createPopulation({ cfg, scene, camera, renderer, layers, thinning, onInfo, onDrop, onStatus }) {
-  // the people, their trails and markers draw on layer OVERLAY (viewer.js, 2026-10-14): over the depth-of-field pass,
-  // sharp (thin trails blurred away), still hidden behind the buildings by the picture's depth
-  const OVERLAY = 1;
   const pc = cfg.population;
   // load profile (2026-10-14, the stutter when the people come on): ms of the steps, the first few calls of each
   const times = {}, tStart = performance.now();
@@ -200,7 +197,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // hidden until setVisible(true): the viewer may make the population ahead of time (2026-10-14, while the opening
   // plays), and nobody must show before People comes on
   points.visible = false; st.shown = false;
-  points.layers.set(OVERLAY); scene.add(points);
+  scene.add(points);
   // the selected people (Alt + click one, Shift + Alt + click adds / takes out; user, 2026-10-12): a bigger highlight
   // point each. sel = person indices in click order; st.selected = the last one, -1 when none
   const HILITE = new THREE.Color(cfg.linked?.highlight ?? "#FF3EA5");
@@ -213,7 +210,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   selPoint.visible = false;
   selPoint.frustumCulled = false;
   selPoint.renderOrder = 3;
-  selPoint.layers.set(OVERLAY); scene.add(selPoint);
+  scene.add(selPoint);
   // each selected person's position, where the viewer's floating tag points (kept up to date)
   const posOf = (i) => selPosOf.get(i) ?? selPosOf.set(i, new THREE.Vector3(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2])).get(i);
   // the person under the cursor (within PICK_PX on screen): drawn bigger, so a click visibly means "this person"
@@ -223,7 +220,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   hovMat.uniforms = { size: { value: 1.8 }, scale: uniforms.scale, minPx: { value: 7 }, alpha: { value: 0.85 } };
   const hovPoint = new THREE.Points(hovGeo, hovMat);
   hovPoint.visible = false; hovPoint.frustumCulled = false; hovPoint.renderOrder = 3;
-  hovPoint.layers.set(OVERLAY); scene.add(hovPoint);
+  scene.add(hovPoint);
   let hovered = -1;
   const _p = new THREE.Vector3();
   /** The shown person nearest to a screen point (client px), if within maxPx; else -1. */
@@ -256,7 +253,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const glow = new THREE.Mesh(new THREE.BufferGeometry(), neonMat("exp(-vA * vA * 4.0)"));
   const line = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.7, depthTest: false }));
   const route = new THREE.Group();
-  for (const o of [wall, glow, line]) { o.frustumCulled = false; o.renderOrder = 3; o.layers.set(OVERLAY); route.add(o); }
+  for (const o of [wall, glow, line]) { o.frustumCulled = false; o.renderOrder = 3; route.add(o); }
   route.visible = false;
   scene.add(route);
   const WALL_H = 2.4, GLOW_W = 1.4;
@@ -286,7 +283,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   trails.frustumCulled = false;
   trails.renderOrder = 2;
   trails.visible = false;
-  trails.layers.set(OVERLAY); scene.add(trails);
+  scene.add(trails);
   const ta = new THREE.Vector3(), tb = new THREE.Vector3();
   function buildTrails(movers) {
     const D = days[st.day], T = st.t, tail = Math.min(Math.max(st.speed * 0.8, 60), 2400);
