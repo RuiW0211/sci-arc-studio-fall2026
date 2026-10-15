@@ -2180,6 +2180,31 @@ let idleTimer = 0;
 const overPanel = () => document.querySelector("#ui:hover, #info:hover") !== null;
 addEventListener("keydown", (e) => { if (e.key === "Escape" && !typing()) clearSelection(); });
 const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") && document.activeElement.type !== "range";
+// full screen (user, 2026-10-14): the button left of the panel's "–", or F. Esc keeps its own job (clearing the selection,
+// user: "不能再点esc退出全屏"): in Edge / Chrome the keyboard lock hands a short Esc to the page and only a held Esc leaves
+// full screen (the browser's rule, it cannot be turned off); Firefox and Safari always leave on Esc. Hidden where the
+// browser has no full screen (iPhone Safari)
+{ const fsBtn = $("#fs");
+  if (fsBtn && document.fullscreenEnabled && document.documentElement.requestFullscreen) {
+    fsBtn.hidden = false;
+    const toggleFs = async () => {
+      if (document.fullscreenElement) { await document.exitFullscreen(); return; }
+      await document.documentElement.requestFullscreen({ navigationUI: "hide" });
+      try { await navigator.keyboard?.lock?.(["Escape"]); } catch { /* no keyboard lock here */ }
+    };
+    fsBtn.onclick = () => { toggleFs().catch(() => {}); fsBtn.blur(); };   // blur: Space stays play / pause, not this button
+    document.addEventListener("fullscreenchange", () => {
+      const on = !!document.fullscreenElement;
+      fsBtn.classList.toggle("on", on); fsBtn.title = on ? "Exit full screen (F)" : "Full screen (F)";
+      fsBtn.setAttribute("aria-label", on ? "Exit full screen" : "Full screen");
+      if (!on) navigator.keyboard?.unlock?.();
+    });
+    addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() !== "f" || e.ctrlKey || e.metaKey || e.altKey || e.repeat || typing()) return;
+      e.preventDefault(); toggleFs().catch(() => {});
+    });
+  }
+}
 function wake(ms = IDLE_MS) {
   if (typeof ms !== "number") ms = IDLE_MS;    // called as an event listener
   if (document.body.classList.contains("idle")) invalidate();   // the Time tags under the panel fade again

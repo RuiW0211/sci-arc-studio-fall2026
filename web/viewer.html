@@ -116,6 +116,13 @@
   #toggle, #toggle:hover { border: 0; background: none; box-shadow: none; }
   /* the collapse "–" sits on the same vertical line as the section chevrons: both are centred in a 14px box */
   #toggle { width: 14px; padding: 0; text-align: center; color: var(--muted); }
+  /* full screen (user, 2026-10-14): a twin of the "–", left of it, the same 14px box and muted colour; corners out to
+     go full screen, in to come back */
+  .head .hbtns { display: inline-flex; align-items: center; gap: 8px; }
+  #fs, #fs:hover { width: 14px; padding: 0; border: 0; background: none; box-shadow: none; color: var(--muted); line-height: 0; }
+  #fs svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  #fs .exit, #fs.on .enter { display: none; }
+  #fs.on .exit { display: inline; }
   /* the four colourings fit one row: buttons sized by their label */
   /* Units: a sliding switch sized and coloured like the Views buttons (user, 2026-10-10): glass pill track, pill thumb */
   .seg.pill { display: inline-flex; border-radius: 999px; padding: 2px; background: var(--chip); border: 1px solid var(--glass-rim);
@@ -314,7 +321,7 @@
 </head>
 <body>
 <div id="ui" class="panel">
-  <div class="head"><h1>Angels Knoll</h1><button id="toggle" title="Collapse">–</button></div>
+  <div class="head"><h1>Angels Knoll</h1><span class="hbtns"><button id="fs" title="Full screen (F)" aria-label="Full screen" hidden><svg class="enter" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 4.5V1h3.5M7.5 1H11v3.5M11 7.5V11H7.5M4.5 11H1V7.5"/></svg><svg class="exit" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 1v3.5H1M11 4.5H7.5V1M7.5 11V7.5H11M1 7.5h3.5V11"/></svg></button><button id="toggle" title="Collapse">–</button></span></div>
   <div class="body">
     <div class="sub">Site model · <a href="./" style="color:inherit">home</a></div>
     <!-- two cameras on the same model (user, 2026-10-15): Guided, the opening and film; Free, today's model to explore -->
