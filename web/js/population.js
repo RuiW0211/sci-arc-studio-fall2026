@@ -19,8 +19,13 @@ const hhmm = (s) => { const m = Math.floor(s / 60) % 1440; return `${String(Math
 
 export async function createPopulation({ cfg, scene, camera, renderer, layers, thinning, onInfo, onDrop, onStatus }) {
   const pc = cfg.population;
+  // load profile (2026-10-14, the stutter when the people come on): ms of the steps, the first few calls of each
+  const times = {}, tStart = performance.now();
+  const timed = (k, f) => { const t = performance.now(), r = f(); const a = (times[k] ??= []); if (a.length < 5) a.push(Math.round((performance.now() - t) * 10) / 10); return r; };
   const meta = await (await fetch(pc.meta)).json();
   const buf = await (await fetch(pc.meta.replace(/[^/]*$/, "") + meta.bin)).arrayBuffer();
+  times.fetch = Math.round(performance.now() - tStart);
+  const tSetup = performance.now();
   const sec = (name) => {
     const s = meta.sections[name];
     const T = { float32: Float32Array, uint32: Uint32Array, uint16: Uint16Array, int16: Int16Array, uint8: Uint8Array }[s.type];
@@ -455,7 +460,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const $ = (s) => document.querySelector(s);
   const chart = $("#popChart"), ctx = chart.getContext("2d");
   let curveData = null, curveTimer = 0;
-  const recurve = () => { clearTimeout(curveTimer); curveTimer = setTimeout(() => { curveData = curve(); ui.drawChart(); }, 60); };
+  const recurve = () => { clearTimeout(curveTimer); curveTimer = setTimeout(() => { curveData = timed("curve (24 h chart)", curve); timed("drawChart", ui.drawChart); }, 60); };
   const ui = {
     refresh() {
       $("#popClock").textContent = hhmm(st.t);
@@ -514,7 +519,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // "Highlight people" (viewer.js): people grow from size to highlightSize as the point cloud fades (k 0..1)
   const SIZE0 = pc.size ?? 0.7, SIZE1 = pc.highlightSize ?? 1.0;
   const api = {
-    meta, state: st,
+    meta, state: st, times,
     highlight(k) { uniforms.size.value = SIZE0 + (SIZE1 - SIZE0) * k; uniforms.minPx.value = 2 + k; st.dirty = true; },
     setVisible(on) {
       st.shown = on;
@@ -523,7 +528,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       if (!on) { hovered = -1; hovPoint.visible = false; }
       selPoint.visible = on && sel.length > 0;
       route.visible = false;
-      setXray(on && st.xray);
+      timed("setXray", () => setXray(on && st.xray));
       if (!on) trails.visible = false;
       if (on) { st.dirty = true; if (!curveData) recurve(); requestAnimationFrame(() => dayThumb(true)); }
       setPlaying(on);   // turning the layer on plays the day (user, 2026-10-09); off pauses it
@@ -535,7 +540,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       uniforms.scale.value = renderer.domElement.height / (2 * Math.tan((camera.fov * Math.PI) / 360));
       if (!points.visible) return;
       if (st.playing) { st.t = (st.t + dt * st.speed) % 86400; st.dirty = true; }
-      if (st.dirty) update();
+      if (st.dirty) timed("update (positions)", update);
       routeU.now.value = st.t;
     },
     // the person within maxPx of a screen point (client px), or -1 (user, 2026-10-08: screen distance, so picking a
@@ -558,6 +563,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     clearSelection() { if (sel.length) select(-1); },
     select,  // select(i): show person i's day (debugging / links)
   };
+  times.setup = Math.round(performance.now() - tSetup);
   onStatus?.("");
   return api;
 }
