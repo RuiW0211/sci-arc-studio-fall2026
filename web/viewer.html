@@ -267,11 +267,18 @@
   #popChart { display: block; width: 100%; height: 56px; border-bottom: 1px solid var(--line); }
   #popTrack input[type=range] { position: absolute; left: 0; top: 0; width: 100%; height: 63px; margin: 0; }
   #popTrack input[type=range]::-webkit-slider-runnable-track { height: 63px; background: none; }
-  #popTrack input[type=range]::-webkit-slider-thumb { margin-top: 50px; }
+  /* the knob (user, 2026-10-14: a little sense of dragging left and right): a small horizontal capsule with two grip
+     lines, a left-right cursor, and on hover / drag it grows more across than up. Its half width is population.js
+     THUMB_R (the chart's inset) */
+  #popTrack input[type=range] { cursor: ew-resize; }
+  #popTrack input[type=range]::-webkit-slider-thumb { width: 18px; height: 12px; margin-top: 50.5px; border-radius: 6px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='12'%3E%3Cpath d='M7.5 3.5v5M10.5 3.5v5' stroke='%23000' stroke-opacity='.38' stroke-linecap='round'/%3E%3C/svg%3E") center / 18px 12px no-repeat, #fff; }
+  #popTrack input[type=range]:hover::-webkit-slider-thumb, #popTrack input[type=range]:active::-webkit-slider-thumb { transform: scale(1.16, 1.06); }
   #popTrack input[type=range]::-moz-range-track { height: 63px; background: none; }
   #popTrack input[type=range]::-moz-range-progress { background: none; }
-  #popTrack input[type=range]::-moz-range-thumb { transform: translateY(25px); }
-  #popTrack input[type=range]:hover::-moz-range-thumb, #popTrack input[type=range]:active::-moz-range-thumb { transform: translateY(25px) scale(1.18); }
+  #popTrack input[type=range]::-moz-range-thumb { width: 18px; height: 12px; border-radius: 6px; transform: translateY(25px);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='12'%3E%3Cpath d='M7.5 3.5v5M10.5 3.5v5' stroke='%23000' stroke-opacity='.38' stroke-linecap='round'/%3E%3C/svg%3E") center / 18px 12px no-repeat, #fff; }
+  #popTrack input[type=range]:hover::-moz-range-thumb, #popTrack input[type=range]:active::-moz-range-thumb { transform: translateY(25px) scale(1.16, 1.06); }
   #popVs { font-size: 11px; color: var(--muted); text-align: right; margin-top: 8px; min-height: 1em; font-variant-numeric: tabular-nums; }
   /* Weekday / Weekend (population.js showCurve): the old curve dims while the new one is worked out, then morphs */
   #popChart { transition: opacity var(--t-feedback) ease; }
