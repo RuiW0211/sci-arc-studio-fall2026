@@ -734,23 +734,50 @@ async function loadLidar() {
     for (const [o, a] of hs) { a.sort((p, q) => p - q); objLo[o] = a[Math.floor(0.005 * (a.length - 1))]; objHi[o] = a[Math.ceil(0.995 * (a.length - 1))]; }
   }
   tick("LOD priority + years + rise heights");
-  // bucket point indices by layer and LOD chunk
-  const buckets = new Map();
+  // bucket point indices by layer and LOD chunk, each chunk sorted by draw priority q (the first k points are the ones
+  // to keep when thinning). (L1, 2026-10-14: this took ~2.6 s with a string key per point and a comparison sort per
+  // chunk; now numeric chunk ids, a counting pass, and one stable radix sort of all points by q's bits, then by chunk:
+  // the same chunks in the same order, their points in the same order, ties in q as before in index order.) q >= 0, so
+  // its float bits sort as unsigned integers
+  const cellM = lodCell(), layerNames = [...layerIdx.keys()];
+  let cx0 = Infinity, cz0 = Infinity, cx1 = -Infinity, cz1 = -Infinity;
   for (let i = 0; i < n; i++) {
     if (drop[i]) continue;
-    const c = lodCell(P[3 * i], P[3 * i + 2]);
-    const key = `${objLayers[obj[i]]}|${c}|${Math.floor(P[3 * i] / c)}|${Math.floor(P[3 * i + 2] / c)}`;
-    let b = buckets.get(key); if (!b) buckets.set(key, (b = []));
-    b.push(i);
+    const cx = Math.floor(P[3 * i] / cellM), cz = Math.floor(P[3 * i + 2] / cellM);
+    if (cx < cx0) cx0 = cx; if (cx > cx1) cx1 = cx; if (cz < cz0) cz0 = cz; if (cz > cz1) cz1 = cz;
   }
-  tick("  chunks: buckets (string keys)");
-  let tSort = 0, tCopy = 0, tGeo = 0;   // L1 audit (2026-10-14): where the chunk step's time goes
+  const cw = cx1 - cx0 + 1, ch = cz1 - cz0 + 1, slot = new Int32Array(layerNames.length * cw * ch).fill(-1);
+  const chunkOf = new Int32Array(n), chunkSlot = [];   // point -> chunk id (-1 dropped); chunk id -> its slot
+  let kept = 0;
+  for (let i = 0; i < n; i++) {
+    if (drop[i]) { chunkOf[i] = -1; continue; }
+    const sl = (objL[obj[i]] * cw + Math.floor(P[3 * i] / cellM) - cx0) * ch + Math.floor(P[3 * i + 2] / cellM) - cz0;
+    let id = slot[sl]; if (id < 0) { id = slot[sl] = chunkSlot.length; chunkSlot.push(sl); }   // ids in order of first point
+    chunkOf[i] = id; kept++;
+  }
+  // the keys travel with the indices (reading q at random for every point and pass was the slow part)
+  const nChunks = chunkSlot.length, qBits = new Uint32Array(q.buffer, q.byteOffset, n);
+  let A = new Uint32Array(kept), B = new Uint32Array(kept), KA = new Uint32Array(kept), KB = new Uint32Array(kept);
+  for (let i = 0, k = 0; i < n; i++) if (chunkOf[i] >= 0) { A[k] = i; KA[k++] = qBits[i]; }
+  for (const [shift, size] of [[0, 2048], [11, 2048], [22, 1024]]) {   // LSD radix by q, stable
+    const cnt = new Uint32Array(size + 1), mask = size - 1;
+    for (let k = 0; k < kept; k++) cnt[((KA[k] >>> shift) & mask) + 1]++;
+    for (let d = 0; d < size; d++) cnt[d + 1] += cnt[d];
+    for (let k = 0; k < kept; k++) { const key = KA[k], at = cnt[(key >>> shift) & mask]++; B[at] = A[k]; KB[at] = key; }
+    [A, B] = [B, A]; [KA, KB] = [KB, KA];
+  }
+  const chunkStart = new Uint32Array(nChunks + 1);   // then by chunk, stable: within a chunk, by q
+  for (let k = 0; k < kept; k++) { const c = chunkOf[A[k]]; KA[k] = c; chunkStart[c + 1]++; }
+  for (let c = 0; c < nChunks; c++) chunkStart[c + 1] += chunkStart[c];
+  { const at = chunkStart.slice(0, nChunks); for (let k = 0; k < kept; k++) B[at[KA[k]]++] = A[k]; }
+  const order = B;
+  tick("  chunks: buckets + sort by q");
+  let tCopy = 0, tGeo = 0;   // L1 (2026-10-14): where the chunk step's time goes
   const parts = [];
-  for (const [key, idx] of buckets) {
-    const [name, cell] = key.split("|"), m = idx.length;
+  for (let c = 0; c < nChunks; c++) {
+    const name = layerNames[Math.floor(chunkSlot[c] / (cw * ch))], cell = cellM;
+    const idx = order.subarray(chunkStart[c], chunkStart[c + 1]), m = idx.length;
     let tt = performance.now();
-    idx.sort((a, b) => q[a] - q[b]);   // by draw priority: the first k points are the ones to keep when thinning
-    tSort += performance.now() - tt; tt = performance.now();
     const pos = new Float32Array(m * 3), zs = new Float32Array(m), cls = new Uint8Array(m), inten = new Uint8Array(m), ob = new Uint16Array(m);
     const qs = new Float32Array(m), hag = HG ? new Int16Array(m) : null;   // height above ground, 0.1 m (Houdini LAZ)
     const sz = new Uint8Array(m), yr = new Int16Array(m), rise = new Uint8Array(m);
@@ -782,7 +809,7 @@ async function loadLidar() {
     if (L) (L.lidarParts ||= []).push(pts);
     tGeo += performance.now() - tt;
   }
-  Object.assign(loadTimes, { "  chunks: sort by q, ms": Math.round(tSort), "  chunks: copy into arrays, ms": Math.round(tCopy), "  chunks: geometry + scene, ms": Math.round(tGeo), "  chunks: count": parts.length });
+  Object.assign(loadTimes, { "  chunks: copy into arrays, ms": Math.round(tCopy), "  chunks: geometry + scene, ms": Math.round(tGeo), "  chunks: count": parts.length });
   tick("chunks (sort + geometry)");
   const objCount = new Uint32Array(objNames.length);
   for (let i = 0; i < n; i++) objCount[obj[i]]++;
