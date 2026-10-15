@@ -535,7 +535,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     };
     morphAnim = requestAnimationFrame(step);
   }
-  const THUMB_R = 9;   // half the slider knob's width (viewer.html #popTrack): the chart is inset by it, so knob, marker and curve line up
+  const THUMB_R = 6.5;   // half the slider knob (viewer.html): the chart is inset by it, so knob, marker and curve line up
   const ui = {
     refresh() {
       $("#popClock").textContent = hhmm(st.t);
