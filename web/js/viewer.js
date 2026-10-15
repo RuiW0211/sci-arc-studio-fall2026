@@ -74,7 +74,6 @@ const tms = (name) => parseFloat(getComputedStyle(document.documentElement).getP
 // into the new ones as uColorMix goes 0 -> 1 over --t-out
 const COLOR_MIX = { value: 1 };
 let mixAnim = 0;
-let animAt = -1e9;   // last frame of a fade (colours, selection, Highlight people): adaptGlass waits for them to end
 function crossFade() {
   const t0 = performance.now(), dur = tms("--t-out");
   COLOR_MIX.value = 0;
@@ -82,7 +81,7 @@ function crossFade() {
   const step = (now) => {
     const k = dur ? Math.min((now - t0) / dur, 1) : 1;
     COLOR_MIX.value = k * k * (3 - 2 * k);
-    invalidate(); animAt = now;
+    invalidate();
     if (k < 1) mixAnim = requestAnimationFrame(step);
   };
   mixAnim = requestAnimationFrame(step);
@@ -115,7 +114,7 @@ function setWhiteCloud(on) {
     const dur = tms("--t-out"), k = dur ? Math.min((now - t0) / dur, 1) : 1, e = k * k * (3 - 2 * k);
     FOCUS.value = from + (to - from) * e;
     pop?.highlight(FOCUS.value);   // people grow with it
-    invalidate(); animAt = now;
+    invalidate();
     if (k < 1) focusAnim = requestAnimationFrame(step);
     else if (!on) for (const m of focusMats) if (!m.userData.alwaysTransparent) { m.transparent = false; m.needsUpdate = true; }
   };
@@ -248,7 +247,6 @@ for (const raw of new Set(lidarMeta.attributes?.object?.layers ?? [])) {
 const ordered = [...layers.values()].sort((a, b) => (a.cfg.order ?? 99) - (b.cfg.order ?? 99) || a.name.localeCompare(b.name));
 
 let mode = null;
-let glassAt = -1e9;   // last adaptive-glass check (see adaptGlass); declared early: setMode resets it
 const lidarGroup = new THREE.Group();
 scene.add(lidarGroup);
 let lidar = null;
@@ -291,9 +289,9 @@ function applyVisibility() {
 }
 
 // ---------- render on demand: only when something changed (camera, colours, visibility, size) ----------
-let dirty = true, lastMove = -1e9;
+let dirty = true;
 function invalidate() { dirty = true; }
-controls.addEventListener("change", () => { dirty = true; lastMove = performance.now(); });
+controls.addEventListener("change", () => { dirty = true; });
 
 $("#layers").innerHTML = "";
 for (const L of ordered) {
@@ -963,7 +961,7 @@ function paintSelection() {
   const step = (now) => {
     const k = dur ? Math.min((now - t0) / dur, 1) : 1;
     SEL_K.value = cssEase(k);
-    invalidate(); animAt = now;
+    invalidate();
     if (k < 1) selAnim = requestAnimationFrame(step);
   };
   selAnim = requestAnimationFrame(step);
@@ -1007,7 +1005,6 @@ async function setMode(m) {
   document.querySelectorAll("#modes button").forEach((b) => { b.disabled = false; b.classList.toggle("on", b.dataset.mode === m); });
   layerCounts();
   lonce("after: visibility + layer counts");
-  glassAt = -1e9;   // the picture behind the panels changes completely: pick light / dark glass again right away
   busy = false;
 }
 document.querySelectorAll("#modes button").forEach((b) => (b.onclick = () => setMode(b.dataset.mode)));
@@ -1198,7 +1195,6 @@ $("#timeTags").onchange = (e) => { tlLayer.classList.toggle("off", !e.target.che
 const datedYears = (ENTITIES?.entities ?? []).map((e) => parseInt(e.built?.[0] ?? e.parcel?.year_built, 10)).filter((y) => y > 1000).sort((a, b) => a - b);
 const undatedN = (ENTITIES?.entities ?? []).length - datedYears.length;
 function setYear(y) {
-  animAt = performance.now();   // the buildings are going up: the picture is changing, no glass read-back
   const r = $("#timeRange");
   TIME.year.value = y; r.value = y;
   r.style.setProperty("--p", `${(100 * (y - r.min)) / (r.max - r.min)}%`);
@@ -1358,9 +1354,6 @@ function camApply(P) {
   _sph.set(P.r, P.phi, P.th);
   camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
   camera.lookAt(controls.target);
-  // the camera is moving: no glass read-back now (user, 2026-10-13: the panel flickered as the tour moved, its glass
-  // switching light / dark under the moving picture, and each read-back stalls a frame)
-  lastMove = performance.now();
 }
 function setPaused(on) {
   if (on === paused) return;
@@ -2262,44 +2255,6 @@ moveThumb(true, "#viewMode");
 if (urlq.get("earth")) setEarthView(urlq.get("earth"));   // ?earth=<Google Earth URL>: the same camera here
 status("");
 let lodEasing = true;
-// ---------- adaptive glass: light or dark panel depending on what is right behind it ----------
-// After a render (the drawing buffer is still valid), read the canvas under each floating element, average its luminance
-// and give the element .on-light (bright picture behind: light glass, dark text) or .on-dark. Hysteresis (to light above
-// GLASS_HI, back to dark below GLASS_LO, on 0-255) keeps it from flickering; at most every GLASS_EVERY ms, and only once
-// the camera has been still for GLASS_SETTLE ms.
-const GLASS_HI = 150, GLASS_LO = 110, GLASS_EVERY = 250, GLASS_SETTLE = 200;
-const glassEls = ["#ui", "#info", "#hint"].map((q) => $(q));
-let glassBuf = new Uint8Array(0);
-function adaptGlass(now) {
-  // reading pixels back stalls the GPU pipeline (100+ ms frames during a view change), so only when the camera is still
-  // ... and not while the population plays (the picture changes every frame; checked again once it stops), nor during a
-  // fade (user, 2026-10-12: turning People off stuttered twice: two 100-180 ms read-backs in the 0.5 s fade-out)
-  if (tween || pop?.state.playing || pop?.state.fading || now - animAt < GLASS_SETTLE || now - lastMove < GLASS_SETTLE
-      || now - glassAt < GLASS_EVERY) { glassPending = true; return; }
-  glassAt = now; glassPending = false;
-  const gl = renderer.getContext(), cv = renderer.domElement, sx = cv.width / cv.clientWidth, sy = cv.height / cv.clientHeight;
-  for (const el of glassEls) {
-    if (!el || el.offsetParent === null && getComputedStyle(el).position !== "fixed") continue;
-    const r = el.getBoundingClientRect();
-    if (r.width < 2 || r.height < 2 || getComputedStyle(el).display === "none") continue;
-    const x = Math.max(0, Math.floor(r.left * sx)), w = Math.min(cv.width - x, Math.ceil(r.width * sx));
-    const yTop = Math.max(0, Math.floor(r.top * sy)), h = Math.min(cv.height - yTop, Math.ceil(r.height * sy));
-    if (w < 1 || h < 1) continue;
-    if (glassBuf.length < w * h * 4) glassBuf = new Uint8Array(w * h * 4);
-    gl.readPixels(x, cv.height - yTop - h, w, h, gl.RGBA, gl.UNSIGNED_BYTE, glassBuf);
-    let sum = 0, k = 0;
-    const step = Math.max(1, Math.floor(Math.sqrt((w * h) / 2000)));   // ~2000 samples per element
-    for (let yy = 0; yy < h; yy += step) for (let xx = 0; xx < w; xx += step) {
-      const o = 4 * (yy * w + xx);
-      sum += 0.2126 * glassBuf[o] + 0.7152 * glassBuf[o + 1] + 0.0722 * glassBuf[o + 2]; k++;
-    }
-    const lum = sum / k, light = el.classList.contains("on-light"), dark = el.classList.contains("on-dark");
-    const toLight = light ? lum > GLASS_LO : dark ? lum > GLASS_HI : lum > (GLASS_HI + GLASS_LO) / 2;
-    el.classList.toggle("on-light", toLight); el.classList.toggle("on-dark", !toLight);
-  }
-}
-let glassPending = false;
-setInterval(() => { if (glassPending) { dirty = true; } }, GLASS_EVERY);   // re-check once the camera stops
 // ?perf (2026-10-15, FPS and response): a small panel, bottom left, with the frame rate and where each frame's time goes
 // (camera, LOD, people, render, tags), points and draw calls, and the time from the last click to its tag. Off by default.
 const perfT = (k, f) => { if (!PERF) return f(); const t = performance.now(), r = f(); PERF.acc[k] = (PERF.acc[k] || 0) + performance.now() - t; return r; };
@@ -2330,9 +2285,9 @@ function logFrame(now) {
 renderer.setAnimationLoop((now) => {
   logFrame(now);
   perfT("camera", () => {
-    if (tween) { stepTween(now); dirty = true; lastMove = now; }
-    if (cine) { stepCine(now); dirty = true; lastMove = now; }
-    if (controls.update()) { dirty = true; lastMove = now; }   // damping keeps moving the camera after the drag ends
+    if (tween) { stepTween(now); dirty = true; }
+    if (cine) { stepCine(now); dirty = true; }
+    if (controls.update()) dirty = true;   // damping keeps moving the camera after the drag ends
   });
   // LiDAR level of detail: recomputed whenever the view changed or a chunk is still easing to its target
   if (lidar && mode === "cloud" && (dirty || lodEasing)) perfT("lod", () => { lodEasing = updateLod(); if (lodEasing) dirty = true; });
@@ -2345,7 +2300,6 @@ renderer.setAnimationLoop((now) => {
   const tG = performance.now();
   perfT("tags", () => { updateTags(); updateTimeTags(); });
   lfRender = tG - tR; lfTags = performance.now() - tG;
-  adaptGlass(now);
   perfFrame(now, true);
 });
 // shot study (for checking the film, user, 2026-10-15: foregrounds hiding what a shot is about): the poses of every

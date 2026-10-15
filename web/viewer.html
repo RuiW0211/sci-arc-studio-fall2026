@@ -143,18 +143,8 @@
   .saveview input { border-radius: 999px; border: 1px solid var(--glass-rim); background: var(--chip); padding: 3px 10px; }
   button.view .del { background: var(--glass); border-color: var(--glass-rim);
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-  /* adaptive glass, like Apple's: viewer.js measures how bright the picture right behind each panel is and puts it in light
-     glass with dark text (.on-light) or dark glass with light text (.on-dark), whatever the system theme; with hysteresis */
-  .on-light { --fg: #111; --muted: #4f4f55; --line: rgba(0,0,0,.14); --accent: #111;
-    --glass: rgba(255,255,255,.19); --glass-hi: rgba(255,255,255,.85); --glass-rim: rgba(255,255,255,.6); --glass-lo: rgba(255,255,255,.14);
-    --glass-shadow: 0 10px 34px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08);
-    --chip: rgba(120,120,128,.16); --thumb: rgba(255,255,255,.82); --thumb-fg: #111; --track: rgba(120,120,128,.22); }
-  .on-dark { --fg: #f2f2f2; --muted: #b4b4ba; --line: rgba(255,255,255,.16); --accent: #eee;
-    --glass: rgba(28,28,30,.22); --glass-hi: rgba(255,255,255,.30); --glass-rim: rgba(255,255,255,.16); --glass-lo: rgba(255,255,255,.04);
-    --glass-shadow: 0 12px 38px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
-    --chip: rgba(120,120,128,.22); --thumb: rgba(255,255,255,.30); --thumb-fg: #fff; --track: rgba(0,0,0,.32); }
-  .panel.on-light, .panel.on-dark { color: var(--fg); transition: background .35s, color .35s, box-shadow .35s; }
-  #hint.on-light, #hint.on-dark { color: var(--muted); transition: color .35s; }
+  /* (2026-10-14, user) the adaptive light / dark glass (.on-light / .on-dark from a read-back of the picture) is gone: it
+     was for the mesh mode; the panels follow the system theme */
   /* hierarchy (user, 2026-10-07): section titles strongest (13px semibold, text colour, sentence case,
      sections, no dividers - user removed them); options / labels middle; secondary buttons (.ghost: Default / Apply / + Save view), values, notes lightest */
   details.sec { margin-top: 0; padding: 10px 0 2px; }
