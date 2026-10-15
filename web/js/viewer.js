@@ -250,6 +250,18 @@ const lidarGroup = new THREE.Group();
 scene.add(lidarGroup);
 let lidar = null;
 const loadTimes = {};   // ms from the start of loadLidar, by stage (__viewer.loadTimes; for performance checks)
+// after the cloud is up (L5, 2026-10-14): the first time a stage is passed (ms from the start of loadLidar), what a few
+// one-off steps take ("…, ms"), and for the first two minutes the long frames and long tasks (> 50 ms) with their times
+let loadT0 = 0;
+const ltick = (k) => { loadTimes[k] = Math.round(performance.now() - loadT0); };
+const lonce = (k) => { if (loadT0 && !(k in loadTimes)) ltick(k); };
+const ldur = (k, t) => { loadTimes[k] = (loadTimes[k] || 0) + Math.round(performance.now() - t); };
+loadTimes.longFrames = []; loadTimes.longTasks = [];
+try {
+  const lt = new PerformanceObserver((l) => { for (const e of l.getEntries()) if (loadT0 && e.startTime - loadT0 < 120000) loadTimes.longTasks.push([Math.round(e.startTime - loadT0), Math.round(e.duration)]); });
+  lt.observe({ type: "longtask", buffered: true });
+  setTimeout(() => lt.disconnect(), 180000);
+} catch { /* no long-task timing in this browser */ }
 let lidarDensityMatch = null, lidarPlazaPoints = 0, lidarGroundFill = 0;   // object -> ground / own density, for the moved structures (loadLidar)
 
 // the Time module (user, 2026-10-13): off = today; on = the year of its slider. TIME feeds the point shader.
@@ -390,7 +402,7 @@ async function loadLidar() {
   const meta = lidarMeta;
   const base = cfg.lidar.meta.replace(/[^/]*$/, "");
   const objAttr = meta.attributes?.object;
-  const T0 = performance.now(), tick = (k) => { loadTimes[k] = Math.round(performance.now() - T0); };   // load profile
+  const T0 = (loadT0 = performance.now()), tick = ltick;   // load profile
   loadTimes.startAt = Math.round(T0);   // ms after the page started
   let { n, pos: P, cls: C, inten: I, obj, hag: HG } = await decodeLaz(base + meta.file, meta);
   tick("decode (fetch + LAZ)");
@@ -953,9 +965,11 @@ async function setMode(m) {
   if (prev !== m) hideInfo();  // also clears any highlight
   if (m === "cloud") paintCloud(how || lidar.how);
   else document.body.classList.remove("linked");
+  lonce("after: colours painted");
   applyVisibility();
   document.querySelectorAll("#modes button").forEach((b) => { b.disabled = false; b.classList.toggle("on", b.dataset.mode === m); });
   layerCounts();
+  lonce("after: visibility + layer counts");
   glassAt = -1e9;   // the picture behind the panels changes completely: pick light / dark glass again right away
   busy = false;
 }
@@ -1101,14 +1115,17 @@ let lastHover = null;
 renderer.domElement.addEventListener("pointermove", (e) => { lastHover = { x: e.clientX, y: e.clientY }; });
 renderer.domElement.addEventListener("pointerleave", () => { pop?.hover(-1); renderer.domElement.style.cursor = ""; invalidate(); });
 let popStartT = null;   // seconds of the day to start at when People next comes on (set by the Guided film)
+let popShownAt = 0;     // when the people were first shown (load profile: the frames right after)
 $("#popOn").onchange = async (e) => {
   const on = e.target.checked;
   if (on && !pop) {
     e.target.disabled = true;
     status("Loading population…");
+    const tP = performance.now(); lonce("people: load started");
     const { createPopulation } = await import("./population.js");
     pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag,
       onDrop: (i) => { popSelecting = true; deselect(`pop:${i}`); popSelecting = false; } });   // Shift + Alt + click took i out
+    ldur("people: load + create, ms", tP);
     status("");
     e.target.disabled = false;
   }
@@ -1116,6 +1133,7 @@ $("#popOn").onchange = async (e) => {
   // a start time asked for (the Guided film): set before they show, so nobody appears at the old time first
   if (on && pop && popStartT !== null) { const r = $("#popTime"); r.value = popStartT; r.dispatchEvent(new Event("input")); popStartT = null; }
   pop?.setVisible(on);
+  if (on && pop) { lonce("people: first shown"); popShownAt ||= performance.now(); }
   updateWhite();
   if (!on) for (const s of [...selection]) if (s.key.startsWith("pop:")) deselect(s.key);
   invalidate();
@@ -1198,6 +1216,7 @@ function yearTime(y) {
   return yearT[k] + (yearT[Math.min(k + 1, yearT.length - 1)] - yearT[k]) * (f - k);
 }
 function buildOpening() {
+  const tB = performance.now();
   if (!tlItems) tlBuild();
   const pts = tlOcc.filter((o) => o.year > 0).map((o) => ({ x: (o.box[0] + o.box[3]) / 2, z: (o.box[2] + o.box[5]) / 2, y0: o.box[1], h: o.box[4] - o.box[1], year: o.year }));
   const Y1 = TOUR.target, Rc = OPEN.clusterM, wide = { target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R };
@@ -1224,6 +1243,7 @@ function buildOpening() {
     return { hs: i === 0 ? 0 : t0 + q, he: i === OPEN.shots.length - 1 ? t0 + 2 * q : t1 - q, pose: frame(sh) };
   });
   openAnchors.push({ hs: end, he: end, pose: wide });   // and out to the whole site at the end
+  ldur("opening shots (with tags data), ms", tB);
 }
 function openingPose(frac) {
   const t = frac * playDur, A = openAnchors;
@@ -1782,6 +1802,7 @@ const tlShown = new Map();   // key -> { el }
 const tlEver = new Set();    // labelled once: kept while the year is past its start
 let tlLast = 0, tlMaskKey = "";
 function tlBuild() {
+  const tT = performance.now();
   tlItems = [];
   const filmNames = new Set((CINE.shots || []).flatMap((d) => d.members || []).map((n) => n.toLowerCase()));
   const ents = ENTITIES?.entities ?? [], nE = ents.length, B = new Float32Array(nE * 6);
@@ -1831,6 +1852,7 @@ function tlBuild() {
     if (hi > lo) tlItems.push({ key: "site:y1", name: "Angels Knoll", kind: "site", sub: "Parcel Y-1", box: [x0, lo, z0, x1, hi, z1], h: hi - lo });
   }
   for (const g of ghostLabels) tlItems.push(g);
+  lonce("tags data (tlBuild) at"); ldur("tags data (tlBuild), ms", tT);
 }
 const tlEase = (t) => { t = Math.min(Math.max(t, 0), 1); return t * t * (3 - 2 * t); };
 // 1 if the line from the camera to (x, y, z) passes no standing building (other than `own`), else 0. Boxes drawn in to
@@ -2181,6 +2203,7 @@ function setView(v) {
 document.querySelectorAll("#viewMode button").forEach((b) => (b.onclick = () => setView(b.dataset.v)));
 addEventListener("resize", () => moveThumb(true, "#viewMode"));
 setView(cfg.time?.opening !== false && urlq.get("time") !== "0" ? "history" : "free");
+lonce("after: Guided / Free started");
 if (viewMode === "free") { document.querySelectorAll("#viewMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === "free")); document.body.classList.add("v-free"); }
 moveThumb(true, "#viewMode");
 if (urlq.get("earth")) setEarthView(urlq.get("earth"));   // ?earth=<Google Earth URL>: the same camera here
@@ -2242,7 +2265,17 @@ function perfFrame(now, drew) {
 last click -> tag ${PERF.click.toFixed(0)} ms` : "");
   PERF.acc = {}; PERF.n = 0; PERF.max = 0; PERF.drawn = 0; PERF.t0 = now;
 }
+// load profile: the first frame drawn after the cloud is up, and the long frames (> 50 ms) of the first two minutes, as
+// [ms from the start of loadLidar, frame ms, render ms of that frame, tags ms, 1 = within 3 s of the people first shown]
+let lfLast = 0, lfRender = 0, lfTags = 0;
+function logFrame(now) {
+  if (!loadT0 || !lidar || now - loadT0 > 120000) return;
+  if (!("first frame drawn" in loadTimes) && lfRender) { ltick("first frame drawn"); loadTimes["first frame: render, ms"] = Math.round(lfRender); }
+  if (lfLast && now - lfLast > 50) loadTimes.longFrames.push([Math.round(lfLast - loadT0), Math.round(now - lfLast), Math.round(lfRender), Math.round(lfTags), popShownAt && now - popShownAt < 3000 ? 1 : 0]);
+  lfLast = now; lfRender = lfTags = 0;
+}
 renderer.setAnimationLoop((now) => {
+  logFrame(now);
   perfT("camera", () => {
     if (tween) { stepTween(now); dirty = true; lastMove = now; }
     if (cine) { stepCine(now); dirty = true; lastMove = now; }
@@ -2254,8 +2287,11 @@ renderer.setAnimationLoop((now) => {
   if (pop && (pop.visible || pop.state.fading)) perfT("people", () => { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing || pop.state.fading) dirty = true; });
   if (!dirty) return perfFrame(now, false);
   dirty = false;
+  const tR = performance.now();
   perfT("render", () => renderer.render(scene, camera));
+  const tG = performance.now();
   perfT("tags", () => { updateTags(); updateTimeTags(); });
+  lfRender = tG - tR; lfTags = performance.now() - tG;
   adaptGlass(now);
   perfFrame(now, true);
 });
