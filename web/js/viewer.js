@@ -27,6 +27,9 @@ for (const e of ENTITIES?.entities ?? []) for (const p of e.parts) entityOfName.
 // Display settings (panel section): ?px= ?keep= ?cap= ?size= override config.json "lidar" for this page only (lodPixels,
 // lodKeepDensity, pointCap, size), so settings can be tried before they go into config.json
 const urlq = new URLSearchParams(location.search);
+// ?seed=N (for checks, 2026-10-14): Math.random becomes a fixed sequence, so two loads draw the same LOD priorities
+// and can be compared point by point
+if (urlq.has("seed")) { let sd = +urlq.get("seed") || 1; Math.random = () => (sd = (sd * 16807) % 2147483647) / 2147483647; }
 // (the ?perf panel, defined here so a click during loading finds it; see perfFrame)
 const PERF = urlq.has("perf") ? { acc: {}, n: 0, last: 0, t0: performance.now(), el: null, click: null } : null;
 if (PERF) {
