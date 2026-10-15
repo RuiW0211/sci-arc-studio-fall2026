@@ -1116,16 +1116,25 @@ renderer.domElement.addEventListener("pointermove", (e) => { lastHover = { x: e.
 renderer.domElement.addEventListener("pointerleave", () => { pop?.hover(-1); renderer.domElement.style.cursor = ""; invalidate(); });
 let popStartT = null;   // seconds of the day to start at when People next comes on (set by the Guided film)
 let popShownAt = 0;     // when the people were first shown (load profile: the frames right after)
-$("#popOn").onchange = async (e) => {
-  const on = e.target.checked;
-  if (on && !pop) {
-    e.target.disabled = true;
-    status("Loading population…");
+// the population is made once, hidden (population.js), by whichever comes first: People turned on, or the load ahead of
+// time (below); both wait for the same promise
+let popLoading = null;
+function loadPop() {
+  return (popLoading ??= (async () => {
     const tP = performance.now(); lonce("people: load started");
     const { createPopulation } = await import("./population.js");
     pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag,
       onDrop: (i) => { popSelecting = true; deselect(`pop:${i}`); popSelecting = false; } });   // Shift + Alt + click took i out
     ldur("people: load + create, ms", tP);
+    return pop;
+  })());
+}
+$("#popOn").onchange = async (e) => {
+  const on = e.target.checked;
+  if (on && !pop) {
+    e.target.disabled = true;
+    status("Loading population…");
+    await loadPop();
     status("");
     e.target.disabled = false;
   }
@@ -2204,6 +2213,13 @@ document.querySelectorAll("#viewMode button").forEach((b) => (b.onclick = () => 
 addEventListener("resize", () => moveThumb(true, "#viewMode"));
 setView(cfg.time?.opening !== false && urlq.get("time") !== "0" ? "history" : "free");
 lonce("after: Guided / Free started");
+// the population made ahead of time (2026-10-14: making it when the film turns People on, ~66 s in, stuttered):
+// population.preloadS seconds after the cloud is up, when the browser is idle; hidden, and its 24 h chart worked out in
+// slices, so People only has to show. false: made when People comes on, as before
+if (cfg.population?.meta && cfg.population.preloadS !== false) setTimeout(() => {
+  const go = () => { if (!pop) loadPop().then((p) => { p.prepare(); lonce("people: made ahead"); }).catch(() => {}); };
+  window.requestIdleCallback ? requestIdleCallback(go, { timeout: 3000 }) : go();
+}, (cfg.population.preloadS ?? 20) * 1000);
 if (viewMode === "free") { document.querySelectorAll("#viewMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === "free")); document.body.classList.add("v-free"); }
 moveThumb(true, "#viewMode");
 if (urlq.get("earth")) setEarthView(urlq.get("earth"));   // ?earth=<Google Earth URL>: the same camera here

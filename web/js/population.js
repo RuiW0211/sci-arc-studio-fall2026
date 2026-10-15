@@ -194,6 +194,9 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const points = new THREE.Points(geo, material);
   points.frustumCulled = false;
   points.renderOrder = 2;
+  // hidden until setVisible(true): the viewer may make the population ahead of time (2026-10-14, while the opening
+  // plays), and nobody must show before People comes on
+  points.visible = false; st.shown = false;
   scene.add(points);
   // the selected people (Alt + click one, Shift + Alt + click adds / takes out; user, 2026-10-12): a bigger highlight
   // point each. sel = person indices in click order; st.selected = the last one, -1 when none
@@ -353,17 +356,32 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     ui.refresh();
   }
 
-  // 24 h curve for the current settings, by type (people on site per 15 min)
-  function curve() {
-    const D = days[st.day], out = meta.types.map(() => new Float32Array(96));
-    for (let b = 0; b < 96; b++) {
-      const T = (b + 0.5) * 900;
-      for (let i = 0; i < A; i++) {
-        const loc = locate(D, i, T);
-        if (loc.moving || loc.spot !== HIDDEN) out[GROUP[type[i]]][b] += weight[i];   // display groups
+  // 24 h curve for the current settings, by type (people on site per 15 min). In slices of CURVE_SLICE_MS, one after
+  // another (2026-10-14: in one go it took 112 ms, the stutter when the people came on); done(out) when complete. A new
+  // call cancels the one running, so a curve never mixes two days or two settings.
+  const CURVE_SLICE_MS = 6;
+  let curveJob = 0;
+  function curve(done) {
+    const job = ++curveJob, D = days[st.day], out = meta.types.map(() => new Float32Array(96)), t0 = performance.now();
+    let b = 0, i = 0, longest = 0;
+    const slice = () => {
+      if (job !== curveJob) return;
+      const s = performance.now();
+      while (b < 96 && performance.now() - s < CURVE_SLICE_MS) {
+        const T = (b + 0.5) * 900, end = Math.min(i + 4096, A);
+        for (; i < end; i++) {
+          const loc = locate(D, i, T);
+          if (loc.moving || loc.spot !== HIDDEN) out[GROUP[type[i]]][b] += weight[i];   // display groups
+        }
+        if (i >= A) { i = 0; b++; }
       }
-    }
-    return out;
+      longest = Math.max(longest, performance.now() - s);
+      if (b < 96) { setTimeout(slice, 0); return; }
+      (times["curve (24 h chart): longest slice, ms"] ??= []).push(Math.round(longest * 10) / 10);
+      (times["curve (24 h chart): start to done, ms"] ??= []).push(Math.round(performance.now() - t0));
+      done(out);
+    };
+    slice();
   }
 
   // ---------- see-through buildings (people indoors are visible in Model · Mesh) ----------
@@ -460,7 +478,8 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const $ = (s) => document.querySelector(s);
   const chart = $("#popChart"), ctx = chart.getContext("2d");
   let curveData = null, curveTimer = 0;
-  const recurve = () => { clearTimeout(curveTimer); curveTimer = setTimeout(() => { curveData = timed("curve (24 h chart)", curve); timed("drawChart", ui.drawChart); }, 60); };
+  let curvePending = false;   // a curve is on its way (prepare / setVisible need not start another)
+  const recurve = () => { clearTimeout(curveTimer); curvePending = true; curveTimer = setTimeout(() => curve((out) => { curveData = out; curvePending = false; timed("drawChart", ui.drawChart); }), 60); };
   const ui = {
     refresh() {
       $("#popClock").textContent = hhmm(st.t);
@@ -530,10 +549,12 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       route.visible = false;
       timed("setXray", () => setXray(on && st.xray));
       if (!on) trails.visible = false;
-      if (on) { st.dirty = true; if (!curveData) recurve(); requestAnimationFrame(() => dayThumb(true)); }
+      if (on) { st.dirty = true; if (!curveData && !curvePending) recurve(); requestAnimationFrame(() => dayThumb(true)); }
       setPlaying(on);   // turning the layer on plays the day (user, 2026-10-09); off pauses it
     },
     get visible() { return points.visible && st.shown !== false; },
+    // made ahead of time (viewer.js): work out the 24 h chart now, in slices, so it is there when People comes on
+    prepare() { if (!curveData && !curvePending) recurve(); },
     tick(now) {
       const dt = lastNow ? Math.min((now - lastNow) / 1000, 0.25) : 0;
       lastNow = now;
