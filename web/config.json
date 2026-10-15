@@ -162,6 +162,12 @@
       "overlay": true
     }
   },
+  "perspective": {
+    "_comment": "The fisheye lens (Views: Fisheye lens), Guided and Free. on: from the start; fov: what the 50 degree lens becomes (same centre scale, the camera brought in); fisheye: 0 = a wide ordinary lens, 1 = equidistant. Wide shots take time.cinema.wideLens of it.",
+    "on": true,
+    "fov": 75,
+    "fisheye": 1
+  },
   "views": [
     {
       "name": "Default",
