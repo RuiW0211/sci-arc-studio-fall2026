@@ -61,6 +61,62 @@ const v0 = cfg.views[0];
 camera.position.fromArray(v0.position);
 controls.target.fromArray(v0.target);
 
+// ---------- depth of field (user, 2026-10-14: a game-like DOF, option B, in Guided and Free, a switch in the panel) ----------
+// The picture is drawn into a target with its depth, then a full-screen pass blurs each pixel by how far it is from the
+// focus: the distance from the camera to what it looks at (controls.target: in Guided the shot's subject, in Free the
+// point it turns round). Sharp within focusRange of it (a share of the focus distance), blurred towards maxBlurPx in
+// front and behind (aperture: how fast). Gathered on a golden-angle disc; a sample only counts where its own blur
+// reaches it, so a sharp subject does not bleed into the blurred ground behind it. config.json dof
+const DOF = { on: true, aperture: 1.0, focusRange: 0.15, maxBlurPx: 5, ...(cfg.dof || {}) };
+if (urlq.has("dof")) DOF.on = urlq.get("dof") !== "0";
+const dofTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+dofTarget.depthTexture = new THREE.DepthTexture(1, 1);
+const dofQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+  uniforms: { tColor: { value: dofTarget.texture }, tDepth: { value: dofTarget.depthTexture }, texel: { value: new THREE.Vector2() },
+              near: { value: camera.near }, far: { value: camera.far }, focus: { value: 500 }, aperture: { value: DOF.aperture },
+              range: { value: DOF.focusRange }, maxBlur: { value: DOF.maxBlurPx } },
+  vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }",
+  fragmentShader: `#include <packing>
+    uniform sampler2D tColor, tDepth; uniform vec2 texel; uniform float near, far, focus, aperture, range, maxBlur;
+    varying vec2 vUv;
+    float coc(vec2 uv) {   // blur radius in px at uv
+      float vz = -perspectiveDepthToViewZ(texture2D(tDepth, uv).x, near, far);
+      return clamp(max(abs(vz - focus) - range * focus, 0.0) / vz * aperture, 0.0, 1.0) * maxBlur;
+    }
+    void main() {
+      vec4 c0 = texture2D(tColor, vUv); float r0 = coc(vUv);
+      if (r0 < 0.5) { gl_FragColor = c0; } else {
+        vec4 sum = c0; float wsum = 1.0;
+        for (int i = 0; i < 32; i++) {
+          float fi = float(i) + 0.5, r = sqrt(fi / 32.0) * r0, a = fi * 2.39996;
+          vec2 uv = vUv + vec2(cos(a), sin(a)) * r * texel;
+          float w = smoothstep(r - 1.0, r, coc(uv));
+          sum += texture2D(tColor, uv) * w; wsum += w;
+        }
+        gl_FragColor = sum / wsum;
+      }
+      #include <colorspace_fragment>
+    }`,
+  depthTest: false, depthWrite: false }));
+const dofScene = new THREE.Scene(), dofCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+dofQuad.frustumCulled = false; dofScene.add(dofQuad);
+function dofResize() {
+  const v = renderer.getDrawingBufferSize(new THREE.Vector2());
+  dofTarget.setSize(v.x, v.y); dofQuad.material.uniforms.texel.value.set(1 / v.x, 1 / v.y);
+}
+dofResize();
+{ const box = document.querySelector("#dofOn");   // the panel switch (Views)
+  if (box) { box.checked = DOF.on; box.onchange = () => { DOF.on = box.checked; invalidate(); }; } }
+renderer.info.autoReset = false;   // two renders a frame with DOF: the frame's counts are reset once, in the loop
+function renderFrame() {
+  if (!DOF.on) { renderer.render(scene, camera); return; }
+  const U = dofQuad.material.uniforms, dpr = renderer.getPixelRatio();
+  U.focus.value = camera.position.distanceTo(controls.target); U.near.value = camera.near; U.far.value = camera.far;
+  U.maxBlur.value = DOF.maxBlurPx * dpr; U.aperture.value = DOF.aperture; U.range.value = DOF.focusRange;
+  renderer.setRenderTarget(dofTarget); renderer.render(scene, camera);
+  renderer.setRenderTarget(null); renderer.render(dofScene, dofCam);
+}
+
 // ---------- overlays: the design files ----------
 const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/");
 const model = new THREE.Group();   // everything drawn as geometry over the point cloud
@@ -2134,7 +2190,7 @@ $("#ui").addEventListener("scroll", () => {
   clearTimeout(sbTimer); sbTimer = setTimeout(() => $("#ui").classList.remove("scrolling"), 400);
 }, { passive: true });
 if (innerWidth < 560) collapse(true);  // phones: start with the panel folded
-addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); invalidate(); });
+addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); dofResize(); invalidate(); });
 
 // ---------- point settings: no panel any more (user, 2026-10-10); config.json "lidar" or the URL (?px= ?keep= ?cap= ?size=,
 // read at the top) still set them ----------
@@ -2296,7 +2352,8 @@ renderer.setAnimationLoop((now) => {
   if (!dirty) return perfFrame(now, false);
   dirty = false;
   const tR = performance.now();
-  perfT("render", () => renderer.render(scene, camera));
+  renderer.info.reset();
+  perfT("render", renderFrame);
   const tG = performance.now();
   perfT("tags", () => { updateTags(); updateTimeTags(); });
   lfRender = tG - tR; lfTags = performance.now() - tG;
