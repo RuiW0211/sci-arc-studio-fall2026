@@ -1095,15 +1095,17 @@ let tween = null;
 const _off = new THREE.Vector3(), _sph = new THREE.Spherical();
 const sphOf = (pos, tgt) => { _sph.setFromVector3(_off.subVectors(pos, tgt)); return { r: _sph.radius, phi: Math.max(_sph.phi, 0.001), th: _sph.theta }; };
 function goTo(v) {
-  // the Perspective view (a fisheye) is a Free view: from Guided it switches to Free first (the film drives the lens)
-  if (v.fisheye && viewMode === "history") setView("free");
+  // a view with "lens" (Perspective, a saved view) is a camera position: from Guided it switches to Free (the film would
+  // take the camera straight back) and sets the lens; its position is as drawn. A view without (Default, Top) keeps the
+  // lens and is a base pose: brought in by it
+  if (v.lens !== undefined && viewMode === "history") setView("free");
+  if (v.lens !== undefined && (v.lens ? 1 : 0) !== LENS.to) setLens(v.lens);
   const q1 = new THREE.Vector3().fromArray(v.target), a = sphOf(camera.position, controls.target);
   const b = sphOf(new THREE.Vector3().fromArray(v.position), q1);
+  if (v.lens === undefined) b.r /= lensM(LENS.to);
   let dth = b.th - a.th; dth = Math.atan2(Math.sin(dth), Math.cos(dth));   // short way round
-  // a view's field of view and fisheye share (config.json views: fov, fisheye), eased with the move: the ground curves as
-  // the camera arrives, and straightens again on the way to a view without them
-  tween = { t0: performance.now(), dur: v.fisheye || FISH.s > 1e-4 ? 1600 : 1100, q0: controls.target.clone(), q1, a, b: { ...b, th: a.th + dth },
-            f0: FISH.F, f1: v.fov ?? FOV0, s0: FISH.s, s1: v.fisheye ?? 0 };
+  tween = { t0: performance.now(), dur: v.lens !== undefined ? Math.max(1100, LENS.ms) : 1100, q0: controls.target.clone(), q1, a, b: { ...b, th: a.th + dth },
+            f0: baseFov, f1: v.fov ?? FOV0 };
   controls.enableDamping = false;
 }
 function stepTween(now) {
@@ -1113,7 +1115,7 @@ function stepTween(now) {
   _sph.set(Math.exp(Math.log(a.r) + (Math.log(b.r) - Math.log(a.r)) * e), a.phi + (b.phi - a.phi) * e, a.th + (b.th - a.th) * e);
   camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
   camera.lookAt(controls.target);
-  FISH.F = tween.f0 + (tween.f1 - tween.f0) * e; FISH.s = tween.s0 + (tween.s1 - tween.s0) * e; applyFish();
+  setFov(tween.f0 + (tween.f1 - tween.f0) * e);
   if (t === 1) { tween = null; controls.enableDamping = true; }
 }
 // ---------- Google Earth camera <-> this view (for checking the grouping side by side; user, 2026-10-08) ----------
@@ -1195,7 +1197,7 @@ function renderViews() {
     const inp = box.querySelector("input"), ok = () => {
       const name = inp.value.trim() || `View ${savedViews.length + 1}`;
       savedViews.push({ name, position: camera.position.toArray().map((x) => +x.toFixed(2)), target: controls.target.toArray().map((x) => +x.toFixed(2)),
-                        ...(FISH.s > 1e-4 || Math.abs(FISH.F - FOV0) > 0.01 ? { fov: +FISH.F.toFixed(1), fisheye: +FISH.s.toFixed(2) } : {}) });
+                        lens: LENS.to > 0.5, ...(Math.abs(baseFov - FOV0) > 0.01 ? { fov: +baseFov.toFixed(1) } : {}) });
       storeSaved(savedViews); renderViews();
     };
     inp.onkeydown = (e) => { if (e.key === "Enter") ok(); if (e.key === "Escape") renderViews(); };
@@ -1205,6 +1207,7 @@ function renderViews() {
   $("#views").append(s);
 }
 renderViews();
+$("#lensOn").onchange = (e) => setLens(e.target.checked);   // the fisheye lens (LENS)
 
 // ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------
 let pop = null;
@@ -1421,11 +1424,41 @@ function endTour() { if (tour) { tour = null; controls.enableDamping = true; } }
 // tilt and target ease over rejoinS seconds from the camera's to the shot's, so there is no jump.
 let paused = false, rejoin = null;
 const REJOIN_S = cfg.time?.rejoinS ?? 2.5;
-const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r, phi: a.phi, th: a.th, fov: FISH.F }; };
+const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r * lensM(), phi: a.phi, th: a.th, fov: baseFov }; };   // the base pose (lens taken out)
 // the field of view (vertical, degrees) of the Guided camera's poses; a pose without one has FOV0 (user, 2026-10-15: a
 // dolly zoom on Y-1; the FOV only ever changes together with the distance, eased like the rest of the move)
 const FOV0 = FISH.F;
-function setFov(f) { if (Math.abs(FISH.F - f) > 1e-3) { FISH.F = f; applyFish(); } }   // the field of view the eye reads (fisheye: the camera renders wider)
+// The fisheye lens (user, 2026-10-15, option B: a switch for Guided and Free): every camera pose here is a "base" pose,
+// for the ordinary FOV0 lens (the film's shots, the views, a drag); the lens turns it into what is drawn: the field of
+// view widened by LENS.G at the same centre scale (tan(F / 2) x m) and the camera that much closer (r / m), so the
+// subject keeps its size in the middle of the picture while the edges open up, lean and curve (FISH.s = L x fisheye).
+// m = 1 + L (G - 1), L eased 0..1 over LENS.ms. A dolly zoom stays a dolly zoom (r tan(F / 2) is kept).
+const LENS = { L: 0, to: 0, fov: cfg.perspective?.fov ?? 75, amt: cfg.perspective?.fisheye ?? 1, ms: 1200 };
+LENS.G = Math.tan(LENS.fov * D2R / 2) / Math.tan(FOV0 * D2R / 2);
+let baseFov = FOV0;   // the base pose's field of view (setFov)
+const lensM = (L = LENS.L) => 1 + L * (LENS.G - 1);
+function applyLens() {
+  FISH.F = 2 * Math.atan(Math.tan(baseFov * D2R / 2) * lensM()) / D2R;
+  FISH.s = LENS.L * LENS.amt;
+  applyFish();
+}
+function setFov(f) { if (Math.abs(baseFov - f) > 1e-3 || FISH.s !== LENS.L * LENS.amt) { baseFov = f; applyLens(); } }   // the base field of view
+let lensAnim = 0;
+function setLens(on) {
+  LENS.to = on ? 1 : 0;
+  const box = $("#lensOn"); if (box) box.checked = !!on;
+  cancelAnimationFrame(lensAnim);
+  const L0 = LENS.L, t0 = performance.now();
+  const step = (now) => {
+    const k = Math.min((now - t0) / LENS.ms, 1), e = k * k * (3 - 2 * k), m0 = lensM();
+    LENS.L = L0 + (LENS.to - L0) * e;
+    // the drawn camera moves in / out about what it looks at (a view move or the film set it themselves)
+    if (!tween) camera.position.sub(controls.target).multiplyScalar(m0 / lensM()).add(controls.target);
+    applyLens(); invalidate();
+    lensAnim = k < 1 ? requestAnimationFrame(step) : 0;
+  };
+  lensAnim = requestAnimationFrame(step);
+}
 const wrapA = (d) => Math.atan2(Math.sin(d), Math.cos(d));
 function camApply(P) {
   if (rejoin) {
@@ -1436,7 +1469,7 @@ function camApply(P) {
   }
   setFov(P.fov ?? FOV0);
   controls.target.fromArray(P.target);
-  _sph.set(P.r, P.phi, P.th);
+  _sph.set(P.r / lensM(), P.phi, P.th);   // a base pose: the lens brings the camera in
   camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
   camera.lookAt(controls.target);
 }
@@ -2343,16 +2376,10 @@ function setView(v) {
     historyLeft = $("#timeOn").checked ? { year: TIME.year.value, cine: cine && !cine.people ? cine : null, at: performance.now() } : null;
     paused = false; setHistory(false);
     // the Free camera has the normal field of view: eased back over 0.8 s if a shot had changed it
-    const f0 = FISH.F, t0 = performance.now();
+    const f0 = baseFov, t0 = performance.now();
     const ease = (now) => { if (tween) return; const k = Math.min((now - t0) / 800, 1); setFov(f0 + (FOV0 - f0) * k * k * (3 - 2 * k)); invalidate(); if (k < 1) requestAnimationFrame(ease); };
     if (Math.abs(f0 - FOV0) > 0.01) requestAnimationFrame(ease);
-  } else {
-    // the film drives the lens: a fisheye from the Perspective view eases out over 0.8 s
-    if (FISH.s > 1e-4) { const s0 = FISH.s, t0 = performance.now();
-      const ease = (now) => { const k = Math.min((now - t0) / 800, 1); FISH.s = s0 * (1 - k * k * (3 - 2 * k)); applyFish(); invalidate(); if (k < 1) requestAnimationFrame(ease); };
-      requestAnimationFrame(ease); }
-    setHistory(true, historyLeft);
-  }
+  } else setHistory(true, historyLeft);   // the lens stays as it is: the film plays through it
   invalidate();
 }
 document.querySelectorAll("#viewMode button").forEach((b) => (b.onclick = () => setView(b.dataset.v)));
