@@ -592,7 +592,37 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const r = $("#popTime"); r.value = t;
     r.style.setProperty("--p", `${(100 * (r.value - r.min)) / (r.max - r.min)}%`);
   }
-  $("#popTime").oninput = (e) => { st.t = +e.target.value; st.dirty = true; setTimeSlider(st.t); };
+  // the knob moves like the thumb of the Guided / Free switch (user, 2026-10-14): a click on the chart glides the time
+  // there over GLIDE_MS on the same spring curve (viewer.html .seg .thumb: cubic-bezier(.34, 1.25, .5, 1)), a little past
+  // and back, the marker, clock and people with it; a drag follows the pointer. Keys and the film set it at once
+  const GLIDE_MS = 420, D2 = 3;   // D2: px the pointer moves before a press is a drag
+  const spring = (x) => {   // cubic-bezier(.34, 1.25, .5, 1): solve x(t) = x by bisection, return y(t)
+    const bz = (t, p1, p2) => 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t;
+    let lo = 0, hi = 1;
+    for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (bz(m, 0.34, 0.5) < x) lo = m; else hi = m; }
+    return bz((lo + hi) / 2, 1.25, 1);
+  };
+  let glideAnim = 0, press = null;
+  function glideTo(to) {
+    const from = st.t, t0 = performance.now();
+    cancelAnimationFrame(glideAnim);
+    const step = (now) => {
+      const k = Math.min((now - t0) / GLIDE_MS, 1);
+      st.t = Math.min(Math.max(from + (to - from) * spring(k), 0), 86399); st.dirty = true; setTimeSlider(st.t);
+      glideAnim = k < 1 ? requestAnimationFrame(step) : 0;
+    };
+    glideAnim = requestAnimationFrame(step);
+  }
+  const timeIn = $("#popTime");
+  timeIn.addEventListener("pointerdown", (e) => { press = { x: e.clientX, drag: false }; });
+  addEventListener("pointermove", (e) => { if (press && !press.drag && Math.abs(e.clientX - press.x) > D2) press.drag = true; });
+  for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, () => { press = null; });
+  timeIn.oninput = (e) => {
+    const v = +e.target.value;
+    if (press && !press.drag) { setTimeSlider(st.t); glideTo(v); return; }   // a click: glide (from where it is now)
+    cancelAnimationFrame(glideAnim); glideAnim = 0;
+    st.t = v; st.dirty = true; setTimeSlider(st.t);
+  };
   $("#popPlay").onclick = () => { resumeAfter = false; setPlaying(!st.playing); };
   // Weekday / Weekend: a segmented control with a sliding thumb, like Color (viewer.js moveThumb)
   function dayThumb(instant) {
