@@ -308,6 +308,7 @@
   #popDay.seg.pill button, #popDay.seg.pill button:last-child { flex: 1; }
   #viewMode { margin: 8px 0 2px; }
   body.v-free #timeSec { display: none; }   /* Free view: no History module */
+  body:not(.v-free) #monoRow { display: none; }   /* Black and white: Free only (Guided is always so) */
   /* time section (user, 2026-10-13): a module like Population; the unbuilt schemes live here, shown only with it */
   #timeSec label.layer:has(input:checked) i.sw { background: var(--c); box-shadow: none; }
   #timeBox[hidden] { display: none; }
@@ -333,6 +334,7 @@
     </div></div>
     </details>
     <details class="sec" id="layersBox" open><summary>Layers</summary>
+      <label class="layer" id="monoRow" title="As in Guided: the buildings white, everything else a faint grey (Free only; Guided always looks like this)"><input type="checkbox" id="monoOn"><i class="sw" style="--c:#FFFFFF"></i><span class="nm">Black and white</span><span class="n">as in Guided</span></label>
       <div id="layers"></div>
     </details>
     <!-- modeled population (js/population.js, after Clark Amenudo's layer): one point per person over a typical day -->

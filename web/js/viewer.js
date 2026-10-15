@@ -178,19 +178,24 @@ function crossFade() {
 const SEL_K = { value: 1 };   // 0 -> 1 over --t-out after each change of selection
 let selAnim = 0;
 const FOCUS = { value: 0 };
+// Free's Black and white (user, 2026-10-16: "给free加一个和guided一样的黑白模式"): the History colours (buildings white,
+// the rest a faint grey) on today's model, nothing rising; 1 while it shows or fades out
+const MONO = { value: 0 };
 const FOCUS_GREY = { value: cfg.population?.whiteCloud?.white ?? 0.8 }, FOCUS_ALPHA = { value: cfg.population?.whiteCloud?.opacity ?? 0.5 };
 const focusMats = [];
 function withFocus(shader) {
   shader.uniforms.uFocus = FOCUS; shader.uniforms.uFocusGrey = FOCUS_GREY; shader.uniforms.uFocusAlpha = FOCUS_ALPHA;
   shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uTimeGrey = TIME.grey; shader.uniforms.uTimeAlpha = TIME.alpha;
+  shader.uniforms.uMono = MONO;
   // vSel (from pointMaterial's vertex shader): a selected object keeps its highlight under Highlight people
   // vBuild, vGhost (Time module): buildings (white, set in the vertex shader) and the unbuilt towers are not greyed,
   // and the rest goes a darker, fainter grey than for Highlight people, so the buildings stand out
-  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha, uTimeOn, uTimeGrey, uTimeAlpha;\nvarying float vSel, vBuild, vGhost;\n" + shader.fragmentShader.replace("#include <color_fragment>",
+  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha, uTimeOn, uTimeGrey, uTimeAlpha, uMono;\nvarying float vSel, vBuild, vGhost;\n" + shader.fragmentShader.replace("#include <color_fragment>",
     `#include <color_fragment>
   float fk = uFocus * (1.0 - vSel) * (1.0 - vBuild) * (1.0 - vGhost);
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(mix(uFocusGrey, uTimeGrey, uTimeOn)), fk);
-  diffuseColor.a *= mix(1.0, mix(uFocusAlpha, uTimeAlpha, uTimeOn), fk);`);
+  float th = max(uTimeOn, uMono);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(mix(uFocusGrey, uTimeGrey, th)), fk);
+  diffuseColor.a *= mix(1.0, mix(uFocusAlpha, uTimeAlpha, th), fk);`);
 }
 let focusAnim = 0;
 function setWhiteCloud(on) {
@@ -203,6 +208,7 @@ function setWhiteCloud(on) {
     pop?.highlight(FOCUS.value);   // people grow with it
     invalidate();
     if (k < 1) focusAnim = requestAnimationFrame(step);
+    else if (!on && !monoWanted()) MONO.value = 0;   // Black and white let go once the grey has faded
     else if (!on) for (const m of focusMats) if (!m.userData.alwaysTransparent) { m.transparent = false; m.needsUpdate = true; }
   };
   focusAnim = requestAnimationFrame(step);
@@ -412,9 +418,9 @@ function pointMaterial(sizeMetres) {
     Object.assign(shader.uniforms, FISH_U);   // the fisheye (fishPos, after the projection)
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
-    shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front;
+    shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front; shader.uniforms.uMono = MONO;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
@@ -429,7 +435,8 @@ function pointMaterial(sizeMetres) {
       // keep their colour, rising the same way over their first years and sinking back over their last ones. The ground
       // filled under a building (aYear 10000 + its year) is ordinary ground, always drawn (user, 2026-10-13: in every mode).
       + "if (aYear > 9999.5) { }\n"
-      + "else if (uTimeOn > 0.5) {\n"
+      // (Free's Black and white, uMono: the same colours with every building standing)
+      + "else if (uTimeOn > 0.5 || uMono > 0.5) {\n"
       + "  if (aYear < -99.5) {\n"
       + "    float c = -aYear, s = floor(c / 100.0 + 0.001), sp = c - 100.0 * s + 1.0; s += 1800.0;\n"
       + "    float up = min(uBuild, 0.6 * sp), dn = min(1.5, 0.3 * sp);\n"
@@ -438,7 +445,7 @@ function pointMaterial(sizeMetres) {
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
       + "    vGhost = 1.0;\n"
       + "  } else if (aYear > 0.5) {\n"
-      + "    float p = clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0); p = p * p * (3.0 - 2.0 * p);\n"
+      + "    float p = uTimeOn > 0.5 ? clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0) : 1.0; p = p * p * (3.0 - 2.0 * p);\n"
       + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
       + "    vColor.rgb = mix(vColor.rgb, mix(vec3(1.0), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
@@ -1319,10 +1326,14 @@ $("#popOn").onchange = async (e) => {
 // the cloud turns grey for Highlight people, and with the Time module (user, 2026-10-13: as Population does)
 let whiteNow = false;
 function updateWhite() {
-  // (user, 2026-10-14: Highlight people removed; the grey cloud is now the History module's only)
-  const want = $("#timeOn").checked;
+  // (user, 2026-10-14: Highlight people removed; the grey cloud is now the History module's only; 2026-10-16: and
+  // Free's Black and white)
+  if (monoWanted()) MONO.value = 1;
+  const want = $("#timeOn").checked || monoWanted();
   if (want !== whiteNow) { whiteNow = want; setWhiteCloud(want); }
 }
+function monoWanted() { try { return viewMode === "free" && $("#monoOn").checked; } catch { return false; } }   // (viewMode is declared further down)
+$("#monoOn").onchange = () => updateWhite();
 // the History module's Tags switch (user, 2026-10-14): the tags fade out and back in
 $("#timeTags").onchange = (e) => { tlLayer.classList.toggle("off", !e.target.checked); };
 // ---------- Time module ----------
