@@ -61,6 +61,81 @@ const v0 = cfg.views[0];
 camera.position.fromArray(v0.position);
 controls.target.fromArray(v0.target);
 
+// ---------- fisheye (user, 2026-10-15: the Perspective view, 75 degrees, a fisheye: the ground curves, the towers lean) ----------
+// Done per vertex, not on the picture: the point cloud is points, so moving each one to where a fisheye lens puts it is
+// exact and costs nothing (a picture pass would have to blur the centre). FISH.F is the field of view the eye reads
+// (vertical, degrees), FISH.s the fisheye share (0 = an ordinary lens, 1 = equidistant: a point's distance from the
+// centre of the picture goes with its angle from the view's axis, not the tangent). The camera itself renders wider
+// (camera.fov from FISH, enough for the corners, at most maxDeg off the axis: beyond that the corners stay empty), and
+// every vertex shader moves its points in (fishPos); everything that turns a 3D point into a screen point (tags,
+// picking, the people) goes through projectNdc, and a click through unprojectNdc. camera.userData.viewFov is FISH.F,
+// for what reads the field of view (the LOD, point sizes).
+const D2R = Math.PI / 180;
+const FISH = { s: 0, F: camera.fov, maxDeg: cfg.perspective?.maxDeg ?? 80 };
+const FISH_U = { uFishS: { value: 0 }, uFishTs: { value: 1 }, uFishTo: { value: 1 }, uFishHalf: { value: 0.4 }, uFishAsp: { value: 1 } };
+const FISH_GLSL = `uniform float uFishS, uFishTs, uFishTo, uFishHalf, uFishAsp;
+vec4 fishPos(vec4 c) {
+  if (uFishS <= 0.0001 || c.w <= 0.0) return c;
+  vec2 p = c.xy / c.w; p.x *= uFishAsp; float r = length(p); if (r < 1e-6) return c;
+  float t = r * uFishTs, rho = mix(t / uFishTo, atan(t) / uFishHalf, uFishS);
+  p *= rho / r; p.x /= uFishAsp; c.xy = p * c.w; return c;
+}
+`;
+const fishOn = () => FISH.s > 1e-4;
+// a built-in material (points, meshes, lines): its points through fishPos
+function fishPatch(mat) {
+  if (!mat || mat.userData.fish) return mat;
+  mat.userData.fish = true;
+  const prev = mat.onBeforeCompile;
+  mat.onBeforeCompile = (sh, r) => {
+    prev?.call(mat, sh, r);
+    Object.assign(sh.uniforms, FISH_U);
+    sh.vertexShader = FISH_GLSL + sh.vertexShader.replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
+  };
+  mat.needsUpdate = true;
+  return mat;
+}
+// a hand-written vertex shader (population.js): fishPos at the end of main
+const fishShader = (src) => { const i = src.lastIndexOf("}"); return FISH_GLSL + src.slice(0, i) + "  gl_Position = fishPos(gl_Position);\n}" + src.slice(i + 1); };
+function fishGeom() {   // tan of the view's half angle, and the lens: rho(theta) and back
+  const half = FISH.F * D2R / 2, To = Math.tan(half), sh = FISH.s;
+  const rhoOf = (th) => (1 - sh) * Math.tan(th) / To + sh * th / half;
+  const thetaOf = (rho) => { let lo = 0, hi = 89.9 * D2R; for (let k = 0; k < 40; k++) { const m = (lo + hi) / 2; if (rhoOf(m) < rho) lo = m; else hi = m; } return (lo + hi) / 2; };
+  return { half, To, rhoOf, thetaOf };
+}
+function applyFish() {
+  const { half, To, thetaOf } = fishGeom(), asp = camera.aspect, cap = FISH.maxDeg * D2R;
+  let Ts = To;
+  if (fishOn()) {
+    const th = (rho) => Math.min(thetaOf(rho), cap), rc = Math.hypot(asp, 1);
+    Ts = Math.max(Math.tan(th(1)), Math.tan(th(asp)) / asp, Math.tan(th(rc)) / rc);
+  }
+  const fov = 2 * Math.atan(Ts) / D2R;
+  if (Math.abs(camera.fov - fov) > 1e-4) { camera.fov = fov; camera.updateProjectionMatrix(); }
+  camera.userData.viewFov = FISH.F;
+  Object.assign(FISH, { Ts, To, half });
+  FISH_U.uFishS.value = FISH.s; FISH_U.uFishTs.value = Ts; FISH_U.uFishTo.value = To; FISH_U.uFishHalf.value = half; FISH_U.uFishAsp.value = asp;
+}
+applyFish();
+// a 3D point to NDC as drawn (v.project, then the lens), in place
+function projectNdc(v) {
+  v.project(camera);
+  if (!fishOn() || v.z > 1) return v;
+  const asp = camera.aspect, px = v.x * asp, py = v.y, r = Math.hypot(px, py);
+  if (r < 1e-9) return v;
+  const t = r * FISH.Ts, rho = (1 - FISH.s) * t / FISH.To + FISH.s * Math.atan(t) / FISH.half;
+  v.x = px * rho / r / asp; v.y = py * rho / r; return v;
+}
+// NDC on the screen (a click) back to the camera's NDC, for a ray
+function unprojectNdc(x, y) {
+  if (!fishOn()) return new THREE.Vector2(x, y);
+  const asp = camera.aspect, qx = x * asp, qy = y, rho = Math.hypot(qx, qy);
+  if (rho < 1e-9) return new THREE.Vector2(x, y);
+  const r = Math.tan(fishGeom().thetaOf(rho)) / FISH.Ts;
+  return new THREE.Vector2(qx * r / rho / asp, qy * r / rho);
+}
+const viewFov = () => camera.userData.viewFov ?? camera.fov;
+
 // ---------- overlays: the design files ----------
 const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/");
 const model = new THREE.Group();   // everything drawn as geometry over the point cloud
@@ -153,6 +228,7 @@ try {
       if (!o.isMesh) return;
       if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();   // no normals: three.js would draw it black
       if (!o.material.name || o.material.name === "default") o.material = mat;
+      fishPatch(o.material);
     });
     d.updateMatrixWorld(true);
     model.add(d);
@@ -318,16 +394,17 @@ function pointMaterial(sizeMetres) {
   focusMats.push(mat);
   mat.onBeforeCompile = (shader) => {
     withFocus(shader);
+    Object.assign(shader.uniforms, FISH_U);   // the fisheye (fishPos, after the projection)
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
     shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
   vColor.rgb = mix(vColor.rgb, uHi, sw);
-  vSel = sw; vBuild = 0.0; vGhost = 0.0;`);
+  vSel = sw; vBuild = 0.0; vGhost = 0.0;`).replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
     shader.vertexShader = shader.vertexShader.replace(
       "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n"
       // the Time module (user, 2026-10-13: buildings go up from the ground, slowly and softly, and stay once built):
@@ -845,7 +922,7 @@ const _c = new THREE.Vector3();
 const below = (q, t) => { let lo = 0, hi = q.length; while (lo < hi) { const m = (lo + hi) >> 1; if (q[m] < t) lo = m + 1; else hi = m; } return lo; };
 function updateLod() {
   if (!lidar) return false;
-  const focal = renderer.domElement.height / 2 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const focal = renderer.domElement.height / 2 / Math.tan(THREE.MathUtils.degToRad(viewFov() / 2));   // the field of view the eye reads (fisheye)
   const chunks = [];
   for (const p of lidarGroup.children) {
     if (!p.visible) continue;
@@ -1018,10 +1095,15 @@ let tween = null;
 const _off = new THREE.Vector3(), _sph = new THREE.Spherical();
 const sphOf = (pos, tgt) => { _sph.setFromVector3(_off.subVectors(pos, tgt)); return { r: _sph.radius, phi: Math.max(_sph.phi, 0.001), th: _sph.theta }; };
 function goTo(v) {
+  // the Perspective view (a fisheye) is a Free view: from Guided it switches to Free first (the film drives the lens)
+  if (v.fisheye && viewMode === "history") setView("free");
   const q1 = new THREE.Vector3().fromArray(v.target), a = sphOf(camera.position, controls.target);
   const b = sphOf(new THREE.Vector3().fromArray(v.position), q1);
   let dth = b.th - a.th; dth = Math.atan2(Math.sin(dth), Math.cos(dth));   // short way round
-  tween = { t0: performance.now(), dur: 1100, q0: controls.target.clone(), q1, a, b: { ...b, th: a.th + dth } };
+  // a view's field of view and fisheye share (config.json views: fov, fisheye), eased with the move: the ground curves as
+  // the camera arrives, and straightens again on the way to a view without them
+  tween = { t0: performance.now(), dur: v.fisheye || FISH.s > 1e-4 ? 1600 : 1100, q0: controls.target.clone(), q1, a, b: { ...b, th: a.th + dth },
+            f0: FISH.F, f1: v.fov ?? FOV0, s0: FISH.s, s1: v.fisheye ?? 0 };
   controls.enableDamping = false;
 }
 function stepTween(now) {
@@ -1031,6 +1113,7 @@ function stepTween(now) {
   _sph.set(Math.exp(Math.log(a.r) + (Math.log(b.r) - Math.log(a.r)) * e), a.phi + (b.phi - a.phi) * e, a.th + (b.th - a.th) * e);
   camera.position.copy(controls.target).add(_off.setFromSpherical(_sph));
   camera.lookAt(controls.target);
+  FISH.F = tween.f0 + (tween.f1 - tween.f0) * e; FISH.s = tween.s0 + (tween.s1 - tween.s0) * e; applyFish();
   if (t === 1) { tween = null; controls.enableDamping = true; }
 }
 // ---------- Google Earth camera <-> this view (for checking the grouping side by side; user, 2026-10-08) ----------
@@ -1111,7 +1194,8 @@ function renderViews() {
     s.replaceWith(box);
     const inp = box.querySelector("input"), ok = () => {
       const name = inp.value.trim() || `View ${savedViews.length + 1}`;
-      savedViews.push({ name, position: camera.position.toArray().map((x) => +x.toFixed(2)), target: controls.target.toArray().map((x) => +x.toFixed(2)) });
+      savedViews.push({ name, position: camera.position.toArray().map((x) => +x.toFixed(2)), target: controls.target.toArray().map((x) => +x.toFixed(2)),
+                        ...(FISH.s > 1e-4 || Math.abs(FISH.F - FOV0) > 0.01 ? { fov: +FISH.F.toFixed(1), fisheye: +FISH.s.toFixed(2) } : {}) });
       storeSaved(savedViews); renderViews();
     };
     inp.onkeydown = (e) => { if (e.key === "Enter") ok(); if (e.key === "Escape") renderViews(); };
@@ -1158,6 +1242,7 @@ function loadPop() {
     const tP = performance.now(); lonce("people: load started");
     const { createPopulation } = await import("./population.js");
     pop = await createPopulation({ cfg, scene, camera, renderer, layers, thinning: lidarMeta.thinning, onInfo: personTag,
+      fish: { uniforms: FISH_U, shader: fishShader, patch: fishPatch, project: projectNdc },
       onDrop: (i) => { popSelecting = true; deselect(`pop:${i}`); popSelecting = false; } });   // Shift + Alt + click took i out
     ldur("people: load + create, ms", tP);
     return pop;
@@ -1336,11 +1421,11 @@ function endTour() { if (tour) { tour = null; controls.enableDamping = true; } }
 // tilt and target ease over rejoinS seconds from the camera's to the shot's, so there is no jump.
 let paused = false, rejoin = null;
 const REJOIN_S = cfg.time?.rejoinS ?? 2.5;
-const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r, phi: a.phi, th: a.th, fov: camera.fov }; };
+const camPose = () => { const a = sphOf(camera.position, controls.target); return { target: controls.target.toArray(), r: a.r, phi: a.phi, th: a.th, fov: FISH.F }; };
 // the field of view (vertical, degrees) of the Guided camera's poses; a pose without one has FOV0 (user, 2026-10-15: a
 // dolly zoom on Y-1; the FOV only ever changes together with the distance, eased like the rest of the move)
-const FOV0 = camera.fov;
-function setFov(f) { if (Math.abs(camera.fov - f) > 1e-3) { camera.fov = f; camera.updateProjectionMatrix(); } }
+const FOV0 = FISH.F;
+function setFov(f) { if (Math.abs(FISH.F - f) > 1e-3) { FISH.F = f; applyFish(); } }   // the field of view the eye reads (fisheye: the camera renders wider)
 const wrapA = (d) => Math.atan2(Math.sin(d), Math.cos(d));
 function camApply(P) {
   if (rejoin) {
@@ -1450,7 +1535,7 @@ const CINE = { shotS: 10, blendS: 3.5, heroes: 4, heroWithinM: 700, wideR: 1300,
                heroNames: ["Angels Flight"], ...(cfg.time?.cinema || {}) };
 let cine = null;
 const cutEl = document.createElement("div"); cutEl.id = "cut"; document.body.append(cutEl);
-const D2R = Math.PI / 180;
+// (D2R: degrees to radians, defined with the fisheye at the top)
 function cineShots() {
   // the film by groups of places near each other (user, 2026-10-13), config.json time.cinema.shots in order: each shot
   // frames the box round its members (entity names, or "Angels Knoll" for the parcel) and lights their tags.
@@ -1647,7 +1732,7 @@ renderer.domElement.addEventListener("pointerdown", (e) => (down = [e.clientX, e
 renderer.domElement.addEventListener("pointerup", (e) => {
   if (PERF) PERF.clickAt = performance.now();
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
-  ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
+  ray.setFromCamera(unprojectNdc((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);   // through the lens
   // Alt + click picks the person within PICK_PX on screen (user, 2026-10-09: a plain click is for buildings / points)
   // Shift + Alt + click adds the person (any person, also the faded ones) or takes them out (user, 2026-10-12)
   // (no one near: nothing happens, rather than adding the ground or a building to the selection)
@@ -1673,7 +1758,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   // fixed 0.6 m is less than a pixel gap seen from far away). Where a facade has no returns (glass) the click still
   // goes through to what is behind.
   function pickLidar() {
-    const perPx = (d) => (2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) / innerHeight;
+    const perPx = (d) => (2 * d * Math.tan(THREE.MathUtils.degToRad(viewFov() / 2))) / innerHeight;
     const tol = (d) => Math.max(0.6, perPx(d) * PICK_LIDAR_PX);
     ray.params.Points.threshold = tol(camera.position.distanceTo(controls.target) * 2);
     const hit = ray.intersectObjects(lidarGroup.children.filter((p) => p.visible), false).find((h) => h.distanceToRay <= tol(h.distance));
@@ -1787,7 +1872,7 @@ function updateTags() {
   const ui = $("#ui").getBoundingClientRect(), uiOn = ui.width > 0;   // also while it is faded out: labels do not jump when it returns
   leadSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   for (const s of selection) {
-    _tv.copy(s.a.centre).project(camera);
+    projectNdc(_tv.copy(s.a.centre));
     const sx = ((_tv.x + 1) / 2) * W, sy = ((1 - _tv.y) / 2) * H;
     const off = _tv.z > 1 || sx < -40 || sx > W + 40 || sy < -40 || sy > H + 40;    // its centre is not in view
     s.el.style.display = off ? "none" : ""; s.line.style.display = off ? "none" : "";
@@ -2016,7 +2101,7 @@ function updateTimeTags() {
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
     let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
     for (const x of [x0, x1]) for (const y of [y0, top]) for (const z of [z0, z1]) {
-      _tv.set(x, y, z).project(camera); if (_tv.z > 1) behind = true;
+      projectNdc(_tv.set(x, y, z)); if (_tv.z > 1) behind = true;
       const sx = ((_tv.x + 1) / 2) * W, sy = ((1 - _tv.y) / 2) * H;
       sx0 = Math.min(sx0, sx); sx1 = Math.max(sx1, sx); sy0 = Math.min(sy0, sy); sy1 = Math.max(sy1, sy);
     }
@@ -2134,7 +2219,7 @@ $("#ui").addEventListener("scroll", () => {
   clearTimeout(sbTimer); sbTimer = setTimeout(() => $("#ui").classList.remove("scrolling"), 400);
 }, { passive: true });
 if (innerWidth < 560) collapse(true);  // phones: start with the panel folded
-addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); invalidate(); });
+addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); applyFish(); renderer.setSize(innerWidth, innerHeight); invalidate(); });
 
 // ---------- point settings: no panel any more (user, 2026-10-10); config.json "lidar" or the URL (?px= ?keep= ?cap= ?size=,
 // read at the top) still set them ----------
@@ -2258,10 +2343,16 @@ function setView(v) {
     historyLeft = $("#timeOn").checked ? { year: TIME.year.value, cine: cine && !cine.people ? cine : null, at: performance.now() } : null;
     paused = false; setHistory(false);
     // the Free camera has the normal field of view: eased back over 0.8 s if a shot had changed it
-    const f0 = camera.fov, t0 = performance.now();
-    const ease = (now) => { const k = Math.min((now - t0) / 800, 1); setFov(f0 + (FOV0 - f0) * k * k * (3 - 2 * k)); invalidate(); if (k < 1) requestAnimationFrame(ease); };
+    const f0 = FISH.F, t0 = performance.now();
+    const ease = (now) => { if (tween) return; const k = Math.min((now - t0) / 800, 1); setFov(f0 + (FOV0 - f0) * k * k * (3 - 2 * k)); invalidate(); if (k < 1) requestAnimationFrame(ease); };
     if (Math.abs(f0 - FOV0) > 0.01) requestAnimationFrame(ease);
-  } else setHistory(true, historyLeft);
+  } else {
+    // the film drives the lens: a fisheye from the Perspective view eases out over 0.8 s
+    if (FISH.s > 1e-4) { const s0 = FISH.s, t0 = performance.now();
+      const ease = (now) => { const k = Math.min((now - t0) / 800, 1); FISH.s = s0 * (1 - k * k * (3 - 2 * k)); applyFish(); invalidate(); if (k < 1) requestAnimationFrame(ease); };
+      requestAnimationFrame(ease); }
+    setHistory(true, historyLeft);
+  }
   invalidate();
 }
 document.querySelectorAll("#viewMode button").forEach((b) => (b.onclick = () => setView(b.dataset.v)));

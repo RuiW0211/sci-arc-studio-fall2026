@@ -17,7 +17,10 @@ function hash(a, b) {
 }
 const hhmm = (s) => { const m = Math.floor(s / 60) % 1440; return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`; };
 
-export async function createPopulation({ cfg, scene, camera, renderer, layers, thinning, onInfo, onDrop, onStatus }) {
+export async function createPopulation({ cfg, scene, camera, renderer, layers, thinning, onInfo, onDrop, onStatus, fish }) {
+  // the Perspective view's fisheye (viewer.js): the people's shaders move their points like the cloud's, and screen
+  // points (picking a person) go through the same lens; without it, as before
+  const lens = fish ?? { uniforms: {}, shader: (v) => v, patch: (m) => m, project: (v) => v.project(camera) };
   const pc = cfg.population;
   // load profile (2026-10-14, the stutter when the people come on): ms of the steps, the first few calls of each
   const times = {}, tStart = performance.now();
@@ -174,7 +177,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 100, 0), 900);
   const uniforms = { size: { value: pc.size ?? 0.7 }, scale: { value: 1 }, minPx: { value: 2.0 }, alpha: { value: 1 },
                     r0: { value: TH.r0 }, pw: { value: TH.p }, jit: { value: TH.jitter }, keepMin: { value: TH.keepMin },
-                    edgeEnd: { value: TH.edgeEnd }, edgeW: { value: TH.edgeW } };
+                    edgeEnd: { value: TH.edgeEnd }, edgeW: { value: TH.edgeW }, ...lens.uniforms };
   const material = new THREE.ShaderMaterial({
     uniforms, vertexColors: true,
     // the same share() as above: a person outside their share is not drawn; the drawn ones fade with it
@@ -191,6 +194,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       void main() { if (vFade <= 0.0 || length(gl_PointCoord - vec2(0.5)) > 0.5) discard; gl_FragColor = vec4(vC, alpha * vFade); }`,
     transparent: true,
   });
+  material.vertexShader = lens.shader(material.vertexShader);   // the fisheye (viewer.js), for the clones below too
   const points = new THREE.Points(geo, material);
   points.frustumCulled = false;
   points.renderOrder = 2;
@@ -205,7 +209,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const selGeo = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(3 * MAXSEL), 3));
   selGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(3 * MAXSEL).map((_, k) => HILITE.toArray()[k % 3]), 3));
   const selMat = material.clone();
-  selMat.uniforms = { size: { value: 2.2 }, scale: uniforms.scale, minPx: { value: 9 }, alpha: { value: 1 } };
+  selMat.uniforms = { size: { value: 2.2 }, scale: uniforms.scale, minPx: { value: 9 }, alpha: { value: 1 }, ...lens.uniforms };
   const selPoint = new THREE.Points(selGeo, selMat);
   selPoint.visible = false;
   selPoint.frustumCulled = false;
@@ -217,7 +221,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const hovGeo = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(3), 3));
   hovGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(HILITE.toArray()), 3));
   const hovMat = material.clone();
-  hovMat.uniforms = { size: { value: 1.8 }, scale: uniforms.scale, minPx: { value: 7 }, alpha: { value: 0.85 } };
+  hovMat.uniforms = { size: { value: 1.8 }, scale: uniforms.scale, minPx: { value: 7 }, alpha: { value: 0.85 }, ...lens.uniforms };
   const hovPoint = new THREE.Points(hovGeo, hovMat);
   hovPoint.visible = false; hovPoint.frustumCulled = false; hovPoint.renderOrder = 3;
   scene.add(hovPoint);
@@ -230,7 +234,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const dim = sel.length > 0 && !any;   // while people are isolated only they count, unless adding (any: Shift held)
     for (let i = 0; i < A; i++) {
       if (pos[3 * i + 1] <= OFF / 2 || (dim && !selSet.has(i)) || !drawn(i)) continue;
-      _p.set(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]).project(camera);
+      lens.project(_p.set(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]));   // through the fisheye, as drawn
       if (_p.z > 1 || _p.z < -1) continue;
       const dx = (_p.x + 1) / 2 * w + r.left - cx, dy = (1 - _p.y) / 2 * h + r.top - cy, d = dx * dx + dy * dy;
       if (d < bd) { bd = d; best = i; }
@@ -240,18 +244,18 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // route = a thin line, plus an optional neon "light wall" and floor trace (Tron light-cycle trail):
   // faint for the rest of the day, lit where the person has already been, brightest at their current spot
   const NEON = new THREE.Color(pc.routeColor ?? "#00E5FF");
-  const routeU = { now: { value: 0 }, color: { value: NEON }, strength: { value: pc.neonStrength ?? 1 } };
+  const routeU = { now: { value: 0 }, color: { value: NEON }, strength: { value: pc.neonStrength ?? 1 }, ...lens.uniforms };
   const neonVert = `attribute float aT; attribute float aA; varying float vT; varying float vA;
     void main() { vT = aT; vA = aA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
   const neonFrag = (shape) => `uniform float now; uniform vec3 color; uniform float strength; varying float vT; varying float vA;
     void main() { float done = step(vT, now), head = done * exp(-(now - vT) / 150.0);
       float a = (${shape}) * (0.04 + 0.10 * done + 0.18 * head) * strength;
       gl_FragColor = vec4(mix(color, vec3(1.0), 0.5 * head), clamp(a, 0.0, 1.0)); }`;
-  const neonMat = (shape) => new THREE.ShaderMaterial({ uniforms: routeU, vertexShader: neonVert, fragmentShader: neonFrag(shape),
+  const neonMat = (shape) => new THREE.ShaderMaterial({ uniforms: routeU, vertexShader: lens.shader(neonVert), fragmentShader: neonFrag(shape),
     transparent: true, depthWrite: false, side: THREE.DoubleSide });
   const wall = new THREE.Mesh(new THREE.BufferGeometry(), neonMat("pow(1.0 - vA, 1.5) * (0.85 + 0.15 * step(0.5, fract(vA * 6.0)))"));
   const glow = new THREE.Mesh(new THREE.BufferGeometry(), neonMat("exp(-vA * vA * 4.0)"));
-  const line = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.7, depthTest: false }));
+  const line = new THREE.LineSegments(new THREE.BufferGeometry(), lens.patch(new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.7, depthTest: false })));
   const route = new THREE.Group();
   for (const o of [wall, glow, line]) { o.frustumCulled = false; o.renderOrder = 3; route.add(o); }
   route.visible = false;
@@ -270,11 +274,11 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   tGeo.setAttribute("aT", new THREE.BufferAttribute(tT, 1).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("aA", new THREE.BufferAttribute(tA, 1).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("aS", new THREE.BufferAttribute(tS, 1).setUsage(THREE.DynamicDrawUsage));   // 1 = the selected person
-  const trailU = { now: { value: 0 }, tail: { value: 600 }, strength: { value: pc.neonStrength ?? 1 }, dim: uniforms.alpha };   // people's opacity
+  const trailU = { now: { value: 0 }, tail: { value: 600 }, strength: { value: pc.neonStrength ?? 1 }, dim: uniforms.alpha, ...lens.uniforms };   // people's opacity
   const trails = new THREE.Mesh(tGeo, new THREE.ShaderMaterial({
     uniforms: trailU, vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-    vertexShader: `attribute float aT; attribute float aA; attribute float aS; varying float vT; varying float vA; varying float vS; varying vec3 vC;
-      void main() { vT = aT; vA = aA; vS = aS; vC = color; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    vertexShader: lens.shader(`attribute float aT; attribute float aA; attribute float aS; varying float vT; varying float vA; varying float vS; varying vec3 vC;
+      void main() { vT = aT; vA = aA; vS = aS; vC = color; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`),
     fragmentShader: `uniform float now; uniform float tail; uniform float strength; uniform float dim; varying float vT; varying float vA; varying float vS; varying vec3 vC;
       void main() { float age = clamp((now - vT) / tail, 0.0, 1.0);
         float a = pow(max(1.0 - vA, 0.0), 1.5) * (1.0 - age) * 0.22 * strength * (vS > 0.5 ? 1.0 : dim);
@@ -683,7 +687,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     tick(now) {
       const dt = lastNow ? Math.min((now - lastNow) / 1000, 0.25) : 0;
       lastNow = now;
-      uniforms.scale.value = renderer.domElement.height / (2 * Math.tan((camera.fov * Math.PI) / 360));
+      uniforms.scale.value = renderer.domElement.height / (2 * Math.tan(((camera.userData.viewFov ?? camera.fov) * Math.PI) / 360));   // the field of view the eye reads
       if (!points.visible) return;
       if (st.playing) { st.t = (st.t + dt * st.speed) % 86400; st.dirty = true; }
       if (st.dirty) timed("update (positions)", update);

@@ -187,7 +187,8 @@
         95,
         0
       ]
-    }
+    },
+    {"name": "Perspective", "position": [122, 212, 141], "target": [0, 95, 0], "fov": 75, "fisheye": 1}
   ],
   "population": {
     "_comment": "Modeled day/night population (site-model/population/prep_population.py): one point per person, size in metres. start = clock at load (hours), speed = simulated seconds per real second. routeColor / neon / neonStrength: the selected person's light trail (neonStrength scales its opacity). whiteCloud: the 'Highlight people' option - grey level (1 = white) and opacity the point cloud fades to (0.5 s). highlightSize: people's size (m) under 'Highlight people'. colors: Okabe-Ito (colour-blind safe), workers #FFD166 and visitors #06D6A0 from Coolors 'Watermelon Sorbet' (user, 2026-10-09); passers-by #EDEDED, light enough to show on the concrete-grey streets (user, 2026-10-10). isolateAlpha: opacity of everyone else while one person is selected (user, 2026-10-12: 0.15 was too faint, now 0.3).",
