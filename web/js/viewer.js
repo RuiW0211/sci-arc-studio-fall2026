@@ -740,10 +740,14 @@ async function loadLidar() {
     let b = buckets.get(key); if (!b) buckets.set(key, (b = []));
     b.push(i);
   }
+  tick("  chunks: buckets (string keys)");
+  let tSort = 0, tCopy = 0, tGeo = 0;   // L1 audit (2026-10-14): where the chunk step's time goes
   const parts = [];
   for (const [key, idx] of buckets) {
     const [name, cell] = key.split("|"), m = idx.length;
+    let tt = performance.now();
     idx.sort((a, b) => q[a] - q[b]);   // by draw priority: the first k points are the ones to keep when thinning
+    tSort += performance.now() - tt; tt = performance.now();
     const pos = new Float32Array(m * 3), zs = new Float32Array(m), cls = new Uint8Array(m), inten = new Uint8Array(m), ob = new Uint16Array(m);
     const qs = new Float32Array(m), hag = HG ? new Int16Array(m) : null;   // height above ground, 0.1 m (Houdini LAZ)
     const sz = new Uint8Array(m), yr = new Int16Array(m), rise = new Uint8Array(m);
@@ -755,6 +759,7 @@ async function loadLidar() {
       zs[j] = P[3 * i + 1]; cls[j] = C[i]; inten[j] = I[i]; ob[j] = obj[i]; qs[j] = q[i];
       if (hag) hag[j] = HG[i];
     }
+    tCopy += performance.now() - tt; tt = performance.now();
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     const col = new Float32Array(m * 3);
@@ -772,7 +777,9 @@ async function loadLidar() {
     parts.push(pts.userData.part);
     const L = layers.get(name);
     if (L) (L.lidarParts ||= []).push(pts);
+    tGeo += performance.now() - tt;
   }
+  Object.assign(loadTimes, { "  chunks: sort by q, ms": Math.round(tSort), "  chunks: copy into arrays, ms": Math.round(tCopy), "  chunks: geometry + scene, ms": Math.round(tGeo), "  chunks: count": parts.length });
   tick("chunks (sort + geometry)");
   const objCount = new Uint32Array(objNames.length);
   for (let i = 0; i < n; i++) objCount[obj[i]]++;
