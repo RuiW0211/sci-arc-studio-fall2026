@@ -72,12 +72,20 @@ controls.target.fromArray(v0.target);
 // for what reads the field of view (the LOD, point sizes).
 const D2R = Math.PI / 180;
 const FISH = { s: 0, F: camera.fov, maxDeg: cfg.perspective?.maxDeg ?? 80 };
-const FISH_U = { uFishS: { value: 0 }, uFishTs: { value: 1 }, uFishTo: { value: 1 }, uFishHalf: { value: 0.4 }, uFishAsp: { value: 1 } };
-const FISH_GLSL = `uniform float uFishS, uFishTs, uFishTo, uFishHalf, uFishAsp;
+const FISH_U = { uFishS: { value: 0 }, uFishTs: { value: 1 }, uFishTo: { value: 1 }, uFishHalf: { value: 0.4 }, uFishAsp: { value: 1 }, uFishM: { value: 1 } };
+// fishSizeK (set by fishPos): how much the lens shrinks the picture around the point, against its centre (the square root
+// of the radial and the tangential scale), for its size (user, 2026-10-15: big points at the edges of the fisheye: the
+// edges are squeezed, the points were not). uFishM: how much nearer the lens brings the camera (LENS), for sizes in
+// pixels per metre of depth (the cloud's), which grow by it
+const FISH_GLSL = `uniform float uFishS, uFishTs, uFishTo, uFishHalf, uFishAsp, uFishM;
+float fishSizeK = 1.0;
 vec4 fishPos(vec4 c) {
+  fishSizeK = 1.0;
   if (uFishS <= 0.0001 || c.w <= 0.0) return c;
   vec2 p = c.xy / c.w; p.x *= uFishAsp; float r = length(p); if (r < 1e-6) return c;
   float t = r * uFishTs, rho = mix(t / uFishTo, atan(t) / uFishHalf, uFishS);
+  float c0 = mix(1.0 / uFishTo, 1.0 / uFishHalf, uFishS), d = mix(1.0 / uFishTo, 1.0 / (uFishHalf * (1.0 + t * t)), uFishS);
+  fishSizeK = sqrt(max(rho / t * d, 0.0)) / c0;
   p *= rho / r; p.x /= uFishAsp; c.xy = p * c.w; return c;
 }
 `;
@@ -96,7 +104,8 @@ function fishPatch(mat) {
   return mat;
 }
 // a hand-written vertex shader (population.js): fishPos at the end of main
-const fishShader = (src) => { const i = src.lastIndexOf("}"); return FISH_GLSL + src.slice(0, i) + "  gl_Position = fishPos(gl_Position);\n}" + src.slice(i + 1); };
+const fishShader = (src) => { const i = src.lastIndexOf("}"), size = /gl_PointSize/.test(src) ? " gl_PointSize *= fishSizeK;" : "";
+  return FISH_GLSL + src.slice(0, i) + "  gl_Position = fishPos(gl_Position);" + size + "\n}" + src.slice(i + 1); };
 function fishGeom() {   // tan of the view's half angle, and the lens: rho(theta) and back
   const half = FISH.F * D2R / 2, To = Math.tan(half), sh = FISH.s;
   const rhoOf = (th) => (1 - sh) * Math.tan(th) / To + sh * th / half;
@@ -406,7 +415,7 @@ function pointMaterial(sizeMetres) {
   vColor.rgb = mix(vColor.rgb, uHi, sw);
   vSel = sw; vBuild = 0.0; vGhost = 0.0;`).replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
     shader.vertexShader = shader.vertexShader.replace(
-      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0, 1.0);\n"
+      "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0 * fishSizeK / uFishM, 1.0);\n"
       // the Time module (user, 2026-10-13: buildings go up from the ground, slowly and softly, and stay once built):
       // over the uBuild years before its year a building rises, its points shown up to an eased height with a wide
       // soft front (aRise: the point's height in its building, 0 at the foot, 1 at the top). Buildings and landmarks
@@ -1439,6 +1448,7 @@ let baseFov = FOV0;   // the base pose's field of view (setFov)
 const lensM = (L = LENS.L) => 1 + L * (LENS.G - 1);
 function applyLens() {
   FISH.F = 2 * Math.atan(Math.tan(baseFov * D2R / 2) * lensM()) / D2R;
+  FISH_U.uFishM.value = lensM();
   FISH.s = LENS.L * LENS.amt;
   applyFish();
 }
