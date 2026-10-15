@@ -269,13 +269,19 @@
   /* the knob in the grey of the switches' selected thumb (user, 2026-10-14): --thumb over --chip over the panel, made
      opaque so the chart does not show through it (dark: .30 white over .22 rgb(120,120,128) over ~#121213), with the
      thumb's shadow and top highlight */
-  :root { --knob: #f7f7f8; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --knob: #69696b; } }
-  :root[data-theme="dark"] { --knob: #69696b; }
+  /* pressed or dragged (user, 2026-10-14) it lights up to --knob-on, the light grey of the selected pill (which is
+     translucent: measured on screen from #6d6d6f to #a0a0a2 with the picture behind; --knob-on takes the light end) */
+  :root { --knob: #ececee; --knob-on: #ffffff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --knob: #69696b; --knob-on: #9e9ea1; } }
+  :root[data-theme="dark"] { --knob: #69696b; --knob-on: #9e9ea1; }
   #popTrack input[type=range]::-webkit-slider-thumb { background: var(--knob);
-    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08); }
+    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08);
+    transition: transform var(--t-feedback) cubic-bezier(.34,1.4,.5,1), background-color var(--t-feedback) ease; }
   #popTrack input[type=range]::-moz-range-thumb { background: var(--knob);
-    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08); }
+    box-shadow: 0 2px 8px rgba(0,0,0,.22), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0,0,0,.08);
+    transition: transform var(--t-feedback) cubic-bezier(.34,1.4,.5,1), background-color var(--t-feedback) ease; }
+  #popTrack input[type=range]:active::-webkit-slider-thumb, #popTrack input[type=range].jelly::-webkit-slider-thumb { background: var(--knob-on); }
+  #popTrack input[type=range]:active::-moz-range-thumb, #popTrack input[type=range].jelly::-moz-range-thumb { background: var(--knob-on); }
   #popTrack input[type=range]::-webkit-slider-runnable-track { height: 63px; background: none; }
   #popTrack input[type=range]::-webkit-slider-thumb { margin-top: 50px; }
   #popTrack input[type=range]::-moz-range-track { height: 63px; background: none; }
@@ -284,8 +290,8 @@
   #popTrack input[type=range]:hover::-moz-range-thumb, #popTrack input[type=range]:active::-moz-range-thumb { transform: translateY(25px) scale(1.18); }
   /* while dragged by hand the knob stretches and wobbles back (population.js sets --kx / --ky every frame; no transition
      then, or it would lag), on top of the hover / drag scale */
-  #popTrack input[type=range].jelly::-webkit-slider-thumb { transition: none; transform: scale(calc(1.18 * var(--kx, 1)), calc(1.18 * var(--ky, 1))); }
-  #popTrack input[type=range].jelly::-moz-range-thumb { transition: none; transform: translateY(25px) scale(calc(1.18 * var(--kx, 1)), calc(1.18 * var(--ky, 1))); }
+  #popTrack input[type=range].jelly::-webkit-slider-thumb { transition: background-color var(--t-feedback) ease; transform: scale(calc(1.18 * var(--kx, 1)), calc(1.18 * var(--ky, 1))); }
+  #popTrack input[type=range].jelly::-moz-range-thumb { transition: background-color var(--t-feedback) ease; transform: translateY(25px) scale(calc(1.18 * var(--kx, 1)), calc(1.18 * var(--ky, 1))); }
   #popVs { font-size: 11px; color: var(--muted); text-align: right; margin-top: 8px; min-height: 1em; font-variant-numeric: tabular-nums; }
   /* Weekday / Weekend (population.js showCurve): the old curve dims while the new one is worked out, then morphs */
   #popChart { transition: opacity var(--t-feedback) ease; }
