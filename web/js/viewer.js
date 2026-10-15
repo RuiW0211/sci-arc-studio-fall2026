@@ -61,7 +61,7 @@ const v0 = cfg.views[0];
 camera.position.fromArray(v0.position);
 controls.target.fromArray(v0.target);
 
-// ---------- fisheye (user, 2026-10-15: the Perspective view, 75 degrees, a fisheye: the ground curves, the towers lean) ----------
+// ---------- fisheye (user, 2026-10-15: a 75 degree fisheye lens, a switch for Guided and Free: the ground curves, the towers lean) ----------
 // Done per vertex, not on the picture: the point cloud is points, so moving each one to where a fisheye lens puts it is
 // exact and costs nothing (a picture pass would have to blur the centre). FISH.F is the field of view the eye reads
 // (vertical, degrees), FISH.s the fisheye share (0 = an ordinary lens, 1 = equidistant: a point's distance from the
@@ -1104,7 +1104,7 @@ let tween = null;
 const _off = new THREE.Vector3(), _sph = new THREE.Spherical();
 const sphOf = (pos, tgt) => { _sph.setFromVector3(_off.subVectors(pos, tgt)); return { r: _sph.radius, phi: Math.max(_sph.phi, 0.001), th: _sph.theta }; };
 function goTo(v) {
-  // a view with "lens" (Perspective, a saved view) is a camera position: from Guided it switches to Free (the film would
+  // a view with "lens" (a saved view) is a camera position: from Guided it switches to Free (the film would
   // take the camera straight back) and sets the lens; its position is as drawn. A view without (Default, Top) keeps the
   // lens and is a base pose: brought in by it
   if (v.lens !== undefined && viewMode === "history") setView("free");
@@ -1179,6 +1179,8 @@ const SAVED_KEY = "y1-viewer-views";
 const loadSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch { return []; } };
 const storeSaved = (list) => { try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch { /* private mode: lives until reload */ } };
 let savedViews = loadSaved();
+// the views are drawn before LENS is set up (it needs FOV0): off until then
+const lensIsOn = () => { try { return LENS.to > 0.5; } catch { return false; } };
 function renderViews() {
   $("#views").innerHTML = "";
   const add = (v, saved, k) => {
@@ -1186,6 +1188,8 @@ function renderViews() {
     b.className = saved ? "view saved" : "view";
     b.textContent = v.name;
     b.onclick = () => goTo(v);
+    // a view marked noLens (Top: user, 2026-10-15, a plan needs no fisheye) cannot be chosen while the lens is on
+    if (v.noLens) { b.dataset.noLens = "1"; b.disabled = lensIsOn(); b.title = b.disabled ? "Not with the fisheye lens" : ""; }
     if (saved) {
       const x = document.createElement("span");
       x.className = "del"; x.textContent = "−"; x.title = `Delete the view “${v.name}”`;
@@ -1457,6 +1461,7 @@ let lensAnim = 0;
 function setLens(on) {
   LENS.to = on ? 1 : 0;
   const box = $("#lensOn"); if (box) box.checked = !!on;
+  for (const b of document.querySelectorAll("#views button[data-no-lens]")) { b.disabled = !!on; b.title = on ? "Not with the fisheye lens" : ""; }
   cancelAnimationFrame(lensAnim);
   const L0 = LENS.L, t0 = performance.now();
   const step = (now) => {
