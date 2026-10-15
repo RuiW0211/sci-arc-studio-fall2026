@@ -16,6 +16,12 @@ Thinning (agreed with the user 2026-10-06):
     0.9-1.3 km with its own noise, so the city does not stop at a line;
   * Terrain, _other and Street_furniture are not objects: their ratio comes from each point's position, with a smooth
     60 m noise field in place of the per-object random (irregular patches, no squares).
+Target density (half_density_m > 0, user 2026-10-16, item 15: "通过疏密来凸显Y1是中心"): no full-density disc; the share
+  falls smoothly from Y-1 itself, 1 / (1 + (d_eff / half_density_m)^P), half at half_density_m. Buildings / landmarks
+  are also balanced by how much is built around them: share = that curve x T0 / A, never above 1, A = building points
+  per m2 of ground within area_window_m of the building (as scanned), T0 = the area_reference_percentile of A among the
+  buildings within area_reference_radius_m of Y-1. Dense blocks thin more, open ground (parks, plazas) keeps more, so
+  the amount on screen per m2 follows distance from Y-1 (the scanned city is heavier to the south: centre -73 m before).
 """
 import json
 import sys
@@ -41,6 +47,10 @@ MIST, MIST_END, MIST_W = 0.0, 1150.0, 250.0
 # noise), so the cloud never reaches the square edge of the 9-tile data (~1.42 km east of Y-1)
 EDGE_END, EDGE_W = 1230.0, 300.0
 DENSITY, DENSITY_INSIDE = 1.0, False
+# target density (see the notes at the top): 0 = the full-density disc of R0 as before
+HALF, AREA_W, AREA_PCT, AREA_REF_R = 0.0, 120.0, 90.0, 200.0
+AREA_LAYERS = ("Buildings", "Buildings_LiDAR_only", "Landmarks")
+AREA_T0 = None          # set by plan()
 # site-model/houdini/thinning.json overrides the defaults above (see its "_" notes); command-line flags override both
 _cfg_path = HZ / "thinning.json"
 if _cfg_path.exists():
@@ -51,6 +61,8 @@ if _cfg_path.exists():
     EDGE_W = float(_c.get("edge_width_m", EDGE_W)); JITTER = float(_c.get("object_jitter", JITTER))
     NOISE = float(_c.get("noise_amplitude", NOISE)); NOISE_SCALE = float(_c.get("noise_wavelength_m", NOISE_SCALE))
     CELL = float(_c.get("ground_patch_m", CELL)); MIST = float(_c.get("mist", MIST)); MIST_END = float(_c.get("mist_end_m", MIST_END))
+    HALF = float(_c.get("half_density_m", HALF)); AREA_W = float(_c.get("area_window_m", AREA_W))
+    AREA_PCT = float(_c.get("area_reference_percentile", AREA_PCT)); AREA_REF_R = float(_c.get("area_reference_radius_m", AREA_REF_R))
 CELL_KINDS = ("Terrain", "_other", "Street_furniture")
 RENUMBER = ("Tree", "Vehicle", "Shrub", "Wall", "PC")
 # kinds that keep their position-based chunk names (PC_<x>_<z>, metres) instead of a running number: the building
@@ -126,13 +138,19 @@ def noise(x, n, scale=None, seed=7):
     return (a * (1 - fx) + b * fx) * (1 - fn) + (c * (1 - fx) + d * fx) * fn
 
 
-def ratio(x, n, u):
-    """Keep ratio at plan position (x, north) for an object / cell with its own random u in [0, 1)."""
+def ratio(x, n, u, area=None):
+    """Keep ratio at plan position (x, north) for an object / cell with its own random u in [0, 1); area (target
+    density only): how much is built around it, A / T0 (1 = the reference amount)."""
     d = np.hypot(x, n)
     d_eff = d * (1 + JITTER * (2 * u - 1)) * (1 + NOISE * noise(x, n))
-    r = np.where(d <= R0, 1.0, np.minimum(1.0, DENSITY * (R0 / np.maximum(d_eff, 1)) ** P))
-    if DENSITY_INSIDE:
-        r = np.where(d <= R0, min(1.0, DENSITY), r)
+    if HALF > 0:
+        r = np.minimum(1.0, DENSITY / (1 + (np.maximum(d_eff, 1) / HALF) ** P))
+        if area is not None:
+            r = np.minimum(1.0, r / np.maximum(area, 1e-6))
+    else:
+        r = np.where(d <= R0, 1.0, np.minimum(1.0, DENSITY * (R0 / np.maximum(d_eff, 1)) ** P))
+        if DENSITY_INSIDE:
+            r = np.where(d <= R0, min(1.0, DENSITY), r)
     d_m = d * (1 + 0.12 * noise(x, n, 500.0, seed=23))
     r = np.where(r < KEEP_MIN, 0.0, r)                     # objects whose own share is too small are left out ...
     r = r * np.clip((EDGE_END - d_m) / EDGE_W, 0, 1)        # ... then the outer taper thins the rest to nothing
@@ -272,10 +290,22 @@ def plan(verbose=True):
         ns.sort(key=lambda s: np.hypot(final[s]["sx"] / final[s]["n"], final[s]["sn"] / final[s]["n"]))
         for i, s in enumerate(ns, 1):
             newname[s] = f"{k}_{i:05d}"
-    # 3. keep ratio per object
+    # 3. keep ratio per object (target density: buildings also by how much is built around them)
+    global AREA_T0
+    area = {}
+    if HALF > 0:
+        bs = [s for s, f in final.items() if f["layer"] in AREA_LAYERS and f["n"] > 0]
+        bp = np.array([[final[s]["sx"] / final[s]["n"], final[s]["sn"] / final[s]["n"]] for s in bs])
+        bn = np.array([final[s]["n"] for s in bs], dtype=float)
+        A = np.array([bn[j].sum() for j in cKDTree(bp).query_ball_point(bp, AREA_W)]) / (np.pi * AREA_W ** 2)
+        AREA_T0 = float(np.percentile(A[np.hypot(bp[:, 0], bp[:, 1]) < AREA_REF_R], AREA_PCT))
+        area = dict(zip(bs, A / AREA_T0))
+        if verbose:
+            print(f"target density: half at {HALF:.0f} m, buildings balanced by the amount within {AREA_W:.0f} m"
+                  f" (reference {AREA_T0:.2f} points per m2 of ground)")
     for s, f in final.items():
         cx, cn = f["sx"] / f["n"], f["sn"] / f["n"]
-        f["r"] = float(ratio(np.array(cx), np.array(cn), hash01(zlib.crc32(s.encode()))))
+        f["r"] = float(ratio(np.array(cx), np.array(cn), hash01(zlib.crc32(s.encode())), area.get(s)))
         f["name"] = newname.get(s, s)
     est = sum(f["n"] * f["r"] for f in final.values())
     if verbose:
@@ -400,10 +430,15 @@ def pack():
                                  "(tools/split_chunks.py, merge in tools/pack_wide.py)"},
             "segment": {"type": "uint8", "names": SEGMENTS, "source": "Houdini point segmentation"},
             "hag": {"type": "int16", "scale": 0.1, "unit": "m", "source": "height above the Houdini ground heightfield"}},
-        "thinning": {"full_density_radius_m": R0, "falloff_power": P, "density": DENSITY, "density_inside_too": DENSITY_INSIDE, "per_object": True, "ground_noise_m": CELL,
+        "thinning": {**({"half_density_m": HALF, "area_window_m": AREA_W, "area_reference_per_m2": round(AREA_T0, 3),
+                         "noise_amplitude": NOISE} if HALF > 0 else {}),
+                     "full_density_radius_m": R0, "falloff_power": P, "density": DENSITY, "density_inside_too": DENSITY_INSIDE, "per_object": True, "ground_noise_m": CELL,
                      "keep_min": KEEP_MIN, "mist": MIST, "mist_end_m": MIST_END, "edge_end_m": EDGE_END, "note": f"Every return within {R0:.0f} m of Y-1; farther out each object (building, "
                      "tree, car ...) keeps one share of its points, falling off with distance with a random, irregular edge, "
-                     "then a faint mist that fades out itself."},
+                     "then a faint mist that fades out itself." if HALF <= 0 else f"No full-density disc: each object keeps "
+                     f"1 / (1 + (d / {HALF:.0f} m)^{P:g}) of its points (half at {HALF:.0f} m, a per-object random stretch); "
+                     f"buildings also x {AREA_T0:.2f} / the building points per m2 within {AREA_W:.0f} m around them, so dense "
+                     "blocks thin more and open ground keeps more."},
         "source": "USGS 3DEP CA_LosAngeles_B23 (2023), 9 tiles 11SLT0383-0385 / 3767-3769, public domain; labels by Houdini;"
                   " LAZ (LAS 1.2 format 0 + extra bytes), local frame, 1 cm",
     }
@@ -418,11 +453,11 @@ if __name__ == "__main__":
     for flag, conv, glob_name in (("--r0", float, "R0"), ("--power", float, "P"), ("--keep-min", float, "KEEP_MIN"),
                                   ("--density", float, "DENSITY"),
                                   ("--mist", float, "MIST"), ("--mist-end", float, "MIST_END"),
-                                  ("--edge-end", float, "EDGE_END")):
+                                  ("--edge-end", float, "EDGE_END"), ("--half", float, "HALF"), ("--noise", float, "NOISE")):
         if flag in args:
             globals()[glob_name] = conv(args[args.index(flag) + 1])
     if "--out" in args:
         OUT = HZ / args[args.index("--out") + 1]
     print(f"R0 {R0} m, power {P}, density {DENSITY}{' (centre too)' if DENSITY_INSIDE else ''}, keep_min {KEEP_MIN},"
-          f" edge {EDGE_END} m, mist {MIST}, out {OUT}")
+          f" edge {EDGE_END} m, mist {MIST}, half {HALF or 'off'}, noise {NOISE}, out {OUT}")
     {"stage": stage, "plan": estimate, "pack": pack}[sys.argv[1]]()

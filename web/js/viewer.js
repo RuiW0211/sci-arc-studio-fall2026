@@ -12,6 +12,9 @@ const cfg = await (await fetch("config.json")).json();
 // (2026-10-15, load time) the small files are all asked for at once, then read where they are needed (they used to be
 // fetched one after another: ~1.5 s before the point cloud even started)
 const ask = (u) => (u ? fetch(u).catch(() => null) : Promise.resolve(null));
+// ?lidar=<folder> (for comparing trial clouds, 2026-10-16): the point cloud from web/data/<folder>/ instead (pack_wide.py
+// pack --out ../../web/data/<folder>); letters, digits, - and _ only
+{ const f = new URLSearchParams(location.search).get("lidar"); if (f && /^[\w-]+$/.test(f)) cfg.lidar.meta = `data/${f}/lidar_points.json`; }
 const PRE = { entities: ask(cfg.entities), facades: ask(cfg.facades?.meta), designs: ask(cfg.designs), ghosts: ask(cfg.ghosts?.data),
               lidarMeta: ask(cfg.lidar.meta) };
 // ---------- display units: every length goes through len() (user, 2026-10-08: m / ft switch in the panel; ft is the
@@ -317,8 +320,11 @@ const lidarMeta = await (await PRE.lidarMeta).json();
 // a cloud thinned with distance (Houdini wide site) says so in the Point cloud button's tooltip
 const CLOUD_TIP = $('[data-mode="cloud"]').title;
 function cloudTip() {
-  $('[data-mode="cloud"]').title = CLOUD_TIP + (!lidarMeta.thinning ? "" : ". Every return as captured within "
-    + `${len(lidarMeta.thinning.full_density_radius_m, 0)} of Y-1; farther out each object (building, tree, car …) keeps a `
+  const th = lidarMeta.thinning;
+  $('[data-mode="cloud"]').title = CLOUD_TIP + (!th ? "" : th.half_density_m ? ". Densest at Y-1: each object (building, "
+    + `tree, car …) keeps a share of its points, half at ${len(th.half_density_m, 0)}, fewer with distance; buildings in `
+    + "dense blocks keep less, on open ground more." : ". Every return as captured within "
+    + `${len(th.full_density_radius_m, 0)} of Y-1; farther out each object (building, tree, car …) keeps a `
     + "share of its points, fewer with distance.");
 }
 cloudTip();
