@@ -261,7 +261,18 @@
   #popBox[hidden] { display: none; }
   #popBox .clock { display: flex; align-items: center; gap: 6px; margin: 4px 0 2px; }
   #popClock { font-size: 20px; font-variant-numeric: tabular-nums; margin-right: auto; }
-  #popChart { display: block; width: 100%; height: 56px; margin-top: 6px; border-bottom: 1px solid var(--line); }
+  /* the chart is the time slider's track (user, 2026-10-14): the slider lies over it, transparent, its knob on the
+     chart's baseline; the whole chart takes a click or a drag (population.js insets the chart by the knob's radius) */
+  #popTrack { position: relative; margin-top: 6px; }
+  #popChart { display: block; width: 100%; height: 56px; border-bottom: 1px solid var(--line); }
+  #popTrack input[type=range] { position: absolute; left: 0; top: 0; width: 100%; height: 63px; margin: 0; }
+  #popTrack input[type=range]::-webkit-slider-runnable-track { height: 63px; background: none; }
+  #popTrack input[type=range]::-webkit-slider-thumb { margin-top: 50px; }
+  #popTrack input[type=range]::-moz-range-track { height: 63px; background: none; }
+  #popTrack input[type=range]::-moz-range-progress { background: none; }
+  #popTrack input[type=range]::-moz-range-thumb { transform: translateY(25px); }
+  #popTrack input[type=range]:hover::-moz-range-thumb, #popTrack input[type=range]:active::-moz-range-thumb { transform: translateY(25px) scale(1.18); }
+  #popVs { font-size: 11px; color: var(--muted); text-align: right; margin-top: 8px; min-height: 1em; font-variant-numeric: tabular-nums; }
   /* Weekday / Weekend (population.js showCurve): the old curve dims while the new one is worked out, then morphs */
   #popChart { transition: opacity var(--t-feedback) ease; }
   #popChart.pending { opacity: .55; }
@@ -313,8 +324,11 @@
       <div id="popBox" hidden>
         <div class="clock"><span id="popClock">08:30</span><button id="popPlay" title="Plays at 5 minutes per second: the whole day in about 5 minutes">Play</button></div>
         <div class="seg" id="popDay"><span class="thumb" aria-hidden="true"></span><button data-d="weekday">Weekday</button><button data-d="weekend">Weekend</button></div>
-        <input id="popTime" type="range" min="0" max="86399" step="60" aria-label="Time of day">
-        <canvas id="popChart" aria-label="People on site over 24 hours"></canvas>
+        <div id="popTrack">
+          <canvas id="popChart" aria-label="People on site over 24 hours: the day shown by type, the other day dashed"></canvas>
+          <input id="popTime" type="range" min="0" max="86399" step="60" aria-label="Time of day">
+        </div>
+        <div id="popVs"></div>
         <div id="popCounts"></div>
       </div>
     </details>

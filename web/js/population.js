@@ -481,26 +481,50 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // ---------- UI ----------
   const $ = (s) => document.querySelector(s);
   const chart = $("#popChart"), ctx = chart.getContext("2d");
-  // curveData: the curve for the current settings; chartData: the one drawn, which morphs from the old curve to a new one
-  // over --t-in (user, 2026-10-14: Weekday / Weekend should switch smoothly; the new curve takes ~0.25 s to work out, so
-  // the old one dims at once and the new one grows out of it). The first curve grows from the baseline.
-  let curveData = null, chartData = null, curveTimer = 0, morphAnim = 0;
-  function showCurve(out) {
-    curveData = out;
-    const from = chartData ?? out.map(() => new Float32Array(96)), t0 = performance.now(), dur = tms("--t-in");
+  // The A Day chart (user, 2026-10-14) is the time slider's track: the shown day stacked by type, the other day's total
+  // as a dashed line, both on one scale, so the two days compare at a glance. Both days' curves are worked out (the
+  // shown day first, in slices) and kept in curves; a switch morphs the drawn curves (chartData, lineData) to the new
+  // day's over --t-in. Only while the asked-for day is still being worked out does the old chart dim (.pending).
+  // The first chart grows from the baseline.
+  const curves = {};                         // day -> curve (96 bins per display group)
+  const otherDay = (d) => (d === "weekday" ? "weekend" : "weekday");
+  let curveBusy = null, wantDay = null, shownDay = null, chartData = null, lineData = null, morphAnim = 0;
+  const totals = (c) => c && Float32Array.from({ length: 96 }, (_, b) => c.reduce((s, g) => s + g[b], 0));
+  // work out the missing curves, `first` first, one at a time
+  function needCurves(first = st.day) {
+    if (curveBusy) return;
+    const d = [first, otherDay(first)].find((x) => !curves[x]);
+    if (!d) return;
+    curveBusy = d;
+    curve((out) => {
+      curves[d] = out; curveBusy = null;
+      if (wantDay && curves[wantDay] && (shownDay !== wantDay || d === otherDay(wantDay))) showDay(wantDay);
+      needCurves(first);
+    }, d);
+  }
+  // show day d's chart: at once if worked out, else dim the old one until it is
+  function wantChart(d) {
+    wantDay = d;
+    if (curves[d]) showDay(d);
+    else { if (chartData) chart.classList.add("pending"); needCurves(d); }
+  }
+  function showDay(d) {
+    shownDay = d;
+    const to = curves[d], toLine = totals(curves[otherDay(d)]);
+    const from = chartData ?? to.map(() => new Float32Array(96)), fromLine = lineData ?? (toLine && new Float32Array(96));
+    const t0 = performance.now(), dur = tms("--t-in");
     chart.classList.remove("pending");
     cancelAnimationFrame(morphAnim);
     const step = (now) => {
       const k = dur ? Math.min((now - t0) / dur, 1) : 1, e = k * k * (3 - 2 * k);
-      chartData = out.map((c, g) => c.map((v, b) => from[g][b] + (v - from[g][b]) * e));
-      ui.drawChart();
+      chartData = to.map((c, g) => c.map((v, b) => from[g][b] + (v - from[g][b]) * e));
+      lineData = toLine && toLine.map((v, b) => fromLine[b] + (v - fromLine[b]) * e);
+      ui.drawChart(); ui.vs();
       if (k < 1) morphAnim = requestAnimationFrame(step);
     };
     morphAnim = requestAnimationFrame(step);
   }
-  let curvePending = false;   // a curve is on its way (prepare / setVisible need not start another)
-  // day: the day to work out (a Weekday / Weekend click asks for the new day before the people have switched to it)
-  const recurve = (day = st.day) => { clearTimeout(curveTimer); curvePending = true; if (chartData) chart.classList.add("pending"); curveTimer = setTimeout(() => curve((out) => { curvePending = false; showCurve(out); }, day), 60); };
+  const THUMB_R = 6.5;   // half the slider knob (viewer.html): the chart is inset by it, so knob, marker and curve line up
   const ui = {
     refresh() {
       $("#popClock").textContent = hhmm(st.t);
@@ -508,22 +532,39 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       const c = counts;
       const byGroup = (g) => meta.types.reduce((s, _, k) => s + (GROUP[k] === g ? c.byType[k] : 0), 0);
       $("#popCounts").innerHTML = SHOWN.map((g) => `<span><i class="sw" style="display:inline-block;background:${pc.colors[meta.types[g]]}"></i>${labelGroup[meta.types[g]]} ${Math.round(byGroup(g)).toLocaleString()}</span>`).join("");
-      ui.drawChart();
+      ui.drawChart(); ui.vs();
+    },
+    // the other day at the same hour, from the two curves (one definition of "on site" for both)
+    vs() {
+      const a = curves[st.day], b = curves[otherDay(st.day)], el = $("#popVs");
+      if (!a || !b) { el.textContent = ""; return; }
+      const k = Math.min(95, Math.floor(st.t / 900)), na = a.reduce((s, g) => s + g[k], 0), nb = b.reduce((s, g) => s + g[k], 0);
+      const pct = nb > 0 ? Math.round((100 * (na - nb)) / nb) : 0;
+      el.textContent = `${pct > 0 ? "+" : ""}${pct}% vs ${otherDay(st.day)} at this hour`;
     },
     drawChart() {
       const w = (chart.width = chart.clientWidth * devicePixelRatio), h = (chart.height = chart.clientHeight * devicePixelRatio);
       ctx.clearRect(0, 0, w, h);
-      const curveData = chartData;   // what is drawn (morphing, showCurve)
+      const curveData = chartData;   // what is drawn (morphing, showDay)
       if (!curveData) return;
+      const pad = THUMB_R * devicePixelRatio, X = (f) => pad + f * (w - 2 * pad);   // f: share of the day
       let max = 1;
-      for (let b = 0; b < 96; b++) { let s = 0; for (const c of curveData) s += c[b]; max = Math.max(max, s); }
+      for (let b = 0; b < 96; b++) { let s = 0; for (const c of curveData) s += c[b]; max = Math.max(max, s, lineData ? lineData[b] : 0); }
       for (let k = curveData.length - 1; k >= 0; k--) {
-        ctx.beginPath(); ctx.moveTo(0, h);
-        for (let b = 0; b < 96; b++) { let s = 0; for (let j = 0; j <= k; j++) s += curveData[j][b]; ctx.lineTo(((b + 0.5) / 96) * w, h - (s / max) * (h - 2)); }
-        ctx.lineTo(w, h); ctx.closePath(); ctx.fillStyle = pc.colors[meta.types[k]]; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(X(0), h);
+        for (let b = 0; b < 96; b++) { let s = 0; for (let j = 0; j <= k; j++) s += curveData[j][b]; ctx.lineTo(X((b + 0.5) / 96), h - (s / max) * (h - 2)); }
+        ctx.lineTo(X(1), h); ctx.closePath(); ctx.fillStyle = pc.colors[meta.types[k]]; ctx.fill();
       }
       const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg");
-      ctx.fillStyle = fg; ctx.fillRect((st.t / 86400) * w - devicePixelRatio / 2, 0, devicePixelRatio, h);
+      if (lineData) {   // the other day's total, dashed, over a halo in the page colour so it reads on the fills too
+        ctx.beginPath();
+        for (let b = 0; b < 96; b++) ctx[b ? "lineTo" : "moveTo"](X((b + 0.5) / 96), h - (lineData[b] / max) * (h - 2));
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--bg"); ctx.lineWidth = 3 * devicePixelRatio;
+        ctx.globalAlpha = 0.55; ctx.stroke();
+        ctx.strokeStyle = fg; ctx.lineWidth = 1.2 * devicePixelRatio; ctx.setLineDash([3 * devicePixelRatio, 2 * devicePixelRatio]);
+        ctx.globalAlpha = 0.9; ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      }
+      ctx.fillStyle = fg; ctx.fillRect(X(st.t / 86400) - devicePixelRatio / 2, 0, devicePixelRatio, h);
       ctx.font = `${10 * devicePixelRatio}px -apple-system, sans-serif`; ctx.globalAlpha = 0.7;
       ctx.fillText(`peak ${Math.round(max).toLocaleString()}`, 3 * devicePixelRatio, 11 * devicePixelRatio); ctx.globalAlpha = 1;
     },
@@ -545,7 +586,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     if (instant) requestAnimationFrame(() => th.classList.remove("instant"));
   }
   // switching the day (user, 2026-10-14: smoothly): the people fade out (--t-feedback), move to where they are on the
-  // other day, and fade back in (--t-in), instead of jumping; the chart dims and morphs (showCurve). A second click
+  // other day, and fade back in (--t-in), instead of jumping; the chart morphs to the other day (showDay). A second click
   // during the fade cancels the first (fadeAlpha), so the last click wins
   function toDay(d) {
     st.day = d; st.dirty = true;
@@ -553,7 +594,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   }
   document.querySelectorAll("#popDay button").forEach((b) => (b.onclick = () => {
     const d = b.dataset.d;
-    recurve(d);
+    wantChart(d);
     document.querySelectorAll("#popDay button").forEach((x) => x.classList.toggle("on", x === b));
     dayThumb(false);
     if (!api.visible) { dayTo = null; toDay(d); return; }
@@ -582,12 +623,12 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       route.visible = false;
       timed("setXray", () => setXray(on && st.xray));
       if (!on) trails.visible = false;
-      if (on) { st.dirty = true; if (!curveData && !curvePending) recurve(); requestAnimationFrame(() => dayThumb(true)); }
+      if (on) { st.dirty = true; wantChart(dayTo ?? st.day); requestAnimationFrame(() => dayThumb(true)); }
       setPlaying(on);   // turning the layer on plays the day (user, 2026-10-09); off pauses it
     },
     get visible() { return points.visible && st.shown !== false; },
     // made ahead of time (viewer.js): work out the 24 h chart now, in slices, so it is there when People comes on
-    prepare() { if (!curveData && !curvePending) recurve(); },
+    prepare() { needCurves(st.day); },
     tick(now) {
       const dt = lastNow ? Math.min((now - lastNow) / 1000, 0.25) : 0;
       lastNow = now;
