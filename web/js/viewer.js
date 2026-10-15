@@ -1478,6 +1478,15 @@ function setLens(on) {
   };
   lensAnim = requestAnimationFrame(step);
 }
+// the lens is on from the start (user, 2026-10-15); config.json perspective.on false starts without it. The start view
+// is a base pose, so the camera comes in by the lens, and Top (noLens) starts greyed
+if (cfg.perspective?.on !== false) {
+  LENS.L = LENS.to = 1;
+  camera.position.sub(controls.target).multiplyScalar(1 / lensM()).add(controls.target);
+  applyLens();
+  const box = $("#lensOn"); if (box) box.checked = true;
+  for (const b of document.querySelectorAll("#views button[data-no-lens]")) { b.disabled = true; b.title = "Not with the fisheye lens"; }
+}
 const wrapA = (d) => Math.atan2(Math.sin(d), Math.cos(d));
 function camApply(P) {
   if (rejoin) {
