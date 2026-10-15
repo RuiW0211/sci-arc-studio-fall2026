@@ -565,21 +565,22 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       const Y = (v) => h - (v / max) * (h - 2), dpr = devicePixelRatio;
       const outline = (vals) => { for (let b = 0; b < 96; b++) ctx[b ? "lineTo" : "moveTo"](X((b + 0.5) / 96), Y(vals[b])); };
       const area = (vals) => { ctx.beginPath(); ctx.moveTo(X(0), h); for (let b = 0; b < 96; b++) ctx.lineTo(X((b + 0.5) / 96), Y(vals[b])); ctx.lineTo(X(1), h); ctx.closePath(); };
-      // the other day (user, 2026-10-14: the dashed line looked ugly): a faint silhouette behind the stack and a thin
-      // solid outline, in the text colour over the background and in the page colour where it crosses the fills
+      // the other day: a faint silhouette behind the stack and a thin dashed outline, in the text colour over the
+      // background and in the page colour where it crosses the fills (user, 2026-10-14: the first dashed line, over a
+      // halo and on the jagged curve, looked ugly)
       if (lineData) { area(lineData); ctx.fillStyle = fg; ctx.globalAlpha = 0.09; ctx.fill(); ctx.globalAlpha = 1; }
       for (let k = curveData.length - 1; k >= 0; k--) {
         ctx.beginPath(); ctx.moveTo(X(0), h);
         for (let b = 0; b < 96; b++) { let s = 0; for (let j = 0; j <= k; j++) s += curveData[j][b]; ctx.lineTo(X((b + 0.5) / 96), Y(s)); }
         ctx.lineTo(X(1), h); ctx.closePath(); ctx.fillStyle = pc.colors[meta.types[k]]; ctx.fill();
       }
-      if (lineData) {
-        ctx.lineWidth = dpr; ctx.lineJoin = "round";
-        ctx.beginPath(); outline(lineData); ctx.strokeStyle = fg; ctx.globalAlpha = 0.6; ctx.stroke();
+      if (lineData) {   // dashed (user, 2026-10-14, once smoothed); the two strokes share the dash pattern, so they line up
+        ctx.lineWidth = dpr; ctx.lineJoin = "round"; ctx.setLineDash([3 * dpr, 2.5 * dpr]);
+        ctx.beginPath(); outline(lineData); ctx.strokeStyle = fg; ctx.globalAlpha = 0.7; ctx.stroke();
         ctx.save();
         area(Float32Array.from({ length: 96 }, (_, b) => curveData.reduce((s, c) => s + c[b], 0))); ctx.clip();
-        ctx.beginPath(); outline(lineData); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--bg"); ctx.globalAlpha = 0.8; ctx.stroke();
-        ctx.restore(); ctx.globalAlpha = 1;
+        ctx.beginPath(); outline(lineData); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--bg"); ctx.globalAlpha = 0.85; ctx.stroke();
+        ctx.restore(); ctx.setLineDash([]); ctx.globalAlpha = 1;
       }
       ctx.fillStyle = fg; ctx.fillRect(X(st.t / 86400) - devicePixelRatio / 2, 0, devicePixelRatio, h);
       ctx.font = `${10 * devicePixelRatio}px -apple-system, sans-serif`; ctx.globalAlpha = 0.7;
