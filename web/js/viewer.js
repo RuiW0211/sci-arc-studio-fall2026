@@ -9,6 +9,11 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 const $ = (s) => document.querySelector(s);
 const status = (t) => { $("#status").textContent = t || ""; };
 const cfg = await (await fetch("config.json")).json();
+// (2026-10-15, load time) the small files are all asked for at once, then read where they are needed (they used to be
+// fetched one after another: ~1.5 s before the point cloud even started)
+const ask = (u) => (u ? fetch(u).catch(() => null) : Promise.resolve(null));
+const PRE = { entities: ask(cfg.entities), facades: ask(cfg.facades?.meta), designs: ask(cfg.designs), ghosts: ask(cfg.ghosts?.data),
+              lidarMeta: ask(cfg.lidar.meta) };
 // ---------- display units: every length goes through len() (user, 2026-10-08: m / ft switch in the panel; ft is the
 // default, config.json "units" can change it; the data and all files stay in metres) ----------
 const FT = 0.3048;
@@ -16,12 +21,19 @@ let units = (() => { try { return localStorage.getItem("y1-viewer-units") || cfg
 const toUnit = (m) => (units === "ft" ? m / FT : m);
 const len = (m, digits = 1) => `${toUnit(m).toFixed(digits)} ${units}`;
 // building / landmark entities (which LiDAR objects make up one real building, and what it is): optional
-const ENTITIES = cfg.entities ? await fetch(cfg.entities).then((r) => (r.ok ? r.json() : null)).catch(() => null) : null;
+const ENTITIES = await PRE.entities.then((r) => (r?.ok ? r.json() : null)).catch(() => null);
 const entityOfName = new Map();
 for (const e of ENTITIES?.entities ?? []) for (const p of e.parts) entityOfName.set(p, e);
 // Display settings (panel section): ?px= ?keep= ?cap= ?size= override config.json "lidar" for this page only (lodPixels,
 // lodKeepDensity, pointCap, size), so settings can be tried before they go into config.json
 const urlq = new URLSearchParams(location.search);
+// (the ?perf panel, defined here so a click during loading finds it; see perfFrame)
+const PERF = urlq.has("perf") ? { acc: {}, n: 0, last: 0, t0: performance.now(), el: null, click: null } : null;
+if (PERF) {
+  PERF.el = document.createElement("div");
+  PERF.el.style.cssText = "position:fixed;left:8px;bottom:28px;z-index:9;font:11px/1.35 ui-monospace,Consolas,monospace;color:#cfe;background:rgba(0,0,0,.6);padding:6px 8px;border-radius:6px;white-space:pre;pointer-events:none";
+  document.body.append(PERF.el);
+}
 for (const [k, key] of [["px", "lodPixels"], ["keep", "lodKeepDensity"], ["cap", "pointCap"], ["size", "size"]])
   if (urlq.has(k)) cfg.lidar[key] = +urlq.get(k);
 
@@ -114,7 +126,7 @@ function setWhiteCloud(on) {
 // the ground. Here only the file is read.
 let facadeData = null;
 try {
-  const fm = await (await fetch(cfg.facades.meta)).json();
+  const fm = await (await PRE.facades).json();
   const buf = await (await fetch(cfg.facades.meta.replace(/[^/]*$/, "") + fm.file)).arrayBuffer();
   const m = fm.count;
   facadeData = { n: m, names: fm.objects || [], pos: new Float32Array(buf, 0, 3 * m),
@@ -126,7 +138,7 @@ try {
 // layer "Design_<name>". Design layers also show over the point cloud.
 const designLayers = new Set();
 try {
-  const list = await (await fetch(cfg.designs)).json();
+  const list = await (await PRE.designs).json();
   for (const file of list.filter((f) => /^design_.+\.glb$/i.test(f))) {
     const who = file.replace(/^design_|\.glb$/gi, "");
     status(`Loading ${file}…`);
@@ -153,7 +165,7 @@ const ghostPts = [];   // { name, base, layer, pos: three.js order }
 const ghostYears = new Map();   // unbuilt layer -> [[from, to], ...]: shown with the Time module, in those years
 const ghostLabels = [];   // the Time module's labels for the unbuilt towers (updateTimeTags)
 try {
-  const G = cfg.ghosts, gd = await (await fetch(G.data)).json();
+  const G = cfg.ghosts, gd = await (await PRE.ghosts).json();
   let seed = G.seed ?? 11;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);   // the same scatter on every visit
   for (const sc of gd.schemes) (ghostYears.get(sc.layer || "Unbuilt") ?? ghostYears.set(sc.layer || "Unbuilt", []).get(sc.layer || "Unbuilt")).push(sc.years);
@@ -214,7 +226,7 @@ model.traverse((o) => {
   o.traverse((m) => m.isMesh && L.meshes.push(m));
 });
 // the point cloud's layers (from its meta, which is tiny) get their toggles
-const lidarMeta = await (await fetch(cfg.lidar.meta)).json();
+const lidarMeta = await (await PRE.lidarMeta).json();
 // a cloud thinned with distance (Houdini wide site) says so in the Point cloud button's tooltip
 const CLOUD_TIP = $('[data-mode="cloud"]').title;
 function cloudTip() {
@@ -237,6 +249,7 @@ let glassAt = -1e9;   // last adaptive-glass check (see adaptGlass); declared ea
 const lidarGroup = new THREE.Group();
 scene.add(lidarGroup);
 let lidar = null;
+const loadTimes = {};   // ms from the start of loadLidar, by stage (__viewer.loadTimes; for performance checks)
 let lidarDensityMatch = null, lidarPlazaPoints = 0, lidarGroundFill = 0;   // object -> ground / own density, for the moved structures (loadLidar)
 
 // the Time module (user, 2026-10-13): off = today; on = the year of its slider. TIME feeds the point shader.
@@ -377,7 +390,10 @@ async function loadLidar() {
   const meta = lidarMeta;
   const base = cfg.lidar.meta.replace(/[^/]*$/, "");
   const objAttr = meta.attributes?.object;
+  const T0 = performance.now(), tick = (k) => { loadTimes[k] = Math.round(performance.now() - T0); };   // load profile
+  loadTimes.startAt = Math.round(T0);   // ms after the page started
   let { n, pos: P, cls: C, inten: I, obj, hag: HG } = await decodeLaz(base + meta.file, meta);
+  tick("decode (fetch + LAZ)");
   status("Preparing LiDAR…");
   // config.json mergeLayers folds LiDAR layers into others in the viewer (user, 2026-10-10: street furniture and the
   // unassigned points draw as Terrain); the objects keep their own names
@@ -408,6 +424,7 @@ async function loadLidar() {
       else if (objLayers[k] === "Landmarks") objLayers[k] = "Buildings";
     });
   }
+  tick("landmarks");
   // estimated facade points join the measured ones as ordinary building points: the object of their nearest return,
   // that object's mean intensity, class "building"; after this nothing tells them apart
   if (facadeData?.obj) {
@@ -415,12 +432,15 @@ async function loadLidar() {
     const map = facadeData.names.map((nm) => nameIdx.get(nm) ?? -1);
     const sum = new Float64Array(objNames.length), cnt = new Uint32Array(objNames.length);
     for (let i = 0; i < n; i++) { sum[obj[i]] += I[i]; cnt[obj[i]]++; }
+    tick("  facades: mean intensity per object");
     const keep = [];
     for (let j = 0; j < facadeData.n; j++) if (map[facadeData.obj[j]] >= 0) keep.push(j);
     const m = keep.length, N2 = n + m;
     const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2);
     const H2 = HG ? new HG.constructor(N2) : null;
+    tick("  facades: keep list + new arrays");
     P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
+    tick("  facades: copy the 10M points");
     keep.forEach((j, k) => {
       const i = n + k, o = map[facadeData.obj[j]];
       P2[3 * i] = facadeData.pos[3 * j]; P2[3 * i + 1] = facadeData.pos[3 * j + 1]; P2[3 * i + 2] = facadeData.pos[3 * j + 2];
@@ -429,6 +449,7 @@ async function loadLidar() {
     });
     P = P2; C = C2; I = I2; obj = O2; HG = H2; n = N2;
     facadeData = null;   // memory
+    tick("  facades: write the new points");
   }
   // the unbuilt towers' points join as objects of their own (layer Unbuilt), named as their towers
   const ghostObjYears = new Map();   // object -> the years of its scheme
@@ -437,6 +458,7 @@ async function loadLidar() {
     const P2 = new P.constructor(3 * N2), C2 = new C.constructor(N2), I2 = new I.constructor(N2), O2 = new obj.constructor(N2);
     const H2 = HG ? new HG.constructor(N2) : null;
     P2.set(P); C2.set(C); I2.set(I); O2.set(obj); if (H2) H2.set(HG);
+    tick("  unbuilt: copy the 10M points");
     let i = n;
     for (const g of ghostPts) {
       const o = objNames.length; objNames.push(g.name); objLayers.push(g.layer); ghostObjYears.set(o, g.years);
@@ -454,11 +476,19 @@ async function loadLidar() {
   for (const CL of cfg.claims || []) {
     const lay = objAttr?.layers ?? [], g = CL.marginM, own = new Map();
     const key = (x, y, z) => ((Math.floor(x / g) + 4096) * 8192 + Math.floor(y / g) + 4096) * 8192 + Math.floor(z / g) + 4096;
-    for (let i = 0; i < n; i++) if (lay[obj[i]] === CL.layer) own.set(key(P[3 * i], P[3 * i + 1], P[3 * i + 2]), obj[i]);
+    // (2026-10-15, load time: this step took ~2 s) per object flags instead of comparing layer names point by point, and
+    // a coarse 8 m plan grid round the claiming points, so only points near them are looked up; same result
+    const isOwn = new Uint8Array(objNames.length), isFrom = new Uint8Array(objNames.length), from = new Set(CL.from);
+    for (let k = 0; k < objNames.length; k++) { isOwn[k] = lay[k] === CL.layer ? 1 : 0; isFrom[k] = from.has(lay[k]) ? 1 : 0; }
+    const CG = 8, near = new Set(), ck = (x, z) => (Math.floor(x / CG) + 32768) * 65536 + Math.floor(z / CG) + 32768;
+    for (let i = 0; i < n; i++) if (isOwn[obj[i]]) {
+      own.set(key(P[3 * i], P[3 * i + 1], P[3 * i + 2]), obj[i]);
+      const cx = Math.floor(P[3 * i] / CG), cz = Math.floor(P[3 * i + 2] / CG);
+      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) near.add((cx + dx + 32768) * 65536 + cz + dz + 32768);
+    }
     if (!own.size) continue;
-    const from = new Set(CL.from);
     for (let i = 0; i < n; i++) {
-      if (!from.has(lay[obj[i]])) continue;
+      if (!isFrom[obj[i]] || !near.has(ck(P[3 * i], P[3 * i + 2]))) continue;
       const x = Math.floor(P[3 * i] / g), y = Math.floor(P[3 * i + 1] / g), z = Math.floor(P[3 * i + 2] / g);
       search: for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
         const o = own.get(((x + dx + 4096) * 8192 + y + dy + 4096) * 8192 + z + dz + 4096);
@@ -466,6 +496,7 @@ async function loadLidar() {
       }
     }
   }
+  tick("landmark claims");
   // config.json plazas: the open ground around a tower that the building outline takes in (user, 2026-10-10, after Two
   // California Plaza: LARIAC draws the tower and its Watercourt plaza as one outline) goes back to the ground. In an
   // object of the layer at least minBuildingM tall, a cellM plan cell whose highest return is under maxHagM above the
@@ -535,6 +566,7 @@ async function loadLidar() {
   // Per object: f = mean ground returns per 2 m cell around it (its box + 20 m, cells it covers left out) / its own
   // mean per cell (over cells with returns); f < 1 drops points at random down to the ground's density, f > 1 draws its points sqrt(f) times
   // larger (at most matchDensity.maxSize) so they cover the same share of the screen. Only the drawing changes.
+  tick("claims + plazas + split layers");
   let sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
   if (moved.size) {
     const CM = 2, PAD = 10, cellOf = (x, z) => (Math.floor(x / CM) + 32768) * 65536 + Math.floor(z / CM) + 32768;
@@ -589,6 +621,7 @@ async function loadLidar() {
     const e = entityOfName.get(nm), y = e ? parseInt(e.built?.[0] ?? e.parcel?.year_built, 10) : NaN;
     objYear[k] = y > 1000 ? y : -1;
   });
+  tick("density match");
   // the ground under the buildings (user, 2026-10-13: in 1867 the cloud showed black holes where today's buildings
   // stand, the LiDAR seeing their roofs and not the ground). ESTIMATED: in every 2 m cell a building covers and
   // the ground has no return, points at random at the ground's own density around it (the mean of the cells with ground
@@ -652,6 +685,7 @@ async function loadLidar() {
     sizeK = S2; drop = D2;
   }
   if (!ptYear) { ptYear = new Int16Array(n); for (let i = 0; i < n; i++) ptYear[i] = objYear[obj[i]]; }
+  tick("ground fill");
   const material = pointMaterial(cfg.lidar.size ?? 0.3);
   // local density of each point's layer (returns per m2 of plan, from a 10 m grid, bilinear so it varies smoothly) and a
   // draw priority q = random * density^(1 - LOD_KEEP): the LOD draws the points with q below a target, so dense ground is
@@ -684,6 +718,7 @@ async function loadLidar() {
     }
     for (const [o, a] of hs) { a.sort((p, q) => p - q); objLo[o] = a[Math.floor(0.005 * (a.length - 1))]; objHi[o] = a[Math.ceil(0.995 * (a.length - 1))]; }
   }
+  tick("LOD priority + years + rise heights");
   // bucket point indices by layer and LOD chunk
   const buckets = new Map();
   for (let i = 0; i < n; i++) {
@@ -726,6 +761,7 @@ async function loadLidar() {
     const L = layers.get(name);
     if (L) (L.lidarParts ||= []).push(pts);
   }
+  tick("chunks (sort + geometry)");
   const objCount = new Uint32Array(objNames.length);
   for (let i = 0; i < n; i++) objCount[obj[i]]++;
   // per object: the chunks holding its points, so a click looks at a few chunks instead of all 9M points (user, 2026-10-12:
@@ -743,6 +779,7 @@ async function loadLidar() {
             // by layer only (user, 2026-10-10: the Color menu is gone); ?color=height / class / intensity / object still
             // works for checking the data
             how: urlq.get("color") ?? "layer", selected: -1, selMask: new Uint8Array(objNames.length) };
+  tick("index (objects, entities)");
   status("");
 }
 
@@ -1549,6 +1586,7 @@ const SKIP_KEYS = new Set(["layer", "name", "scatter5"]);
 let down = null;
 renderer.domElement.addEventListener("pointerdown", (e) => (down = [e.clientX, e.clientY]));
 renderer.domElement.addEventListener("pointerup", (e) => {
+  if (PERF) PERF.clickAt = performance.now();
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
   ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
   // Alt + click picks the person within PICK_PX on screen (user, 2026-10-09: a plain click is for buildings / points)
@@ -1652,6 +1690,7 @@ function fillTag(s) {
   };
 }
 function select(key, a, build, objs, add) {
+  if (PERF?.clickAt) { PERF.click = performance.now() - PERF.clickAt; PERF.clickAt = 0; }
   if (!add) clearSelection(false);   // painted once below: the old object fades out while the new one fades in
   const old = selection.find((s) => s.key === key);
   if (old) { if (add) deselect(key); return; }            // shift + click on a selected object: take it out
@@ -2185,19 +2224,40 @@ function adaptGlass(now) {
 }
 let glassPending = false;
 setInterval(() => { if (glassPending) { dirty = true; } }, GLASS_EVERY);   // re-check once the camera stops
+// ?perf (2026-10-15, FPS and response): a small panel, bottom left, with the frame rate and where each frame's time goes
+// (camera, LOD, people, render, tags), points and draw calls, and the time from the last click to its tag. Off by default.
+const perfT = (k, f) => { if (!PERF) return f(); const t = performance.now(), r = f(); PERF.acc[k] = (PERF.acc[k] || 0) + performance.now() - t; return r; };
+function perfFrame(now, drew) {
+  if (!PERF) return;
+  if (PERF.last) { const dt = now - PERF.last; PERF.acc.frame = (PERF.acc.frame || 0) + dt; PERF.max = Math.max(PERF.max || 0, dt); PERF.n++; }
+  PERF.last = now; if (drew) PERF.drawn = (PERF.drawn || 0) + 1;
+  if (now - PERF.t0 < 1000 || !PERF.n) return;
+  const a = PERF.acc, n = PERF.n, f = (k) => ((a[k] || 0) / n).toFixed(1).padStart(5), info = renderer.info.render;
+  PERF.el.textContent = `fps ${(1000 * n / (now - PERF.t0)).toFixed(0)}  frame ${f("frame")} ms (max ${PERF.max.toFixed(0)})  drawn ${PERF.drawn || 0}/${n}
+`
+    + `camera ${f("camera")}  lod ${f("lod")}  people ${f("people")}  render ${f("render")}  tags ${f("tags")} ms (CPU)
+`
+    + `points ${(info.points / 1e6).toFixed(2)} M  draw calls ${info.calls}  px ratio ${renderer.getPixelRatio()}`
+    + (PERF.click ? `
+last click -> tag ${PERF.click.toFixed(0)} ms` : "");
+  PERF.acc = {}; PERF.n = 0; PERF.max = 0; PERF.drawn = 0; PERF.t0 = now;
+}
 renderer.setAnimationLoop((now) => {
-  if (tween) { stepTween(now); dirty = true; lastMove = now; }
-  if (cine) { stepCine(now); dirty = true; lastMove = now; }
-  if (controls.update()) { dirty = true; lastMove = now; }   // damping keeps moving the camera after the drag ends
+  perfT("camera", () => {
+    if (tween) { stepTween(now); dirty = true; lastMove = now; }
+    if (cine) { stepCine(now); dirty = true; lastMove = now; }
+    if (controls.update()) { dirty = true; lastMove = now; }   // damping keeps moving the camera after the drag ends
+  });
   // LiDAR level of detail: recomputed whenever the view changed or a chunk is still easing to its target
-  if (lidar && mode === "cloud" && (dirty || lodEasing)) { lodEasing = updateLod(); if (lodEasing) dirty = true; }
+  if (lidar && mode === "cloud" && (dirty || lodEasing)) perfT("lod", () => { lodEasing = updateLod(); if (lodEasing) dirty = true; });
   // the population plays on its own clock: draw while it plays or after one of its settings changed
-  if (pop && (pop.visible || pop.state.fading)) { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing || pop.state.fading) dirty = true; }
-  if (!dirty) return;
+  if (pop && (pop.visible || pop.state.fading)) perfT("people", () => { const was = pop.state.dirty; pop.tick(now); if (was || pop.state.playing || pop.state.fading) dirty = true; });
+  if (!dirty) return perfFrame(now, false);
   dirty = false;
-  renderer.render(scene, camera);
-  updateTags(); updateTimeTags();
+  perfT("render", () => renderer.render(scene, camera));
+  perfT("tags", () => { updateTags(); updateTimeTags(); });
   adaptGlass(now);
+  perfFrame(now, true);
 });
 // shot study (for checking the film, user, 2026-10-15: foregrounds hiding what a shot is about): the poses of every
 // shot of the opening and the film, and what stands between the camera and each of a shot's members
@@ -2299,7 +2359,7 @@ const shotStudy = {
 window.__viewer = {
   shotStudy,
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
