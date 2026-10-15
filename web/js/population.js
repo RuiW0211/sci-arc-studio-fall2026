@@ -592,36 +592,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const r = $("#popTime"); r.value = t;
     r.style.setProperty("--p", `${(100 * (r.value - r.min)) / (r.max - r.min)}%`);
   }
-  // the knob moves like the thumb of the Guided / Free switch (user, 2026-10-14: while dragging by hand, not only on a
-  // click): the pointer sets a target and the knob follows it on a damped spring, a little behind while it moves and a
-  // little past and back when it stops, the time, marker, clock and people with it. SPRING_W / SPRING_Z: about the
-  // switch's 0.42 s cubic-bezier(.34, 1.25, .5, 1) (settles in ~0.4 s, ~2 % past). Keys and the film set it at once
-  const SPRING_W = 12, SPRING_Z = 0.78;
-  let follow = null, press = false;   // follow: { x, v, target, last } (seconds of the day, and per second)
-  function followTo(target) {
-    if (follow) { follow.target = target; return; }
-    follow = { x: st.t, v: 0, target, last: performance.now() };
-    requestAnimationFrame(stepFollow);
-  }
-  function stepFollow(now) {
-    const f = follow;
-    if (!f) return;
-    const dt = Math.min(Math.max((now - f.last) / 1000, 0), 0.05), n = Math.max(1, Math.ceil(dt / 0.004)), h = dt / n;
-    f.last = now;
-    for (let i = 0; i < n; i++) { f.v += (-2 * SPRING_Z * SPRING_W * f.v - SPRING_W * SPRING_W * (f.x - f.target)) * h; f.x += f.v * h; }
-    const done = !press && Math.abs(f.x - f.target) < 1 && Math.abs(f.v) < 5;
-    st.t = Math.min(Math.max(done ? f.target : f.x, 0), 86399); st.dirty = true; setTimeSlider(st.t);
-    if (done) { follow = null; return; }
-    requestAnimationFrame(stepFollow);
-  }
-  const timeIn = $("#popTime");
-  timeIn.addEventListener("pointerdown", () => { press = true; });
-  for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, () => { press = false; });
-  timeIn.oninput = (e) => {
-    const v = +e.target.value;
-    if (press || follow) { setTimeSlider(st.t); followTo(v); return; }   // by hand: the knob follows on the spring
-    st.t = v; st.dirty = true; setTimeSlider(st.t);
-  };
+  $("#popTime").oninput = (e) => { st.t = +e.target.value; st.dirty = true; setTimeSlider(st.t); };
   $("#popPlay").onclick = () => { resumeAfter = false; setPlaying(!st.playing); };
   // Weekday / Weekend: a segmented control with a sliding thumb, like Color (viewer.js moveThumb)
   function dayThumb(instant) {
