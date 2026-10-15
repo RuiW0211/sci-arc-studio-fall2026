@@ -616,7 +616,17 @@ async function loadLidar() {
   // object of the layer at least minBuildingM tall, a cellM plan cell whose highest return is under maxHagM above the
   // ground has no building over it: a plaza, steps, a terrace at street level. Its points become ground points (object
   // Terrain), so they are coloured, picked and counted as the ground.
-  const PZ = cfg.plazas, terrainObj = objNames.indexOf("Terrain");
+  // A hand-checked building can ask for more in entities.json "ground" (user, 2026-10-16, Two California Plaza: the low
+  // parts around the tower read as ground and look calmer in its colour): ground.plazaMaxHagM in place of maxHagM for
+  // its objects (plaza edges and steps over a lower street sit higher above the ground), and ground.parts drawn as
+  // ground whole (their estimated facade points dropped).
+  const PZ = cfg.plazas, terrainObj = objNames.indexOf("Terrain"), dropAfter = [];
+  const entGround = (o) => entityOfName.get(objNames[o])?.ground;
+  if (terrainObj >= 0) {
+    const whole = new Set();
+    for (let o = 0; o < objNames.length; o++) if (entGround(o)?.parts?.includes(objNames[o])) whole.add(o);
+    if (whole.size) for (let i = 0; i < n; i++) if (whole.has(obj[i])) { if (i >= nLidar) dropAfter.push(i); obj[i] = terrainObj; }
+  }
   if (PZ && HG && terrainObj >= 0) {
     const top = new Float32Array(objNames.length).fill(-1e9), lay = objAttr?.layers ?? [];
     for (let i = 0; i < n; i++) { const o = obj[i]; if (lay[o] === PZ.layer && HG[i] / 10 > top[o]) top[o] = HG[i] / 10; }
@@ -626,9 +636,9 @@ async function loadLidar() {
     for (let i = 0; i < n; i++) {
       const o = obj[i]; if (!tall(o)) continue;
       const k = keyOf(o, i), h = HG[i] / 10, c = col.get(k);
-      if (!c) col.set(k, [h, P[3 * i + 1], false]); else if (h > c[0]) { c[0] = h; c[1] = P[3 * i + 1]; }
+      if (!c) col.set(k, [h, P[3 * i + 1], false, o]); else if (h > c[0]) { c[0] = h; c[1] = P[3 * i + 1]; }
     }
-    for (const c of col.values()) c[2] = c[0] < PZ.maxHagM;
+    for (const c of col.values()) c[2] = c[0] < (entGround(c[3])?.plazaMaxHagM ?? PZ.maxHagM);
     // the plaza's edges: a cell next to the plaza whose top is no higher than the plaza (within PZ.edgeM) - the walls
     // and steps down to a lower street, where the ground below makes them look tall - joins it, PZ.grow cells out
     for (let g = 0; g < (PZ.grow ?? 0); g++) {
@@ -708,6 +718,7 @@ async function loadLidar() {
   tick("claims + plazas + split layers");
   let sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
   for (let i = nLidar; i < n; i++) if (split.has(obj[i])) drop[i] = 1;   // no estimated walls under a deck
+  for (const i of dropAfter) drop[i] = 1;   // nor under a building's parts drawn as ground (entities.json "ground")
   if (moved.size) {
     const CM = 2, PAD = 10, cellOf = (x, z) => (Math.floor(x / CM) + 32768) * 65536 + Math.floor(z / CM) + 32768;
     const own = new Map(), box = new Map();
