@@ -1820,9 +1820,16 @@ function cineNow(now) {
     const T = c.blendT ?? CINE.blendS, tau = Math.min((now - c.t0) / 1000, T), k = tau / T, e = ease5(k);
     const A = c.from, B = cinePose(sh, 0, c.th0, c.dir), w0 = c.wFrom ?? 0, w1 = shotW(sh, c.dir);
     const s = k, h00 = 2 * s ** 3 - 3 * s * s + 1, h10 = s ** 3 - 2 * s * s + s, h01 = -2 * s ** 3 + 3 * s * s, h11 = s ** 3 - s * s;
-    return { target: A.target.map((v, j) => v + (B.target[j] - v) * e), r: Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e),
-             phi: A.phi + (B.phi - A.phi) * e, th: h00 * A.th + h10 * T * w0 + h01 * c.th0 + h11 * T * w1,
-             fov: (A.fov ?? FOV0) + ((B.fov ?? FOV0) - (A.fov ?? FOV0)) * e, lens: (A.lens ?? 1) + ((B.lens ?? 1) - (A.lens ?? 1)) * e, k };
+    // (user, 2026-10-17: from Y-1 to Broadway the camera swung out about 600 m round a moving target, though the two
+    // camera places are 275 m apart) the camera itself flies straight from where it was to where the next shot starts,
+    // easing, while it turns on the heading above; the point it looks at follows from where it is and where it faces
+    const r = Math.exp(Math.log(A.r) + (Math.log(B.r) - Math.log(A.r)) * e), phi = A.phi + (B.phi - A.phi) * e;
+    const th = h00 * A.th + h10 * T * w0 + h01 * c.th0 + h11 * T * w1;
+    // (on the camera's real places: camApply brings it in by the lens, lensM)
+    const m = lensM(), off = (R, ph, t) => [R / m * Math.sin(ph) * Math.sin(t), R / m * Math.cos(ph), R / m * Math.sin(ph) * Math.cos(t)];
+    const oA = off(A.r, A.phi, A.th), oB = off(B.r, B.phi, c.th0), oN = off(r, phi, th);
+    const target = A.target.map((v, j) => v + oA[j] + (B.target[j] + oB[j] - v - oA[j]) * e - oN[j]);
+    return { target, r, phi, th, fov: (A.fov ?? FOV0) + ((B.fov ?? FOV0) - (A.fov ?? FOV0)) * e, lens: (A.lens ?? 1) + ((B.lens ?? 1) - (A.lens ?? 1)) * e, k };
   }
   const len = shotLen(sh) * 1000;
   return { ...cinePose(sh, Math.min((now - c.t0) / len, 1), c.th0, c.dir), k: (now - c.t0) / len };
@@ -1858,7 +1865,7 @@ function nextShot(now, P, toI, w0) {   // now: the exact time the last shot ende
     const w1 = shotW(sh, c.dir), wm = Math.max(Math.abs(c.wFrom), Math.abs(w1)) || 0.05;   // the faster of the two
     // the flight's length: at least blendS, and long enough that the camera never goes faster than maxFlyMS on average
     const B0 = cinePose(sh, 0, sh.az ?? P.th, c.dir), pos = (Q) => { _sph.set(Q.r, Q.phi, Q.th); return _off.setFromSpherical(_sph).clone().add(_tv.fromArray(Q.target)); };
-    const dist = pos(P).distanceTo(pos({ ...B0, th: P.th }));
+    const dist = pos(P).distanceTo(pos(sh.az == null ? { ...B0, th: P.th } : B0));   // (2026-10-17: the camera flies straight to it)
     // fly: a shot's own least flight time into it (user, 2026-10-16: the seconds cut from the wide shot go to the flight)
     let T = Math.min(Math.max(CINE.blendS, sh.fly ?? 0, dist / (CINE.maxFlyMS ?? 150)), 12);
     if (sh.az == null) c.th0 = P.th + ((c.wFrom + w1) / 2) * T;   // no heading of its own: where the even speed lands
