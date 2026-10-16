@@ -659,6 +659,25 @@ async function loadLidar() {
     }
     lidarPlazaPoints = moved;   // for checks (__viewer)
   }
+  // config.json treeSpots (user, 2026-10-16, the Watercourt: crowns that were labelled as Two California Plaza went to
+  // the ground with its plaza): a hand-checked list of circles (e, n local m, r); in each, the ground points (measured
+  // returns) more than raiseM above its floor (the 20th percentile height within r + 2 m) are a tree, an object of
+  // the Trees layer of their own ("Tree (spot k)"), so they are coloured, picked and counted as trees.
+  const TS = cfg.treeSpots;
+  if (TS?.spots?.length && terrainObj >= 0) {
+    for (const [k, sp] of TS.spots.entries()) {
+      const R = sp.r + 2, near = [];
+      for (let i = 0; i < nLidar; i++) {
+        if (obj[i] !== terrainObj) continue;
+        const dx = P[3 * i] - sp.e, dn = -P[3 * i + 2] - sp.n;
+        if (dx * dx + dn * dn <= R * R) near.push([i, dx * dx + dn * dn <= sp.r * sp.r]);
+      }
+      if (near.length < 10) continue;
+      const ys = near.map(([i]) => P[3 * i + 1]).sort((p, q) => p - q), floor = ys[Math.floor(0.2 * (ys.length - 1))];
+      const o = objNames.length; objNames.push(`Tree (spot ${k + 1})`); objLayers.push("Trees");
+      for (const [i, inside] of near) if (inside && P[3 * i + 1] > floor + (TS.raiseM ?? 1)) obj[i] = o;
+    }
+  }
   // config.json splitLayers sends some objects of a layer elsewhere (user, 2026-10-10: of the LiDAR-only structures,
   // the bridges, raised walkways, street and plaza decks and canopies draw with the ground and streets; the rest are
   // building parts and join Buildings through mergeLayers). An object goes when its entity's checked use names it

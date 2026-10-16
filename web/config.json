@@ -246,6 +246,20 @@
     }
   },
   "_splitLayers": "Objects of a layer sent to another (user, 2026-10-10): LiDAR-only structures whose entity's checked use matches 'uses', or that are thin (less than maxThickM between the 5th and 95th percentile of their heights) and sit on average minHagM-maxHagM above the ground: bridges, raised walkways, street and plaza decks, canopies, drawn with the ground and streets. curved (2026-10-16, freeway ramps and a skybridge near the 110): objects no one has checked by hand also go when they are thin about their own sloping or curving surface (under curved.maxThickM) and sit minHagM-curved.maxHagM above the ground. matchDensity: the moved objects are drawn as densely as the ground around them (points dropped, or drawn larger up to maxSize times).",
+  "treeSpots": {
+    "raiseM": 1,
+    "spots": [
+      { "e": -99.5, "n": 87.7, "r": 2.3, "note": "Watercourt, candidate 5" },
+      { "e": -27.5, "n": 80.4, "r": 7.7, "note": "Watercourt, candidate 6" },
+      { "e": -52.5, "n": 74.8, "r": 2.5, "note": "Watercourt, candidate 7" },
+      { "e": -47.5, "n": 71.4, "r": 2.7, "note": "Watercourt, candidate 8" },
+      { "e": -46.3, "n": 66.0, "r": 2.6, "note": "Watercourt, candidate 9" },
+      { "e": -2.2, "n": 55.6, "r": 3.2, "note": "Watercourt, candidate 10" },
+      { "e": -50.3, "n": 36.7, "r": 7.0, "note": "Watercourt, candidate 14" },
+      { "e": -44.6, "n": 30.6, "r": 2.4, "note": "Watercourt, candidate 16" }
+    ]
+  },
+  "_treeSpots": "Trees the labels missed, checked by hand (user, 2026-10-16: the Watercourt crowns had gone to the ground with Two California Plaza's plaza): circles in local metres (e east, n north of Y-1, r); in each, the ground points more than raiseM above its floor are drawn as a tree of their own.",
   "plazas": {
     "layer": "Buildings",
     "minBuildingM": 40,
