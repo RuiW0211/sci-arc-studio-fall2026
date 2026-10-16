@@ -390,7 +390,7 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
 // ground by its own outline, eased over 3 m either side (site*: the parcel's ring up to 64 corners, its box, how much
 // of the light is on it), and its trees whole by their marks
 const SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.12 },
-  w: { value: [0, 0] }, ghostLit: { value: 0 }, ground: { value: cfg.time?.cinema?.spotGround ?? 0.9 },
+  w: { value: [0, 0] }, ghostLit: { value: 0 }, ground: { value: cfg.time?.cinema?.spotGround ?? 1 },
   sitePoly: { value: Array.from({ length: 64 }, () => new THREE.Vector2()) }, siteN: { value: 0 },
   siteBox: { value: new THREE.Vector4() }, siteW: { value: 0 } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && (TIME.rest.value > 0 || TIME.year.value < b + 1));
