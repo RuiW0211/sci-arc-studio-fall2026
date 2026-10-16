@@ -1480,7 +1480,7 @@ function buildOpening() {
       keys.push([t, a]);
     };
     OPEN.shots.forEach((sh, i) => { add(openAnchors[i].hs, sh.az[0]); add(openAnchors[i].he, sh.az[1]); });
-    if ((CINE.shots || [])[0]?.az != null) add(end, CINE.shots[0].az);
+    if (OPEN.endAz != null) add(end, OPEN.endAz);   // where the opening ends, on the whole site
     openHeading = monotoneCubic(keys);
   }
   ldur("opening shots (with tags data), ms", tB);
@@ -1826,9 +1826,13 @@ function cineNow(now) {
 function startCine() {
   const shots = cineShots(); if (!shots.length) return;
   controls.enableDamping = false;
-  let th = sphOf(camera.position, controls.target).th;
-  if (shots[0].az != null) th += wrapA(shots[0].az - th);   // the opening ends on it; a small step if it was left elsewhere
-  cine = { shots, i: 0, phase: "shot", t0: performance.now(), th0: th, dir: 1, from: null, op0: performance.now() };
+  // (user, 2026-10-17: the film's own wide shot dropped, the opening ends on the whole site) the film flies from where
+  // the camera is into its first shot, going on at the opening's turning speed; People comes on as it sets off
+  const now = performance.now(), end = openAnchors?.[openAnchors.length - 1]?.hs;
+  const w0 = openHeading && end ? (openHeading(end) - openHeading(end - 0.1)) / 0.1 : 0;
+  cine = { shots, i: 0, phase: "shot", t0: now, th0: 0, dir: 1, from: null, op0: now, peopleDone: true };
+  nextShot(now, camPose(), 0, w0);
+  if (CINE.thenPeople !== false) peopleOnNow();
   timeState();
 }
 function endCine() {
@@ -1836,17 +1840,17 @@ function endCine() {
   cine = null; cutEl.classList.remove("on"); controls.enableDamping = true; invalidate();
   timeState(); shotsUI();
 }
-function nextShot(now, P) {   // now: the exact time the last shot ended
-  const c = cine;
+function nextShot(now, P, toI, w0) {   // now: the exact time the last shot ended; toI: fly into this shot instead, from a
+  const c = cine;                       // camera turning at w0 (the film's start)
   // after the last shot the film goes back to shot loopFrom (2026-10-15: from the Y-1 reveal straight to the Y-1 track,
   // the opening's wide shot and crane only once), always the same way round
-  const nextI = c.i + 1 < c.shots.length ? c.i + 1 : Math.min(CINE.loopFrom ?? 0, c.shots.length - 1);
-  const prev = c.shots[c.i], sh = c.shots[nextI];
+  const nextI = toI ?? (c.i + 1 < c.shots.length ? c.i + 1 : Math.min(CINE.loopFrom ?? 0, c.shots.length - 1));
+  const prev = toI == null ? c.shots[c.i] : null, sh = c.shots[nextI];
   c.i = nextI;
   if (sh.cut) {   // dip to black, jump, come up on the new shot
     c.th0 = P.th; c.phase = "cut"; c.t0 = now; cutEl.classList.add("on");
   } else {
-    c.wFrom = shotWEnd(prev, c.dir);
+    c.wFrom = prev ? shotWEnd(prev, c.dir) : w0 ?? 0;
     const w1 = shotW(sh, c.dir), wm = Math.max(Math.abs(c.wFrom), Math.abs(w1)) || 0.05;   // the faster of the two
     // the flight's length: at least blendS, and long enough that the camera never goes faster than maxFlyMS on average
     const B0 = cinePose(sh, 0, sh.az ?? P.th, c.dir), pos = (Q) => { _sph.set(Q.r, Q.phi, Q.th); return _off.setFromSpherical(_sph).clone().add(_tv.fromArray(Q.target)); };
@@ -1868,9 +1872,9 @@ function nextShot(now, P) {   // now: the exact time the last shot ended
   }
   shotsUI();
 }
-// People comes on peopleDelayS into shot peopleAfter (user, 2026-10-15: 2 s into the first wide shot, once the camera
-// has settled after the opening), the film going on with them; its day starts before dawn (peopleStartH), most people
-// at home, and the city wakes up as they set out. The clock is set before they show (popStartT).
+// People comes on as the film sets off (user, 2026-10-17: as the camera flies from the opening's whole site to Broadway;
+// before, 2 s into the film's wide shot); its day starts before dawn (peopleStartH), most people at home, and the city
+// wakes up as they set out. The clock is set before they show (popStartT).
 function peopleOnNow() {
   if ($("#popOn").checked) return;
   popStartT = (CINE.peopleStartH ?? 5) * 3600;
@@ -1879,9 +1883,6 @@ function peopleOnNow() {
 function stepCine(now) {
   const c = cine, sh = c.shots[c.i];
   if (paused || c.phase === "done") return;
-  if (!c.peopleDone && CINE.thenPeople !== false && c.i === (CINE.peopleAfter ?? 0) && c.phase === "shot" && now - c.t0 > (CINE.peopleDelayS ?? 2) * 1000) {
-    c.peopleDone = true; peopleOnNow();
-  }
   if (c.phase === "cut") {
     if (now - c.t0 < 280) return;   // the screen is going dark
     c.phase = "shot"; c.t0 = now; cutEl.classList.remove("on"); rejoin = null;
