@@ -90,7 +90,9 @@
   .rec .legend { display: flex; gap: 14px; font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
   .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
   .days { list-style: none; font-size: 0.85rem; }
-  .days > li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .days > li { padding: 8px 6px; margin: 0 -6px; border-bottom: 1px solid var(--line); border-radius: 3px;
+    transition: background-color var(--t-out); scroll-margin-top: 24px; }
+  .days > li.flash { background-color: var(--hover); transition: background-color var(--t-feedback); }
   .days .d { font-weight: 700; margin-right: 10px; font-variant-numeric: tabular-nums; }
   .days .who { color: var(--muted); margin-right: 10px; }
   .days .res { margin-top: 2px; }
@@ -99,6 +101,7 @@
   .days details ul { list-style: none; margin: 2px 0 0 14px; }
   .rec .key { font-size: 0.75rem; color: var(--faint); margin-top: 4px; }
   .rec .band { fill: transparent; transition: fill var(--t-feedback); cursor: default; }
+  .rec .band.go { cursor: pointer; }
   .rec svg :not(.band) { pointer-events: none; }
   .rec .band.on { fill: var(--hover); }
   .rec .tip { position: absolute; top: 0; left: 0; z-index: 2; pointer-events: none; max-width: 300px; padding: 8px 10px;
@@ -524,15 +527,14 @@ function renderRecord(W) {
   const style = people.map((_, j) => `.rec .p${j} { fill: var(--p${j + 1}, var(--muted)); }`).join(" ");
   const legend = people.length > 1 ? `<div class="legend">${people.map((p, j) => `<span><i class="sw" style="background: var(--p${j + 1}, var(--muted))"></i>${esc(p.name)}</span>`).join("")}</div>` : "";
   fig.innerHTML = `<style>${style}</style>${legend}<div class="scroll"><svg viewBox="0 0 720 ${HT}" role="img" aria-label="Hours of work with Claude per day">${g}</svg></div>`
-    + `<p class="key">Hours of work with Claude${people.length === 1 ? ` (${esc(people[0].name)})` : ""} per day. Hover a day for a summary; what came of each day is in the daily log below.</p><div class="tip" role="status"></div>`;
+    + `<p class="key">Hours of work with Claude${people.length === 1 ? ` (${esc(people[0].name)})` : ""} per day. Click a day to find it in the daily log below.</p><div class="tip" role="status"></div>`;
   // hover: a short summary of the day (its details are in 6.2, the daily log)
   const svg = fig.querySelector("svg"), tip = fig.querySelector(".tip"); let on = null;
   const show = (i) => {
     if (on) on.classList.remove("on");
     on = svg.querySelector(`.band[data-i="${i}"]`); on.classList.add("on");
     const who = people.map((p, j) => (mins[j][i] ? `${esc(p.name)} ${hrs(mins[j][i])}` : "")).filter(Boolean).join(" · ") || "no time recorded";
-    const res = [mergedOn[i].length ? `merged ${mergedOn[i].map(prName).join(", ")}` : "", openedOn[i].length ? `opened ${openedOn[i].map(prName).join(", ")}` : ""].filter(Boolean).join(" · ");
-    tip.innerHTML = `<div class="h">${nice(days[i])}</div><div class="m">${who}</div>${res ? `<div>${res}</div>` : ""}`;
+    tip.innerHTML = `<div class="h">${nice(days[i])}</div><div class="m">${who}</div>`;
     tip.classList.add("on");
     const fr = fig.getBoundingClientRect(), br = on.getBoundingClientRect(), tw = tip.offsetWidth;
     let left = br.left - fr.left + br.width + 8; if (left + tw > fr.width) left = br.left - fr.left - tw - 8;
@@ -540,6 +542,13 @@ function renderRecord(W) {
   };
   svg.addEventListener("pointermove", (ev) => { const b = ev.target.closest?.(".band"); if (b) show(+b.dataset.i); });
   svg.addEventListener("pointerleave", () => { tip.classList.remove("on"); on?.classList.remove("on"); on = null; });
+  // click (user, 2026-10-16): the day's entry in the daily log, brought into view and marked for a moment
+  svg.addEventListener("click", (ev) => {
+    const b = ev.target.closest?.(".band"), li = b && logOf.get(+b.dataset.i) && document.getElementById(logOf.get(+b.dataset.i));
+    if (!li) return;
+    li.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    li.classList.add("flash"); setTimeout(() => li.classList.remove("flash"), 1500);
+  });
 
   // 6.2 the daily log, the newest first: who worked how long, what came of it, the commits. Before the first commit
   // (the research weeks, user 2026-10-16: "9 月按周合并") a row is a week, Monday to Sunday; from it, a day.
@@ -549,6 +558,7 @@ function renderRecord(W) {
   days.forEach((d, i) => { const key = d < firstDay ? "w" + monday(d) : d, g0 = groups[groups.length - 1];
     if (g0 && g0.key === key) g0.ix.push(i); else groups.push({ key, ix: [i], week: d < firstDay }); });
   const sumOf = (ix, f) => ix.reduce((a, i) => a + f(i), 0);
+  const logOf = new Map();   // day index -> the id of its entry in the log
   document.getElementById("dayList").innerHTML = groups.reverse().filter((G) => G.ix.some((i) => dayMin[i] || commits[i].length || mergedOn[i].length || openedOn[i].length)).map((G) => {
     const a = days[G.ix[0]], b = days[G.ix[G.ix.length - 1]];
     const label = G.week ? `Week of ${nice(monday(a))}${a.slice(0, 7) === b.slice(0, 7) && a !== b ? `–${+b.slice(8)}` : a !== b ? `–${nice(b)}` : ""}, ${a.slice(0, 4)}` : nice(a, true);
@@ -556,10 +566,12 @@ function renderRecord(W) {
     const res = G.ix.flatMap((i) => [...mergedOn[i].map((p) => `Merged ${prLink(p)} ${esc(p.title)}`), ...openedOn[i].map((p) => `Opened ${prLink(p)} ${esc(p.title)}`)]);
     const cs = G.ix.flatMap((i) => commits[i]);
     if (!who && !res.length && !cs.length) return "";
-    return `<li><span class="d">${label}</span>${who}${res.length ? `<div class="res">${res.join("<br>")}</div>` : ""}`
+    const id = `log-${G.key}`; G.ix.forEach((i) => logOf.set(i, id));
+    return `<li id="${id}"><span class="d">${label}</span>${who}${res.length ? `<div class="res">${res.join("<br>")}</div>` : ""}`
       + (cs.length ? `<details><summary>${cs.length} commit${cs.length === 1 ? "" : "s"}</summary><ul>${cs.map((c) => `<li>${esc(c.s)}${people.length > 1 || c.by !== people[0]?.login ? ` <span class="note">(${esc(nameOf(c.by))})</span>` : ""}</li>`).join("")}</ul></details>` : "")
       + `</li>`;
   }).join("");
+  logOf.forEach((_, i) => svg.querySelector(`.band[data-i="${i}"]`)?.classList.add("go"));   // the days that lead somewhere
   // 6.3 every pull request, the newest first
   document.getElementById("prTable").innerHTML = `<table><tr><th>#</th><th>Pull request</th><th>By</th><th>Merged</th><th class="r">Commits</th></tr>`
     + [...prs].sort((a, b) => b.created.localeCompare(a.created)).map((p) => `<tr><td>${prLink(p)}</td><td>${esc(p.title)}<br><code class="note">${esc(p.branch)}</code></td><td>${esc(nameOf(p.by))}</td><td>${p.merged ? nice(dayOf(p.merged)) : esc(p.state)}</td><td class="r">${p.commits}</td></tr>`).join("") + `</table>`;
