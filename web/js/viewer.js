@@ -1444,8 +1444,10 @@ function buildOpening() {
     const ps = pts.filter((p) => p.year >= sh.from && p.year < sh.to);
     if (!ps.length) return wide;
     let best = ps[0], bw = -1;   // the densest spot: most height within clusterM
-    for (const p of ps) { let w = 0; for (const q of ps) if (Math.hypot(p.x - q.x, p.z - q.z) < Rc) w += q.h; if (w > bw) { bw = w; best = p; } }
-    const cl = ps.filter((q) => Math.hypot(best.x - q.x, best.z - q.z) < Rc), W = cl.reduce((s, q) => s + q.h, 0);
+    if (!sh.all) for (const p of ps) { let w = 0; for (const q of ps) if (Math.hypot(p.x - q.x, p.z - q.z) < Rc) w += q.h; if (w > bw) { bw = w; best = p; } }
+    // all: every building of its years, not only the densest spot (user, 2026-10-16: the first three shots were close
+    // together; one shot, a little farther out)
+    const cl = sh.all ? ps : ps.filter((q) => Math.hypot(best.x - q.x, best.z - q.z) < Rc), W = cl.reduce((s, q) => s + q.h, 0);
     let cx = cl.reduce((s, q) => s + q.x * q.h, 0) / W, cz = cl.reduce((s, q) => s + q.z * q.h, 0) / W;
     const spread = Math.sqrt(cl.reduce((s, q) => s + q.h * ((q.x - cx) ** 2 + (q.z - cz) ** 2), 0) / W);
     const hmax = Math.max(...cl.map((q) => q.h)), gy = cl.reduce((s, q) => s + q.y0 * q.h, 0) / W;
@@ -1454,6 +1456,7 @@ function buildOpening() {
       const d = Math.hypot(cx - Y1[0], cz - Y1[2]);
       cx = (cx + Y1[0]) / 2; cz = (cz + Y1[2]) / 2; ty = (ty + Y1[1]) / 2; r = Math.min(Math.max(r, 1.1 * d + 300), 1300);
     }
+    if (sh.dist) r *= sh.dist;   // a factor on the distance, as in the film's shots
     const k = (r - 250) / (1300 - 250);
     return { target: [cx, ty, cz], r, phi: (66 - 16 * k) * D2R };
   };
