@@ -365,7 +365,10 @@ let lidarDensityMatch = null, lidarPlazaPoints = 0, lidarGroundFill = 0;   // ob
 // the Time module (user, 2026-10-13): off = today; on = the year of its slider. TIME feeds the point shader.
 const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.undatedDim ?? 0.4 },
                build: { value: cfg.time?.buildYears ?? 5 }, front: { value: cfg.time?.front ?? 0.25 },
-               grey: { value: cfg.time?.contextGrey ?? 0.45 }, alpha: { value: cfg.time?.contextOpacity ?? 0.35 } };
+               grey: { value: cfg.time?.contextGrey ?? 0.45 }, alpha: { value: cfg.time?.contextOpacity ?? 0.35 },
+               // a building going up is in the highlight colour (user, 2026-10-17: to see which building is being built),
+               // easing back to white over hotYears once built; hot eases to 0 while the film plays
+               hotY: { value: cfg.time?.hotYears ?? 5 }, hot: { value: 1 } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && TIME.year.value < b + 1);
 function applyVisibility() {
   for (const L of ordered) {
@@ -419,8 +422,9 @@ function pointMaterial(sizeMetres) {
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
     shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front; shader.uniforms.uMono = MONO;
+    shader.uniforms.uHotY = TIME.hotY; shader.uniforms.uHot = TIME.hot;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
@@ -448,7 +452,9 @@ function pointMaterial(sizeMetres) {
       + "    float p = uTimeOn > 0.5 ? clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0) : 1.0; p = p * p * (3.0 - 2.0 * p);\n"
       + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
-      + "    vColor.rgb = mix(vColor.rgb, mix(vec3(1.0), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
+      // going up: the highlight colour, back to white over uHotY years once built (2026-10-17)
+      + "    float g = uTimeOn > 0.5 ? clamp((aYear + uHotY - uYear) / uHotY, 0.0, 1.0) * uHot : 0.0; g = g * g * (3.0 - 2.0 * g);\n"
+      + "    vColor.rgb = mix(vColor.rgb, mix(mix(vec3(1.0), uHi, g), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
       + "  } else if (aYear < -0.5) { vColor.rgb = mix(vColor.rgb, mix(vec3(uDim), vColor.rgb, vSel), uFocus); vBuild = 1.0; }\n"
       + "}\n#include <fog_vertex>");
     // round points instead of squares
@@ -2289,13 +2295,15 @@ function updateTimeTags() {
       p = tlEase(Math.min((Y - it.year) / up, (it.year + sp - Y) / dn)); a = Math.min(1, (Y - it.year) / 0.4, (it.year + sp - Y) / dn);
     } else {
       if (Y < it.year - Bd) { tlEver.delete(it.key); continue; }
-      const ever = it.keep && (tlEver.has(it.key) || Y > it.year);   // only the film's buildings stay, labelled or not while rising
-      const outY = it.year + TL.holdYears + (TL.fadeOutYears ?? 1.5);   // the others: gone by then
-      if (!ever && Y > (it.keep ? it.year + TL.holdYears : outY)) continue;
+      // (user, 2026-10-17) every tag shown while its building went up stays once built, the others fainter (builtOpacity);
+      // the film's buildings stay whether labelled while rising or not
+      const ever = tlEver.has(it.key) || (it.keep && Y > it.year);
+      const outY = it.year + TL.holdYears + (TL.fadeOutYears ?? 1.5);
+      if (!ever && Y > it.year + TL.holdYears) continue;
       p = tlEase((Y - it.year + Bd) / Bd);
       const done = Y > it.year + TL.holdYears, fade = tlEase((Y - it.year) / (TL.fadeYears ?? 8));
       a = Math.min(1, (Y - it.year + Bd) / 0.4) * (1 + ((TL.doneOpacity ?? 0.7) - 1) * fade);
-      if (!it.keep) a *= Math.min(1, Math.max(0, (outY - Y) / (TL.fadeOutYears ?? 1.5)));   // fading out once built
+      if (!it.keep) a *= 1 - (1 - (TL.builtOpacity ?? 0.3)) * Math.min(1, Math.max(0, 1 - (outY - Y) / (TL.fadeOutYears ?? 1.5)));   // fainter once built
       if (ever) { kept.push({ it, p, a, txt, rising: !done }); continue; }
     }
     live.push({ it, p, a, txt, rising: true });
@@ -2341,7 +2349,7 @@ function updateTimeTags() {
   for (const { it, p, a: a0, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
     // while filming: every label at one opacity, the shot's hero full
     const hero = lit.has(it.key);
-    let a = cine ? (hero ? 1 : CINE.labelOpacity) : a0;
+    let a = cine ? (hero ? 1 : it.keep ? CINE.labelOpacity : Math.min(a0, TL.builtOpacity ?? 0.3)) : a0;
     // depth (user, 2026-10-13: labels sat over the buildings, near and far alike): a label whose building is hidden
     // behind a standing building fades (lines of sight to its top and its middle against the other buildings' boxes,
     // drawn in a little); far ones are quieter; near ones are drawn over far ones
@@ -2386,6 +2394,16 @@ function updateTimeTags() {
     s.op = s.op === undefined ? a : s.op + (a - s.op) * ease(0.3);
     if (Math.abs(a - s.op) > 0.004) invalidate();
     s.el.style.opacity = s.op.toFixed(3);
+    // the highlight colour (user, 2026-10-17): going up, easing to white over hotYears once built; in the film, the shot's
+    // group (its heroes)
+    if (it.kind !== "unbuilt") {
+      const g = hero ? 1 : TIME.hot.value * tlEase(Math.min(Math.max((it.year + TIME.hotY.value - Y) / TIME.hotY.value, 0), 1));
+      if (Math.abs(g - (s.g ?? -1)) > 0.01) {
+        const hx = HILITE.getHexString(), hi = [0, 2, 4].map((k) => parseInt(hx.slice(k, k + 2), 16));   // (as written, sRGB)
+        s.g = g; const c = hi.map((v) => Math.round(255 + (v - 255) * g));
+        s.el.style.setProperty("--k", `rgba(${c.join(", ")}, .9)`); s.el.style.setProperty("--tc", `rgb(${c.join(", ")})`);
+      }
+    }
     s.el.style.visibility = s.op < 0.01 ? "hidden" : "";
     if (behind) continue;   // its projection means nothing: it stays where it was while it fades
     const w = Math.max(sx1 - sx0, 6), h = Math.max(sy1 - sy0, 6);
@@ -2683,6 +2701,8 @@ function logFrame(now) {
   lfLast = now; lfRender = lfTags = 0;
 }
 renderer.setAnimationLoop((now) => {
+  // the going-up colour eases out while the film plays and back in for the opening (about 1 s)
+  { const h = cine ? 0 : 1; if (Math.abs(TIME.hot.value - h) > 0.001) { TIME.hot.value += (h - TIME.hot.value) * (1 / 60); dirty = true; } }
   logFrame(now);
   perfT("camera", () => {
     if (tween) { stepTween(now); dirty = true; }
