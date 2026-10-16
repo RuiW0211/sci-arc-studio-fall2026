@@ -2352,6 +2352,7 @@ function spotUpdate(lit) {
   const k = SPOT.k.value + Math.max(-step, Math.min(step, want - SPOT.k.value));
   if (Math.abs(k - SPOT.k.value) > 1e-4) { SPOT.k.value = k; invalidate(); }
 }
+let tlLitKey = "";
 function updateTimeTags() {
   const Y = TIME.year.value, Bd = TIME.build.value, on = TIME.on.value > 0.5 && lidar && mode === "cloud";
   if (on && !tlItems) tlBuild();
@@ -2424,6 +2425,10 @@ function updateTimeTags() {
   spotUpdate(lit);
   const rank = (l) => (lit.has(l.it.key) ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
   const now = performance.now(), dt = Math.min((now - (tlLast || now)) / 1000, 0.1); tlLast = now;
+  const onView = [...tlShown.values()].filter((q) => q.op > 0.3 && q.fc != null);
+  const midX = onView.length > 1 ? onView.reduce((t, q) => t + q.fc, 0) / onView.length : W / 2;
+  const litKey = [...lit].join();
+  if (litKey !== tlLitKey) { tlLitKey = litKey; for (const k of lit) { const q = tlShown.get(k); if (q) q.spot = null; } }   // a new shot: its group's texts placed afresh
   for (const { it, p, a: a0, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
     // while filming: every label at one opacity, the shot's hero full
     const hero = lit.has(it.key);
@@ -2496,27 +2501,39 @@ function updateTimeTags() {
     // the text sits by the frame's top, but inside the window: a tower taller than the view keeps its text at the top
     // edge, beside it (user, 2026-10-13: the group's tags were out of sight in the low shots)
     const tyA = Math.min(Math.max(sy0, 10), Math.max(sy1 - 30, 10), H - 40);
-    const rw = s.rw, rh = s.rh, pref = sx0 + w / 2 > W / 2 || (ui.width > 0 && sx0 < ui.right + 160);
+    // which side (user, 2026-10-17: Disney Hall's text went to the left, far from it, and The Broad's into Disney's corner):
+    // the side away from the middle of the tags on view (midX), so the texts spread outwards and each stays by its own
+    // building; a text that does not fit beside its frame at the window's edge goes above the frame on the same side,
+    // kept inside the window, before it tries the other side
+    const rw = s.rw, rh = s.rh, side = sx0 + w / 2 > midX, pref = side || (uiOn && sx0 < ui.right + 160);   // (the panel, only while it shows)
+    if (!uiOn && s.spot?.byUi) s.spot = null;   // put aside for the panel, which has gone: placed afresh
+    s.fc = sx0 + w / 2;
     const free = (rx, ay) => rx > 4 && rx + rw < W - 4 && !underUi(rx, ay, rx + rw, ay + rh) && !placed.some((q) => rx < q.x + q.w + 4 && rx + rw + 4 > q.x && ay < q.y + q.h + 3 && ay + rh + 3 > q.y);
+    const at = (sp) => sp.above
+      ? { rx: Math.min(Math.max(sp.left ? sx1 - rw : sx0, 4), W - rw - 4), ay: Math.max(sy0 - rh - 4, 4) }
+      : { rx: sp.left ? sx1 + 6 : sx0 - 6 - rw, ay: tyA + sp.ry };
     let spot = null;
-    const tries = [[pref, 0], [pref, rh + 4], [pref, -(rh + 4)], [!pref, 0], [!pref, rh + 4], [!pref, -(rh + 4)]];
-    if (s.spot) tries.unshift([s.spot.left, s.spot.ry]);   // where it was, first
-    for (const [left, ry] of tries) {
-      const rx = left ? sx1 + 6 : sx0 - 6 - rw;
-      if (!spot && free(rx, tyA + ry)) spot = { left, ry, rx };
+    const tries = [[pref, 0], [pref, rh + 4], [pref, -(rh + 4)], [pref, 0, true], [!pref, 0], [!pref, rh + 4], [!pref, -(rh + 4)], [!pref, 0, true]];
+    if (s.spot) tries.unshift([s.spot.left, s.spot.ry, s.spot.above]);   // where it was, first
+    for (const [left, ry, above] of tries) {
+      const q = { left, ry, above: Boolean(above), byUi: left !== side }, { rx, ay } = at(q);
+      if (!spot && free(rx, ay)) spot = q;
     }
     // the text hides or comes back only after it has had (or lacked) a free place for a moment (hysteresis), and fades
     // (CSS). A shown text stays where it is; it moves only while hidden, so it never hops about.
     const shown = !r.classList.contains("hid");
-    const oldFree = s.spot && free(s.spot.left ? sx1 + 6 : sx0 - 6 - rw, tyA + s.spot.ry);
+    const oldFree = s.spot && (({ rx, ay }) => free(rx, ay))(at(s.spot));
     const want = shown ? Boolean(oldFree || (!s.spot && spot)) : Boolean(spot);
     s.wait = want === shown ? 0 : (s.wait || 0) + dt;
     if (s.wait > (want ? 0.5 : 0.35)) { r.classList.toggle("hid", !want); s.wait = 0; if (want) s.spot = spot; }
     else if (!s.spot && spot) s.spot = spot;
     if (r.classList.contains("hid") || !s.spot) continue;
-    const sp = s.spot, rx = sp.left ? sx1 + 6 : sx0 - 6 - rw;
-    r.classList.toggle("r", sp.left); r.style.top = `${tyA - sy0 + sp.ry}px`;
-    placed.push({ x: rx, y: tyA + sp.ry, w: rw, h: rh });
+    const sp = s.spot, { rx, ay } = at(sp);
+    r.classList.toggle("r", sp.left); r.style.top = `${ay - sy0}px`;
+    // above the frame: placed by its own left edge (inside the window); beside it: by the frame's side (CSS)
+    if (sp.above) { r.style.left = `${rx - sx0}px`; r.style.right = "auto"; r.style.textAlign = sp.left ? "right" : "left"; }
+    else if (r.style.left) { r.style.left = r.style.right = r.style.textAlign = ""; }
+    placed.push({ x: rx, y: ay, w: rw, h: rh });
   }
 }
 // a plain object (tree, car, wall ...), or a point of the ground / unassigned
