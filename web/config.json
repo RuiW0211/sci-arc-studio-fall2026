@@ -19,7 +19,7 @@
     },
     "rejoinS": 2.5,
     "autoResumeS": 4,
-    "rates": { "_comment": "years a second by period; 2026-10-16 (user: too long) all x 1.75, the opening 53 s -> 30 s", "unbuilt": 1.6, "table": [[1867, 26], [1895, 7], [1930, 17.5], [1960, 3.5], [1991, 4.4]] },
+    "rates": { "_comment": "years a second by period; 2026-10-16 (user: too long) all x 1.75, the opening 53 s -> 30 s; 2026-10-17 (user: a little slower) all x 0.85, about 35 s", "unbuilt": 1.36, "table": [[1867, 22.1], [1895, 5.95], [1930, 14.9], [1960, 2.98], [1991, 3.74]] },
     "undatedDim": 0.55,
     "buildYears": 5,
     "front": 0.25,
