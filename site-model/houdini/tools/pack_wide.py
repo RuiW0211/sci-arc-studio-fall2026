@@ -158,6 +158,11 @@ def noise(x, n, scale=None, seed=7):
     return (a * (1 - fx) + b * fx) * (1 - fn) + (c * (1 - fx) + d * fx) * fn
 
 
+def noise_lattices():
+    """The lattices noise() draws on (seeds 7: the fade's wobble, 23: the outer edge's), as text for the web meta."""
+    return {str(k): " ".join(f"{v:.4f}" for v in np.random.default_rng(k).uniform(-1, 1, (64, 64)).ravel()) for k in (7, 23)}
+
+
 def ratio(x, n, u, area=None, cut=True):
     """Keep ratio at plan position (x, north) for an object / cell with its own random u in [0, 1); area (target
     density only): how much is built around it, A / T0 (1 = the reference amount); cut: an object whose share is
@@ -551,7 +556,12 @@ def pack():
                      **({"half_density_m": HALF, "area_window_m": AREA_W, "area_reference_per_m2": round(AREA_T0, 3),
                          "noise_amplitude": NOISE} if HALF > 0 else {}),
                      "full_density_radius_m": R0, "falloff_power": P, "density": DENSITY, "density_inside_too": DENSITY_INSIDE, "per_object": True, "ground_noise_m": CELL,
-                     "keep_min": KEEP_MIN, "mist": MIST, "mist_end_m": MIST_END, "edge_end_m": EDGE_END, "note": f"Every return within {R0:.0f} m of Y-1; farther out each object (building, "
+                     "keep_min": KEEP_MIN, "mist": MIST, "mist_end_m": MIST_END, "edge_end_m": EDGE_END,
+                     # the rest of the rule and its two noise lattices (seeds 7 and 23, 64 x 64, [i][j] i = x), so the
+                     # website draws the modeled people with the very same fade (user, 2026-10-17)
+                     "edge_width_m": EDGE_W, "object_jitter": JITTER, "noise_amplitude": NOISE, "noise_wavelength_m": NOISE_SCALE,
+                     "noise_lattice": noise_lattices(),
+                     "note": f"Every return within {R0:.0f} m of Y-1; farther out each object (building, "
                      "tree, car ...) keeps one share of its points, falling off with distance with a random, irregular edge, "
                      "then a faint mist that fades out itself." if HALF <= 0 else f"No full-density disc: each object keeps "
                      f"1 / (1 + (d / {HALF:.0f} m)^{P:g}) of its points (half at {HALF:.0f} m, a per-object random stretch); "

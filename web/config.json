@@ -6,20 +6,24 @@
     "opening": true,
     "openingMode": "B",
     "openingB": {
-      "_comment": "Plan B (user, 2026-10-14): the opening's camera follows the building. all = frame every building of its years, not only the densest spot (2026-10-16, user: 1867-1980 one shot, the three were close together); dist = a factor on its distance (0.7: about 900 m, a little farther out than the three were, 550-750 m). Shots by years; each frames the densest cluster (most height within clusterM) of the buildings going up in its years, nearer when tight, farther when spread; y1 keeps Y-1 in the frame; the last pulls out to the whole site; turnDeg in all. openingMode A = the old orbit (time.tour).",
+      "_comment": "center (user, 2026-10-17): the whole opening is one shot centred on Y-1, the knoll empty in the middle while the city goes up round it: the camera eases in from r[0] to r[1] m (tilt [from, to] degrees from straight down) and turns evenly from az[0] to az[1]; it overrides the shots below (kept for going back). Plan B (user, 2026-10-14): the opening's camera follows the building. 2026-10-17 (user: all shots are planned together, once round from Default and back to it): az = [heading at the start of the shot's hold, at its end], degrees counted on (the opening starts on its first shot, not flown in from Default: user, 2026-10-17), through the film (Whole site 200, Broadway 235, Grand Avenue 340, Y-1 back on Default), each group seen from the Y-1 side; wide = the shot is the whole site (2000-2026; the film's own wide shot dropped 2026-10-17: the film flies from here to Broadway); endAz = the heading the opening ends on. endWide false (2026-10-17, user: the fisheye stays at 1 all round, its change between shots showed): no pull-out to the whole site at the end, 2000-2026 frames its buildings within withinM 450 m of Y-1 and Y-1 (the densest is just south of Y-1: Perla on Broadway, 2020), the camera north of Y-1, dist 1.4 (about 740 m; at 526 m a near tower leaned hard in the fisheye). all = frame every building of its years, not only the densest spot (2026-10-16, user: 1867-1980 one shot, the three were close together); dist = a factor on its distance (0.7: about 900 m, a little farther out than the three were, 550-750 m). Shots by years; each frames the densest cluster (most height within clusterM) of the buildings going up in its years, nearer when tight, farther when spread; y1 keeps Y-1 in the frame; the last pulls out to the whole site; turnDeg in all. openingMode A = the old orbit (time.tour).",
       "turnDeg": 160,
       "clusterM": 300,
       "shots": [
-        { "from": 1867, "to": 1980, "all": true, "dist": 0.7 },
-        { "from": 1980, "to": 2000, "y1": true },
-        { "from": 2000, "to": 2026, "y1": true }
-      ]
+        { "from": 1867, "to": 1980, "all": true, "dist": 0.7, "az": [95, 135] },
+        { "from": 1980, "to": 2000, "y1": true, "az": [150, 175] },
+        { "from": 2000, "to": 2026, "y1": true, "withinM": 450, "dist": 1.4, "az": [185, 195] }
+      ],
+      "center": { "r": [900, 520], "tilt": [56, 60], "az": [95, 205] },
+      "endAz": 205,
+      "endWide": false
     },
     "rejoinS": 2.5,
     "autoResumeS": 4,
-    "rates": { "_comment": "years a second by period; 2026-10-16 (user: too long) all x 1.75, the opening 53 s -> 30 s", "unbuilt": 1.6, "table": [[1867, 26], [1895, 7], [1930, 17.5], [1960, 3.5], [1991, 4.4]] },
+    "rates": { "_comment": "years a second by period; 2026-10-16 (user: too long) all x 1.75, the opening 53 s -> 30 s; 2026-10-17 (user: a little slower) all x 0.85, about 35 s; then x 0.82 with the unbuilt schemes off (their slow years gone, it would be 28.9 s), still about 35 s", "unbuilt": 1.36, "table": [[1867, 18.1], [1895, 4.9], [1930, 12.2], [1960, 2.44], [1991, 3.07]] },
     "undatedDim": 0.55,
     "buildYears": 5,
+    "hotYears": 5,
     "front": 0.25,
     "contextGrey": 0.45,
     "contextOpacity": 0.35,
@@ -30,9 +34,10 @@
       "widerM": [60, 150]
     },
     "labels": {
-      "_comment": "Labels on the buildings going up (blob-tracking frames): at most max new ones at once, the tallest first, for named buildings and landmarks (namedOnly) at least minHeightM tall; only the film's buildings (members of time.cinema.shots) keep their tag once built, fading over fadeYears to doneOpacity; the others fade out over fadeOutYears after holdYears; behind another building (its top hidden) it fades to hiddenOpacity, far ones (past 1.2 x the view distance) to farOpacity, never below minOpacity; a text with no free place hides; one that could not get a label is still eligible holdYears after completion; unbuilt towers always.",
+      "_comment": "2026-10-17 (user: to see which building is being built): a building going up and its tag are in the highlight colour (linked.highlight), back to white over time.hotYears once built; every tag shown while its building went up stays, at builtOpacity (0.12, below the usual minOpacity floor: not to be read, only the sense of a lot going on; the film's buildings at doneOpacity); in the film the shot's group's tags are in the highlight colour. Labels on the buildings going up (blob-tracking frames): at most max new ones at once, the tallest first, for named buildings and landmarks (namedOnly) at least minHeightM tall; only the film's buildings (members of time.cinema.shots) keep their tag once built, fading over fadeYears to doneOpacity; the others fade out over fadeOutYears after holdYears; behind another building (its top hidden) it fades to hiddenOpacity, far ones (past 1.2 x the view distance) to farOpacity, never below minOpacity; a text with no free place hides; one that could not get a label is still eligible holdYears after completion; unbuilt towers always.",
       "max": 8,
       "doneOpacity": 0.7,
+      "builtOpacity": 0.12,
       "namedOnly": true,
       "fadeYears": 8,
       "fadeOutYears": 1.5,
@@ -44,30 +49,34 @@
       "minHeightM": 25
     },
     "cinema": {
-      "_comment": "After the opening: the film, shots in order (type wide / crane / low / orbit / track; members = entity names or Angels Knoll, their tags lit; cut = dip to black in, else fly; s = seconds; az = the heading the shot starts from; hold = seconds it rests at its end (holdS for shots with members, 0 for wide; it slows to holdDrift of its speed over holdEaseS); reveal = the one shot that starts with Y-1 hidden behind towers and arcs into the clear; loopFrom = the shot the loop returns to after the last; dolly = a crane with a dolly zoom [fov from, to] (2026-10-15: on Y-1, the towers round it grow as the view narrows); aim / tilt / dist = per-shot framing (the tower shots keep the street and its people in the lower third, for scale); degrees: 0 = camera south of its subject, 90 = east, 180 = north, 270 = west; 2026-10-15: chosen per shot where its members are least hidden (__viewer.shotStudy), and the order (a loop round the site: Y-1, California Plaza, west towers, Grand Avenue, Civic Center, Broadway) so the headings only go forward). Groups of places near each other: Y-1 (Angels Knoll, Angels Flight, the Metro), California Plaza and MOCA, Grand Avenue, Civic Center, Broadway, the west towers. thenPeople: People comes on peopleDelayS seconds into shot peopleAfter (0 = the first wide shot), its day starting at peopleStartH (5 = before dawn, most at home), and the film goes on. shotS / blendS seconds; heroes = the tallest labelled towers within heroWithinM of Y-1; labelOpacity = every label while filming (the hero full). on false = stop at the end. 2026-10-16 (user: each shot must show its subject; the last shot, the reveal, already shows Y-1): the track (Metro entrance to Angels Flight, at street level mostly in the trees) dropped, the crane onto Y-1 cut to 5 + 1 s, the west towers from 170 degrees higher and farther (they were hidden at the end), the three orbits 8 s and closer, lengths varied (5 / 6 / 12 / 10 / 10 / 10 / 10 / 10 s; the reveal 7 + 3 s). 2026-10-16, last (user): the Y-1 shot ends exactly on Free's Default view (endView: that view's target, distance, tilt and heading, 41 degrees; it comes in from fromDist 1.25 times farther and fromTilt 8 degrees higher; az worked out from its turn). Grand Avenue (350, from the Y-1 side) must then come just before it, so the order is Whole site 160, Broadway 190, Grand Avenue 350, Y-1; the loop goes back to Broadway. Before: 2026-10-16 later at night (user): Civic Center dropped (at the edge of the model), the wide shot 3 s with the 2 s given to the flight after it (fly = a shot's least flight time into it), the last shot (Y-1) no longer a reveal (in a point cloud nothing is really hidden) and turning only 15 degrees. Order and headings: Whole site 330, Grand Avenue 350 (from the Y-1 side: Disney Hall is due north of Y-1 and the model thins past it), Broadway 175, Y-1 280 (2026-10-16, user: the low side view looked off to one side: now from above, about 52 degrees from straight down as in the other orbits, and a little closer (dist 1.1 on the orbit distance: 0.8 was all trees, the tags gone); looking down it is open from 270 to 345), so the loop joins up going forward. Before: 2026-10-16 night (user: the film too long; only the well-known buildings): five shots, the California Plaza and west-tower shots dropped, MOCA joins Grand Avenue, each shot lights only its well-known buildings; headings chosen with shotStudy so they follow on from the wide shot (330, 15, 200, 255, 300; every group in clear view there, Civic Center from the south-west so the camera stays over the model, not past its north edge), loopFrom 1 = Grand Avenue. Earlier: 2026-10-16 later (user): the crane onto Y-1 (the dolly zoom) dropped, the film now 7 shots, loopFrom 1 (back to California Plaza; the wide shot only once). name = the shot's name in the ?shots list (viewer.html?shots: each shot played on its own, for tuning).",
+      "_comment": "spotDim (2026-10-17, user): while a shot plays its group stays bright white and the other buildings go to spotDim of their brightness (linear: 0.25 looks about half as bright; 0.55 barely showed; 0.12 since 2026-10-17, darker), as under a beam; spotGround (2026-10-17, user: Angels Knoll is ground and trees, it did not light up): the ground and trees inside a lit site's footprint (Angels Knoll only; a building's streets came up too) come up to this grey, opaque (1 since 2026-10-17, user: every lit thing the same brightness, the buildings' white; it was 0.9); spotBalance / spotBalanceMin (2026-10-17, user: some lit buildings dense, some sparse): in a group the sparsest lit thing (points per m2 of its surface; a site's per m2 of ground) stays white, each other one at (sparsest / its own)^spotBalance, not under spotBalanceMin (2026-10-17, user: all a little brighter: 0.4 / 0.6, were 0.5 / 0.45; spotDim 0.16, was 0.12); spotIsoM / spotIsoN (user: bright dots floated round Disney Hall, 20 % of its points stray): a lit point with at most spotIsoN points of its object in its spotIsoM m cell stays dark; it comes on and goes off over spotFadeS seconds, eased; the next group's light comes up over the whole flight to it, the last one's goes down with it (2026-10-17). In the film only the shot's group's tags stand out (full, in the highlight colour); every other tag is at labels.builtOpacity. NOW (2026-10-17, user): the film is Broadway (235, 5 + 1.5 s), Grand Avenue (340, 5 + 1.5 s), Y-1 (ends on Default, 4 + 3 s; shots were 10 s, too long); in a hold the turn slows to holdDrift 0.2 of its speed (0.1 looked like a stop, above all on Default); it flies in from the opening's whole site, People coming on as it sets off (thenPeople); the loop goes back to Broadway (loopFrom 0). The history below. After the opening: the film, shots in order (type wide / crane / low / orbit / track; members = entity names or Angels Knoll, their tags lit; cut = dip to black in, else fly; s = seconds; az = the heading the shot starts from; hold = seconds it rests at its end (holdS for shots with members, 0 for wide; it slows to holdDrift of its speed over holdEaseS); reveal = the one shot that starts with Y-1 hidden behind towers and arcs into the clear; loopFrom = the shot the loop returns to after the last; dolly = a crane with a dolly zoom [fov from, to] (2026-10-15: on Y-1, the towers round it grow as the view narrows); aim / tilt / dist = per-shot framing (the tower shots keep the street and its people in the lower third, for scale); degrees: 0 = camera south of its subject, 90 = east, 180 = north, 270 = west; 2026-10-15: chosen per shot where its members are least hidden (__viewer.shotStudy), and the order (a loop round the site: Y-1, California Plaza, west towers, Grand Avenue, Civic Center, Broadway) so the headings only go forward). Groups of places near each other: Y-1 (Angels Knoll, Angels Flight, the Metro), California Plaza and MOCA, Grand Avenue, Civic Center, Broadway, the west towers. thenPeople: People comes on as the film sets off (2026-10-17; it was peopleDelayS into the wide shot), its day starting at peopleStartH (5 = before dawn, most at home), and the film goes on. shotS / blendS seconds; heroes = the tallest labelled towers within heroWithinM of Y-1; labelOpacity = every label while filming (the hero full). on false = stop at the end. 2026-10-16 (user: each shot must show its subject; the last shot, the reveal, already shows Y-1): the track (Metro entrance to Angels Flight, at street level mostly in the trees) dropped, the crane onto Y-1 cut to 5 + 1 s, the west towers from 170 degrees higher and farther (they were hidden at the end), the three orbits 8 s and closer, lengths varied (5 / 6 / 12 / 10 / 10 / 10 / 10 / 10 s; the reveal 7 + 3 s). 2026-10-16, last (user): the Y-1 shot ends exactly on Free's Default view (endView: that view's target, distance, tilt and heading, 41 degrees; it comes in from fromDist 1.25 times farther and fromTilt 8 degrees higher; az worked out from its turn). Grand Avenue (350, from the Y-1 side) must then come just before it, so the order is Whole site 160, Broadway 190, Grand Avenue 350, Y-1; the loop goes back to Broadway. Before: 2026-10-16 later at night (user): Civic Center dropped (at the edge of the model), the wide shot 3 s with the 2 s given to the flight after it (fly = a shot's least flight time into it), the last shot (Y-1) no longer a reveal (in a point cloud nothing is really hidden) and turning only 15 degrees. Order and headings: Whole site 330, Grand Avenue 350 (from the Y-1 side: Disney Hall is due north of Y-1 and the model thins past it), Broadway 175, Y-1 280 (2026-10-16, user: the low side view looked off to one side: now from above, about 52 degrees from straight down as in the other orbits, and a little closer (dist 1.1 on the orbit distance: 0.8 was all trees, the tags gone); looking down it is open from 270 to 345), so the loop joins up going forward. Before: 2026-10-16 night (user: the film too long; only the well-known buildings): five shots, the California Plaza and west-tower shots dropped, MOCA joins Grand Avenue, each shot lights only its well-known buildings; headings chosen with shotStudy so they follow on from the wide shot (330, 15, 200, 255, 300; every group in clear view there, Civic Center from the south-west so the camera stays over the model, not past its north edge), loopFrom 1 = Grand Avenue. Earlier: 2026-10-16 later (user): the crane onto Y-1 (the dolly zoom) dropped, the film now 7 shots, loopFrom 1 (back to California Plaza; the wide shot only once). name = the shot's name in the ?shots list (viewer.html?shots: each shot played on its own, for tuning).",
       "on": true,
       "shotS": 10,
       "blendS": 3.5,
-      "maxFlyMS": 150,
+      "maxFlyMS": 70,
       "holdS": 2,
-      "holdDrift": 0.1,
+      "holdDrift": 0.2,
       "holdEaseS": 1.2,
-      "loopFrom": 1,
+      "loopFrom": 0,
       "heroes": 4,
       "heroWithinM": 700,
       "wideR": 1300,
       "wideLens": 0.3,
       "wideTilt": 46,
       "labelOpacity": 0.6,
+      "spotDim": 0.16,
+      "spotGround": 1,
+      "spotBalance": 0.4,
+      "spotBalanceMin": 0.6,
+      "spotIsoM": 3,
+      "spotIsoN": 3,
+      "spotFadeS": 1.5,
       "thenPeople": true,
-      "peopleAfter": 0,
       "peopleStartH": 5,
-      "peopleDelayS": 2,
       "shots": [
-        { "name": "Whole site", "type": "wide", "s": 3, "turn": 15, "az": 160 },
-        { "name": "Broadway", "type": "orbit", "az": 190, "s": 8, "turn": 40, "fly": 7.6, "dist": 0.75, "members": ["Bradbury Building", "Grand Central Market"] },
-        { "name": "Grand Avenue", "type": "orbit", "az": 350, "s": 8, "turn": 30, "dist": 0.75, "members": ["Walt Disney Concert Hall", "The Broad", "The Museum of Contemporary Art (MOCA Grand Avenue)"] },
-        { "name": "Y-1", "type": "orbit", "endView": "Default", "s": 7, "turn": 15, "hold": 3, "members": ["Angels Knoll", "Angels Flight"] }
+        { "name": "Broadway", "type": "orbit", "az": 235, "s": 5, "hold": 1.5, "turn": 35, "dist": 0.75, "members": ["Bradbury Building", "Grand Central Market"] },
+        { "name": "Grand Avenue", "type": "orbit", "az": 340, "s": 5, "hold": 1.5, "turn": 30, "dist": 0.75, "members": ["Walt Disney Concert Hall", "The Broad", "The Museum of Contemporary Art (MOCA Grand Avenue)"] },
+        { "name": "Y-1", "type": "orbit", "endView": "Default", "s": 4, "turn": 15, "hold": 3, "members": ["Angels Knoll", "Angels Flight"] }
       ]
     },
     "tour": {
@@ -81,8 +90,14 @@
     }
   },
   "ghosts": {
+    "on": false,
     "data": "data/ghosts.json",
-    "_comment": "Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: each tower's points are scattered at random over its walls and roof, as dense as the towers around Y-1 (ghosts.json density, measured by the script), and join the point cloud when it loads, as the estimated facades do: the same point size, thinning with distance and highlight as every building; their own layer (Unbuilt) and colour. inBands of the wall points lie within bandM of a floor line, the rest anywhere on the wall (as the estimated facades: 0.8, 0.25 m), so the storeys show; seed: the same scatter every time.",
+    "_comment": "on false (2026-10-17, user: set aside for now): no unbuilt schemes on Y-1; data and code kept, on true brings them back. 2026-10-17 (user): rest = the share of a scheme's points that stays after its years, to 2026 and in the film (Y-1 carries its other futures), restDim = how dark what stays is (5 % of the points could not be seen at the film's distance; all of them at 0.35 read as a dark, see-through tower); (2026-10-17, user: the breathing stole the picture; now still) its shadow is reached once, over its last years and restFadeYears more; in Y-1's shot it comes up with the light to litDim, in the other shots it is dark like the other buildings; topFade = its brightness at its top (it fades upwards from its foot); its tag says how it ended, from its name in ghosts.json. Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: each tower's points are scattered at random over its walls and roof, as dense as the towers around Y-1 (ghosts.json density, measured by the script), and join the point cloud when it loads, as the estimated facades do: the same point size, thinning with distance and highlight as every building; their own layer (Unbuilt) and colour. inBands of the wall points lie within bandM of a floor line, the rest anywhere on the wall (as the estimated facades: 0.8, 0.25 m), so the storeys show; seed: the same scatter every time.",
+    "rest": 1,
+    "restDim": 0.35,
+    "restFadeYears": 3,
+    "litDim": 0.8,
+    "topFade": 0.15,
     "inBands": 0.8,
     "bandM": 0.25,
     "seed": 11
