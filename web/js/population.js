@@ -149,21 +149,41 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // and fades out; the counts and the chart still include everyone. A cloud with a target density (half_density_m,
   // 2026-10-16) has no full-density disc: the share is 1 / (1 + (d_eff / half)^P) from Y-1 itself (people are not
   // balanced by the buildings around them, like trees and the ground).
-  const TH = { r0: thinning?.full_density_radius_m ?? 250, p: thinning?.falloff_power ?? 2.7, jitter: 0.18,
-               keepMin: thinning?.keep_min ?? 0.015, edgeEnd: thinning?.edge_end_m ?? 1230, edgeW: 300,
-               half: thinning?.half_density_m ?? 0 };
+  // (user, 2026-10-17: the people and their trails should fade at the edge as the buildings and the ground do) the
+  // cloud's whole rule, as pack_wide.py ratio(): the distance stretched by the person's own jitter and by a large smooth
+  // noise (noise_amplitude, wavelength noise_wavelength_m; lattice seed 7), and the outer taper (smoothstep) on the
+  // distance with its own +-12 % noise (500 m; seed 23); the lattices come with the cloud's meta. Each person is drawn
+  // if their own random number is under their share (fewer farther out, as an object keeps that share of its points),
+  // fainter too, and so is their trail
+  const lat = (k) => { const t = thinning?.noise_lattice?.[k]; return t ? Float32Array.from(t.split(" "), Number) : null; };
+  const TH = { r0: thinning?.full_density_radius_m ?? 250, p: thinning?.falloff_power ?? 2.7, jitter: thinning?.object_jitter ?? 0.18,
+               keepMin: thinning?.keep_min ?? 0.015, edgeEnd: thinning?.edge_end_m ?? 1230, edgeW: thinning?.edge_width_m ?? 300,
+               half: thinning?.half_density_m ?? 0, noise: thinning?.noise_amplitude ?? 0, noiseScale: thinning?.noise_wavelength_m ?? 350,
+               lat7: lat("7"), lat23: lat("23") };
+  if (!TH.lat7 || !TH.lat23) TH.noise = 0;
+  // noise(): smooth value noise over the plan, smoothstep-bilinear on the 64 x 64 lattice ([i][j], i from x), as in pack_wide.py
+  const vnoise = (x, n, scale, L) => {
+    if (!L) return 0;
+    const gx = x / scale + 32, gn = n / scale + 32, i = ((Math.floor(gx) % 63) + 63) % 63, j = ((Math.floor(gn) % 63) + 63) % 63;
+    let fx = gx - Math.floor(gx), fn = gn - Math.floor(gn); fx = fx * fx * (3 - 2 * fx); fn = fn * fn * (3 - 2 * fn);
+    const a = L[i * 64 + j], b = L[(i + 1) * 64 + j], c = L[i * 64 + j + 1], d = L[(i + 1) * 64 + j + 1];
+    return (a * (1 - fx) + b * fx) * (1 - fn) + (c * (1 - fx) + d * fx) * fn;
+  };
   const hashU = (i, s) => { let h = Math.imul(i ^ s, 2654435761) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; };
   const uKeep = new Float32Array(A), uJit = new Float32Array(A);
   for (let i = 0; i < A; i++) { uKeep[i] = hashU(i, 0x9e37); uJit[i] = hashU(i, 0x85eb); }
-  function share(x, z, i) {
-    const d = Math.hypot(x, z);
-    if (!TH.half && d <= TH.r0) return 1;
-    const de = d * (1 + TH.jitter * (2 * uJit[i] - 1));
-    let r = TH.half ? 1 / (1 + (Math.max(de, 1) / TH.half) ** TH.p) : Math.min(1, (TH.r0 / Math.max(de, 1)) ** TH.p);
-    if (r < TH.keepMin) return 0;
-    return r * Math.min(Math.max((TH.edgeEnd - d) / TH.edgeW, 0), 1);
+  function share(x, z, i) {   // (scene z is south: the plan's north is -z)
+    const d = Math.hypot(x, z), n = -z;
+    let r = 1;
+    if (TH.half || d > TH.r0) {
+      const de = d * (1 + TH.jitter * (2 * uJit[i] - 1)) * (1 + TH.noise * vnoise(x, n, TH.noiseScale, TH.lat7));
+      r = TH.half ? 1 / (1 + (Math.max(de, 1) / TH.half) ** TH.p) : Math.min(1, (TH.r0 / Math.max(de, 1)) ** TH.p);
+      if (r < TH.keepMin) return 0;
+    }
+    const t = Math.min(Math.max((TH.edgeEnd - d * (1 + 0.12 * vnoise(x, n, 500, TH.lat23))) / TH.edgeW, 0), 1);
+    return r * t * t * (3 - 2 * t);
   }
-  const drawn = (i) => share(pos[3 * i], pos[3 * i + 2], i) > 0;   // written people are drawn (thinned in prep)
+  const drawn = (i) => { const r = share(pos[3 * i], pos[3 * i + 2], i); return r > 0 && uKeep[i] < r; };   // (fewer farther out)
 
   // ---------- points ----------
   const pos = new Float32Array(A * 3), col = new Float32Array(A * 3);
@@ -172,6 +192,10 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const SHOWN = [...new Set(GROUP)];
   const colors = meta.types.map((t, k) => new THREE.Color(pc.colors?.[meta.types[GROUP[k]]] ?? "#888"));
   for (let i = 0; i < A; i++) colors[type[i]].toArray(col, 3 * i);
+  // the two lattices as one 64 x 64 texture (r: seed 7, g: seed 23; texel (i, j))
+  const latData = new Float32Array(64 * 64 * 2);
+  for (let i = 0; i < 64; i++) for (let j = 0; j < 64; j++) { latData[(j * 64 + i) * 2] = TH.lat7?.[i * 64 + j] ?? 0; latData[(j * 64 + i) * 2 + 1] = TH.lat23?.[i * 64 + j] ?? 0; }
+  const latTex = new THREE.DataTexture(latData, 64, 64, THREE.RGFormat, THREE.FloatType); latTex.needsUpdate = true;
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
   geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
@@ -180,18 +204,27 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 100, 0), 900);
   const uniforms = { size: { value: pc.size ?? 0.7 }, scale: { value: 1 }, minPx: { value: 2.0 }, alpha: { value: 1 },
                     r0: { value: TH.r0 }, pw: { value: TH.p }, jit: { value: TH.jitter }, keepMin: { value: TH.keepMin },
-                    edgeEnd: { value: TH.edgeEnd }, edgeW: { value: TH.edgeW }, halfD: { value: TH.half }, ...lens.uniforms };
+                    edgeEnd: { value: TH.edgeEnd }, edgeW: { value: TH.edgeW }, halfD: { value: TH.half },
+                    noiseAmp: { value: TH.noise }, noiseScale: { value: TH.noiseScale }, noiseLat: { value: latTex }, ...lens.uniforms };
   const material = new THREE.ShaderMaterial({
     uniforms, vertexColors: true,
     // the same share() as above: a person outside their share is not drawn; the drawn ones fade with it
     vertexShader: `uniform float size; uniform float scale; uniform float minPx; uniform float r0; uniform float pw;
       uniform float jit; uniform float keepMin; uniform float edgeEnd; uniform float edgeW; uniform float halfD;
+      uniform float noiseAmp; uniform float noiseScale; uniform sampler2D noiseLat;
       attribute float aKeep; attribute float aJit; varying vec3 vC; varying float vFade;
-      void main() { vC = color; float d = length(position.xz), s = 1.0;
-        float de = max(d * (1.0 + jit * (2.0 * aJit - 1.0)), 1.0);
-        if (halfD > 0.0 || d > r0) { s = halfD > 0.0 ? 1.0 / (1.0 + pow(de / halfD, pw)) : min(1.0, pow(r0 / de, pw));
-          s = s < keepMin ? 0.0 : s * clamp((edgeEnd - d) / edgeW, 0.0, 1.0); }
-        vFade = s > 0.0 ? 0.35 + 0.65 * sqrt(s) : 0.0;
+      float vnoise(vec2 q, float scale, int ch) {
+        vec2 g = q / scale + 32.0; ivec2 ij = ivec2(mod(floor(g), 63.0)); vec2 f = fract(g); f = f * f * (3.0 - 2.0 * f);
+        float a = texelFetch(noiseLat, ij, 0)[ch], b = texelFetch(noiseLat, ij + ivec2(1, 0), 0)[ch];
+        float c = texelFetch(noiseLat, ij + ivec2(0, 1), 0)[ch], e = texelFetch(noiseLat, ij + ivec2(1, 1), 0)[ch];
+        return mix(mix(a, b, f.x), mix(c, e, f.x), f.y); }
+      void main() { vC = color; float d = length(position.xz), s = 1.0; vec2 q = vec2(position.x, -position.z);
+        if (halfD > 0.0 || d > r0) {
+          float de = max(d * (1.0 + jit * (2.0 * aJit - 1.0)) * (1.0 + noiseAmp * vnoise(q, noiseScale, 0)), 1.0);
+          s = halfD > 0.0 ? 1.0 / (1.0 + pow(de / halfD, pw)) : min(1.0, pow(r0 / de, pw));
+          s = s < keepMin ? 0.0 : s; }
+        float t = clamp((edgeEnd - d * (1.0 + 0.12 * vnoise(q, 500.0, 1))) / edgeW, 0.0, 1.0); s *= t * t * (3.0 - 2.0 * t);
+        vFade = s > 0.0 && aKeep < s ? 0.35 + 0.65 * sqrt(s) : 0.0;
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
         gl_PointSize = vFade > 0.0 ? max(size * scale / -mv.z, minPx) : 0.0; gl_Position = projectionMatrix * mv; }`,
     fragmentShader: `uniform float alpha; varying vec3 vC; varying float vFade;
@@ -271,21 +304,22 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // trail fades with them (to isolateAlpha) and the selected person keeps a full one (user, 2026-10-12: the trails went
   // away on a selection; only the recent stretch is drawn, never the whole modeled route, see select())
   const MAXT = pc.maxTrails ?? 8000, TS = 6;  // people with a trail, segments per trail
-  const tP = new Float32Array(MAXT * TS * 6 * 3), tC = new Float32Array(MAXT * TS * 6 * 3), tT = new Float32Array(MAXT * TS * 6), tA = new Float32Array(MAXT * TS * 6), tS = new Float32Array(MAXT * TS * 6);
+  const tP = new Float32Array(MAXT * TS * 6 * 3), tC = new Float32Array(MAXT * TS * 6 * 3), tT = new Float32Array(MAXT * TS * 6), tA = new Float32Array(MAXT * TS * 6), tS = new Float32Array(MAXT * TS * 6), tF = new Float32Array(MAXT * TS * 6);
   const tGeo = new THREE.BufferGeometry();
   tGeo.setAttribute("position", new THREE.BufferAttribute(tP, 3).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("color", new THREE.BufferAttribute(tC, 3).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("aT", new THREE.BufferAttribute(tT, 1).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("aA", new THREE.BufferAttribute(tA, 1).setUsage(THREE.DynamicDrawUsage));
   tGeo.setAttribute("aS", new THREE.BufferAttribute(tS, 1).setUsage(THREE.DynamicDrawUsage));   // 1 = the selected person
+  tGeo.setAttribute("aF", new THREE.BufferAttribute(tF, 1).setUsage(THREE.DynamicDrawUsage));   // the person's fade
   const trailU = { now: { value: 0 }, tail: { value: 600 }, strength: { value: pc.neonStrength ?? 1 }, dim: uniforms.alpha, ...lens.uniforms };   // people's opacity
   const trails = new THREE.Mesh(tGeo, new THREE.ShaderMaterial({
     uniforms: trailU, vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-    vertexShader: lens.shader(`attribute float aT; attribute float aA; attribute float aS; varying float vT; varying float vA; varying float vS; varying vec3 vC;
-      void main() { vT = aT; vA = aA; vS = aS; vC = color; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`),
-    fragmentShader: `uniform float now; uniform float tail; uniform float strength; uniform float dim; varying float vT; varying float vA; varying float vS; varying vec3 vC;
+    vertexShader: lens.shader(`attribute float aT; attribute float aA; attribute float aS; attribute float aF; varying float vT; varying float vA; varying float vS; varying float vF; varying vec3 vC;
+      void main() { vT = aT; vA = aA; vS = aS; vF = aF; vC = color; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`),
+    fragmentShader: `uniform float now; uniform float tail; uniform float strength; uniform float dim; varying float vT; varying float vA; varying float vS; varying float vF; varying vec3 vC;
       void main() { float age = clamp((now - vT) / tail, 0.0, 1.0);
-        float a = pow(max(1.0 - vA, 0.0), 1.5) * (1.0 - age) * 0.22 * strength * (vS > 0.5 ? 1.0 : dim);
+        float a = pow(max(1.0 - vA, 0.0), 1.5) * (1.0 - age) * 0.22 * strength * (vS > 0.5 ? 1.0 : dim * vF);
         gl_FragColor = vec4(mix(vC, vec3(1.0), 0.35 * (1.0 - age)), a); }`,
   }));
   trails.frustumCulled = false;
@@ -299,6 +333,9 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     let v = 0;
     for (let m = 0; m < movers.length && m < MAXT * 2; m += 2) {
       const i = movers[m], k = movers[m + 1], T0 = D.t0[k] * TU, dur = Math.max((D.t1[k] - D.t0[k]) * TU, 1);
+      // (user, 2026-10-17) a trail goes with its person: none for one not drawn, as faint as they are
+      const sh = share(pos[3 * i], pos[3 * i + 2], i); if (!(sh > 0 && uKeep[i] < sh)) continue;
+      const fade = 0.35 + 0.65 * Math.sqrt(sh);
       const start = Math.max(T - tail, T0), c = colors[type[i]], self = selSet.has(i) ? 1 : 0;
       along(D, i, k, (start - T0) / dur, ta);
       let tPrev = start;
@@ -309,7 +346,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
           const q = [[ta.x, ta.y - BODY, ta.z], [tb.x, tb.y - BODY, tb.z], [ta.x, ta.y - BODY + WALL_H, ta.z], [tb.x, tb.y - BODY + WALL_H, tb.z]];
           const qt = [tPrev, tn, tPrev, tn], qa = [0, 0, 1, 1];
           for (const j of [0, 1, 2, 2, 1, 3]) {
-            tP.set(q[j], 3 * v); tC[3 * v] = c.r; tC[3 * v + 1] = c.g; tC[3 * v + 2] = c.b; tT[v] = qt[j]; tA[v] = qa[j]; tS[v] = self; v++;
+            tP.set(q[j], 3 * v); tC[3 * v] = c.r; tC[3 * v + 1] = c.g; tC[3 * v + 2] = c.b; tT[v] = qt[j]; tA[v] = qa[j]; tS[v] = self; tF[v] = fade; v++;
           }
         }
         ta.copy(tb); tPrev = tn;
