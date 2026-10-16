@@ -2206,6 +2206,23 @@ if (cfg.population?.meta) fetch(cfg.population.meta).then((r) => r.json()).then(
 const tlShown = new Map();   // key -> { el }
 const tlEver = new Set();    // labelled once: kept while the year is past its start
 let tlLast = 0, tlMaskKey = "";
+// the convex hull of [x, z] points (monotone chain), then its least important corners dropped (the smallest triangle
+// each makes with its neighbours) down to at most max
+function tlHull(P, max) {
+  if (P.length < 3) return null;
+  P = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], hi = [];
+  for (const p of P) { while (lo.length > 1 && cross(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+  for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; while (hi.length > 1 && cross(hi[hi.length - 2], hi[hi.length - 1], p) <= 0) hi.pop(); hi.push(p); }
+  const H = lo.slice(0, -1).concat(hi.slice(0, -1));
+  while (H.length > max) {
+    let k = 0, best = Infinity;
+    for (let i = 0; i < H.length; i++) { const A = Math.abs(cross(H[(i + H.length - 1) % H.length], H[i], H[(i + 1) % H.length])); if (A < best) { best = A; k = i; } }
+    H.splice(k, 1);
+  }
+  return H.length >= 3 ? H : null;
+}
 function tlBuild() {
   const tT = performance.now();
   tlItems = [];
@@ -2221,9 +2238,15 @@ function tlBuild() {
     if (a[0].length < 8000 || (i & 3) === 0) { a[0].push(p.pos[3 * i]); a[1].push(p.pos[3 * i + 1]); a[2].push(p.pos[3 * i + 2]); }
   }
   const pct = (v, q) => v[Math.min(v.length - 1, Math.max(0, Math.round(q * (v.length - 1))))];
+  const hulls = new Map();
   for (const [e, a] of acc) {
+    const xs = a[0], zs = a[2], pairs = xs.map((x, k) => [x, zs[k]]);
     for (const v of a) v.sort((p, q) => p - q);
     B.set([pct(a[0], 0.01), pct(a[1], 0.005), pct(a[2], 0.01), pct(a[0], 0.99), pct(a[1], 0.995), pct(a[2], 0.99)], 6 * e);
+    // its footprint (user, 2026-10-17: the tags' frames did not fit the buildings): the convex hull of its points inside
+    // that box, cut down to 12 corners; the frame is drawn round it at the foot and at the top
+    const o = 6 * e, inBox = pairs.filter(([x, z]) => x >= B[o] && x <= B[o + 3] && z >= B[o + 2] && z <= B[o + 5]);
+    hulls.set(e, tlHull(inBox, 12));
   }
   ents.forEach((e, i) => {
     const y = parseInt(e.built?.[0] ?? e.parcel?.year_built, 10), o = 6 * i;
@@ -2238,7 +2261,7 @@ function tlBuild() {
     if (h < TL.minHeightM && !filmNames.has(e.name.toLowerCase())) return;   // a member of a film shot: tagged anyway
     // keep: a building the film is about (a member of time.cinema.shots) keeps its tag once built; the others show
     // theirs while they go up and fade out after (user, 2026-10-15: too many tags during the building)
-    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i, keep: filmNames.has(e.name.toLowerCase()) });
+    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i, keep: filmNames.has(e.name.toLowerCase()), hull: hulls.get(i) });
   });
   // Angels Knoll, the Y-1 parcel: a frame over its ground (the terrain points inside the parcel)
   if (y1Ring) {
@@ -2254,7 +2277,7 @@ function tlBuild() {
         const y = p.pos[3 * i + 1]; if (y < lo) lo = y; if (y > hi) hi = y;
       }
     }
-    if (hi > lo) tlItems.push({ key: "site:y1", name: "Angels Knoll", kind: "site", sub: "Parcel Y-1", box: [x0, lo, z0, x1, hi, z1], h: hi - lo });
+    if (hi > lo) tlItems.push({ key: "site:y1", name: "Angels Knoll", kind: "site", sub: "Parcel Y-1", box: [x0, lo, z0, x1, hi, z1], h: hi - lo, hull: tlHull(ring, 12) });
   }
   for (const g of ghostLabels) tlItems.push(g);
   lonce("tags data (tlBuild) at"); ldur("tags data (tlBuild), ms", tT);
@@ -2343,7 +2366,9 @@ function updateTimeTags() {
     return (w * h) / Math.max((x1 - x0) * (y1 - y0), 1);
   };
   // texts placed in order of importance: going up and unbuilt first, then the tallest; a text with no free place hides
-  const lit = new Set(cine ? cine.shots[cine.i].keys || [] : []);   // the tags of the shot's group
+  // the tags of the shot's group, once its shot has begun (user, 2026-10-17: flying to Broadway, Grand Central Market's
+  // tag came up though the market could not be seen); while flying they are like the others, faded when hidden
+  const lit = new Set(cine && (cine.phase === "shot" || cine.phase === "done") ? cine.shots[cine.i].keys || [] : []);
   const rank = (l) => (lit.has(l.it.key) ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
   const now = performance.now(), dt = Math.min((now - (tlLast || now)) / 1000, 0.1); tlLast = now;
   for (const { it, p, a: a0, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
@@ -2383,7 +2408,8 @@ function updateTimeTags() {
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
     let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
-    for (const x of [x0, x1]) for (const y of [y0, top]) for (const z of [z0, z1]) {
+    const corners = it.hull || [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];   // its footprint, or the box
+    for (const [x, z] of corners) for (const y of [y0, top]) {
       projectNdc(_tv.set(x, y, z)); if (_tv.z > 1) behind = true;
       const sx = ((_tv.x + 1) / 2) * W, sy = ((1 - _tv.y) / 2) * H;
       sx0 = Math.min(sx0, sx); sx1 = Math.max(sx1, sx); sy0 = Math.min(sy0, sy); sy1 = Math.max(sy1, sy);
