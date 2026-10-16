@@ -1379,6 +1379,10 @@ function setYear(y) {
   $("#timeYear").textContent = Math.floor(y);
   let k = 0; while (k < datedYears.length && datedYears[k] <= y) k++;
   $("#timeCounts").textContent = `${k.toLocaleString()} of ${datedYears.length.toLocaleString()} dated buildings standing · ${undatedN} undated`;
+  // the year on the picture (user, 2026-10-17), in Guided while the buildings go up; gone at 2026 (the film)
+  $("#yearBig").textContent = Math.floor(y);
+  $("#yearSub").textContent = `${k.toLocaleString()} of ${datedYears.length.toLocaleString()} buildings standing`;
+  $("#yearOn").classList.toggle("on", $("#timeOn").checked && y < 2026 && !document.body.classList.contains("v-free"));
   applyVisibility();
 }
 // History on / off. resume: where the History view was left ({ year } or { cine, at }), to go on from there
