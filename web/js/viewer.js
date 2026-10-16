@@ -1442,7 +1442,9 @@ function buildOpening() {
   const Y1 = TOUR.target, Rc = OPEN.clusterM, wide = { target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R, lens: CINE.wideLens ?? 0.3 };
   const frame = (sh) => {
     if (sh.wide) return wide;   // (2026-10-17: the opening's last shot is the whole site, the film's first shot goes on from it)
-    const ps = pts.filter((p) => p.year >= sh.from && p.year < sh.to);
+    // withinM: only buildings that near Y-1 (user, 2026-10-17: 2000-2026's tallest are about 1 km west, past where the
+    // model thins; Grand Avenue's are in front of Y-1 seen from its north)
+    const ps = pts.filter((p) => p.year >= sh.from && p.year < sh.to && (!sh.withinM || Math.hypot(p.x - Y1[0], p.z - Y1[2]) < sh.withinM));
     if (!ps.length) return wide;
     let best = ps[0], bw = -1;   // the densest spot: most height within clusterM
     if (!sh.all) for (const p of ps) { let w = 0; for (const q of ps) if (Math.hypot(p.x - q.x, p.z - q.z) < Rc) w += q.h; if (w > bw) { bw = w; best = p; } }
@@ -1466,7 +1468,9 @@ function buildOpening() {
     const t0 = yearTime(sh.from), t1 = yearTime(sh.to), q = 0.25 * (t1 - t0);
     return { hs: i === 0 ? 0 : t0 + q, he: i === OPEN.shots.length - 1 ? t0 + 2 * q : t1 - q, pose: frame(sh) };
   });
-  openAnchors.push({ hs: end, he: end, pose: wide });   // and out to the whole site at the end
+  // and out to the whole site at the end; endWide false (user, 2026-10-17: the lens stays whole all round, so no wide
+  // shot at its share of it): it ends on its last shot
+  openAnchors.push({ hs: end, he: end, pose: OPEN.endWide === false ? openAnchors[openAnchors.length - 1].pose : wide });
   // the opening's own headings (user, 2026-10-17: every shot is planned with the others): az [at the start of its
   // hold, at its end] per shot, in degrees counted on (they only go forward). From the first shot's (the opening
   // starts on it, not from Default: user, 2026-10-17), through every shot's, to the film's first heading at the end,
