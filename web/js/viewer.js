@@ -293,7 +293,9 @@ try {
       if (inside(x, n)) { pos.push(x, t.top_z, -n); k--; }
     }
     ghostPts.push({ name: t.name, base: t.base_z, layer: sc.layer || "Unbuilt", years: sc.years, pos: new Float32Array(pos) });
-    ghostLabels.push({ key: `g:${t.name}`, name: t.name.replace(/ \(schematic\)$/, ""), kind: "unbuilt", year: sc.years[0], end: sc.years[1],
+    // (user, 2026-10-17) the tag says how the scheme ended, as its name in ghosts.json gives it: "(1981 plan; on hold by 1990)"
+    const fate = (sc.name.match(/\(([^()]*)\)\s*$/) || [])[1] || "";
+    ghostLabels.push({ key: `g:${t.name}`, name: t.name.replace(/ \(schematic\)$/, ""), kind: "unbuilt", year: sc.years[0], end: sc.years[1], fate,
                        box: [minX, t.base_z, -maxN, maxX, t.top_z, -minN], h: t.top_z - t.base_z });
     const shape = new THREE.Shape(ring.map(([x, n]) => new THREE.Vector2(x, n)));
     const prism = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: t.top_z - t.base_z, bevelEnabled: false }),
@@ -368,7 +370,11 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
                grey: { value: cfg.time?.contextGrey ?? 0.45 }, alpha: { value: cfg.time?.contextOpacity ?? 0.35 },
                // a building going up is in the highlight colour (user, 2026-10-17: to see which building is being built),
                // easing back to white over hotYears once built; hot eases to 0 while the film plays
-               hotY: { value: cfg.time?.hotYears ?? 5 }, hot: { value: 1 } };
+               hotY: { value: cfg.time?.hotYears ?? 5 }, hot: { value: 1 },
+               // the unbuilt schemes (user, 2026-10-17): rest = the share of a scheme's points that stays, faint, after its
+               // years (to 2026: Y-1 carries its other futures); breath = how far they dim as they breathe, over breathS
+               rest: { value: cfg.ghosts?.rest ?? 0.05 }, restDim: { value: cfg.ghosts?.restDim ?? 1 }, breath: { value: cfg.ghosts?.breath ?? 0.3 },
+               breathS: { value: cfg.ghosts?.breathS ?? 4 }, clock: { value: 0 } };
 // the film's light (user, 2026-10-17: the shot's group stays bright white, the other buildings a little darker, as under
 // a beam): up to SPOT_N groups' footprints (12 corners each, with their boxes for a quick test); spot eases 0..1 with
 // the shot (0 while flying), dim = the others' brightness (time.cinema.spotDim)
@@ -378,7 +384,7 @@ const SPOT_N = 5, SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spot
   box: { value: Array.from({ length: 2 * SPOT_N }, () => new THREE.Vector4()) },
   hull: { value: Array.from({ length: 2 * SPOT_N * 12 }, () => new THREE.Vector2()) }, hn: { value: new Array(2 * SPOT_N).fill(0) },
   w: { value: [0, 0] } };
-const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && TIME.year.value < b + 1);
+const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && (TIME.rest.value > 0 || TIME.year.value < b + 1));
 function applyVisibility() {
   for (const L of ordered) {
     if (ghostYears.has(L.name)) {   // unbuilt: its own toggle, and only with the Time module, in its years
@@ -432,10 +438,11 @@ function pointMaterial(sizeMetres) {
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
     shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front; shader.uniforms.uMono = MONO;
     shader.uniforms.uHotY = TIME.hotY; shader.uniforms.uHot = TIME.hot;
+    shader.uniforms.uRest = TIME.rest; shader.uniforms.uRestDim = TIME.restDim; shader.uniforms.uBreath = TIME.breath; shader.uniforms.uBreathS = TIME.breathS; shader.uniforms.uClock = TIME.clock;
     shader.uniforms.uSpot = SPOT.k; shader.uniforms.uSpotDim = SPOT.dim; shader.uniforms.uSpotW = SPOT.w;
     shader.uniforms.uSpotBox = SPOT.box; shader.uniforms.uSpotHull = SPOT.hull; shader.uniforms.uSpotHN = SPOT.hn;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim, uRest, uRestDim, uBreath, uBreathS, uClock;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
@@ -476,9 +483,16 @@ void main() {`);
       + "  if (aYear < -99.5) {\n"
       + "    float c = -aYear, s = floor(c / 100.0 + 0.001), sp = c - 100.0 * s + 1.0; s += 1800.0;\n"
       + "    float up = min(uBuild, 0.6 * sp), dn = min(1.5, 0.3 * sp);\n"
-      + "    float p = min(clamp((uYear - s) / up, 0.0, 1.0), clamp((s + sp - uYear) / dn, 0.0, 1.0)); p = p * p * (3.0 - 2.0 * p);\n"
+      // (2026-10-17) uRest of its points (by a hash of their place) rise with it and stay after its years, the rest sink
+      // back; all of them breathe, dimming by uBreath over uBreathS seconds, each a little out of step
+      + "    float hs = fract(sin(dot(position, vec3(12.9898, 78.233, 37.719))) * 43758.5453);\n"
+      + "    float rise = clamp((uYear - s) / up, 0.0, 1.0);\n"
+      + "    float p = hs < uRest ? rise : min(rise, clamp((s + sp - uYear) / dn, 0.0, 1.0)); p = p * p * (3.0 - 2.0 * p);\n"
       + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
+      // (what stays after its years dims to uRestDim over the years it would have sunk in)
+      + "    vColor.rgb *= mix(1.0, uRestDim, clamp((uYear - s - sp + dn) / dn, 0.0, 1.0));\n"
+      + "    vColor.rgb *= 1.0 - uBreath * (0.5 + 0.5 * sin(6.2832 * uClock / uBreathS + 1.5 * hs));\n"
       + "    vGhost = 1.0;\n"
       + "  } else if (aYear > 0.5) {\n"
       + "    float p = uTimeOn > 0.5 ? clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0) : 1.0; p = p * p * (3.0 - 2.0 * p);\n"
@@ -2472,7 +2486,7 @@ function updateTimeTags() {
       const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
       // no height for what is not a building (user, 2026-10-13: Angels Flight's is the rise of its track)
       const noH = (TL.noHeight || []).some((n) => n.toLowerCase() === it.name.toLowerCase());
-      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : [it.kind === "unbuilt" ? `Unbuilt · ${it.year}–${it.end}` : it.year ? `Built ${it.year}` : "", noH ? "" : len(it.h)].filter(Boolean).join(" · ")}</i>`;
+      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : [it.kind === "unbuilt" ? `Unbuilt · ${it.fate || `${it.year}–${it.end}`}` : it.year ? `Built ${it.year}` : "", noH ? "" : len(it.h)].filter(Boolean).join(" · ")}</i>`;
       tlLayer.append(el);
       // the lock-on plays once: after it the frame is "locked", so showing it again does not replay it
       el.addEventListener("animationend", () => el.classList.add("locked"), { once: true });
@@ -2824,6 +2838,8 @@ function logFrame(now) {
   lfLast = now; lfRender = lfTags = 0;
 }
 renderer.setAnimationLoop((now) => {
+  TIME.clock.value = now / 1000;
+  if (TIME.on.value > 0.5 && TIME.breath.value > 0 && [...ghostYears.values()].flat().some(([a]) => TIME.year.value >= a)) dirty = true;   // breathing
   // the going-up colour eases out while the film plays and back in for the opening (about 1 s)
   { const h = cine ? 0 : 1; if (Math.abs(TIME.hot.value - h) > 0.001) { TIME.hot.value += (h - TIME.hot.value) * (1 / 60); dirty = true; } }
   logFrame(now);
@@ -2945,7 +2961,7 @@ const shotStudy = {
 window.__viewer = {
   shotStudy,
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, get openHeading() { return openHeading; }, SPOT, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, get openHeading() { return openHeading; }, SPOT, TIME, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
