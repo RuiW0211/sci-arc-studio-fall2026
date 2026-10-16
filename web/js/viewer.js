@@ -372,7 +372,7 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
 // the film's light (user, 2026-10-17: the shot's group stays bright white, the other buildings a little darker, as under
 // a beam): up to SPOT_N groups' footprints (12 corners each, with their boxes for a quick test); spot eases 0..1 with
 // the shot (0 while flying), dim = the others' brightness (time.cinema.spotDim)
-const SPOT_N = 5, SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.25 }, n: { value: 0 },
+const SPOT_N = 5, SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.12 }, n: { value: 0 },
   box: { value: Array.from({ length: SPOT_N }, () => new THREE.Vector4()) },
   hull: { value: Array.from({ length: SPOT_N * 12 }, () => new THREE.Vector2()) }, hn: { value: new Array(SPOT_N).fill(0) } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && TIME.year.value < b + 1);
@@ -2348,8 +2348,10 @@ function spotUpdate(lit) {
       SPOT.n.value = i;
     }
   }
-  const step = 1 / 60 / Math.max(tms("--t-out") / 1000, 0.05);
-  const k = SPOT.k.value + Math.max(-step, Math.min(step, want - SPOT.k.value));
+  // (user, 2026-10-17: it came on too suddenly) over spotFadeS seconds, eased at both ends
+  const now = performance.now(), dt = Math.min((now - (SPOT.t || now)) / 1000, 0.1); SPOT.t = now;
+  SPOT.p = Math.min(1, Math.max(0, (SPOT.p ?? 0) + Math.sign(want - (SPOT.p ?? 0)) * dt / (CINE.spotFadeS ?? 1.5)));
+  const k = SPOT.p * SPOT.p * (3 - 2 * SPOT.p);
   if (Math.abs(k - SPOT.k.value) > 1e-4) { SPOT.k.value = k; invalidate(); }
 }
 let tlLitKey = "";
@@ -2461,7 +2463,9 @@ function updateTimeTags() {
     s.seen += (seen - s.seen) * ease(0.35);
     a *= (TL.hiddenOpacity ?? 0.15) + (1 - (TL.hiddenOpacity ?? 0.15)) * s.seen;
     a *= Math.min(1, Math.max(TL.farOpacity ?? 0.75, 1 - 0.5 * (dist / ref - 1.2)));   // only past 1.2 x the view's distance
-    a = Math.max(a, TL.minOpacity ?? 0.25);
+    // (the usual floor, so a tag seen from high above is not lost; not for a built building's kept tag, which is only
+    // there for the sense of a lot going on: user, 2026-10-17)
+    if (!(it.kind === "built" && !it.keep && !hero && Y > it.year + TL.holdYears)) a = Math.max(a, TL.minOpacity ?? 0.25);
     if (hero) a = Math.max(a, 0.6);
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
@@ -2481,12 +2485,15 @@ function updateTimeTags() {
     // the highlight colour (user, 2026-10-17): going up, easing to white over hotYears once built; in the film, the shot's
     // group (its heroes)
     if (it.kind !== "unbuilt") {
-      const g = hero ? 1 : TIME.hot.value * tlEase(Math.min(Math.max((it.year + TIME.hotY.value - Y) / TIME.hotY.value, 0), 1));
-      if (Math.abs(g - (s.g ?? -1)) > 0.01) {
+      // (no year, e.g. Angels Knoll: white unless a hero; user, 2026-10-17: its tag stayed in the colour after its shot)
+      const gT = hero ? 1 : it.year ? TIME.hot.value * tlEase(Math.min(Math.max((it.year + TIME.hotY.value - Y) / TIME.hotY.value, 0), 1)) : 0;
+      const g = s.g == null ? gT : s.g + (gT - s.g) * ease(0.35);   // eased, never a jump
+      if (Math.abs(g - (s.gc ?? -1)) > 0.005) {
         const hx = HILITE.getHexString(), hi = [0, 2, 4].map((k) => parseInt(hx.slice(k, k + 2), 16));   // (as written, sRGB)
-        s.g = g; const c = hi.map((v) => Math.round(255 + (v - 255) * g));
+        s.gc = g; const c = hi.map((v) => Math.round(255 + (v - 255) * g));
         s.el.style.setProperty("--k", `rgba(${c.join(", ")}, .9)`); s.el.style.setProperty("--tc", `rgb(${c.join(", ")})`);
       }
+      s.g = g; if (Math.abs(gT - g) > 0.005) invalidate();
     }
     s.el.style.visibility = s.op < 0.01 ? "hidden" : "";
     if (behind) continue;   // its projection means nothing: it stays where it was while it fades
