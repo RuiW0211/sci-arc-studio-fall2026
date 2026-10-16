@@ -1467,14 +1467,18 @@ function buildOpening() {
     return { hs: i === 0 ? 0 : t0 + q, he: i === OPEN.shots.length - 1 ? t0 + 2 * q : t1 - q, pose: frame(sh) };
   });
   openAnchors.push({ hs: end, he: end, pose: wide });   // and out to the whole site at the end
-  // the opening's own headings (user, 2026-10-17: every shot is planned with the others, once round from Default and
-  // back): az [at the start of its hold, at its end] per shot, in degrees counted on (they only go forward). From
-  // Default's heading at the start, through every shot's, to the film's first heading at the end, on a smooth curve
-  // that never turns back (a monotone cubic). Without az on every shot: the even turn (tour.turn) as before
+  // the opening's own headings (user, 2026-10-17: every shot is planned with the others): az [at the start of its
+  // hold, at its end] per shot, in degrees counted on (they only go forward). From the first shot's (the opening
+  // starts on it, not from Default: user, 2026-10-17), through every shot's, to the film's first heading at the end,
+  // on a smooth curve that never turns back (a monotone cubic). Without az on every shot: the even turn (tour.turn)
   openHeading = null;
   if (OPEN.shots.every((sh) => sh.az)) {
-    const v = cfg.views[0], keys = [[0, sphOf(new THREE.Vector3().fromArray(v.position), new THREE.Vector3().fromArray(v.target)).th]];
-    const add = (t, deg) => { let a = deg * D2R; while (a < keys[keys.length - 1][1] - 1e-6) a += 2 * Math.PI; if (t > keys[keys.length - 1][0] + 1e-3) keys.push([t, a]); };
+    const keys = [];
+    const add = (t, deg) => {
+      let a = deg * D2R; const last = keys[keys.length - 1];
+      if (last) { while (a < last[1] - 1e-6) a += 2 * Math.PI; if (t <= last[0] + 1e-3) return; }
+      keys.push([t, a]);
+    };
     OPEN.shots.forEach((sh, i) => { add(openAnchors[i].hs, sh.az[0]); add(openAnchors[i].he, sh.az[1]); });
     if ((CINE.shots || [])[0]?.az != null) add(end, CINE.shots[0].az);
     openHeading = monotoneCubic(keys);
@@ -1524,7 +1528,11 @@ function startTour(frac0 = 0) {
     const az0 = (CINE.shots || [])[0]?.az, fwd = (a, b) => (((b - a) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
     let turn = OPEN.turnDeg * D2R;
     if (az0 != null) { turn = fwd(th, az0 * D2R) / Math.max(1 - frac0, 0.1); if (turn < 90 * D2R) turn += 2 * Math.PI * (1 - frac0 > 0.1 ? 1 : 0); }
-    tour = { th: th - turn * frac0, t: 0, turn }; rejoin = { from: camPose(), t0: performance.now() };
+    tour = { th: th - turn * frac0, t: 0, turn };
+    // from 1867 the camera starts on the opening's first shot (user, 2026-10-17: not flown in from Default); from a
+    // later year it eases in from wherever it is
+    if (frac0 < 1e-6 && openHeading) { rejoin = null; camApply(openingPose(0)); invalidate(); }
+    else rejoin = { from: camPose(), t0: performance.now() };
     return;
   }
   const tgt = new THREE.Vector3().fromArray(TOUR.target);

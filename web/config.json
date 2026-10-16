@@ -6,11 +6,11 @@
     "opening": true,
     "openingMode": "B",
     "openingB": {
-      "_comment": "Plan B (user, 2026-10-14): the opening's camera follows the building. 2026-10-17 (user: all shots are planned together, once round from Default and back to it): az = [heading at the start of the shot's hold, at its end], degrees counted on from Default's 41 (the first shot's start is Default itself), through the film (Whole site 200, Broadway 235, Grand Avenue 340, Y-1 back on Default), each group seen from the Y-1 side; wide = the shot is the whole site (2000-2026: the film's Whole site goes on from it). all = frame every building of its years, not only the densest spot (2026-10-16, user: 1867-1980 one shot, the three were close together); dist = a factor on its distance (0.7: about 900 m, a little farther out than the three were, 550-750 m). Shots by years; each frames the densest cluster (most height within clusterM) of the buildings going up in its years, nearer when tight, farther when spread; y1 keeps Y-1 in the frame; the last pulls out to the whole site; turnDeg in all. openingMode A = the old orbit (time.tour).",
+      "_comment": "Plan B (user, 2026-10-14): the opening's camera follows the building. 2026-10-17 (user: all shots are planned together, once round from Default and back to it): az = [heading at the start of the shot's hold, at its end], degrees counted on (the opening starts on its first shot, not flown in from Default: user, 2026-10-17), through the film (Whole site 200, Broadway 235, Grand Avenue 340, Y-1 back on Default), each group seen from the Y-1 side; wide = the shot is the whole site (2000-2026: the film's Whole site goes on from it). all = frame every building of its years, not only the densest spot (2026-10-16, user: 1867-1980 one shot, the three were close together); dist = a factor on its distance (0.7: about 900 m, a little farther out than the three were, 550-750 m). Shots by years; each frames the densest cluster (most height within clusterM) of the buildings going up in its years, nearer when tight, farther when spread; y1 keeps Y-1 in the frame; the last pulls out to the whole site; turnDeg in all. openingMode A = the old orbit (time.tour).",
       "turnDeg": 160,
       "clusterM": 300,
       "shots": [
-        { "from": 1867, "to": 1980, "all": true, "dist": 0.7, "az": [41, 130] },
+        { "from": 1867, "to": 1980, "all": true, "dist": 0.7, "az": [95, 135] },
         { "from": 1980, "to": 2000, "y1": true, "az": [150, 175] },
         { "from": 2000, "to": 2026, "wide": true, "az": [185, 195] }
       ]
