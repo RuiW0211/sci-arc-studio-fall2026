@@ -15,7 +15,7 @@ const ask = (u) => (u ? fetch(u).catch(() => null) : Promise.resolve(null));
 // ?lidar=<folder> (for comparing trial clouds, 2026-10-16): the point cloud from web/data/<folder>/ instead (pack_wide.py
 // pack --out ../../web/data/<folder>); letters, digits, - and _ only
 { const f = new URLSearchParams(location.search).get("lidar"); if (f && /^[\w-]+$/.test(f)) cfg.lidar.meta = `data/${f}/lidar_points.json`; }
-const PRE = { entities: ask(cfg.entities), facades: ask(cfg.facades?.meta), designs: ask(cfg.designs), ghosts: ask(cfg.ghosts?.data),
+const PRE = { entities: ask(cfg.entities), facades: ask(cfg.facades?.meta), designs: ask(cfg.designs), ghosts: ask(cfg.ghosts?.on === false ? null : cfg.ghosts?.data),
               lidarMeta: ask(cfg.lidar.meta) };
 // ---------- display units: every length goes through len() (user, 2026-10-08: m / ft switch in the panel; ft is the
 // default, config.json "units" can change it; the data and all files stay in metres) ----------
@@ -261,6 +261,8 @@ const ghostPts = [];   // { name, base, layer, pos: three.js order }
 const ghostYears = new Map();   // unbuilt layer -> [[from, to], ...]: shown with the Time module, in those years
 const ghostLabels = [];   // the Time module's labels for the unbuilt towers (updateTimeTags)
 try {
+  // (user, 2026-10-17: the unbuilt schemes set aside for now) ghosts.on false: none, their data and code kept
+  if (cfg.ghosts?.on === false) throw new Error("ghosts off");
   const G = cfg.ghosts, gd = await (await PRE.ghosts).json();
   let seed = G.seed ?? 11;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);   // the same scatter on every visit
@@ -2268,6 +2270,45 @@ let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1,
 let tlOcc = [];       // every building's box, for the labels' line of sight: { box, year (0 = undated), ent }
 // the Y-1 parcel (population.json y1: [x east, y north]), for the Angels Knoll label and shot
 let y1Ring = null;
+// the Y-1 parcel's outline on the ground (user, 2026-10-17: a faint line, so the empty site is easier to see), Guided and
+// Free: the parcel ring every 2 m, each point at the mean height of the ground points within 3 m (the knoll slopes),
+// lifted liftM; config.json y1Outline
+let y1Line = null;
+function buildY1Outline() {
+  const O = cfg.y1Outline || {}, ring = y1Ring.map(([x, n]) => [x, -n]), P = [];
+  for (let a = 0; a < ring.length; a++) {
+    const [x0, z0] = ring[a], [x1, z1] = ring[(a + 1) % ring.length], n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, z1 - z0) / 2));
+    for (let k = 0; k < n; k++) P.push([x0 + ((x1 - x0) * k) / n, z0 + ((z1 - z0) * k) / n]);
+  }
+  let bx0 = 1e9, bz0 = 1e9, bx1 = -1e9, bz1 = -1e9;
+  for (const [x, z] of P) { bx0 = Math.min(bx0, x - 4); bx1 = Math.max(bx1, x + 4); bz0 = Math.min(bz0, z - 4); bz1 = Math.max(bz1, z + 4); }
+  const cells = new Map(), C = 3, key = (x, z) => `${Math.floor(x / C)},${Math.floor(z / C)}`;
+  const terrain = lidar.objLayers[lidar.objNames.indexOf("Terrain")];
+  for (const q of lidar.parts) {
+    if (q.name !== "Terrain" && q.name !== terrain) continue;
+    for (let i = 0; i < q.n; i++) {
+      const x = q.pos[3 * i], z = q.pos[3 * i + 2]; if (x < bx0 || x > bx1 || z < bz0 || z > bz1) continue;
+      const k = key(x, z); let c = cells.get(k); if (!c) cells.set(k, (c = [])); c.push(x, q.pos[3 * i + 1], z);
+    }
+  }
+  const pos = new Float32Array((P.length + 1) * 3);
+  let last = TOUR.target[1];
+  P.concat([P[0]]).forEach(([x, z], j) => {
+    let sum = 0, cnt = 0;
+    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+      const c = cells.get(`${Math.floor(x / C) + dx},${Math.floor(z / C) + dz}`); if (!c) continue;
+      for (let i = 0; i < c.length; i += 3) if (Math.hypot(c[i] - x, c[i + 2] - z) < 3) { sum += c[i + 1]; cnt++; }
+    }
+    if (cnt) last = sum / cnt;
+    pos.set([x, last + (O.liftM ?? 0.6), z], 3 * j);
+  });
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  // dashed, as a property line is drawn (a solid faint line was lost among the people's trails)
+  const mat = fishPatch(new THREE.LineDashedMaterial({ color: O.color ?? "#ffffff", transparent: true, opacity: O.opacity ?? 0.5, depthWrite: false,
+    depthTest: false, dashSize: O.dashM ?? 4, gapSize: O.gapM ?? 2 }));   // (drawn over the cloud, as a drawing's line: the ground's points hid it)
+  y1Line = new THREE.Line(geo, mat); y1Line.computeLineDistances(); y1Line.renderOrder = 2; y1Line.frustumCulled = false;
+  scene.add(y1Line); invalidate();
+}
 if (cfg.population?.meta) fetch(cfg.population.meta).then((r) => r.json()).then((m) => { y1Ring = m.y1?.[0] ?? null; }).catch(() => {});
 const tlShown = new Map();   // key -> { el }
 const tlEver = new Set();    // labelled once: kept while the year is past its start
@@ -2863,6 +2904,7 @@ function logFrame(now) {
   lfLast = now; lfRender = lfTags = 0;
 }
 renderer.setAnimationLoop((now) => {
+  if (!y1Line && y1Ring && lidar && cfg.y1Outline?.on !== false) buildY1Outline();
   // the going-up colour eases out while the film plays and back in for the opening (about 1 s)
   { const h = cine ? 0 : 1; if (Math.abs(TIME.hot.value - h) > 0.001) { TIME.hot.value += (h - TIME.hot.value) * (1 / 60); dirty = true; } }
   logFrame(now);
