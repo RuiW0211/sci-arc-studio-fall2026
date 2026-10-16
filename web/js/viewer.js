@@ -372,9 +372,12 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
 // the film's light (user, 2026-10-17: the shot's group stays bright white, the other buildings a little darker, as under
 // a beam): up to SPOT_N groups' footprints (12 corners each, with their boxes for a quick test); spot eases 0..1 with
 // the shot (0 while flying), dim = the others' brightness (time.cinema.spotDim)
-const SPOT_N = 5, SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.12 }, n: { value: 0 },
-  box: { value: Array.from({ length: SPOT_N }, () => new THREE.Vector4()) },
-  hull: { value: Array.from({ length: SPOT_N * 12 }, () => new THREE.Vector2()) }, hn: { value: new Array(SPOT_N).fill(0) } };
+// (2026-10-17, user: the light starts as the camera sets off for the next group) two groups, each SPOT_N slots: A, the
+// one being lit, and B, the one going dark; w = their weights
+const SPOT_N = 5, SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.12 },
+  box: { value: Array.from({ length: 2 * SPOT_N }, () => new THREE.Vector4()) },
+  hull: { value: Array.from({ length: 2 * SPOT_N * 12 }, () => new THREE.Vector2()) }, hn: { value: new Array(2 * SPOT_N).fill(0) },
+  w: { value: [0, 0] } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && TIME.year.value < b + 1);
 function applyVisibility() {
   for (const L of ordered) {
@@ -429,10 +432,10 @@ function pointMaterial(sizeMetres) {
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
     shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front; shader.uniforms.uMono = MONO;
     shader.uniforms.uHotY = TIME.hotY; shader.uniforms.uHot = TIME.hot;
-    shader.uniforms.uSpot = SPOT.k; shader.uniforms.uSpotDim = SPOT.dim; shader.uniforms.uSpotN = SPOT.n;
+    shader.uniforms.uSpot = SPOT.k; shader.uniforms.uSpotDim = SPOT.dim; shader.uniforms.uSpotW = SPOT.w;
     shader.uniforms.uSpotBox = SPOT.box; shader.uniforms.uSpotHull = SPOT.hull; shader.uniforms.uSpotHN = SPOT.hn;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim;\nuniform int uSpotN;\nuniform vec4 uSpotBox[5];\nuniform vec2 uSpotHull[60];\nuniform int uSpotHN[5];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
@@ -441,20 +444,22 @@ function pointMaterial(sizeMetres) {
     // inside one of the lit footprints (a quick box test, then the convex corners, 2 m to spare)
     shader.vertexShader = shader.vertexShader.replace("void main() {", `float spotLit(vec2 q) {
   if (uSpot < 0.001) return 0.0;
-  for (int i = 0; i < 5; i++) {
-    if (i >= uSpotN) break;
+  float lit = 0.0;
+  for (int i = 0; i < 10; i++) {
+    float w = uSpotW[i < 5 ? 0 : 1];
+    if (uSpotHN[i] == 0 || w <= lit) continue;
     vec4 b = uSpotBox[i];
     if (q.x < b.x - 2.0 || q.x > b.z + 2.0 || q.y < b.y - 2.0 || q.y > b.w + 2.0) continue;
-    int n = uSpotHN[i]; if (n < 3) return 1.0;
+    int n = uSpotHN[i];
     bool inside = true;
     for (int j = 0; j < 12; j++) {
       if (j >= n) break;
       vec2 a = uSpotHull[i * 12 + j], c = uSpotHull[i * 12 + (j + 1 == n ? 0 : j + 1)], e = c - a;
       if ((e.x * (q.y - a.y) - e.y * (q.x - a.x)) / max(length(e), 0.001) < -2.0) { inside = false; break; }
     }
-    if (inside) return 1.0;
+    if (inside) lit = w;
   }
-  return 0.0;
+  return lit;
 }
 void main() {`);
     shader.vertexShader = shader.vertexShader.replace(
@@ -2329,30 +2334,43 @@ function tlSees(x, y, z, own, Y) {
   }
   return 1;
 }
-// the film's light (SPOT): on the lit group's footprints while its shot plays, eased in over --t-out and out while flying
-// (the last group's footprints kept until it is out)
-let spotKeys = "";
-function spotUpdate(lit) {
-  const want = lit.size ? 1 : 0;
-  if (want) {
-    const key = [...lit].join();
-    if (key !== spotKeys) {
-      spotKeys = key; let i = 0;
-      for (const it of tlItems || []) {
-        if (!lit.has(it.key) || i >= SPOT_N) continue;
-        const [x0, , z0, x1, , z1] = it.box, H = it.hull || [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
-        SPOT.box.value[i].set(x0, z0, x1, z1);
-        H.slice(0, 12).forEach(([x, z], j) => SPOT.hull.value[i * 12 + j].set(x, z));
-        SPOT.hn.value[i] = Math.min(H.length, 12); i++;
-      }
-      SPOT.n.value = i;
-    }
+// the film's light (SPOT, user 2026-10-17): while the film plays the buildings outside the lit group are darker. The
+// group of the shot the camera is flying to (group A) comes up over the whole flight, the one it leaves (B) goes down
+// with it; in a shot its group is fully lit. On (k) as the film starts, off after, over spotFadeS, eased
+let spotA = "", spotEase = (x) => { x = Math.min(Math.max(x, 0), 1); return x * x * (3 - 2 * x); };
+function spotFill(g, keys) {
+  const set = new Set(keys); let i = 0;
+  for (let j = 0; j < SPOT_N; j++) SPOT.hn.value[g * SPOT_N + j] = 0;
+  for (const it of tlItems || []) {
+    if (!set.has(it.key) || i >= SPOT_N) continue;
+    const [x0, , z0, x1, , z1] = it.box, H = it.hull || [[x0, z0], [x1, z0], [x1, z1], [x0, z1]], o = g * SPOT_N + i;
+    SPOT.box.value[o].set(x0, z0, x1, z1);
+    H.slice(0, 12).forEach(([x, z], j) => SPOT.hull.value[o * 12 + j].set(x, z));
+    SPOT.hn.value[o] = Math.min(H.length, 12); i++;
   }
-  // (user, 2026-10-17: it came on too suddenly) over spotFadeS seconds, eased at both ends
+}
+function spotUpdate() {
   const now = performance.now(), dt = Math.min((now - (SPOT.t || now)) / 1000, 0.1); SPOT.t = now;
-  SPOT.p = Math.min(1, Math.max(0, (SPOT.p ?? 0) + Math.sign(want - (SPOT.p ?? 0)) * dt / (CINE.spotFadeS ?? 1.5)));
-  const k = SPOT.p * SPOT.p * (3 - 2 * SPOT.p);
-  if (Math.abs(k - SPOT.k.value) > 1e-4) { SPOT.k.value = k; invalidate(); }
+  const c = cine, keys = c ? (c.shots[c.i].keys || []) : [], key = keys.join();
+  if (c && key !== spotA) {   // a new group to light: the lit one becomes the one going dark
+    for (let j = 0; j < SPOT_N; j++) {
+      SPOT.box.value[SPOT_N + j].copy(SPOT.box.value[j]); SPOT.hn.value[SPOT_N + j] = SPOT.hn.value[j];
+      for (let q = 0; q < 12; q++) SPOT.hull.value[(SPOT_N + j) * 12 + q].copy(SPOT.hull.value[j * 12 + q]);
+    }
+    SPOT.wB0 = SPOT.w.value[0]; spotA = key; spotFill(0, keys);
+  }
+  // how far the light has come: over the flight into the shot (or spotFadeS after a cut), then full
+  let f = 1;
+  if (c?.phase === "blend") { c.flown = true; f = spotEase((now - c.t0) / 1000 / (c.blendT ?? CINE.blendS)); }
+  else if (c?.phase === "cut") { c.flown = false; f = 0; }
+  else if (c?.phase === "shot" && !c.flown) f = spotEase((now - c.t0) / 1000 / (CINE.spotFadeS ?? 1.5));   // cut in: after
+  const wA = c ? f : SPOT.w.value[0], wB = c?.phase === "blend" ? (SPOT.wB0 ?? 0) * (1 - f) : 0;
+  SPOT.p = Math.min(1, Math.max(0, (SPOT.p ?? 0) + Math.sign((c ? 1 : 0) - (SPOT.p ?? 0)) * dt / (CINE.spotFadeS ?? 1.5)));
+  const k = spotEase(SPOT.p);
+  if (Math.abs(k - SPOT.k.value) > 1e-4 || Math.abs(wA - SPOT.w.value[0]) > 1e-4 || Math.abs(wB - SPOT.w.value[1]) > 1e-4) {
+    SPOT.k.value = k; SPOT.w.value[0] = wA; SPOT.w.value[1] = wB; invalidate();
+  }
+  if (!c && SPOT.k.value < 1e-3) spotA = "";
 }
 let tlLitKey = "";
 function updateTimeTags() {
@@ -2424,7 +2442,7 @@ function updateTimeTags() {
   // the tags of the shot's group, once its shot has begun (user, 2026-10-17: flying to Broadway, Grand Central Market's
   // tag came up though the market could not be seen); while flying they are like the others, faded when hidden
   const lit = new Set(cine && (cine.phase === "shot" || cine.phase === "done") ? cine.shots[cine.i].keys || [] : []);
-  spotUpdate(lit);
+  spotUpdate();
   const rank = (l) => (lit.has(l.it.key) ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
   const now = performance.now(), dt = Math.min((now - (tlLast || now)) / 1000, 0.1); tlLast = now;
   const onView = [...tlShown.values()].filter((q) => q.op > 0.3 && q.fc != null);
@@ -2434,7 +2452,8 @@ function updateTimeTags() {
   for (const { it, p, a: a0, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
     // while filming: every label at one opacity, the shot's hero full
     const hero = lit.has(it.key);
-    let a = cine ? (hero ? 1 : it.keep ? CINE.labelOpacity : Math.min(a0, TL.builtOpacity ?? 0.3)) : a0;
+    // (user, 2026-10-17: only in its own shot) while filming a tag is full in its own shot, faint (builtOpacity) otherwise
+    let a = cine ? (hero ? 1 : Math.min(a0, TL.builtOpacity ?? 0.12)) : a0;
     // depth (user, 2026-10-13: labels sat over the buildings, near and far alike): a label whose building is hidden
     // behind a standing building fades (lines of sight to its top and its middle against the other buildings' boxes,
     // drawn in a little); far ones are quieter; near ones are drawn over far ones
@@ -2465,7 +2484,8 @@ function updateTimeTags() {
     a *= Math.min(1, Math.max(TL.farOpacity ?? 0.75, 1 - 0.5 * (dist / ref - 1.2)));   // only past 1.2 x the view's distance
     // (the usual floor, so a tag seen from high above is not lost; not for a built building's kept tag, which is only
     // there for the sense of a lot going on: user, 2026-10-17)
-    if (!(it.kind === "built" && !it.keep && !hero && Y > it.year + TL.holdYears)) a = Math.max(a, TL.minOpacity ?? 0.25);
+    const faint = cine ? !hero && it.kind !== "unbuilt" : it.kind === "built" && !it.keep && Y > it.year + TL.holdYears;
+    if (!faint) a = Math.max(a, TL.minOpacity ?? 0.25);
     if (hero) a = Math.max(a, 0.6);
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
