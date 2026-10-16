@@ -155,6 +155,12 @@ def main():
             print(f"no Claude Code sessions of this project found for {me} on this computer", file=sys.stderr)
     out["people"] = sorted(people.values(), key=lambda p: p["since"])
     out["names"] = {k: v["name"] for k, v in PEOPLE.items()}   # for the people with no recorded time yet
+    # nothing new (only the time of the run differs): the file is left as it is, so a daily run makes no empty commit
+    same = lambda d: {k: v for k, v in d.items() if k != "generated"} | {
+        "people": [{k: v for k, v in q.items() if k != "updated"} for q in d.get("people", [])]}
+    if old and same(old) == same(out):
+        print("nothing new; web/data/worklog.json unchanged")
+        return
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"{len(out.get('commits', []))} commits, {len(out.get('prs', []))} pull requests; "
           + "; ".join(f"{p['name']} {sum(p['days'].values()) / 60:.1f} h since {p['since']}" for p in out["people"])
