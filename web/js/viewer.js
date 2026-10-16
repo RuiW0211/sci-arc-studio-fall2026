@@ -1726,6 +1726,17 @@ function cineShots() {
   }
   // a shot may set its own turn (degrees over the shot), e.g. a short arc so the next shot's heading follows on
   (CINE.shots || []).filter((d) => d.type === "wide" || (d.members || []).some(find)).forEach((d, k) => { if (d.turn != null && out[k]) out[k].turn = d.turn; });
+  // endView (user, 2026-10-16: the Y-1 shot ends exactly on Free's Default view): the shot's last frame is that view
+  // (config.json views, by name; a base pose, brought in by the lens as in Free): its target, distance, tilt and
+  // heading. It comes in from fromDist times farther and fromTilt degrees higher; its heading at the start (az) is
+  // worked out back from its turn and hold, and the flight into it lands on that heading exactly
+  for (const d of CINE.shots || []) {
+    const o = d.endView && out.find((sh) => sh.no === CINE.shots.indexOf(d)), v = o && cfg.views.find((x) => x.name === d.endView);
+    if (!v) continue;
+    const V = sphOf(new THREE.Vector3().fromArray(v.position), new THREE.Vector3().fromArray(v.target));
+    Object.assign(o, { target: v.target.slice(), r: [V.r * (d.fromDist ?? 1.25), V.r], tilt: [V.phi / D2R - (d.fromTilt ?? 8), V.phi / D2R], endView: true });
+    o.az = V.th - cinePose(o, 1, 0, 1).th;
+  }
   return out.length ? out : [wide];
 }
 // smoother camera (user, 2026-10-14): the arc turns at an even speed, always the same way round, so it never stops or
@@ -1804,11 +1815,11 @@ function nextShot(now, P) {   // now: the exact time the last shot ended
     if (sh.az == null) c.th0 = P.th + ((c.wFrom + w1) / 2) * T;   // no heading of its own: where the even speed lands
     else {
       let d = ((sh.az - P.th) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);   // forward to its heading
-      if (d > 1.9 * Math.PI) d = 0;            // just past it: take it as reached
+      if (d > 1.9 * Math.PI) d = sh.endView ? d - 2 * Math.PI : 0;   // just past it: take it as reached (endView: go back to it)
       T = Math.min(Math.max(T, d / (1.6 * wm)), 12);   // a long turn is not hurried
       // always forward on the way: the Hermite's middle speed 1.5 d / T - (w0 + w1) / 4 stays positive with some margin;
       // when the shot's heading is too near, it starts a little past it
-      d = Math.max(d, 0.25 * (Math.abs(c.wFrom) + Math.abs(w1)) * T);
+      if (!sh.endView) d = Math.max(d, 0.25 * (Math.abs(c.wFrom) + Math.abs(w1)) * T);   // (endView: exactly on it)
       c.th0 = P.th + d;
     }
     c.blendT = T; c.phase = "blend"; c.from = P;
