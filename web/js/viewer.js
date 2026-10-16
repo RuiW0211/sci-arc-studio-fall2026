@@ -1697,7 +1697,7 @@ function cineShots() {
     if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold, lens: def.lens ?? wide.lens, no, name }); continue; }
     const items = (def.members || []).map(find).filter(Boolean);
     if (!items.length) continue;
-    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold, lens: def.lens ?? 1, no, name };
+    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold, lens: def.lens ?? 1, no, name, fly: def.fly };
     const n0 = out.length;   // (overrides below apply to the shot pushed now)
     // a crane with a dolly zoom (dolly: [fov from, fov to]): it lowers (tilt) and backs away as the view narrows
     if (def.type === "crane" && def.dolly) out.push({ ...base, turn: 30, tilt: def.tilt ?? [40, 70], target: [g.cx, g.y0 + 0.3 * g.h, g.cz],
@@ -1796,7 +1796,8 @@ function nextShot(now, P) {   // now: the exact time the last shot ended
     // the flight's length: at least blendS, and long enough that the camera never goes faster than maxFlyMS on average
     const B0 = cinePose(sh, 0, sh.az ?? P.th, c.dir), pos = (Q) => { _sph.set(Q.r, Q.phi, Q.th); return _off.setFromSpherical(_sph).clone().add(_tv.fromArray(Q.target)); };
     const dist = pos(P).distanceTo(pos({ ...B0, th: P.th }));
-    let T = Math.min(Math.max(CINE.blendS, dist / (CINE.maxFlyMS ?? 150)), 12);
+    // fly: a shot's own least flight time into it (user, 2026-10-16: the seconds cut from the wide shot go to the flight)
+    let T = Math.min(Math.max(CINE.blendS, sh.fly ?? 0, dist / (CINE.maxFlyMS ?? 150)), 12);
     if (sh.az == null) c.th0 = P.th + ((c.wFrom + w1) / 2) * T;   // no heading of its own: where the even speed lands
     else {
       let d = ((sh.az - P.th) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);   // forward to its heading
