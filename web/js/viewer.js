@@ -369,6 +369,12 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
                // a building going up is in the highlight colour (user, 2026-10-17: to see which building is being built),
                // easing back to white over hotYears once built; hot eases to 0 while the film plays
                hotY: { value: cfg.time?.hotYears ?? 5 }, hot: { value: 1 } };
+// the film's light (user, 2026-10-17: the shot's group stays bright white, the other buildings a little darker, as under
+// a beam): up to SPOT_N groups' footprints (12 corners each, with their boxes for a quick test); spot eases 0..1 with
+// the shot (0 while flying), dim = the others' brightness (time.cinema.spotDim)
+const SPOT_N = 5, SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.25 }, n: { value: 0 },
+  box: { value: Array.from({ length: SPOT_N }, () => new THREE.Vector4()) },
+  hull: { value: Array.from({ length: SPOT_N * 12 }, () => new THREE.Vector2()) }, hn: { value: new Array(SPOT_N).fill(0) } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && TIME.year.value < b + 1);
 function applyVisibility() {
   for (const L of ordered) {
@@ -423,13 +429,34 @@ function pointMaterial(sizeMetres) {
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
     shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front; shader.uniforms.uMono = MONO;
     shader.uniforms.uHotY = TIME.hotY; shader.uniforms.uHot = TIME.hot;
+    shader.uniforms.uSpot = SPOT.k; shader.uniforms.uSpotDim = SPOT.dim; shader.uniforms.uSpotN = SPOT.n;
+    shader.uniforms.uSpotBox = SPOT.box; shader.uniforms.uSpotHull = SPOT.hull; shader.uniforms.uSpotHN = SPOT.hn;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim;\nuniform int uSpotN;\nuniform vec4 uSpotBox[5];\nuniform vec2 uSpotHull[60];\nuniform int uSpotHN[5];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
   vColor.rgb = mix(vColor.rgb, uHi, sw);
   vSel = sw; vBuild = 0.0; vGhost = 0.0;`).replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
+    // inside one of the lit footprints (a quick box test, then the convex corners, 2 m to spare)
+    shader.vertexShader = shader.vertexShader.replace("void main() {", `float spotLit(vec2 q) {
+  if (uSpot < 0.001) return 0.0;
+  for (int i = 0; i < 5; i++) {
+    if (i >= uSpotN) break;
+    vec4 b = uSpotBox[i];
+    if (q.x < b.x - 2.0 || q.x > b.z + 2.0 || q.y < b.y - 2.0 || q.y > b.w + 2.0) continue;
+    int n = uSpotHN[i]; if (n < 3) return 1.0;
+    bool inside = true;
+    for (int j = 0; j < 12; j++) {
+      if (j >= n) break;
+      vec2 a = uSpotHull[i * 12 + j], c = uSpotHull[i * 12 + (j + 1 == n ? 0 : j + 1)], e = c - a;
+      if ((e.x * (q.y - a.y) - e.y * (q.x - a.x)) / max(length(e), 0.001) < -2.0) { inside = false; break; }
+    }
+    if (inside) return 1.0;
+  }
+  return 0.0;
+}
+void main() {`);
     shader.vertexShader = shader.vertexShader.replace(
       "#include <fog_vertex>", "gl_PointSize = max(gl_PointSize * aSize / 64.0 * fishSizeK / uFishM, 1.0);\n"
       // the Time module (user, 2026-10-13: buildings go up from the ground, slowly and softly, and stay once built):
@@ -454,8 +481,10 @@ function pointMaterial(sizeMetres) {
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
       // going up: the highlight colour, back to white over uHotY years once built (2026-10-17)
       + "    float g = uTimeOn > 0.5 ? clamp((aYear + uHotY - uYear) / uHotY, 0.0, 1.0) * uHot : 0.0; g = g * g * (3.0 - 2.0 * g);\n"
-      + "    vColor.rgb = mix(vColor.rgb, mix(mix(vec3(1.0), uHi, g), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
-      + "  } else if (aYear < -0.5) { vColor.rgb = mix(vColor.rgb, mix(vec3(uDim), vColor.rgb, vSel), uFocus); vBuild = 1.0; }\n"
+      // the film's light: buildings outside the shot's group a little darker
+      + "    float lit = spotLit(position.xz);\n"
+      + "    vColor.rgb = mix(vColor.rgb, mix(mix(vec3(1.0), uHi, g) * mix(1.0, uSpotDim, uSpot * (1.0 - lit)), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
+      + "  } else if (aYear < -0.5) { vColor.rgb = mix(vColor.rgb, mix(vec3(uDim) * mix(1.0, uSpotDim, uSpot * (1.0 - spotLit(position.xz))), vColor.rgb, vSel), uFocus); vBuild = 1.0; }\n"
       + "}\n#include <fog_vertex>");
     // round points instead of squares
     shader.fragmentShader = shader.fragmentShader.replace(
@@ -2300,6 +2329,29 @@ function tlSees(x, y, z, own, Y) {
   }
   return 1;
 }
+// the film's light (SPOT): on the lit group's footprints while its shot plays, eased in over --t-out and out while flying
+// (the last group's footprints kept until it is out)
+let spotKeys = "";
+function spotUpdate(lit) {
+  const want = lit.size ? 1 : 0;
+  if (want) {
+    const key = [...lit].join();
+    if (key !== spotKeys) {
+      spotKeys = key; let i = 0;
+      for (const it of tlItems || []) {
+        if (!lit.has(it.key) || i >= SPOT_N) continue;
+        const [x0, , z0, x1, , z1] = it.box, H = it.hull || [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
+        SPOT.box.value[i].set(x0, z0, x1, z1);
+        H.slice(0, 12).forEach(([x, z], j) => SPOT.hull.value[i * 12 + j].set(x, z));
+        SPOT.hn.value[i] = Math.min(H.length, 12); i++;
+      }
+      SPOT.n.value = i;
+    }
+  }
+  const step = 1 / 60 / Math.max(tms("--t-out") / 1000, 0.05);
+  const k = SPOT.k.value + Math.max(-step, Math.min(step, want - SPOT.k.value));
+  if (Math.abs(k - SPOT.k.value) > 1e-4) { SPOT.k.value = k; invalidate(); }
+}
 function updateTimeTags() {
   const Y = TIME.year.value, Bd = TIME.build.value, on = TIME.on.value > 0.5 && lidar && mode === "cloud";
   if (on && !tlItems) tlBuild();
@@ -2369,6 +2421,7 @@ function updateTimeTags() {
   // the tags of the shot's group, once its shot has begun (user, 2026-10-17: flying to Broadway, Grand Central Market's
   // tag came up though the market could not be seen); while flying they are like the others, faded when hidden
   const lit = new Set(cine && (cine.phase === "shot" || cine.phase === "done") ? cine.shots[cine.i].keys || [] : []);
+  spotUpdate(lit);
   const rank = (l) => (lit.has(l.it.key) ? -1 : l.it.kind === "unbuilt" ? 0 : l.rising ? 1 : 2);
   const now = performance.now(), dt = Math.min((now - (tlLast || now)) / 1000, 0.1); tlLast = now;
   for (const { it, p, a: a0, txt } of keep.sort((u, v) => rank(u) - rank(v) || v.it.h - u.it.h)) {
@@ -2848,7 +2901,7 @@ const shotStudy = {
 window.__viewer = {
   shotStudy,
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, get openHeading() { return openHeading; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, get openHeading() { return openHeading; }, SPOT, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
