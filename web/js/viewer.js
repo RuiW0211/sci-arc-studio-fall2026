@@ -1444,8 +1444,10 @@ function buildOpening() {
     const ps = pts.filter((p) => p.year >= sh.from && p.year < sh.to);
     if (!ps.length) return wide;
     let best = ps[0], bw = -1;   // the densest spot: most height within clusterM
-    for (const p of ps) { let w = 0; for (const q of ps) if (Math.hypot(p.x - q.x, p.z - q.z) < Rc) w += q.h; if (w > bw) { bw = w; best = p; } }
-    const cl = ps.filter((q) => Math.hypot(best.x - q.x, best.z - q.z) < Rc), W = cl.reduce((s, q) => s + q.h, 0);
+    if (!sh.all) for (const p of ps) { let w = 0; for (const q of ps) if (Math.hypot(p.x - q.x, p.z - q.z) < Rc) w += q.h; if (w > bw) { bw = w; best = p; } }
+    // all: every building of its years, not only the densest spot (user, 2026-10-16: the first three shots were close
+    // together; one shot, a little farther out)
+    const cl = sh.all ? ps : ps.filter((q) => Math.hypot(best.x - q.x, best.z - q.z) < Rc), W = cl.reduce((s, q) => s + q.h, 0);
     let cx = cl.reduce((s, q) => s + q.x * q.h, 0) / W, cz = cl.reduce((s, q) => s + q.z * q.h, 0) / W;
     const spread = Math.sqrt(cl.reduce((s, q) => s + q.h * ((q.x - cx) ** 2 + (q.z - cz) ** 2), 0) / W);
     const hmax = Math.max(...cl.map((q) => q.h)), gy = cl.reduce((s, q) => s + q.y0 * q.h, 0) / W;
@@ -1454,6 +1456,7 @@ function buildOpening() {
       const d = Math.hypot(cx - Y1[0], cz - Y1[2]);
       cx = (cx + Y1[0]) / 2; cz = (cz + Y1[2]) / 2; ty = (ty + Y1[1]) / 2; r = Math.min(Math.max(r, 1.1 * d + 300), 1300);
     }
+    if (sh.dist) r *= sh.dist;   // a factor on the distance, as in the film's shots
     const k = (r - 250) / (1300 - 250);
     return { target: [cx, ty, cz], r, phi: (66 - 16 * k) * D2R };
   };
@@ -1601,14 +1604,15 @@ addEventListener("keydown", (e) => {
   if (e.code !== "Space" || texty || !($("#timeOn").checked || cine)) return;
   t?.blur?.();
   e.preventDefault();   // not a click on the focused checkbox, not a page scroll
-  if (playing || cine) setPaused(!paused);
+  if (cine?.phase === "done") goOnFilm();
+  else if (playing || cine) setPaused(!paused);
   else if (scrubbed && viewMode === "history") goOnGuided();
   else if ($("#timeOn").checked) startPlay(false);   // stopped (the slider was moved, or the end): play
 });
 // a drag or scroll while the camera plays pauses it (user, 2026-10-13: it used to hand the camera back for good and the
 // orbit never came back): a look around, after which it goes on by itself (autoResumeS) or with Space
-for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused && (tour || cine)) setPaused(true); }, { passive: true });
-// years a second (user, 2026-10-15: the opening in about 53 s, the time where the building is): see RATE_TABLE below;
+for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused && (tour || (cine && cine.phase !== "done"))) setPaused(true); }, { passive: true });
+// years a second (user, 2026-10-15: the time where the building is; 2026-10-16: the opening in about 30 s): see RATE_TABLE below;
 // 0.9 while an unbuilt scheme is on the site; config.json time.rates
 const ghostSpans = [...ghostYears.values()].flat();
 const RATES = { early: 7.5, late: 1.9, unbuilt: 0.9, ...(cfg.time?.rates || {}) };
@@ -1627,7 +1631,7 @@ function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null
 // no Play button (user, 2026-10-13): Space plays, pauses and goes on; the panel only says which
 function timeState() {
   const el = $("#timePlay"); if (!el) return;
-  el.textContent = paused || scrubbed ? "Paused · Space" : playing || cine ? "Playing · Space to pause" : "Space to play";
+  el.textContent = cine?.phase === "done" ? "Shot ended · Space to go on" : paused || scrubbed ? "Paused · Space" : playing || cine ? "Playing · Space to pause" : "Space to play";
 }
 function startPlay(withTour) {
   if (playing) stopPlay();
@@ -1692,10 +1696,11 @@ function cineShots() {
   const out = [];
   for (const def of CINE.shots || []) {
     const az = def.az == null ? null : def.az * D2R;   // the shot's heading at its start (0 = from the south, 90 = east)
-    if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold, lens: def.lens ?? wide.lens }); continue; }
+    const no = CINE.shots.indexOf(def), name = def.name ?? def.type;   // (its place and name in config: the ?shots list)
+    if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold, lens: def.lens ?? wide.lens, no, name }); continue; }
     const items = (def.members || []).map(find).filter(Boolean);
     if (!items.length) continue;
-    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold, lens: def.lens ?? 1 };
+    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold, lens: def.lens ?? 1, no, name, fly: def.fly };
     const n0 = out.length;   // (overrides below apply to the shot pushed now)
     // a crane with a dolly zoom (dolly: [fov from, fov to]): it lowers (tilt) and backs away as the view narrows
     if (def.type === "crane" && def.dolly) out.push({ ...base, turn: 30, tilt: def.tilt ?? [40, 70], target: [g.cx, g.y0 + 0.3 * g.h, g.cz],
@@ -1721,6 +1726,17 @@ function cineShots() {
   }
   // a shot may set its own turn (degrees over the shot), e.g. a short arc so the next shot's heading follows on
   (CINE.shots || []).filter((d) => d.type === "wide" || (d.members || []).some(find)).forEach((d, k) => { if (d.turn != null && out[k]) out[k].turn = d.turn; });
+  // endView (user, 2026-10-16: the Y-1 shot ends exactly on Free's Default view): the shot's last frame is that view
+  // (config.json views, by name; a base pose, brought in by the lens as in Free): its target, distance, tilt and
+  // heading. It comes in from fromDist times farther and fromTilt degrees higher; its heading at the start (az) is
+  // worked out back from its turn and hold, and the flight into it lands on that heading exactly
+  for (const d of CINE.shots || []) {
+    const o = d.endView && out.find((sh) => sh.no === CINE.shots.indexOf(d)), v = o && cfg.views.find((x) => x.name === d.endView);
+    if (!v) continue;
+    const V = sphOf(new THREE.Vector3().fromArray(v.position), new THREE.Vector3().fromArray(v.target));
+    Object.assign(o, { target: v.target.slice(), r: [V.r * (d.fromDist ?? 1.25), V.r], tilt: [V.phi / D2R - (d.fromTilt ?? 8), V.phi / D2R], endView: true });
+    o.az = V.th - cinePose(o, 1, 0, 1).th;
+  }
   return out.length ? out : [wide];
 }
 // smoother camera (user, 2026-10-14): the arc turns at an even speed, always the same way round, so it never stops or
@@ -1777,7 +1793,7 @@ function startCine() {
 function endCine() {
   if (!cine) return;
   cine = null; cutEl.classList.remove("on"); controls.enableDamping = true; invalidate();
-  timeState();
+  timeState(); shotsUI();
 }
 function nextShot(now, P) {   // now: the exact time the last shot ended
   const c = cine;
@@ -1794,20 +1810,22 @@ function nextShot(now, P) {   // now: the exact time the last shot ended
     // the flight's length: at least blendS, and long enough that the camera never goes faster than maxFlyMS on average
     const B0 = cinePose(sh, 0, sh.az ?? P.th, c.dir), pos = (Q) => { _sph.set(Q.r, Q.phi, Q.th); return _off.setFromSpherical(_sph).clone().add(_tv.fromArray(Q.target)); };
     const dist = pos(P).distanceTo(pos({ ...B0, th: P.th }));
-    let T = Math.min(Math.max(CINE.blendS, dist / (CINE.maxFlyMS ?? 150)), 12);
+    // fly: a shot's own least flight time into it (user, 2026-10-16: the seconds cut from the wide shot go to the flight)
+    let T = Math.min(Math.max(CINE.blendS, sh.fly ?? 0, dist / (CINE.maxFlyMS ?? 150)), 12);
     if (sh.az == null) c.th0 = P.th + ((c.wFrom + w1) / 2) * T;   // no heading of its own: where the even speed lands
     else {
       let d = ((sh.az - P.th) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);   // forward to its heading
-      if (d > 1.9 * Math.PI) d = 0;            // just past it: take it as reached
+      if (d > 1.9 * Math.PI) d = sh.endView ? d - 2 * Math.PI : 0;   // just past it: take it as reached (endView: go back to it)
       T = Math.min(Math.max(T, d / (1.6 * wm)), 12);   // a long turn is not hurried
       // always forward on the way: the Hermite's middle speed 1.5 d / T - (w0 + w1) / 4 stays positive with some margin;
       // when the shot's heading is too near, it starts a little past it
-      d = Math.max(d, 0.25 * (Math.abs(c.wFrom) + Math.abs(w1)) * T);
+      if (!sh.endView) d = Math.max(d, 0.25 * (Math.abs(c.wFrom) + Math.abs(w1)) * T);   // (endView: exactly on it)
       c.th0 = P.th + d;
     }
     c.blendT = T; c.phase = "blend"; c.from = P;
     c.t0 = now;
   }
+  shotsUI();
 }
 // People comes on peopleDelayS into shot peopleAfter (user, 2026-10-15: 2 s into the first wide shot, once the camera
 // has settled after the opening), the film going on with them; its day starts before dawn (peopleStartH), most people
@@ -1819,7 +1837,7 @@ function peopleOnNow() {
 }
 function stepCine(now) {
   const c = cine, sh = c.shots[c.i];
-  if (paused) return;
+  if (paused || c.phase === "done") return;
   if (!c.peopleDone && CINE.thenPeople !== false && c.i === (CINE.peopleAfter ?? 0) && c.phase === "shot" && now - c.t0 > (CINE.peopleDelayS ?? 2) * 1000) {
     c.peopleDone = true; peopleOnNow();
   }
@@ -1834,12 +1852,51 @@ function stepCine(now) {
     const end = c.t0 + c.blendT * 1000; c.phase = "shot"; c.t0 = end; c.from = null; P = cineNow(now);   // the flight ended on th0
   } else if (c.phase === "shot" && P.k >= 1) {
     const end = c.t0 + shotLen(sh) * 1000, E = cinePose(sh, 1, c.th0, c.dir);
+    if (c.single) { cineApply(E); c.phase = "done"; controls.enableDamping = true; timeState(); shotsUI(); return; }   // ?shots
     nextShot(end, E);
     if (c.phase !== "cut") P = cineNow(now);
   }
   cineApply(P);
 }
 function handBack() { endTour(); endCine(); }
+// viewer.html?shots (user, 2026-10-16: to tune the film, not for visitors): the shots in a row, as the Views are. A
+// click stops the opening or the film and cuts to that shot (a dip to black: a flight there could take 12 s, the film's
+// headings only going forward), plays it alone from its first frame and stops on its last (look round freely there);
+// Space then goes on with the film from the next shot. People come on, for scale
+const SHOTS_UI = urlq.has("shots");
+function playShot(no) {
+  const shots = cineShots(), i = shots.findIndex((sh) => sh.no === no);
+  if (i < 0) return;   // its members are not loaded (yet)
+  stopPlay(); scrubbed = false; setYear(2026);
+  if (CINE.thenPeople !== false) peopleOnNow();
+  const now = performance.now();
+  cine = { shots, i, phase: "cut", t0: now, th0: shots[i].az ?? camPose().th, dir: 1, from: null, op0: now, peopleDone: true, single: true };
+  controls.enableDamping = false; cutEl.classList.add("on");
+  timeState(); shotsUI();
+}
+function goOnFilm() {   // Space after a shot played alone: the film from the next shot, from where the camera is
+  const c = cine; c.single = false; controls.enableDamping = false;
+  nextShot(performance.now(), camPose());
+  timeState();
+}
+function shotsUI() {
+  if (!SHOTS_UI) return;
+  const sh = cine?.shots[cine.i];
+  for (const b of $("#shots").children) b.classList.toggle("on", sh?.no != null && +b.dataset.no === sh.no);
+  $("#shotsNote").textContent = !sh || sh.no == null ? "A click plays one shot alone · Space then goes on with the film"
+    : `Shot ${sh.no + 1} of ${CINE.shots.length} · ${shotMove(sh)} + ${shotHold(sh)} s · lens ${sh.lens}` + (cine.phase === "done" ? " · ended, Space goes on" : "");
+}
+if (SHOTS_UI) {
+  $("#shotsSec").hidden = false;
+  (CINE.shots || []).forEach((d, k) => {
+    const b = document.createElement("button");
+    b.className = "view"; b.dataset.no = k; b.textContent = `${k + 1} · ${d.name ?? d.type}`;
+    b.title = `Play shot ${k + 1} (${d.type}) alone`;
+    b.onclick = () => { playShot(k); b.blur(); };   // blur: Space stays the film's
+    $("#shots").append(b);
+  });
+  shotsUI();
+}
 
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
@@ -2428,6 +2485,15 @@ const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.ta
       if (e.key.toLowerCase() !== "f" || e.ctrlKey || e.metaKey || e.altKey || e.repeat || typing()) return;
       e.preventDefault(); toggleFs().catch(() => {});
     });
+    // full screen on arrival (user, 2026-10-16): a browser allows it only right after a click or a key on this page,
+    // so the first one does it, once (leaving it after that is the reader's choice). Not F or the button (they do it
+    // themselves), not Esc (no browser allows it there)
+    const first = (e) => {
+      if (e.type === "keydown" && (e.key === "Escape" || e.key.toLowerCase() === "f" || typing())) return;
+      removeEventListener("pointerdown", first, true); removeEventListener("keydown", first, true);
+      if (!document.fullscreenElement && !e.target.closest?.("#fs")) toggleFs().catch(() => {});
+    };
+    addEventListener("pointerdown", first, true); addEventListener("keydown", first, true);
   }
 }
 function wake(ms = IDLE_MS) {
