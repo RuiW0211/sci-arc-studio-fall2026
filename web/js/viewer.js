@@ -1828,7 +1828,9 @@ function cineNow(now) {
     // (on the camera's real places: camApply brings it in by the lens, lensM)
     const m = lensM(), off = (R, ph, t) => [R / m * Math.sin(ph) * Math.sin(t), R / m * Math.cos(ph), R / m * Math.sin(ph) * Math.cos(t)];
     const oA = off(A.r, A.phi, A.th), oB = off(B.r, B.phi, c.th0), oN = off(r, phi, th);
-    const target = A.target.map((v, j) => v + oA[j] + (B.target[j] + oB[j] - v - oA[j]) * e - oN[j]);
+    // its place: a cubic from where it was to where the shot starts, leaving and arriving at their speeds (vA, vB)
+    const vA = c.vA || [0, 0, 0], vB = c.vB || [0, 0, 0];
+    const target = A.target.map((v, j) => h00 * (v + oA[j]) + h10 * T * vA[j] + h01 * (B.target[j] + oB[j]) + h11 * T * vB[j] - oN[j]);
     return { target, r, phi, th, fov: (A.fov ?? FOV0) + ((B.fov ?? FOV0) - (A.fov ?? FOV0)) * e, lens: (A.lens ?? 1) + ((B.lens ?? 1) - (A.lens ?? 1)) * e, k };
   }
   const len = shotLen(sh) * 1000;
@@ -1841,8 +1843,10 @@ function startCine() {
   // the camera is into its first shot, going on at the opening's turning speed; People comes on as it sets off
   const now = performance.now(), end = openAnchors?.[openAnchors.length - 1]?.hs;
   const w0 = openHeading && end ? (openHeading(end) - openHeading(end - 0.1)) / 0.1 : 0;
+  let vA = [0, 0, 0];
+  if (openHeading && end) { const a = camAt(openingPose(1 - 0.05 / playDur)), b = camAt(openingPose(1)); vA = a.map((v, j) => (b[j] - v) / 0.05); }
   cine = { shots, i: 0, phase: "shot", t0: now, th0: 0, dir: 1, from: null, op0: now, peopleDone: true };
-  nextShot(now, camPose(), 0, w0);
+  nextShot(now, camPose(), 0, w0, vA);
   if (CINE.thenPeople !== false) peopleOnNow();
   timeState();
 }
@@ -1851,8 +1855,14 @@ function endCine() {
   cine = null; cutEl.classList.remove("on"); controls.enableDamping = true; invalidate();
   timeState(); shotsUI();
 }
-function nextShot(now, P, toI, w0) {   // now: the exact time the last shot ended; toI: fly into this shot instead, from a
-  const c = cine;                       // camera turning at w0 (the film's start)
+// where the camera really is for a pose (camApply: brought in by the lens), and how fast it moves along a shot at t
+const camAt = (P) => { const R = P.r / lensM(); return [P.target[0] + R * Math.sin(P.phi) * Math.sin(P.th), P.target[1] + R * Math.cos(P.phi), P.target[2] + R * Math.sin(P.phi) * Math.cos(P.th)]; };
+const shotVel = (sh, t, th0, dir) => {
+  const dt = 0.05 / shotLen(sh), t0 = Math.min(Math.max(t, dt), 1), a = camAt(cinePose(sh, t0 - dt, th0, dir)), b = camAt(cinePose(sh, t0, th0, dir));
+  return a.map((v, j) => (b[j] - v) / 0.05);
+};
+function nextShot(now, P, toI, w0, vA) {   // now: the exact time the last shot ended; toI: fly into this shot instead, from a
+  const c = cine, th0prev = c.th0;          // camera turning at w0 and moving at vA (the film's start)
   // after the last shot the film goes back to shot loopFrom (2026-10-15: from the Y-1 reveal straight to the Y-1 track,
   // the opening's wide shot and crane only once), always the same way round
   const nextI = toI ?? (c.i + 1 < c.shots.length ? c.i + 1 : Math.min(CINE.loopFrom ?? 0, c.shots.length - 1));
@@ -1872,12 +1882,16 @@ function nextShot(now, P, toI, w0) {   // now: the exact time the last shot ende
     else {
       let d = ((sh.az - P.th) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);   // forward to its heading
       if (d > 1.9 * Math.PI) d = sh.endView ? d - 2 * Math.PI : 0;   // just past it: take it as reached (endView: go back to it)
-      T = Math.min(Math.max(T, d / (1.6 * wm)), 12);   // a long turn is not hurried
+      T = Math.min(Math.max(T, d / (1.45 * wm)), 12);   // a long turn is not hurried (2026-10-17: a little slower, was 1.6)
       // always forward on the way: the Hermite's middle speed 1.5 d / T - (w0 + w1) / 4 stays positive with some margin;
       // when the shot's heading is too near, it starts a little past it
       if (!sh.endView) d = Math.max(d, 0.25 * (Math.abs(c.wFrom) + Math.abs(w1)) * T);   // (endView: exactly on it)
       c.th0 = P.th + d;
     }
+    // (user, 2026-10-17: the camera stopped dead at the end of each flight, then the shot set off at 20-33 m/s) the
+    // flight leaves at the speed the last shot ended with and arrives at the speed the next one starts with
+    c.vA = prev ? shotVel(prev, 1, th0prev, c.dir) : vA || [0, 0, 0];
+    c.vB = shotVel(sh, 0, c.th0, c.dir);
     c.blendT = T; c.phase = "blend"; c.from = P;
     c.t0 = now;
   }

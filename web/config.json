@@ -50,7 +50,7 @@
       "on": true,
       "shotS": 10,
       "blendS": 3.5,
-      "maxFlyMS": 80,
+      "maxFlyMS": 70,
       "holdS": 2,
       "holdDrift": 0.1,
       "holdEaseS": 1.2,
