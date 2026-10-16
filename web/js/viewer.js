@@ -2838,8 +2838,10 @@ function logFrame(now) {
   lfLast = now; lfRender = lfTags = 0;
 }
 renderer.setAnimationLoop((now) => {
-  TIME.clock.value = now / 1000;
-  if (TIME.on.value > 0.5 && TIME.breath.value > 0 && [...ghostYears.values()].flat().some(([a]) => TIME.year.value >= a)) dirty = true;   // breathing
+  // the schemes' breathing clock runs only while playing (user, 2026-10-17: paused, it stops too)
+  const breathing = !paused && TIME.on.value > 0.5 && TIME.breath.value > 0 && [...ghostYears.values()].flat().some(([a]) => TIME.year.value >= a);
+  if (breathing) { TIME.clock.value += Math.min((now - (TIME.clockT || now)) / 1000, 0.1); dirty = true; }
+  TIME.clockT = now;
   // the going-up colour eases out while the film plays and back in for the opening (about 1 s)
   { const h = cine ? 0 : 1; if (Math.abs(TIME.hot.value - h) > 0.001) { TIME.hot.value += (h - TIME.hot.value) * (1 / 60); dirty = true; } }
   logFrame(now);
