@@ -73,10 +73,25 @@
   .rec .tick { font: 10px var(--font); fill: var(--faint); font-variant-numeric: tabular-nums; }
   .rec .val { font: 600 10px var(--font); fill: var(--muted); font-variant-numeric: tabular-nums; }
   .rec .grid { stroke: var(--line); stroke-width: 1; }
-  .rec .hrs { fill: var(--tint); }
-  .rec .cms { fill: var(--muted); }
+  /* one colour per person, in the order they joined (validated for both modes: dataviz validate_palette.js, 2026-10-16;
+     the first is the site's indigo, a stronger step of it on dark) */
+  .rec, .days { --p1: #3f51b5; --p2: #eb6834; --p3: #1baf7a; --p4: #eda100; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :is(.rec, .days) { --p1: #7986cb; --p2: #d95926; --p3: #199e70; --p4: #c98500; } }
+  :root[data-theme="dark"] :is(.rec, .days) { --p1: #7986cb; --p2: #d95926; --p3: #199e70; --p4: #c98500; }
+  .rec .legend { display: flex; gap: 14px; font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
+  .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+  .days { list-style: none; font-size: 0.85rem; }
+  .days > li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .days .d { font-weight: 700; margin-right: 10px; font-variant-numeric: tabular-nums; }
+  .days .who { color: var(--muted); margin-right: 10px; }
+  .days .res { margin-top: 2px; }
+  .days details { margin-top: 2px; color: var(--muted); }
+  .days details summary { cursor: pointer; }
+  .days details ul { list-style: none; margin: 2px 0 0 14px; }
   .rec .pr { fill: var(--text); stroke: var(--bg); stroke-width: 2; }
-  .rec .pr.old { fill: var(--bg); stroke: var(--muted); stroke-width: 1.5; }
+  .rec .pr.open { fill: var(--bg); stroke: var(--text); stroke-width: 1.5; }
+  .rec .pr.old { fill: var(--faint); }
+  .rec .pr.old.open { fill: var(--bg); stroke: var(--faint); }
   .rec .prl { font: 600 10px var(--font); fill: var(--muted); }
   .rec .era { stroke: var(--faint); stroke-width: 1; }
   .rec .era-t { font: 10px var(--font); fill: var(--faint); }
@@ -222,16 +237,17 @@
   <section id="record">
     <h2 class="label"><span class="n">6</span>Working record</h2>
     <p>The project is made in a GitHub repository, one topic at a time: a branch, a pull request, merged by the owner;
-      most of the work is done together with Claude (Claude Code), in conversation. The record below is read from both:
-      the commits and pull requests of this repository and of the earlier Blender one, and how long each day the
-      conversations with Claude went on. <span class="note">(docs/worklog.py, web/data/worklog.json)</span></p>
+      most of the work is done together with Claude (Claude Code), in conversation. The record keeps, for each person,
+      how long they worked with Claude each day, counted from their first session about the project, and what came of
+      each day: the pull requests opened and merged. <span class="note">(docs/worklog.py, web/data/worklog.json)</span></p>
     <h3 class="entry-title">6.1 Day by day</h3>
-    <figure class="rec" id="rec" aria-label="Hours of work with Claude, commits and pull requests merged, per day"><p class="note">Loading…</p></figure>
-    <details class="note"><summary>The same as a table</summary><div class="wrap" id="recTable"></div></details>
-    <h3 class="entry-title">6.2 Pull requests</h3>
+    <figure class="rec" id="rec" aria-label="Hours of work with Claude per person and pull requests, per day"><p class="note">Loading…</p></figure>
+    <h3 class="entry-title">6.2 Each day</h3>
+    <ul class="days" id="dayList"><li class="note">Loading…</li></ul>
+    <h3 class="entry-title">6.3 Pull requests</h3>
     <div class="wrap" id="prTable"><p class="note">Loading…</p></div>
-    <h3 class="entry-title">6.3 How it is counted</h3>
-    <p id="recHow">Loading…</p>
+    <h3 class="entry-title">6.4 The rule</h3>
+    <div id="recHow"><p>Loading…</p></div>
   </section>
 
   <section id="refs">
@@ -408,94 +424,113 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
     </ul>`;
   document.getElementById("stamp").textContent = "";
 })().finally(() => { buildToc(); requestAnimationFrame(() => document.body.classList.add("ready")); });
-// ---------- 6 Working record (docs/worklog.py writes web/data/worklog.json)
-// START: the record begins with the first commit (user, 2026-10-16); a date ("2026-09-17", the first Claude session
-// of the project) would begin it there instead
-const START = "first commit";
+// ---------- 6 Working record (docs/worklog.py writes web/data/worklog.json; the rule: docs/WORKFLOW.md)
+// Everyone's time is counted from their first Claude Code session about the project (user, 2026-10-16); the record
+// starts with the first of them.
 function renderRecord(W) {
   const fig = document.getElementById("rec");
-  if (!W?.commits?.length) { fig.innerHTML = `<p class="note">The working record could not be read.</p>`; return; }
+  if (!W?.commits) { fig.innerHTML = `<p class="note">The working record could not be read.</p>`; return; }
   const tz = W.tz || "America/Los_Angeles";
   const dayOf = (iso) => new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
   const hourOf = (iso) => { const p = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(iso));
     return +p.find((x) => x.type === "hour").value + p.find((x) => x.type === "minute").value / 60; };
   const nice = (d, y) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", ...(y ? { year: "numeric" } : {}), timeZone: "UTC" });
-  const first = W.commits[0].t, start = START === "first commit" ? dayOf(first) : START, today = dayOf(new Date().toISOString());
-  const days = []; for (let d = new Date(start + "T12:00:00Z"); ; d.setUTCDate(d.getUTCDate() + 1)) { const k = d.toISOString().slice(0, 10); days.push(k); if (k >= today || days.length > 400) break; }
-  const ix = new Map(days.map((d, i) => [d, i]));
-  const mins = days.map((d) => W.claude?.days?.[d] ?? 0);
-  const commits = days.map(() => []); for (const c of W.commits) { const i = ix.get(dayOf(c.t)); if (i !== undefined) commits[i].push(c); }
-  const merged = (W.prs || []).filter((p) => p.merged && ix.has(dayOf(p.merged)));
+  const hrs = (m) => `${(m / 60).toFixed(1)} h`;
+  const people = W.people || [];
+  const nameOf = (login) => people.find((p) => p.login === login)?.name ?? W.names?.[login] ?? login;
   const isOld = (r) => (W.repos || []).find((x) => x.name === r)?.archived;
-  const prUrl = (p) => `https://github.com/${p.repo}/pull/${p.n}`;
-  const totalH = mins.reduce((a, b) => a + b, 0) / 60, nC = commits.reduce((a, b) => a + b.length, 0), nP = merged.length;
-  document.getElementById("worked").textContent = `Day ${days.length} since the first commit (${nice(start, true)}) · about ${Math.round(totalH)} hours of work with Claude · ${fmt(nC)} commits · ${nP} pull requests`;
+  const prName = (p) => `${isOld(p.repo) ? "Blender " : ""}#${p.n}`;
+  const prLink = (p) => `<a href="https://github.com/${p.repo}/pull/${p.n}">${prName(p)}</a>`;
+  const today = dayOf(new Date().toISOString());
+  const start = [...people.map((p) => p.since), dayOf(W.commits[0]?.t ?? new Date().toISOString())].sort()[0];
+  const days = []; for (let d = new Date(start + "T12:00:00Z"); ; d.setUTCDate(d.getUTCDate() + 1)) { const k = d.toISOString().slice(0, 10); days.push(k); if (k >= today || days.length > 800) break; }
+  const ix = new Map(days.map((d, i) => [d, i]));
+  const mins = people.map((p) => days.map((d) => (d >= p.since ? p.days?.[d] ?? 0 : 0)));
+  const dayMin = days.map((_, i) => mins.reduce((a, m) => a + m[i], 0));
+  const commits = days.map(() => []); for (const c of W.commits) { const i = ix.get(dayOf(c.t)); if (i !== undefined) commits[i].push(c); }
+  const prs = W.prs || [];
+  const mergedOn = days.map(() => []), openedOn = days.map(() => []);
+  for (const p of prs) { const o = ix.get(dayOf(p.created)), m = p.merged ? ix.get(dayOf(p.merged)) : undefined;
+    if (m !== undefined) mergedOn[m].push(p); if (o !== undefined && o !== m) openedOn[o].push(p); }
 
-  // the chart: three rows on one time axis, each its own scale (hours, commits, pull requests)
-  const X0 = 30, X1 = 720, bw = (X1 - X0) / days.length, barW = Math.min(24, bw * 0.6), cx = (i) => X0 + (i + 0.5) * bw;
-  const A = { t: 12, y0: 142, h: 112 }, B = { t: 172, y0: 228, h: 42 }, C = { t: 254, y: 272 }, XA = 306;
-  const maxH = Math.max(2, Math.ceil(Math.max(...mins) / 60 / 2) * 2), maxC = Math.max(...commits.map((c) => c.length), 1);
-  const cTop = Math.max(5, Math.ceil(maxC / 5) * 5);
-  const col = (x, y0, h, cls) => { if (h <= 0) return ""; const r = Math.min(4, h, barW / 2), x0 = x - barW / 2, x1 = x + barW / 2, y = y0 - h;
-    return `<path class="${cls}" d="M${x0} ${y0}V${y + r}Q${x0} ${y} ${x0 + r} ${y}H${x1 - r}Q${x1} ${y} ${x1} ${y + r}V${y0}Z"/>`; };
-  // the hover bands first, under everything (the marks take no pointer events, so the band under them gets them)
+  // under the title: each person's time since their first session; the people with commits but no recorded time
+  const dayN = (since) => Math.round((Date.parse(today) - Date.parse(since)) / 864e5) + 1;
+  const lines = people.map((p) => `${esc(p.name)}: day ${dayN(p.since)} since the first session (${nice(p.since, true)}) · about ${Math.round(Object.entries(p.days || {}).filter(([d]) => d >= p.since).reduce((a, [, m]) => a + m, 0) / 60)} hours of work with Claude`);
+  const unrecorded = [...new Set([...W.commits.map((c) => c.by), ...prs.map((p) => p.by)])].filter((l) => l && !people.some((p) => p.login === l));
+  document.getElementById("worked").innerHTML = lines.join("<br>") + (unrecorded.length ? `<br>${unrecorded.map((l) => esc(nameOf(l))).join(", ")}: time not recorded yet` : "")
+    + `<br>Together: ${fmt(W.commits.length)} commits · ${prs.length} pull requests`;
+
+  // the chart: hours with Claude (stacked by person) and the pull requests, on one time axis
+  const X0 = 30, X1 = 720, bw = (X1 - X0) / days.length, barW = Math.min(24, bw * 0.62), cx = (i) => X0 + (i + 0.5) * bw;
+  const A = { t: 12, y0: 150, h: 120 }, C = { t: 178, y: 196 }, XA = 228;
+  const maxH = Math.max(2, Math.ceil(Math.max(...dayMin) / 60 / 2) * 2);
+  const col = (x, yb, h, cls, top) => { if (h <= 0) return ""; const r = top ? Math.min(4, h, barW / 2) : 0, x0 = x - barW / 2, x1 = x + barW / 2, y = yb - h;
+    return `<path class="${cls}" d="M${x0} ${yb}V${y + r}Q${x0} ${y} ${x0 + r} ${y}H${x1 - r}Q${x1} ${y} ${x1} ${y + r}V${yb}Z"/>`; };
   let g = days.map((d, i) => `<rect class="band" data-i="${i}" x="${X0 + i * bw}" y="0" width="${bw}" height="${XA + 6}"/>`).join("");
   for (let v = 0; v <= maxH; v += maxH / 2) { const y = A.y0 - (v / maxH) * A.h; g += `<line class="grid" x1="${X0}" x2="${X1}" y1="${y}" y2="${y}"/><text class="tick" x="${X0 - 6}" y="${y + 3}" text-anchor="end">${v}h</text>`; }
-  for (const v of [0, cTop]) { const y = B.y0 - (v / cTop) * B.h; g += `<line class="grid" x1="${X0}" x2="${X1}" y1="${y}" y2="${y}"/><text class="tick" x="${X0 - 6}" y="${y + 3}" text-anchor="end">${v}</text>`; }
-  g += `<text class="row-t" x="${X0}" y="${A.t}">Hours with Claude</text><text class="row-t" x="${X0}" y="${B.t}">Commits</text><text class="row-t" x="${X0}" y="${C.t}">Pull requests merged</text>`;
-  // the repository started again for Houdini (the first commit of this repository)
+  g += `<text class="row-t" x="${X0}" y="${A.t}">Hours with Claude</text><text class="row-t" x="${X0}" y="${C.t}">Pull requests: merged (dot), opened (ring)</text>`;
   const own = W.commits.find((c) => !isOld(c.repo));
   if (own && ix.has(dayOf(own.t))) { const x = X0 + (ix.get(dayOf(own.t)) + hourOf(own.t) / 24) * bw;
-    g += `<line class="era" x1="${x}" x2="${x}" y1="${A.t - 9}" y2="${C.y + 14}"/><text class="era-t" x="${x - 5}" y="${A.t}" text-anchor="end">Blender</text><text class="era-t" x="${x + 5}" y="${A.t}">Houdini</text>`; }
-  const iMax = mins.indexOf(Math.max(...mins));
+    g += `<line class="era" x1="${x}" x2="${x}" y1="${A.t - 9}" y2="${C.y + 8}"/><text class="era-t" x="${x - 5}" y="${A.t}" text-anchor="end">Blender</text><text class="era-t" x="${x + 5}" y="${A.t}">Houdini</text>`; }
+  const firstC = W.commits[0];
+  if (firstC && ix.has(dayOf(firstC.t))) { const x = X0 + (ix.get(dayOf(firstC.t)) + hourOf(firstC.t) / 24) * bw;
+    g += `<line class="era" x1="${x}" x2="${x}" y1="${A.t + 4}" y2="${C.y + 8}"/><text class="era-t" x="${x - 5}" y="${A.t + 14}" text-anchor="end">first commit</text>`; }
+  const iMax = dayMin.indexOf(Math.max(...dayMin));
+  const step = Math.ceil(days.length / 14);
   days.forEach((d, i) => {
-    const h = (mins[i] / 60 / maxH) * A.h, n = commits[i].length;
-    g += col(cx(i), A.y0, h, "hrs") + col(cx(i), B.y0, (n / cTop) * B.h, "cms");
-    if (i === iMax && mins[i]) g += `<text class="val" x="${cx(i)}" y="${A.y0 - h - 5}" text-anchor="middle">${(mins[i] / 60).toFixed(1)}h</text>`;
-    const nd = i === 0 || d.slice(8) === "01" ? nice(d) : String(+d.slice(8));
-    g += `<text class="tick" x="${cx(i)}" y="${XA}" text-anchor="middle">${nd}</text>`;
+    let yb = A.y0; const last = mins.reduce((k, m, j) => (m[i] ? j : k), -1);
+    mins.forEach((m, j) => { const h = (m[i] / 60 / maxH) * A.h; if (h > 0) { g += col(cx(i), yb, h - (j < last ? 2 : 0), `p${j}`, j === last); yb -= h; } });
+    if (i === iMax && dayMin[i]) g += `<text class="val" x="${cx(i)}" y="${yb - 5}" text-anchor="middle">${(dayMin[i] / 60).toFixed(1)}h</text>`;
+    if (i % step === 0 || d.slice(8) === "01") g += `<text class="tick" x="${cx(i)}" y="${XA}" text-anchor="middle">${i === 0 || d.slice(8) === "01" ? nice(d) : String(+d.slice(8))}</text>`;
   });
-  const lab = new Map();
-  for (const p of merged) { const i = ix.get(dayOf(p.merged)), x = X0 + (i + hourOf(p.merged) / 24) * bw;
-    g += `<circle class="pr${isOld(p.repo) ? " old" : ""}" cx="${x}" cy="${C.y}" r="4"/>`;
-    if (!isOld(p.repo)) (lab.get(i) ?? lab.set(i, []).get(i)).push(p.n); }
-  for (const [i, ns] of lab) g += `<text class="prl" x="${cx(i)}" y="${C.y + 17}" text-anchor="middle">#${ns.join(" #")}</text>`;
-  fig.innerHTML = `<svg viewBox="0 0 720 316" role="img" aria-label="Per day: hours of work with Claude, commits, pull requests merged">${g}</svg><div class="tip" role="status"></div>`;
-  // hover: one day
+  for (const [list, open] of [[openedOn, true], [mergedOn, false]]) list.forEach((ps, i) => ps.forEach((p) => {
+    const t = open ? p.created : p.merged, x = X0 + (i + hourOf(t) / 24) * bw;
+    g += `<circle class="pr${open ? " open" : ""}${isOld(p.repo) ? " old" : ""}" cx="${x}" cy="${C.y}" r="4"/>`; }));
+  // the bars' colours, person by person (p0.. -> --p1..); a legend once more than one person has time
+  const style = people.map((_, j) => `.rec .p${j} { fill: var(--p${j + 1}, var(--muted)); }`).join(" ");
+  const legend = people.length > 1 ? `<div class="legend">${people.map((p, j) => `<span><i class="sw" style="background: var(--p${j + 1}, var(--muted))"></i>${esc(p.name)}</span>`).join("")}</div>` : "";
+  fig.innerHTML = `<style>${style}</style>${legend}<svg viewBox="0 0 720 236" role="img" aria-label="Per day: hours of work with Claude, pull requests opened and merged">${g}</svg><div class="tip" role="status"></div>`;
+  // hover: a short summary of the day (its details are in 6.2)
   const svg = fig.querySelector("svg"), tip = fig.querySelector(".tip"); let on = null;
-  const show = (i, ev) => {
+  const show = (i) => {
     if (on) on.classList.remove("on");
     on = svg.querySelector(`.band[data-i="${i}"]`); on.classList.add("on");
-    const cs = commits[i], ps = merged.filter((p) => ix.get(dayOf(p.merged)) === i);
-    tip.innerHTML = `<div class="h">${nice(days[i], true)}</div><div class="m">${(mins[i] / 60).toFixed(1)} h with Claude · ${cs.length} commit${cs.length === 1 ? "" : "s"}</div>`
-      + (ps.length ? `<div>${ps.map((p) => `Merged ${isOld(p.repo) ? "Blender " : ""}#${p.n}: ${esc(p.title)}`).join("<br>")}</div>` : "")
-      + (cs.length ? `<ul>${cs.slice(-5).reverse().map((c) => `<li>${esc(c.s)}</li>`).join("")}${cs.length > 5 ? `<li>+ ${cs.length - 5} more</li>` : ""}</ul>` : "");
+    const who = people.map((p, j) => (mins[j][i] ? `${esc(p.name)} ${hrs(mins[j][i])}` : "")).filter(Boolean).join(" · ") || "no time recorded";
+    const res = [mergedOn[i].length ? `merged ${mergedOn[i].map(prName).join(", ")}` : "", openedOn[i].length ? `opened ${openedOn[i].map(prName).join(", ")}` : ""].filter(Boolean).join(" · ");
+    tip.innerHTML = `<div class="h">${nice(days[i])}</div><div class="m">${who}</div>${res ? `<div>${res}</div>` : ""}`;
     tip.classList.add("on");
     const fr = fig.getBoundingClientRect(), br = on.getBoundingClientRect(), tw = tip.offsetWidth;
     let left = br.left - fr.left + br.width + 8; if (left + tw > fr.width) left = br.left - fr.left - tw - 8;
-    tip.style.transform = `translate(${Math.max(0, left)}px, ${8}px)`;
+    tip.style.transform = `translate(${Math.max(0, left)}px, ${(legend ? 20 : 0) + 8}px)`;
   };
-  svg.addEventListener("pointermove", (ev) => { const b = ev.target.closest?.(".band"); if (b) show(+b.dataset.i, ev); });
+  svg.addEventListener("pointermove", (ev) => { const b = ev.target.closest?.(".band"); if (b) show(+b.dataset.i); });
   svg.addEventListener("pointerleave", () => { tip.classList.remove("on"); on?.classList.remove("on"); on = null; });
 
-  // the same as a table
-  document.getElementById("recTable").innerHTML = `<table><tr><th>Day</th><th class="r">Hours with Claude</th><th class="r">Commits</th><th>Pull requests merged</th></tr>`
-    + days.map((d, i) => `<tr><td>${nice(d, true)}</td><td class="r">${(mins[i] / 60).toFixed(1)}</td><td class="r">${commits[i].length}</td><td>${merged.filter((p) => ix.get(dayOf(p.merged)) === i).map((p) => `${isOld(p.repo) ? "Blender " : ""}#${p.n}`).join(", ")}</td></tr>`).join("") + `</table>`;
-  // 6.2 every pull request, the newest first
-  const prs = [...(W.prs || [])].sort((a, b) => b.created.localeCompare(a.created));
-  document.getElementById("prTable").innerHTML = `<table><tr><th>#</th><th>Pull request</th><th>Branch</th><th>Merged</th><th class="r">Commits</th></tr>`
-    + prs.map((p) => `<tr><td><a href="${prUrl(p)}">${isOld(p.repo) ? "Blender " : ""}#${p.n}</a></td><td>${esc(p.title)}</td><td class="note"><code>${esc(p.branch)}</code></td><td>${p.merged ? nice(dayOf(p.merged)) : esc(p.state)}</td><td class="r">${p.commits}</td></tr>`).join("") + `</table>`;
-  // 6.3
-  const since = W.claude?.sessions_from;
-  document.getElementById("recHow").innerHTML = `Days are counted in Los Angeles time, from the first commit (${nice(start, true)}). <b>Commits</b>: every commit
-    of the two repositories except the merge commits (a pull request is shown by its merge), as published on GitHub.
-    <b>Hours with Claude</b>: the timestamps of the messages in the project's Claude Code sessions, all sessions on one
-    line; two messages less than ${W.claude?.gap_min ?? 10} minutes apart count the time between them, a longer gap is a
-    break, and sessions open at the same time count once. Only the timestamps are read, nothing of what was said. It
-    is the time spent working with Claude, not all the time spent on the project: modelling in Houdini, reading and
-    site visits without a conversation open are not in it.${since && since < start ? ` The conversations began on ${nice(since, true)}, before the first commit (the research and the September presentation); those days are not shown.` : ""}
-    The GitHub part is read again on every deploy of this site; the hours are added from the owner's computer.
-    <span class="note">(updated ${esc((W.generated || "").slice(0, 10))})</span>`;
+  // 6.2 each day, the newest first: who worked how long, what came of it, the commits
+  document.getElementById("dayList").innerHTML = days.map((d, i) => i).reverse().filter((i) => dayMin[i] || commits[i].length || mergedOn[i].length || openedOn[i].length).map((i) => {
+    const who = people.map((p, j) => (mins[j][i] ? `<span class="who"><i class="sw" style="background: var(--p${j + 1}, var(--muted))"></i>${esc(p.name)} ${hrs(mins[j][i])}</span>` : "")).join("");
+    const res = [...mergedOn[i].map((p) => `Merged ${prLink(p)} ${esc(p.title)}`), ...openedOn[i].map((p) => `Opened ${prLink(p)} ${esc(p.title)}`)];
+    const cs = commits[i];
+    return `<li><span class="d">${nice(days[i], true)}</span>${who}${res.length ? `<div class="res">${res.join("<br>")}</div>` : ""}`
+      + (cs.length ? `<details><summary>${cs.length} commit${cs.length === 1 ? "" : "s"}</summary><ul>${cs.map((c) => `<li>${esc(c.s)}${people.length > 1 || c.by !== people[0]?.login ? ` <span class="note">(${esc(nameOf(c.by))})</span>` : ""}</li>`).join("")}</ul></details>` : "")
+      + `</li>`;
+  }).join("");
+  // 6.3 every pull request, the newest first
+  document.getElementById("prTable").innerHTML = `<table><tr><th>#</th><th>Pull request</th><th>By</th><th>Merged</th><th class="r">Commits</th></tr>`
+    + [...prs].sort((a, b) => b.created.localeCompare(a.created)).map((p) => `<tr><td>${prLink(p)}</td><td>${esc(p.title)}<br><code class="note">${esc(p.branch)}</code></td><td>${esc(nameOf(p.by))}</td><td>${p.merged ? nice(dayOf(p.merged)) : esc(p.state)}</td><td class="r">${p.commits}</td></tr>`).join("") + `</table>`;
+  // 6.4 the rule
+  document.getElementById("recHow").innerHTML = `<p><b>Everyone records their working time.</b> A person's time is counted
+    from their first Claude Code session about this project, and recorded day by day: how long they worked with Claude,
+    and what came of the day, the pull requests opened and merged. Each person adds their own time from their own
+    computer, where their sessions are, by running <code>python docs/worklog.py</code> before opening a pull request
+    (docs/WORKFLOW.md); the commits and pull requests are read again from GitHub on every deploy of this site.</p>
+    <p><b>How the time is counted</b>: the timestamps of the messages in the person's Claude Code sessions about this
+    project, all of them on one line; two messages less than ${W.gap_min ?? 10} minutes apart count the time between
+    them, a longer gap is a break, and sessions open at the same time count once. Only the timestamps are read, nothing
+    of what was said. It is the time spent working with Claude, not all the time spent on the project: modelling in
+    Houdini, reading and site visits without a conversation open are not in it. Days are Los Angeles days.
+    <b>Commits</b>: every commit of this repository and of the earlier Blender one except merge commits (a pull request
+    is shown by its merge). <span class="note">(updated ${esc((W.generated || "").slice(0, 10))})</span></p>`;
 }
 
 // the contents: every section and subsection, the one being read marked
