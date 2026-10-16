@@ -28,7 +28,16 @@
    "auto_parts": [
     "PC_-159_-80",
     "PC_-154_-56"
-   ]
+   ],
+   "ground": {
+    "parts": [
+     "PC_-159_-80",
+     "PC_-154_-56",
+     "BLD_485649841129"
+    ],
+    "plazaMaxHagM": 20,
+    "note": "drawn as ground (user, 2026-10-16: the low parts around the tower read as ground and look calmer in its colour): these parts whole, and the tower's plan cells under 20 m above the ground outside its shaft (plaza edges, low walls, steps over the lower streets; the plazas rule takes 10 m)"
+   }
   },
   {
    "id": "E002",

@@ -26,3 +26,6 @@ desktop.ini
 
 # population: raw downloads (LODES, ACS, Gazetteer, Overpass), re-fetched by site-model/population/fetch_population.py
 site-model/population/data/raw/
+
+# trial point clouds for comparing thinning rules (pack_wide.py pack --out ../../web/data/trial_<name>; viewer ?lidar=trial_<name>)
+web/data/trial_*/

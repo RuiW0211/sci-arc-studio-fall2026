@@ -146,17 +146,20 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   // ---------- distance fade (user, 2026-10-08: "like the point cloud, dense to sparse"): the point cloud's own rule
   // (lidar_points.json "thinning", site-model/houdini/thinning.json). Within R0 of Y-1 everyone is drawn; farther out
   // each person is drawn with the share (R0 / d_eff)^P, d_eff = distance stretched by the person's own random jitter,
-  // and fades out; the counts and the chart still include everyone.
+  // and fades out; the counts and the chart still include everyone. A cloud with a target density (half_density_m,
+  // 2026-10-16) has no full-density disc: the share is 1 / (1 + (d_eff / half)^P) from Y-1 itself (people are not
+  // balanced by the buildings around them, like trees and the ground).
   const TH = { r0: thinning?.full_density_radius_m ?? 250, p: thinning?.falloff_power ?? 2.7, jitter: 0.18,
-               keepMin: thinning?.keep_min ?? 0.015, edgeEnd: thinning?.edge_end_m ?? 1230, edgeW: 300 };
+               keepMin: thinning?.keep_min ?? 0.015, edgeEnd: thinning?.edge_end_m ?? 1230, edgeW: 300,
+               half: thinning?.half_density_m ?? 0 };
   const hashU = (i, s) => { let h = Math.imul(i ^ s, 2654435761) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; };
   const uKeep = new Float32Array(A), uJit = new Float32Array(A);
   for (let i = 0; i < A; i++) { uKeep[i] = hashU(i, 0x9e37); uJit[i] = hashU(i, 0x85eb); }
   function share(x, z, i) {
     const d = Math.hypot(x, z);
-    if (d <= TH.r0) return 1;
+    if (!TH.half && d <= TH.r0) return 1;
     const de = d * (1 + TH.jitter * (2 * uJit[i] - 1));
-    let r = Math.min(1, (TH.r0 / Math.max(de, 1)) ** TH.p);
+    let r = TH.half ? 1 / (1 + (Math.max(de, 1) / TH.half) ** TH.p) : Math.min(1, (TH.r0 / Math.max(de, 1)) ** TH.p);
     if (r < TH.keepMin) return 0;
     return r * Math.min(Math.max((TH.edgeEnd - d) / TH.edgeW, 0), 1);
   }
@@ -177,15 +180,16 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 100, 0), 900);
   const uniforms = { size: { value: pc.size ?? 0.7 }, scale: { value: 1 }, minPx: { value: 2.0 }, alpha: { value: 1 },
                     r0: { value: TH.r0 }, pw: { value: TH.p }, jit: { value: TH.jitter }, keepMin: { value: TH.keepMin },
-                    edgeEnd: { value: TH.edgeEnd }, edgeW: { value: TH.edgeW }, ...lens.uniforms };
+                    edgeEnd: { value: TH.edgeEnd }, edgeW: { value: TH.edgeW }, halfD: { value: TH.half }, ...lens.uniforms };
   const material = new THREE.ShaderMaterial({
     uniforms, vertexColors: true,
     // the same share() as above: a person outside their share is not drawn; the drawn ones fade with it
     vertexShader: `uniform float size; uniform float scale; uniform float minPx; uniform float r0; uniform float pw;
-      uniform float jit; uniform float keepMin; uniform float edgeEnd; uniform float edgeW;
+      uniform float jit; uniform float keepMin; uniform float edgeEnd; uniform float edgeW; uniform float halfD;
       attribute float aKeep; attribute float aJit; varying vec3 vC; varying float vFade;
       void main() { vC = color; float d = length(position.xz), s = 1.0;
-        if (d > r0) { s = min(1.0, pow(r0 / max(d * (1.0 + jit * (2.0 * aJit - 1.0)), 1.0), pw));
+        float de = max(d * (1.0 + jit * (2.0 * aJit - 1.0)), 1.0);
+        if (halfD > 0.0 || d > r0) { s = halfD > 0.0 ? 1.0 / (1.0 + pow(de / halfD, pw)) : min(1.0, pow(r0 / de, pw));
           s = s < keepMin ? 0.0 : s * clamp((edgeEnd - d) / edgeW, 0.0, 1.0); }
         vFade = s > 0.0 ? 0.35 + 0.65 * sqrt(s) : 0.0;
         vec4 mv = modelViewMatrix * vec4(position, 1.0);

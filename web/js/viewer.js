@@ -12,6 +12,9 @@ const cfg = await (await fetch("config.json")).json();
 // (2026-10-15, load time) the small files are all asked for at once, then read where they are needed (they used to be
 // fetched one after another: ~1.5 s before the point cloud even started)
 const ask = (u) => (u ? fetch(u).catch(() => null) : Promise.resolve(null));
+// ?lidar=<folder> (for comparing trial clouds, 2026-10-16): the point cloud from web/data/<folder>/ instead (pack_wide.py
+// pack --out ../../web/data/<folder>); letters, digits, - and _ only
+{ const f = new URLSearchParams(location.search).get("lidar"); if (f && /^[\w-]+$/.test(f)) cfg.lidar.meta = `data/${f}/lidar_points.json`; }
 const PRE = { entities: ask(cfg.entities), facades: ask(cfg.facades?.meta), designs: ask(cfg.designs), ghosts: ask(cfg.ghosts?.data),
               lidarMeta: ask(cfg.lidar.meta) };
 // ---------- display units: every length goes through len() (user, 2026-10-08: m / ft switch in the panel; ft is the
@@ -175,19 +178,24 @@ function crossFade() {
 const SEL_K = { value: 1 };   // 0 -> 1 over --t-out after each change of selection
 let selAnim = 0;
 const FOCUS = { value: 0 };
+// Free's Black and white (user, 2026-10-16: "给free加一个和guided一样的黑白模式"): the History colours (buildings white,
+// the rest a faint grey) on today's model, nothing rising; 1 while it shows or fades out
+const MONO = { value: 0 };
 const FOCUS_GREY = { value: cfg.population?.whiteCloud?.white ?? 0.8 }, FOCUS_ALPHA = { value: cfg.population?.whiteCloud?.opacity ?? 0.5 };
 const focusMats = [];
 function withFocus(shader) {
   shader.uniforms.uFocus = FOCUS; shader.uniforms.uFocusGrey = FOCUS_GREY; shader.uniforms.uFocusAlpha = FOCUS_ALPHA;
   shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uTimeGrey = TIME.grey; shader.uniforms.uTimeAlpha = TIME.alpha;
+  shader.uniforms.uMono = MONO;
   // vSel (from pointMaterial's vertex shader): a selected object keeps its highlight under Highlight people
   // vBuild, vGhost (Time module): buildings (white, set in the vertex shader) and the unbuilt towers are not greyed,
   // and the rest goes a darker, fainter grey than for Highlight people, so the buildings stand out
-  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha, uTimeOn, uTimeGrey, uTimeAlpha;\nvarying float vSel, vBuild, vGhost;\n" + shader.fragmentShader.replace("#include <color_fragment>",
+  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha, uTimeOn, uTimeGrey, uTimeAlpha, uMono;\nvarying float vSel, vBuild, vGhost;\n" + shader.fragmentShader.replace("#include <color_fragment>",
     `#include <color_fragment>
   float fk = uFocus * (1.0 - vSel) * (1.0 - vBuild) * (1.0 - vGhost);
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(mix(uFocusGrey, uTimeGrey, uTimeOn)), fk);
-  diffuseColor.a *= mix(1.0, mix(uFocusAlpha, uTimeAlpha, uTimeOn), fk);`);
+  float th = max(uTimeOn, uMono);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(mix(uFocusGrey, uTimeGrey, th)), fk);
+  diffuseColor.a *= mix(1.0, mix(uFocusAlpha, uTimeAlpha, th), fk);`);
 }
 let focusAnim = 0;
 function setWhiteCloud(on) {
@@ -200,6 +208,7 @@ function setWhiteCloud(on) {
     pop?.highlight(FOCUS.value);   // people grow with it
     invalidate();
     if (k < 1) focusAnim = requestAnimationFrame(step);
+    else if (!on && !monoWanted()) MONO.value = 0;   // Black and white let go once the grey has faded
     else if (!on) for (const m of focusMats) if (!m.userData.alwaysTransparent) { m.transparent = false; m.needsUpdate = true; }
   };
   focusAnim = requestAnimationFrame(step);
@@ -317,8 +326,11 @@ const lidarMeta = await (await PRE.lidarMeta).json();
 // a cloud thinned with distance (Houdini wide site) says so in the Point cloud button's tooltip
 const CLOUD_TIP = $('[data-mode="cloud"]').title;
 function cloudTip() {
-  $('[data-mode="cloud"]').title = CLOUD_TIP + (!lidarMeta.thinning ? "" : ". Every return as captured within "
-    + `${len(lidarMeta.thinning.full_density_radius_m, 0)} of Y-1; farther out each object (building, tree, car …) keeps a `
+  const th = lidarMeta.thinning;
+  $('[data-mode="cloud"]').title = CLOUD_TIP + (!th ? "" : th.half_density_m ? ". Densest at Y-1: each object (building, "
+    + `tree, car …) keeps a share of its points, half at ${len(th.half_density_m, 0)}, fewer with distance; buildings in `
+    + "dense blocks keep less, on open ground more." : ". Every return as captured within "
+    + `${len(th.full_density_radius_m, 0)} of Y-1; farther out each object (building, tree, car …) keeps a `
     + "share of its points, fewer with distance.");
 }
 cloudTip();
@@ -406,9 +418,9 @@ function pointMaterial(sizeMetres) {
     Object.assign(shader.uniforms, FISH_U);   // the fisheye (fishPos, after the projection)
     shader.uniforms.uColorMix = COLOR_MIX; shader.uniforms.uSelK = SEL_K; shader.uniforms.uHi = { value: HILITE };
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
-    shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front;
+    shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front; shader.uniforms.uMono = MONO;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono;\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
@@ -423,7 +435,8 @@ function pointMaterial(sizeMetres) {
       // keep their colour, rising the same way over their first years and sinking back over their last ones. The ground
       // filled under a building (aYear 10000 + its year) is ordinary ground, always drawn (user, 2026-10-13: in every mode).
       + "if (aYear > 9999.5) { }\n"
-      + "else if (uTimeOn > 0.5) {\n"
+      // (Free's Black and white, uMono: the same colours with every building standing)
+      + "else if (uTimeOn > 0.5 || uMono > 0.5) {\n"
       + "  if (aYear < -99.5) {\n"
       + "    float c = -aYear, s = floor(c / 100.0 + 0.001), sp = c - 100.0 * s + 1.0; s += 1800.0;\n"
       + "    float up = min(uBuild, 0.6 * sp), dn = min(1.5, 0.3 * sp);\n"
@@ -432,7 +445,7 @@ function pointMaterial(sizeMetres) {
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
       + "    vGhost = 1.0;\n"
       + "  } else if (aYear > 0.5) {\n"
-      + "    float p = clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0); p = p * p * (3.0 - 2.0 * p);\n"
+      + "    float p = uTimeOn > 0.5 ? clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0) : 1.0; p = p * p * (3.0 - 2.0 * p);\n"
       + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
       + "    vColor.rgb = mix(vColor.rgb, mix(vec3(1.0), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
@@ -516,6 +529,7 @@ async function loadLidar() {
         if (first && L.built) e.built = [L.built, L.builtSource];
         if (L.builtAs) { e.builtAs = L.builtAs; e.builtAsSource = L.builtAsSource; }
         if (L.now) e.nowFixed = L.now;
+        if (L.ground) e.ground = { ...e.ground, ...L.ground };   // e.g. no plaza cells (the plazas rule, below)
       }
     }
     objNames.forEach((nm, k) => {
@@ -525,7 +539,9 @@ async function loadLidar() {
   }
   tick("landmarks");
   // estimated facade points join the measured ones as ordinary building points: the object of their nearest return,
-  // that object's mean intensity, class "building"; after this nothing tells them apart
+  // that object's mean intensity, class "building"; after this nothing tells them apart (except their index: the
+  // measured returns are the first nLidar points)
+  const nLidar = n;
   if (facadeData?.obj) {
     const nameIdx = new Map(objNames.map((nm, k) => [nm, k]));
     const map = facadeData.names.map((nm) => nameIdx.get(nm) ?? -1);
@@ -601,7 +617,17 @@ async function loadLidar() {
   // object of the layer at least minBuildingM tall, a cellM plan cell whose highest return is under maxHagM above the
   // ground has no building over it: a plaza, steps, a terrace at street level. Its points become ground points (object
   // Terrain), so they are coloured, picked and counted as the ground.
-  const PZ = cfg.plazas, terrainObj = objNames.indexOf("Terrain");
+  // A hand-checked building can ask for more in entities.json "ground" (user, 2026-10-16, Two California Plaza: the low
+  // parts around the tower read as ground and look calmer in its colour): ground.plazaMaxHagM in place of maxHagM for
+  // its objects (plaza edges and steps over a lower street sit higher above the ground), and ground.parts drawn as
+  // ground whole (their estimated facade points dropped).
+  const PZ = cfg.plazas, terrainObj = objNames.indexOf("Terrain"), dropAfter = [];
+  const entGround = (o) => entityOfName.get(objNames[o])?.ground;
+  if (terrainObj >= 0) {
+    const whole = new Set();
+    for (let o = 0; o < objNames.length; o++) if (entGround(o)?.parts?.includes(objNames[o])) whole.add(o);
+    if (whole.size) for (let i = 0; i < n; i++) if (whole.has(obj[i])) { if (i >= nLidar) dropAfter.push(i); obj[i] = terrainObj; }
+  }
   if (PZ && HG && terrainObj >= 0) {
     const top = new Float32Array(objNames.length).fill(-1e9), lay = objAttr?.layers ?? [];
     for (let i = 0; i < n; i++) { const o = obj[i]; if (lay[o] === PZ.layer && HG[i] / 10 > top[o]) top[o] = HG[i] / 10; }
@@ -611,9 +637,9 @@ async function loadLidar() {
     for (let i = 0; i < n; i++) {
       const o = obj[i]; if (!tall(o)) continue;
       const k = keyOf(o, i), h = HG[i] / 10, c = col.get(k);
-      if (!c) col.set(k, [h, P[3 * i + 1], false]); else if (h > c[0]) { c[0] = h; c[1] = P[3 * i + 1]; }
+      if (!c) col.set(k, [h, P[3 * i + 1], false, o]); else if (h > c[0]) { c[0] = h; c[1] = P[3 * i + 1]; }
     }
-    for (const c of col.values()) c[2] = c[0] < PZ.maxHagM;
+    for (const c of col.values()) c[2] = c[0] < (entGround(c[3])?.plazaMaxHagM ?? PZ.maxHagM);
     // the plaza's edges: a cell next to the plaza whose top is no higher than the plaza (within PZ.edgeM) - the walls
     // and steps down to a lower street, where the ground below makes them look tall - joins it, PZ.grow cells out
     for (let g = 0; g < (PZ.grow ?? 0); g++) {
@@ -634,28 +660,72 @@ async function loadLidar() {
     }
     lidarPlazaPoints = moved;   // for checks (__viewer)
   }
+  // config.json treeSpots (user, 2026-10-16, the Watercourt: crowns that were labelled as Two California Plaza went to
+  // the ground with its plaza): a hand-checked list of circles (e, n local m, r); in each, the ground points (measured
+  // returns) more than raiseM above its floor (the 20th percentile height within r + 2 m) are a tree, an object of
+  // the Trees layer of their own ("Tree (spot k)"), so they are coloured, picked and counted as trees.
+  const TS = cfg.treeSpots;
+  if (TS?.spots?.length && terrainObj >= 0) {
+    for (const [k, sp] of TS.spots.entries()) {
+      const R = sp.r + 2, near = [];
+      for (let i = 0; i < nLidar; i++) {
+        if (obj[i] !== terrainObj) continue;
+        const dx = P[3 * i] - sp.e, dn = -P[3 * i + 2] - sp.n;
+        if (dx * dx + dn * dn <= R * R) near.push([i, dx * dx + dn * dn <= sp.r * sp.r]);
+      }
+      if (near.length < 10) continue;
+      const ys = near.map(([i]) => P[3 * i + 1]).sort((p, q) => p - q), floor = ys[Math.floor(0.2 * (ys.length - 1))];
+      const o = objNames.length; objNames.push(`Tree (spot ${k + 1})`); objLayers.push("Trees");
+      for (const [i, inside] of near) if (inside && P[3 * i + 1] > floor + (TS.raiseM ?? 1)) obj[i] = o;
+    }
+  }
   // config.json splitLayers sends some objects of a layer elsewhere (user, 2026-10-10: of the LiDAR-only structures,
   // the bridges, raised walkways, street and plaza decks and canopies draw with the ground and streets; the rest are
   // building parts and join Buildings through mergeLayers). An object goes when its entity's checked use names it
   // (s.uses, e.g. the Grand Avenue deck), or by shape: thin (s.maxThickM between the 5th and 95th percentile of its
   // heights, so a railing or lamp post does not make a deck "thick") and held s.minHagM-s.maxHagM above the ground.
-  const rawLayers = objAttr?.layers ?? ["_other"], moved = new Map();   // moved: object -> its split rule
+  // s.curved (user, 2026-10-16: freeway ramps and a skybridge near the 110 still drew as buildings): a sloping or curving
+  // deck has a large height range, so an object no one has checked by hand (an automatic entity, or none) also goes
+  // when it is thin about its own surface (a quadratic surface fitted to its points: p5-p95 of the rest under
+  // s.curved.maxThickM) and held s.minHagM-s.curved.maxHagM above the ground (a skybridge over a lower street is higher).
+  // Only the measured returns count (synth_facades.py hangs estimated walls down to the street from every LiDAR-only
+  // structure, decks too), and an object that goes loses its estimated facade points.
+  const rawLayers = objAttr?.layers ?? ["_other"], moved = new Map(), split = new Set();   // moved: object -> its split rule
+  // p5-p95 of the heights of points ids about a surface fitted to them (least squares: quadratic in plan from 30
+  // points, else a plane), so a ramp's slope or a curve does not count as thickness
+  function surfaceThickness(ids) {
+    let cx = 0, cz = 0; for (const i of ids) { cx += P[3 * i]; cz += P[3 * i + 2]; } cx /= ids.length; cz /= ids.length;
+    const K = ids.length >= 30 ? 6 : 3, row = (i) => { const u = (P[3 * i] - cx) / 50, v = (P[3 * i + 2] - cz) / 50;
+      return K === 6 ? [1, u, v, u * u, u * v, v * v] : [1, u, v]; };
+    const M = Array.from({ length: K }, () => new Float64Array(K + 1));
+    for (const i of ids) { const r = row(i), y = P[3 * i + 1]; for (let a = 0; a < K; a++) { for (let b = 0; b < K; b++) M[a][b] += r[a] * r[b]; M[a][K] += r[a] * y; } }
+    for (let a = 0; a < K; a++) {   // Gauss-Jordan with partial pivoting
+      let p = a; for (let b = a + 1; b < K; b++) if (Math.abs(M[b][a]) > Math.abs(M[p][a])) p = b;
+      [M[a], M[p]] = [M[p], M[a]]; if (Math.abs(M[a][a]) < 1e-9) return Infinity;
+      for (let b = 0; b < K; b++) if (b !== a) { const f = M[b][a] / M[a][a]; for (let c = a; c <= K; c++) M[b][c] -= f * M[a][c]; }
+    }
+    const coef = M.map((m, a) => m[K] / m[a]);
+    const res = ids.map((i) => P[3 * i + 1] - row(i).reduce((t, r, a) => t + r * coef[a], 0)).sort((p, q) => p - q);
+    return res[Math.round(0.95 * (res.length - 1))] - res[Math.round(0.05 * (res.length - 1))];
+  }
   for (const [raw, s] of Object.entries(cfg.splitLayers || {})) {
     if (!HG || raw.startsWith("_")) continue;
-    const ys = new Map(), hs = new Float64Array(objNames.length);
-    for (let i = 0; i < n; i++) {
+    const pts = new Map(), hs = new Float64Array(objNames.length);
+    for (let i = 0; i < nLidar; i++) {
       const o = obj[i]; if (rawLayers[o] !== raw) continue;
-      (ys.get(o) ?? ys.set(o, []).get(o)).push(P[3 * i + 1]);
+      (pts.get(o) ?? pts.set(o, []).get(o)).push(i);
       hs[o] += HG[i] / 10;
     }
     const byUse = s.uses ? new RegExp(s.uses, "i") : null;
-    for (const [o, y] of ys) {
+    for (const [o, ids] of pts) {
       if (objLayers[o] === "Landmarks") continue;   // a landmark keeps all its parts
-      y.sort((p, q) => p - q);
+      const y = ids.map((i) => P[3 * i + 1]).sort((p, q) => p - q);
       const at = (f) => y[Math.round(f * (y.length - 1))], h = hs[o] / y.length;
-      const use = entityOfName.get(objNames[o])?.use ?? "";
-      if ((byUse && byUse.test(use)) || (at(0.95) - at(0.05) < s.maxThickM && h >= s.minHagM && h <= s.maxHagM)) {
-        objLayers[o] = s.to; if (s.matchDensity) moved.set(o, s);
+      const ent = entityOfName.get(objNames[o]), use = ent?.use ?? "";
+      const curved = s.curved && (!ent || ent.status === "auto") && h >= s.minHagM && h <= s.curved.maxHagM
+        && surfaceThickness(ids) < s.curved.maxThickM;
+      if ((byUse && byUse.test(use)) || (at(0.95) - at(0.05) < s.maxThickM && h >= s.minHagM && h <= s.maxHagM) || curved) {
+        objLayers[o] = s.to; split.add(o); if (s.matchDensity) moved.set(o, s);
       }
     }
   }
@@ -667,10 +737,12 @@ async function loadLidar() {
   // larger (at most matchDensity.maxSize) so they cover the same share of the screen. Only the drawing changes.
   tick("claims + plazas + split layers");
   let sizeK = new Uint8Array(n).fill(64), drop = new Uint8Array(n);   // point size x 64; 1 = not drawn
+  for (let i = nLidar; i < n; i++) if (split.has(obj[i])) drop[i] = 1;   // no estimated walls under a deck
+  for (const i of dropAfter) drop[i] = 1;   // nor under a building's parts drawn as ground (entities.json "ground")
   if (moved.size) {
     const CM = 2, PAD = 10, cellOf = (x, z) => (Math.floor(x / CM) + 32768) * 65536 + Math.floor(z / CM) + 32768;
     const own = new Map(), box = new Map();
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < nLidar; i++) {
       const o = obj[i]; if (!moved.has(o)) continue;
       const x = P[3 * i], z = P[3 * i + 2], c = cellOf(x, z);
       let m = own.get(o); if (!m) own.set(o, (m = new Map()));
@@ -703,7 +775,7 @@ async function loadLidar() {
       if (g.length >= 10 && m.size >= 3) f.set(o, mean(g) / mean([...m.values()]));
     }
     for (let i = 0; i < n; i++) {
-      const k = f.get(obj[i]); if (k === undefined) continue;
+      const k = f.get(obj[i]); if (k === undefined || i >= nLidar) continue;
       if (k < 1) drop[i] = seed(i) > k ? 1 : 0;
       else sizeK[i] = Math.round(64 * Math.min(Math.sqrt(k), moved.get(obj[i]).matchDensity.maxSize ?? 2.5));
     }
@@ -728,7 +800,8 @@ async function loadLidar() {
   // ground). They draw as ground, always (user, 2026-10-13: the holes show in the other modes too, e.g. under Highlight
   // people); per-point year code 10000 + the building's year (ptYear), kept for the Time module.
   let ptYear = null;
-  const GF = cfg.time?.groundFill;
+  // (a cloud packed with the ground under the buildings already in it, thinning.ground_fill, 2026-10-16: none here)
+  const GF = meta.thinning?.ground_fill ? null : cfg.time?.groundFill;
   if (GF && HG && terrainObj >= 0) {
     const CM = GF.cellM ?? 2, groundL = objLayers[terrainObj];
     let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
@@ -1285,10 +1358,14 @@ $("#popOn").onchange = async (e) => {
 // the cloud turns grey for Highlight people, and with the Time module (user, 2026-10-13: as Population does)
 let whiteNow = false;
 function updateWhite() {
-  // (user, 2026-10-14: Highlight people removed; the grey cloud is now the History module's only)
-  const want = $("#timeOn").checked;
+  // (user, 2026-10-14: Highlight people removed; the grey cloud is now the History module's only; 2026-10-16: and
+  // Free's Black and white)
+  if (monoWanted()) MONO.value = 1;
+  const want = $("#timeOn").checked || monoWanted();
   if (want !== whiteNow) { whiteNow = want; setWhiteCloud(want); }
 }
+function monoWanted() { try { return viewMode === "free" && $("#monoOn").checked; } catch { return false; } }   // (viewMode is declared further down)
+$("#monoOn").onchange = () => updateWhite();
 // the History module's Tags switch (user, 2026-10-14): the tags fade out and back in
 $("#timeTags").onchange = (e) => { tlLayer.classList.toggle("off", !e.target.checked); };
 // ---------- Time module ----------

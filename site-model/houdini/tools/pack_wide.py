@@ -16,6 +16,25 @@ Thinning (agreed with the user 2026-10-06):
     0.9-1.3 km with its own noise, so the city does not stop at a line;
   * Terrain, _other and Street_furniture are not objects: their ratio comes from each point's position, with a smooth
     60 m noise field in place of the per-object random (irregular patches, no squares).
+Target density (half_density_m > 0, user 2026-10-16, item 15: "通过疏密来凸显Y1是中心"): no full-density disc; the share
+  falls smoothly from Y-1 itself, 1 / (1 + (d_eff / half_density_m)^P), half at half_density_m. Buildings / landmarks
+  are also balanced by how much is built around them: share = that curve x T0 / A, never above 1, A = building points
+  per m2 of ground within area_window_m of the building (as scanned), T0 = the area_reference_percentile of A among the
+  buildings within area_reference_radius_m of Y-1. Dense blocks thin more, open ground (parks, plazas) keeps more, so
+  the amount on screen per m2 follows distance from Y-1 (the scanned city is heavier to the south: centre -73 m before).
+  The ground (Terrain, _other, street furniture) keeps at least the share of the building points around it (within
+  area_window_m), so a building that keeps more on open ground does not stand on thinner ground (user 2026-10-16: the
+  buildings at the edge looked as if floating).
+The ground at the edge (user 2026-10-16: "渐渐消失 ... 自然优雅"; black holes and mottling far out):
+  * the ground is never cut by KEEP_MIN (that is for objects) and the outer taper is a smoothstep;
+  * its 60 m patches lose contrast with distance (PATCH_FADE, PATCH_FAR);
+  * far out it keeps a target density, not a share of what was scanned: x (GROUND_REF / the ground returns per m2
+    of ground within GROUND_WIN m)^w, w from 0 at PATCH_FADE[0] to 1 at PATCH_FADE[1] (overlapping flight lines
+    scanned some strips twice as densely);
+  * GROUND_FILL: the ground under the buildings (no returns under a roof) is estimated here, from the full scan, in
+    2 m cells where a building has returns and the ground none, at the ground's mean density within 20 m (60, 150 m
+    deep under large buildings), at the building's ground height, and thinned like the ground, so it stays where the
+    building itself is thinned out (the viewer's groundFill did it from the loaded points: holes far out).
 """
 import json
 import sys
@@ -41,6 +60,15 @@ MIST, MIST_END, MIST_W = 0.0, 1150.0, 250.0
 # noise), so the cloud never reaches the square edge of the 9-tile data (~1.42 km east of Y-1)
 EDGE_END, EDGE_W = 1230.0, 300.0
 DENSITY, DENSITY_INSIDE = 1.0, False
+# target density (see the notes at the top): 0 = the full-density disc of R0 as before
+HALF, AREA_W, AREA_PCT, AREA_REF_R = 0.0, 120.0, 90.0, 200.0
+PATCH_FADE, PATCH_FAR = (500.0, 1100.0), 0.2     # the ground patches' contrast: full until 500 m, 20 % from 1100 m
+GROUND_FILL, GROUND_REF, GROUND_WIN, FILL_CELL = True, 10.4, 15.0, 2.0
+FILL_RADII = (20.0, 60.0, 150.0)
+BUILDING_RAW = ("Buildings", "Buildings_LiDAR_only", "Landmarks")
+AREA_LAYERS = ("Buildings", "Buildings_LiDAR_only", "Landmarks")
+AREA_T0 = None          # set by plan()
+GROUND_GRID = None      # set by plan(): (x0, step, grid of the kept share of the building points around each node)
 # site-model/houdini/thinning.json overrides the defaults above (see its "_" notes); command-line flags override both
 _cfg_path = HZ / "thinning.json"
 if _cfg_path.exists():
@@ -50,7 +78,11 @@ if _cfg_path.exists():
     KEEP_MIN = float(_c.get("keep_min", KEEP_MIN)); EDGE_END = float(_c.get("edge_end_m", EDGE_END))
     EDGE_W = float(_c.get("edge_width_m", EDGE_W)); JITTER = float(_c.get("object_jitter", JITTER))
     NOISE = float(_c.get("noise_amplitude", NOISE)); NOISE_SCALE = float(_c.get("noise_wavelength_m", NOISE_SCALE))
+    PATCH_FADE = tuple(_c.get("ground_patch_fade_m", PATCH_FADE)); PATCH_FAR = float(_c.get("ground_patch_far", PATCH_FAR))
+    GROUND_FILL = bool(_c.get("ground_fill", GROUND_FILL)); GROUND_REF = float(_c.get("ground_density_ref", GROUND_REF))
     CELL = float(_c.get("ground_patch_m", CELL)); MIST = float(_c.get("mist", MIST)); MIST_END = float(_c.get("mist_end_m", MIST_END))
+    HALF = float(_c.get("half_density_m", HALF)); AREA_W = float(_c.get("area_window_m", AREA_W))
+    AREA_PCT = float(_c.get("area_reference_percentile", AREA_PCT)); AREA_REF_R = float(_c.get("area_reference_radius_m", AREA_REF_R))
 CELL_KINDS = ("Terrain", "_other", "Street_furniture")
 RENUMBER = ("Tree", "Vehicle", "Shrub", "Wall", "PC")
 # kinds that keep their position-based chunk names (PC_<x>_<z>, metres) instead of a running number: the building
@@ -126,16 +158,26 @@ def noise(x, n, scale=None, seed=7):
     return (a * (1 - fx) + b * fx) * (1 - fn) + (c * (1 - fx) + d * fx) * fn
 
 
-def ratio(x, n, u):
-    """Keep ratio at plan position (x, north) for an object / cell with its own random u in [0, 1)."""
+def ratio(x, n, u, area=None, cut=True):
+    """Keep ratio at plan position (x, north) for an object / cell with its own random u in [0, 1); area (target
+    density only): how much is built around it, A / T0 (1 = the reference amount); cut: an object whose share is
+    under KEEP_MIN is left out (cell_ratio, the ground, passes False: user 2026-10-16, the ground at the edge went
+    out in 60 m patches - "我想要的是渐渐消失，不是规则的弧线但是要自然优雅")."""
     d = np.hypot(x, n)
     d_eff = d * (1 + JITTER * (2 * u - 1)) * (1 + NOISE * noise(x, n))
-    r = np.where(d <= R0, 1.0, np.minimum(1.0, DENSITY * (R0 / np.maximum(d_eff, 1)) ** P))
-    if DENSITY_INSIDE:
-        r = np.where(d <= R0, min(1.0, DENSITY), r)
+    if HALF > 0:
+        r = np.minimum(1.0, DENSITY / (1 + (np.maximum(d_eff, 1) / HALF) ** P))
+        if area is not None:
+            r = np.minimum(1.0, r / np.maximum(area, 1e-6))
+    else:
+        r = np.where(d <= R0, 1.0, np.minimum(1.0, DENSITY * (R0 / np.maximum(d_eff, 1)) ** P))
+        if DENSITY_INSIDE:
+            r = np.where(d <= R0, min(1.0, DENSITY), r)
     d_m = d * (1 + 0.12 * noise(x, n, 500.0, seed=23))
-    r = np.where(r < KEEP_MIN, 0.0, r)                     # objects whose own share is too small are left out ...
-    r = r * np.clip((EDGE_END - d_m) / EDGE_W, 0, 1)        # ... then the outer taper thins the rest to nothing
+    if cut:
+        r = np.where(r < KEEP_MIN, 0.0, r)                 # objects whose own share is too small are left out ...
+    t = np.clip((EDGE_END - d_m) / EDGE_W, 0, 1)
+    r = r * t * t * (3 - 2 * t)                             # ... then the outer taper (smoothstep) thins the rest to nothing
     mist = MIST * np.clip((MIST_END - d_m) / MIST_W, 0, 1)
     return np.maximum(r, mist)
 
@@ -272,11 +314,37 @@ def plan(verbose=True):
         ns.sort(key=lambda s: np.hypot(final[s]["sx"] / final[s]["n"], final[s]["sn"] / final[s]["n"]))
         for i, s in enumerate(ns, 1):
             newname[s] = f"{k}_{i:05d}"
-    # 3. keep ratio per object
+    # 3. keep ratio per object (target density: buildings also by how much is built around them)
+    global AREA_T0
+    area = {}
+    if HALF > 0:
+        bs = [s for s, f in final.items() if f["layer"] in AREA_LAYERS and f["n"] > 0]
+        bp = np.array([[final[s]["sx"] / final[s]["n"], final[s]["sn"] / final[s]["n"]] for s in bs])
+        bn = np.array([final[s]["n"] for s in bs], dtype=float)
+        A = np.array([bn[j].sum() for j in cKDTree(bp).query_ball_point(bp, AREA_W)]) / (np.pi * AREA_W ** 2)
+        AREA_T0 = float(np.percentile(A[np.hypot(bp[:, 0], bp[:, 1]) < AREA_REF_R], AREA_PCT))
+        area = dict(zip(bs, A / AREA_T0))
+        if verbose:
+            print(f"target density: half at {HALF:.0f} m, buildings balanced by the amount within {AREA_W:.0f} m"
+                  f" (reference {AREA_T0:.2f} points per m2 of ground)")
     for s, f in final.items():
         cx, cn = f["sx"] / f["n"], f["sn"] / f["n"]
-        f["r"] = float(ratio(np.array(cx), np.array(cn), hash01(zlib.crc32(s.encode()))))
+        f["r"] = float(ratio(np.array(cx), np.array(cn), hash01(zlib.crc32(s.encode())), area.get(s)))
         f["name"] = newname.get(s, s)
+    global GROUND_GRID
+    GROUND_GRID = None
+    if HALF > 0:
+        # the kept share of the building points within AREA_W of each node of a 20 m grid, for the ground
+        br = np.array([final[s]["r"] for s in bs])
+        x0, step = -1600.0, 20.0
+        g = np.arange(x0, -x0 + step, step)
+        gx, gn = np.meshgrid(g, g, indexing="ij")
+        nodes = np.c_[gx.ravel(), gn.ravel()]
+        kept = np.zeros(len(nodes))
+        for k, j in enumerate(cKDTree(bp).query_ball_point(nodes, AREA_W)):
+            if j:
+                kept[k] = (bn[j] * br[j]).sum() / bn[j].sum()
+        GROUND_GRID = (x0, step, kept.reshape(gx.shape))
     est = sum(f["n"] * f["r"] for f in final.values())
     if verbose:
         print(f"{len(objects):,} chunk objects, {merged} seam splits joined -> {len(final):,} objects;"
@@ -287,9 +355,20 @@ def plan(verbose=True):
 def cell_ratio(x, n):
     """Keep ratio for Terrain / _other / Street_furniture, which are not objects: per point from its position, with the
     per-object random replaced by a second smooth noise field (wavelength CELL m), so the fade forms irregular patches
-    instead of squares."""
-    u = 0.5 + 0.5 * noise(x, n, CELL, seed=11)
-    return ratio(x, n, u)
+    instead of squares. The patches' contrast fades with distance (user, 2026-10-16: far out, where the ground is
+    sparse, neighbouring patches showed as mottled): full up to PATCH_FADE[0] m, PATCH_FAR of it from PATCH_FADE[1] m."""
+    t = np.clip((np.hypot(x, n) - PATCH_FADE[0]) / (PATCH_FADE[1] - PATCH_FADE[0]), 0, 1)
+    k = 1 - (1 - PATCH_FAR) * t * t * (3 - 2 * t)
+    u = 0.5 + 0.5 * k * noise(x, n, CELL, seed=11)
+    r = ratio(x, n, u, cut=False)
+    if GROUND_GRID is not None:
+        # at least the share of the building points around it (bilinear between the 20 m grid nodes)
+        x0, step, G = GROUND_GRID
+        fx, fn = np.clip((x - x0) / step, 0, G.shape[0] - 1.001), np.clip((n - x0) / step, 0, G.shape[1] - 1.001)
+        i, j = fx.astype(int), fn.astype(int); a, b = fx - i, fn - j
+        gb = (G[i, j] * (1 - a) + G[i + 1, j] * a) * (1 - b) + (G[i, j + 1] * (1 - a) + G[i + 1, j + 1] * a) * b
+        r = np.maximum(r, gb)
+    return r
 
 
 def point_u(X, Y, Z):
@@ -309,6 +388,50 @@ def estimate():
         cells += float(cell_ratio(x, n).sum())
     tot = cells + sum(f["n"] * f["r"] for f in final.values())
     print(f"terrain / other cells ~{cells / 1e6:.1f}M points; total ~{tot / 1e6:.1f}M points")
+
+
+def ground_grid(z, x, n):
+    """Per 2 m cell of a staged chunk: ground returns, building returns and their ground height; the target-density
+    factor of the ground; the cells to fill under the buildings with their density and height. Cells index a
+    W x H grid from (gx0, gn0)."""
+    names = z["names"]; layers = list(z["layers"])
+    ter = np.asarray(names, dtype=object)[z["name"]] == "Terrain"
+    bld = np.isin(z["layer"], [layers.index(l) for l in BUILDING_RAW if l in layers])
+    gx0, gn0 = np.floor(x.min() / FILL_CELL) * FILL_CELL, np.floor(n.min() / FILL_CELL) * FILL_CELL
+    ia = ((x - gx0) // FILL_CELL).astype(np.int64); ib = ((n - gn0) // FILL_CELL).astype(np.int64)
+    W, H = ia.max() + 1, ib.max() + 1
+    cell = ia * H + ib
+    gcount = np.bincount(cell[ter], minlength=W * H).astype(float)
+    bcount = np.bincount(cell[bld], minlength=W * H)
+    bheight = np.bincount(cell[bld], weights=z["Z"][bld] * 0.01 - z["hag"][bld] * 0.1, minlength=W * H)
+    occ = (gcount > 0).astype(float)
+
+    def sat(a):
+        S = np.zeros((W + 1, H + 1)); S[1:, 1:] = a.reshape(W, H).cumsum(0).cumsum(1); return S
+
+    Sg, So = sat(gcount), sat(occ)
+    A, B = np.meshgrid(np.arange(W), np.arange(H), indexing="ij"); A, B = A.ravel(), B.ravel()
+
+    def box(S, r):
+        a0, b0 = np.maximum(A - r, 0), np.maximum(B - r, 0); a1, b1 = np.minimum(A + r + 1, W), np.minimum(B + r + 1, H)
+        return S[a1, b1] - S[a0, b1] - S[a1, b0] + S[a0, b0]
+
+    # target density: ground returns per m2 of ground around each cell
+    rw = int(round(GROUND_WIN / FILL_CELL))
+    k = box(So, rw); dens = np.where(k > 0, box(Sg, rw) / np.maximum(k, 1) / FILL_CELL ** 2, GROUND_REF)
+    cx = gx0 + (A + 0.5) * FILL_CELL; cn = gn0 + (B + 0.5) * FILL_CELL
+    t = np.clip((np.hypot(cx, cn) - PATCH_FADE[0]) / (PATCH_FADE[1] - PATCH_FADE[0]), 0, 1)
+    factor = (GROUND_REF / np.maximum(dens, 0.5)) ** (t * t * (3 - 2 * t))
+    # the cells to fill and their density (mean ground returns per ground cell within the first radius that has any)
+    fill = (bcount > 0) & (gcount == 0)
+    fd = np.zeros(W * H)
+    todo = fill.copy()
+    for R in FILL_RADII:
+        r = int(round(R / FILL_CELL)); k = box(So, r); got = todo & (k > 0)
+        fd[got] = (box(Sg, r) / np.maximum(k, 1))[got]; todo &= ~got
+    fh = np.where(bcount > 0, bheight / np.maximum(bcount, 1), 0)
+    return dict(cell=cell, factor=factor, fill=np.flatnonzero(fill & (fd > 0)), fd=fd, fh=fh, cx=cx, cn=cn,
+                gx0=gx0, gn0=gn0, H=H)
 
 
 # ---------------------------------------------------------------- pack
@@ -337,6 +460,9 @@ def pack():
         r = loc_r[z["name"]]
         cellp = r < 0
         r[cellp] = cell_ratio(x[cellp], n[cellp])
+        G = ground_grid(z, x, n) if GROUND_FILL else None
+        if G is not None:
+            r[cellp] = np.minimum(1.0, r[cellp] * G["factor"][G["cell"][cellp]])   # the target density far out
         keep = point_u(X, Y, z["Z"]) < r
         # object index in the output table
         loc_out = np.zeros(len(names), dtype=np.int32)
@@ -363,7 +489,28 @@ def pack():
         for key_, arr in (("X", X), ("Y", Y), ("Z", z["Z"]), ("cls", z["cls"]), ("inten", z["inten"]),
                           ("segc", z["segc"]), ("hag", z["hag"]), ("obj", obj)):
             kept[key_].append(arr[keep])
-        print(f"{nm}: kept {keep.sum():,} of {len(keep):,}", flush=True)
+        nfill = 0
+        if G is not None and len(G["fill"]):
+            # the ground under the buildings, already thinned: per cell density x the ground's share there
+            fc = G["fill"]
+            share = np.minimum(1.0, cell_ratio(G["cx"][fc], G["cn"][fc]) * G["factor"][fc])
+            rng = np.random.default_rng(zlib.crc32(nm.encode()))
+            m = np.floor(G["fd"][fc] * share + rng.random(len(fc))).astype(np.int64)
+            fc, m = fc[m > 0], m[m > 0]
+            if len(fc):
+                cc = np.repeat(fc, m); nfill = len(cc)
+                fx = G["gx0"] + (cc // G["H"] + rng.random(nfill)) * FILL_CELL
+                fn = G["gn0"] + (cc % G["H"] + rng.random(nfill)) * FILL_CELL
+                ter = np.asarray(names, dtype=object)[z["name"]] == "Terrain"
+                tk = int(np.flatnonzero(np.asarray(names, dtype=object) == "Terrain")[0]) if ter.any() else 0
+                tobj = out_index("Terrain", tk) if ter.any() else 0
+                kept["X"].append(np.round((fx + OX) * 100).astype(X.dtype)); kept["Y"].append(np.round((fn + OY) * 100).astype(Y.dtype))
+                kept["Z"].append(np.round(G["fh"][cc] * 100).astype(z["Z"].dtype))
+                kept["cls"].append(np.full(nfill, 2, dtype=z["cls"].dtype))
+                kept["inten"].append(np.full(nfill, int(np.median(z["inten"][ter])) if ter.any() else 128, dtype=z["inten"].dtype))
+                kept["segc"].append(np.zeros(nfill, dtype=z["segc"].dtype)); kept["hag"].append(np.zeros(nfill, dtype=z["hag"].dtype))
+                kept["obj"].append(np.full(nfill, tobj, dtype=obj.dtype))
+        print(f"{nm}: kept {keep.sum():,} of {len(keep):,}" + (f", ground under buildings {nfill:,}" if nfill else ""), flush=True)
     K = {k: np.concatenate(v) for k, v in kept.items()}
     n = len(K["X"])
     # drop names that kept no point, keep "_other" first
@@ -400,10 +547,16 @@ def pack():
                                  "(tools/split_chunks.py, merge in tools/pack_wide.py)"},
             "segment": {"type": "uint8", "names": SEGMENTS, "source": "Houdini point segmentation"},
             "hag": {"type": "int16", "scale": 0.1, "unit": "m", "source": "height above the Houdini ground heightfield"}},
-        "thinning": {"full_density_radius_m": R0, "falloff_power": P, "density": DENSITY, "density_inside_too": DENSITY_INSIDE, "per_object": True, "ground_noise_m": CELL,
+        "thinning": {"ground_fill": bool(GROUND_FILL), "ground_target_from_m": PATCH_FADE[0] if GROUND_FILL else None,
+                     **({"half_density_m": HALF, "area_window_m": AREA_W, "area_reference_per_m2": round(AREA_T0, 3),
+                         "noise_amplitude": NOISE} if HALF > 0 else {}),
+                     "full_density_radius_m": R0, "falloff_power": P, "density": DENSITY, "density_inside_too": DENSITY_INSIDE, "per_object": True, "ground_noise_m": CELL,
                      "keep_min": KEEP_MIN, "mist": MIST, "mist_end_m": MIST_END, "edge_end_m": EDGE_END, "note": f"Every return within {R0:.0f} m of Y-1; farther out each object (building, "
                      "tree, car ...) keeps one share of its points, falling off with distance with a random, irregular edge, "
-                     "then a faint mist that fades out itself."},
+                     "then a faint mist that fades out itself." if HALF <= 0 else f"No full-density disc: each object keeps "
+                     f"1 / (1 + (d / {HALF:.0f} m)^{P:g}) of its points (half at {HALF:.0f} m, a per-object random stretch); "
+                     f"buildings also x {AREA_T0:.2f} / the building points per m2 within {AREA_W:.0f} m around them, so dense "
+                     "blocks thin more and open ground keeps more; the ground keeps at least the share of the buildings around it."},
         "source": "USGS 3DEP CA_LosAngeles_B23 (2023), 9 tiles 11SLT0383-0385 / 3767-3769, public domain; labels by Houdini;"
                   " LAZ (LAS 1.2 format 0 + extra bytes), local frame, 1 cm",
     }
@@ -418,11 +571,11 @@ if __name__ == "__main__":
     for flag, conv, glob_name in (("--r0", float, "R0"), ("--power", float, "P"), ("--keep-min", float, "KEEP_MIN"),
                                   ("--density", float, "DENSITY"),
                                   ("--mist", float, "MIST"), ("--mist-end", float, "MIST_END"),
-                                  ("--edge-end", float, "EDGE_END")):
+                                  ("--edge-end", float, "EDGE_END"), ("--half", float, "HALF"), ("--noise", float, "NOISE")):
         if flag in args:
             globals()[glob_name] = conv(args[args.index(flag) + 1])
     if "--out" in args:
         OUT = HZ / args[args.index("--out") + 1]
     print(f"R0 {R0} m, power {P}, density {DENSITY}{' (centre too)' if DENSITY_INSIDE else ''}, keep_min {KEEP_MIN},"
-          f" edge {EDGE_END} m, mist {MIST}, out {OUT}")
+          f" edge {EDGE_END} m, mist {MIST}, half {HALF or 'off'}, noise {NOISE}, out {OUT}")
     {"stage": stage, "plan": estimate, "pack": pack}[sys.argv[1]]()

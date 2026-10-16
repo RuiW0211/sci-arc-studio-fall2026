@@ -236,12 +236,30 @@
       "minHagM": 2,
       "maxHagM": 15,
       "uses": "street structure|bridge|walkway|deck|canopy",
+      "curved": {
+        "maxThickM": 4,
+        "maxHagM": 25
+      },
       "matchDensity": {
         "maxSize": 2.5
       }
     }
   },
-  "_splitLayers": "Objects of a layer sent to another (user, 2026-10-10): LiDAR-only structures whose entity's checked use matches 'uses', or that are thin (less than maxThickM between the 5th and 95th percentile of their heights) and sit on average minHagM-maxHagM above the ground: bridges, raised walkways, street and plaza decks, canopies, drawn with the ground and streets. matchDensity: the moved objects are drawn as densely as the ground around them (points dropped, or drawn larger up to maxSize times).",
+  "_splitLayers": "Objects of a layer sent to another (user, 2026-10-10): LiDAR-only structures whose entity's checked use matches 'uses', or that are thin (less than maxThickM between the 5th and 95th percentile of their heights) and sit on average minHagM-maxHagM above the ground: bridges, raised walkways, street and plaza decks, canopies, drawn with the ground and streets. curved (2026-10-16, freeway ramps and a skybridge near the 110): objects no one has checked by hand also go when they are thin about their own sloping or curving surface (under curved.maxThickM) and sit minHagM-curved.maxHagM above the ground. matchDensity: the moved objects are drawn as densely as the ground around them (points dropped, or drawn larger up to maxSize times).",
+  "treeSpots": {
+    "raiseM": 1,
+    "spots": [
+      { "e": -99.5, "n": 87.7, "r": 2.3, "note": "Watercourt, candidate 5" },
+      { "e": -27.5, "n": 80.4, "r": 7.7, "note": "Watercourt, candidate 6" },
+      { "e": -52.5, "n": 74.8, "r": 2.5, "note": "Watercourt, candidate 7" },
+      { "e": -47.5, "n": 71.4, "r": 2.7, "note": "Watercourt, candidate 8" },
+      { "e": -46.3, "n": 66.0, "r": 2.6, "note": "Watercourt, candidate 9" },
+      { "e": -2.2, "n": 55.6, "r": 3.2, "note": "Watercourt, candidate 10" },
+      { "e": -50.3, "n": 36.7, "r": 7.0, "note": "Watercourt, candidate 14" },
+      { "e": -44.6, "n": 30.6, "r": 2.4, "note": "Watercourt, candidate 16" }
+    ]
+  },
+  "_treeSpots": "Trees the labels missed, checked by hand (user, 2026-10-16: the Watercourt crowns had gone to the ground with Two California Plaza's plaza): circles in local metres (e east, n north of Y-1, r); in each, the ground points more than raiseM above its floor are drawn as a tree of their own.",
   "plazas": {
     "layer": "Buildings",
     "minBuildingM": 40,
@@ -269,6 +287,7 @@
         "BLD_486079842670"
       ],
       "name": "Walt Disney Concert Hall",
+      "ground": { "plazaMaxHagM": 0 },
       "rename": false,
       "basis": "Public cultural building named in Wikipedia: Bunker Hill, Los Angeles; Grand Avenue (Los Angeles)",
       "built": "2003",
@@ -335,6 +354,7 @@
         "BLD_485597840707"
       ],
       "name": "Subway Terminal Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #177; National Register",
       "built": "1925",
       "builtSource": "HCM list (Wikipedia)",
@@ -346,6 +366,7 @@
         "BLD_486339840977"
       ],
       "name": "Grand Central Market",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #1183",
       "built": "1896",
       "builtSource": "HCM list (Wikipedia)",
@@ -356,6 +377,7 @@
         "BLD_486434841045"
       ],
       "name": "Million Dollar Theatre",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #1184; National Register",
       "built": "1917",
       "builtSource": "HCM list (Wikipedia)",
@@ -433,6 +455,7 @@
         "BLD_484755840982"
       ],
       "name": "One Bunker Hill Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #347",
       "built": "1930–1934",
       "builtSource": "HCM list (Wikipedia)",
@@ -466,6 +489,7 @@
         "BLD_484830840428"
       ],
       "name": "Biltmore Hotel",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #60",
       "built": "1923",
       "builtSource": "Wikipedia",
@@ -532,6 +556,7 @@
         "BLD_485864839658"
       ],
       "name": "Alexandria Hotel",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #80",
       "built": "1906",
       "builtSource": "Wikipedia (addition with the Palm Court 1911)",
@@ -583,6 +608,7 @@
         "BLD_484322840870"
       ],
       "name": "Los Angeles Central Library",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #46; National Register",
       "built": "1926",
       "builtSource": "Wikipedia (Goodhue building)",
@@ -604,6 +630,7 @@
         "BLD_484539840236"
       ],
       "name": "Pacific Mutual Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #398",
       "built": "1908",
       "builtSource": "HCM list (Wikipedia)",
@@ -725,6 +752,7 @@
         "BLD_483949840832"
       ],
       "name": "California Club Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #43; National Register",
       "built": "1930",
       "builtSource": "HCM list (Wikipedia)",
@@ -1049,6 +1077,7 @@
         "BLD_202000039464"
       ],
       "name": "Fine Arts Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #125",
       "built": "1925",
       "builtSource": "HCM list (Wikipedia)",
@@ -1274,5 +1303,5 @@
       "builtSource": "HCM list (Wikipedia)"
     }
   ],
-  "_landmarks": "The Landmarks layer by landmarkRule (user, 2026-10-10, option A, 1 km). One entry per monument; parts: one object name of each entity it covers (a monument outline that covers at least half of an entity's footprint takes that entity), which does not change when auto_entities.py renumbers the automatic entities. name is shown for automatic entities (named by their address) and where rename is set. built / builtSource: the building's own year, looked up 2026-10-10 (the assessor's year built is often a later remodel: Bradbury 1922 for 1893); a landmark without one shows no year. use replaces a wrong assessor use (Central Library: a parking-lot parcel). Every other entity draws as Buildings, also the Pershing Square Metro canopy (a hand-modelled part, not a landmark)."
+  "_landmarks": "The Landmarks layer by landmarkRule (user, 2026-10-10, option A, 1 km). One entry per monument; parts: one object name of each entity it covers (a monument outline that covers at least half of an entity's footprint takes that entity), which does not change when auto_entities.py renumbers the automatic entities. name is shown for automatic entities (named by their address) and where rename is set. built / builtSource: the building's own year, looked up 2026-10-10 (the assessor's year built is often a later remodel: Bradbury 1922 for 1893); a landmark without one shows no year. use replaces a wrong assessor use (Central Library: a parking-lot parcel). Every other entity draws as Buildings, also the Pershing Square Metro canopy (a hand-modelled part, not a landmark). ground (user, 2026-10-16): { plazaMaxHagM } in place of plazas.maxHagM for the landmark's objects; 0 = none of it is drawn as a plaza (low wings and market halls whose roofs sit under 10 m above the ground)."
 }
