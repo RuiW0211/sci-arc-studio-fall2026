@@ -86,12 +86,12 @@
   },
   "ghosts": {
     "data": "data/ghosts.json",
-    "_comment": "2026-10-17 (user): rest = the share of a scheme's points that stays after its years, to 2026 and in the film (Y-1 carries its other futures), restDim = how dark what stays is (5 % of the points could not be seen at the film's distance; all of them at 0.35 read as a dark, see-through tower); breath = how far its points dim, slowly breathing over breathS seconds (0.6 / 3 s: at 0.3 / 4 s it could not be seen), and only while playing; restBreath = how far its shadow breathes, about restDim either way (0.8: 0.07 - 0.63); its tag says how it ended, from its name in ghosts.json. Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: each tower's points are scattered at random over its walls and roof, as dense as the towers around Y-1 (ghosts.json density, measured by the script), and join the point cloud when it loads, as the estimated facades do: the same point size, thinning with distance and highlight as every building; their own layer (Unbuilt) and colour. inBands of the wall points lie within bandM of a floor line, the rest anywhere on the wall (as the estimated facades: 0.8, 0.25 m), so the storeys show; seed: the same scatter every time.",
+    "_comment": "2026-10-17 (user): rest = the share of a scheme's points that stays after its years, to 2026 and in the film (Y-1 carries its other futures), restDim = how dark what stays is (5 % of the points could not be seen at the film's distance; all of them at 0.35 read as a dark, see-through tower); (2026-10-17, user: the breathing stole the picture; now still) its shadow is reached once, over its last years and restFadeYears more; in Y-1's shot it comes up with the light to litDim, in the other shots it is dark like the other buildings; topFade = its brightness at its top (it fades upwards from its foot); its tag says how it ended, from its name in ghosts.json. Unbuilt schemes on Y-1 (user, 2026-10-13), from site-model/ghosts/build_angels_landing.py: each tower's points are scattered at random over its walls and roof, as dense as the towers around Y-1 (ghosts.json density, measured by the script), and join the point cloud when it loads, as the estimated facades do: the same point size, thinning with distance and highlight as every building; their own layer (Unbuilt) and colour. inBands of the wall points lie within bandM of a floor line, the rest anywhere on the wall (as the estimated facades: 0.8, 0.25 m), so the storeys show; seed: the same scatter every time.",
     "rest": 1,
     "restDim": 0.35,
-    "breath": 0.6,
-    "breathS": 3,
-    "restBreath": 0.8,
+    "restFadeYears": 3,
+    "litDim": 0.8,
+    "topFade": 0.15,
     "inBands": 0.8,
     "bandM": 0.25,
     "seed": 11

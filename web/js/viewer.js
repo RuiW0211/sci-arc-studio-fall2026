@@ -372,10 +372,12 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
                // easing back to white over hotYears once built; hot eases to 0 while the film plays
                hotY: { value: cfg.time?.hotYears ?? 5 }, hot: { value: 1 },
                // the unbuilt schemes (user, 2026-10-17): rest = the share of a scheme's points that stays, faint, after its
-               // years (to 2026: Y-1 carries its other futures); breath = how far they dim as they breathe, over breathS
-               rest: { value: cfg.ghosts?.rest ?? 0.05 }, restDim: { value: cfg.ghosts?.restDim ?? 1 }, breath: { value: cfg.ghosts?.breath ?? 0.3 },
-               restBreath: { value: cfg.ghosts?.restBreath ?? 0 },
-               breathS: { value: cfg.ghosts?.breathS ?? 4 }, clock: { value: 0 } };
+               // years (to 2026: Y-1 carries its other futures), at restDim, reached once over restFadeYears more after its end
+               // (user, 2026-10-17: still, no breathing; it lights up with Y-1's shot, to litDim); topFade = its brightness at
+               // the top (it fades upwards, from 1 at the foot)
+               rest: { value: cfg.ghosts?.rest ?? 0.05 }, restDim: { value: cfg.ghosts?.restDim ?? 1 },
+               restFade: { value: cfg.ghosts?.restFadeYears ?? 0 }, litDim: { value: cfg.ghosts?.litDim ?? 1 },
+               topFade: { value: cfg.ghosts?.topFade ?? 1 } };
 // the film's light (user, 2026-10-17: the shot's group stays bright white, the other buildings a little darker, as under
 // a beam): up to SPOT_N groups' footprints (12 corners each, with their boxes for a quick test); spot eases 0..1 with
 // the shot (0 while flying), dim = the others' brightness (time.cinema.spotDim)
@@ -384,7 +386,7 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
 const SPOT_N = 5, SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.12 },
   box: { value: Array.from({ length: 2 * SPOT_N }, () => new THREE.Vector4()) },
   hull: { value: Array.from({ length: 2 * SPOT_N * 12 }, () => new THREE.Vector2()) }, hn: { value: new Array(2 * SPOT_N).fill(0) },
-  w: { value: [0, 0] } };
+  w: { value: [0, 0] }, ghostLit: { value: 0 } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && (TIME.rest.value > 0 || TIME.year.value < b + 1));
 function applyVisibility() {
   for (const L of ordered) {
@@ -439,11 +441,12 @@ function pointMaterial(sizeMetres) {
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
     shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front; shader.uniforms.uMono = MONO;
     shader.uniforms.uHotY = TIME.hotY; shader.uniforms.uHot = TIME.hot;
-    shader.uniforms.uRest = TIME.rest; shader.uniforms.uRestDim = TIME.restDim; shader.uniforms.uRestBreath = TIME.restBreath; shader.uniforms.uBreath = TIME.breath; shader.uniforms.uBreathS = TIME.breathS; shader.uniforms.uClock = TIME.clock;
+    shader.uniforms.uRest = TIME.rest; shader.uniforms.uRestDim = TIME.restDim; shader.uniforms.uRestFade = TIME.restFade;
+    shader.uniforms.uLitDim = TIME.litDim; shader.uniforms.uTopFade = TIME.topFade; shader.uniforms.uGhostLit = SPOT.ghostLit;
     shader.uniforms.uSpot = SPOT.k; shader.uniforms.uSpotDim = SPOT.dim; shader.uniforms.uSpotW = SPOT.w;
     shader.uniforms.uSpotBox = SPOT.box; shader.uniforms.uSpotHull = SPOT.hull; shader.uniforms.uSpotHN = SPOT.hn;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim, uRest, uRestDim, uRestBreath, uBreath, uBreathS, uClock;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim, uRest, uRestDim, uRestFade, uLitDim, uTopFade, uGhostLit;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
@@ -484,19 +487,18 @@ void main() {`);
       + "  if (aYear < -99.5) {\n"
       + "    float c = -aYear, s = floor(c / 100.0 + 0.001), sp = c - 100.0 * s + 1.0; s += 1800.0;\n"
       + "    float up = min(uBuild, 0.6 * sp), dn = min(1.5, 0.3 * sp);\n"
-      // (2026-10-17) uRest of its points (by a hash of their place) rise with it and stay after its years, the rest sink
-      // back; all of them breathe together, dimming by uBreath over uBreathS seconds (out of step, the changes of their
-      // brightness cancelled out: user, "呼吸的效果很不明显"), and so does its tag
+      // (2026-10-17) uRest of its points (by a hash of their place) rise with it and stay after its years, the rest sink back
       + "    float hs = fract(sin(dot(position, vec3(12.9898, 78.233, 37.719))) * 43758.5453);\n"
       + "    float rise = clamp((uYear - s) / up, 0.0, 1.0);\n"
       + "    float p = hs < uRest ? rise : min(rise, clamp((s + sp - uYear) / dn, 0.0, 1.0)); p = p * p * (3.0 - 2.0 * p);\n"
       + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
-      // (what stays after its years dims to uRestDim over the years it would have sunk in)
-      // (user, 2026-10-17: only the shadow breathes deeper) on the site it dims by uBreath as it breathes; its shadow
-      // breathes about uRestDim, by uRestBreath of it either way
-      + "    float wv = sin(6.2832 * uClock / uBreathS), fs = clamp((uYear - s - sp + dn) / dn, 0.0, 1.0);\n"
-      + "    vColor.rgb *= mix(1.0 - uBreath * (0.5 + 0.5 * wv), uRestDim * (1.0 - uRestBreath * wv), fs);\n"
+      // (user, 2026-10-17: still, it should not steal the picture) what stays dims once to uRestDim, over its last years and
+      // uRestFade more; in Y-1's shot it comes up with the light to uLitDim, in the others it is dark like the other
+      // buildings; it fades upwards to uTopFade at its top
+      + "    float fs = clamp((uYear - s - sp + dn) / (dn + uRestFade), 0.0, 1.0); fs = fs * fs * (3.0 - 2.0 * fs);\n"
+      + "    float shade = mix(1.0, mix(uRestDim, uLitDim, uGhostLit), fs) * mix(1.0, uSpotDim, uSpot * (1.0 - uGhostLit));\n"
+      + "    vColor.rgb *= shade * mix(1.0, uTopFade, aRise);\n"
       + "    vGhost = 1.0;\n"
       + "  } else if (aYear > 0.5) {\n"
       + "    float p = uTimeOn > 0.5 ? clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0) : 1.0; p = p * p * (3.0 - 2.0 * p);\n"
@@ -2387,7 +2389,7 @@ function spotUpdate() {
       SPOT.box.value[SPOT_N + j].copy(SPOT.box.value[j]); SPOT.hn.value[SPOT_N + j] = SPOT.hn.value[j];
       for (let q = 0; q < 12; q++) SPOT.hull.value[(SPOT_N + j) * 12 + q].copy(SPOT.hull.value[j * 12 + q]);
     }
-    SPOT.wB0 = SPOT.w.value[0]; spotA = key; spotFill(0, keys);
+    SPOT.wB0 = SPOT.w.value[0]; SPOT.keyB = spotA; spotA = key; spotFill(0, keys);
   }
   // how far the light has come: over the flight into the shot (or spotFadeS after a cut), then full
   let f = 1;
@@ -2397,8 +2399,10 @@ function spotUpdate() {
   const wA = c ? f : SPOT.w.value[0], wB = c?.phase === "blend" ? (SPOT.wB0 ?? 0) * (1 - f) : 0;
   SPOT.p = Math.min(1, Math.max(0, (SPOT.p ?? 0) + Math.sign((c ? 1 : 0) - (SPOT.p ?? 0)) * dt / (CINE.spotFadeS ?? 1.5)));
   const k = spotEase(SPOT.p);
-  if (Math.abs(k - SPOT.k.value) > 1e-4 || Math.abs(wA - SPOT.w.value[0]) > 1e-4 || Math.abs(wB - SPOT.w.value[1]) > 1e-4) {
-    SPOT.k.value = k; SPOT.w.value[0] = wA; SPOT.w.value[1] = wB; invalidate();
+  // how much of the light is on Y-1 (a group holding Angels Knoll): the unbuilt schemes' shadows come up with it
+  const gl = k * Math.min(1, (spotA.includes("site:y1") ? wA : 0) + (SPOT.keyB?.includes("site:y1") ? wB : 0));
+  if (Math.abs(k - SPOT.k.value) > 1e-4 || Math.abs(wA - SPOT.w.value[0]) > 1e-4 || Math.abs(wB - SPOT.w.value[1]) > 1e-4 || Math.abs(gl - SPOT.ghostLit.value) > 1e-4) {
+    SPOT.k.value = k; SPOT.w.value[0] = wA; SPOT.w.value[1] = wB; SPOT.ghostLit.value = gl; invalidate();
   }
   if (!c && SPOT.k.value < 1e-3) spotA = "";
 }
@@ -2420,7 +2424,7 @@ function updateTimeTags() {
       if (Y < it.year || (!stays && Y >= it.year + sp)) continue;
       if (stays) {   // (user, 2026-10-17: its tag should not go while its shadow stays) to doneOpacity over its last years
         p = tlEase(Math.min((Y - it.year) / up, 1));
-        a = Math.min(1, (Y - it.year) / 0.4) * (1 + ((TL.doneOpacity ?? 0.7) - 1) * Math.min(Math.max((Y - (it.year + sp - dn)) / dn, 0), 1));
+        a = Math.min(1, (Y - it.year) / 0.4) * (1 + ((TL.doneOpacity ?? 0.7) - 1) * Math.min(Math.max((Y - (it.year + sp - dn)) / (dn + TIME.restFade.value), 0), 1));
       } else { p = tlEase(Math.min((Y - it.year) / up, (it.year + sp - Y) / dn)); a = Math.min(1, (Y - it.year) / 0.4, (it.year + sp - Y) / dn); }
     } else {
       if (Y < it.year - Bd) { tlEver.delete(it.key); continue; }
@@ -2487,6 +2491,8 @@ function updateTimeTags() {
     const hero = lit.has(it.key);
     // (user, 2026-10-17: only in its own shot) while filming a tag is full in its own shot, faint (builtOpacity) otherwise
     let a = cine && it.kind !== "unbuilt" ? (hero ? 1 : Math.min(a0, TL.builtOpacity ?? 0.12)) : a0;
+    // (user, 2026-10-17) an unbuilt scheme's tag in the film is like its shadow: up with Y-1's light, faint otherwise
+    if (cine && it.kind === "unbuilt") a = (TL.builtOpacity ?? 0.12) + (1 - (TL.builtOpacity ?? 0.12)) * SPOT.ghostLit.value;
     // depth (user, 2026-10-13: labels sat over the buildings, near and far alike): a label whose building is hidden
     // behind a standing building fades (lines of sight to its top and its middle against the other buildings' boxes,
     // drawn in a little); far ones are quieter; near ones are drawn over far ones
@@ -2517,15 +2523,9 @@ function updateTimeTags() {
     a *= Math.min(1, Math.max(TL.farOpacity ?? 0.75, 1 - 0.5 * (dist / ref - 1.2)));   // only past 1.2 x the view's distance
     // (the usual floor, so a tag seen from high above is not lost; not for a built building's kept tag, which is only
     // there for the sense of a lot going on: user, 2026-10-17)
-    const faint = cine ? !hero && it.kind !== "unbuilt" : it.kind === "built" && !it.keep && Y > it.year + TL.holdYears;
+    const faint = cine ? !hero && !(it.kind === "unbuilt" && SPOT.ghostLit.value > 0.5) : it.kind === "built" && !it.keep && Y > it.year + TL.holdYears;
     if (!faint) a = Math.max(a, TL.minOpacity ?? 0.25);
     if (hero) a = Math.max(a, 0.6);
-    // an unbuilt scheme's tag breathes with its points (the same clock and depth), after the floor so it always shows
-    if (it.kind === "unbuilt") {
-      const wv = Math.sin((2 * Math.PI * TIME.clock.value) / TIME.breathS.value), sp = it.end - it.year + 1, dn = Math.min(1.5, 0.3 * sp);
-      const fs = TIME.rest.value > 0 ? Math.min(Math.max((Y - (it.year + sp - dn)) / dn, 0), 1) : 0;   // its shadow: deeper
-      a = Math.min(1, a * ((1 - fs) * (1 - TIME.breath.value * (0.5 + 0.5 * wv)) + fs * (1 - TIME.restBreath.value * wv)));
-    }
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
     let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
@@ -2538,7 +2538,7 @@ function updateTimeTags() {
     // out of view: it fades out where it is (no display: none, which made it blink and replay its lock-on)
     const off = behind || sx1 < 0 || sx0 > W || sy1 < 0 || sy0 > H;
     if (off) a = 0;
-    s.op = s.op === undefined || it.kind === "unbuilt" ? a : s.op + (a - s.op) * ease(0.3);   // (a breathing tag: no lag)
+    s.op = s.op === undefined ? a : s.op + (a - s.op) * ease(0.3);
     if (Math.abs(a - s.op) > 0.004) invalidate();
     s.el.style.opacity = s.op.toFixed(3);
     // the highlight colour (user, 2026-10-17): going up, easing to white over hotYears once built; in the film, the shot's
@@ -2863,10 +2863,6 @@ function logFrame(now) {
   lfLast = now; lfRender = lfTags = 0;
 }
 renderer.setAnimationLoop((now) => {
-  // the schemes' breathing clock runs only while playing (user, 2026-10-17: paused, it stops too)
-  const breathing = !paused && TIME.on.value > 0.5 && TIME.breath.value > 0 && [...ghostYears.values()].flat().some(([a]) => TIME.year.value >= a);
-  if (breathing) { TIME.clock.value += Math.min((now - (TIME.clockT || now)) / 1000, 0.1); dirty = true; }
-  TIME.clockT = now;
   // the going-up colour eases out while the film plays and back in for the opening (about 1 s)
   { const h = cine ? 0 : 1; if (Math.abs(TIME.hot.value - h) > 0.001) { TIME.hot.value += (h - TIME.hot.value) * (1 / 60); dirty = true; } }
   logFrame(now);
