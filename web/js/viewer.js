@@ -195,7 +195,8 @@ function withFocus(shader) {
   float fk = uFocus * (1.0 - vSel) * (1.0 - vBuild) * (1.0 - vGhost);
   float th = max(uTimeOn, uMono);
   // (user, 2026-10-17: in Y-1's shot Angels Knoll did not light up, its points being ground and trees) the ground and
-  // trees inside the film's light come up to uSpotGround, opaque, as a lit building does
+  // trees inside a lit site's footprint (Angels Knoll; not a building's: their streets came up too) come up to
+  // uSpotGround, opaque, as a lit building does
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(mix(mix(uFocusGrey, uTimeGrey, th), uSpotGround, vLit)), fk);
   diffuseColor.a *= mix(1.0, mix(mix(uFocusAlpha, uTimeAlpha, th), 1.0, vLit), fk);`);
 }
@@ -390,7 +391,8 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
 const SPOT_N = 5, SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.12 },
   box: { value: Array.from({ length: 2 * SPOT_N }, () => new THREE.Vector4()) },
   hull: { value: Array.from({ length: 2 * SPOT_N * 12 }, () => new THREE.Vector2()) }, hn: { value: new Array(2 * SPOT_N).fill(0) },
-  w: { value: [0, 0] }, ghostLit: { value: 0 }, ground: { value: cfg.time?.cinema?.spotGround ?? 0.9 } };
+  w: { value: [0, 0] }, ghostLit: { value: 0 }, ground: { value: cfg.time?.cinema?.spotGround ?? 0.9 },
+  site: { value: new Array(2 * SPOT_N).fill(0) } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && (TIME.rest.value > 0 || TIME.year.value < b + 1));
 function applyVisibility() {
   for (const L of ordered) {
@@ -447,23 +449,23 @@ function pointMaterial(sizeMetres) {
     shader.uniforms.uHotY = TIME.hotY; shader.uniforms.uHot = TIME.hot;
     shader.uniforms.uRest = TIME.rest; shader.uniforms.uRestDim = TIME.restDim; shader.uniforms.uRestFade = TIME.restFade;
     shader.uniforms.uLitDim = TIME.litDim; shader.uniforms.uTopFade = TIME.topFade; shader.uniforms.uGhostLit = SPOT.ghostLit;
-    shader.uniforms.uSpot = SPOT.k; shader.uniforms.uSpotDim = SPOT.dim; shader.uniforms.uSpotW = SPOT.w;
+    shader.uniforms.uSpot = SPOT.k; shader.uniforms.uSpotDim = SPOT.dim; shader.uniforms.uSpotW = SPOT.w; shader.uniforms.uSpotSite = SPOT.site;
     shader.uniforms.uSpotBox = SPOT.box; shader.uniforms.uSpotHull = SPOT.hull; shader.uniforms.uSpotHN = SPOT.hn;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim, uRest, uRestDim, uRestFade, uLitDim, uTopFade, uGhostLit;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost, vLit;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim, uRest, uRestDim, uRestFade, uLitDim, uTopFade, uGhostLit;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform float uSpotSite[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost, vLit;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
   vColor.rgb = mix(vColor.rgb, uHi, sw);
   vSel = sw; vBuild = 0.0; vGhost = 0.0;
-  float litK = spotLit(position.xz); vLit = litK * uSpot;   // in the film's light (a lit group's footprint)`).replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
+  vec2 litS = spotLit(position.xz); float litK = litS.x; vLit = litS.y * uSpot;   // in the film's light; in a lit site's (vLit)`).replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
     // inside one of the lit footprints (a quick box test, then the convex corners, 2 m to spare)
-    shader.vertexShader = shader.vertexShader.replace("void main() {", `float spotLit(vec2 q) {
-  if (uSpot < 0.001) return 0.0;
-  float lit = 0.0;
+    shader.vertexShader = shader.vertexShader.replace("void main() {", `vec2 spotLit(vec2 q) {   // (in a lit footprint, in a lit site's: user, 2026-10-17, only a site's ground comes up)
+  if (uSpot < 0.001) return vec2(0.0);
+  float lit = 0.0, site = 0.0;
   for (int i = 0; i < 10; i++) {
     float w = uSpotW[i < 5 ? 0 : 1];
-    if (uSpotHN[i] == 0 || w <= lit) continue;
+    if (uSpotHN[i] == 0 || (w <= lit && (uSpotSite[i] < 0.5 || w <= site))) continue;
     vec4 b = uSpotBox[i];
     if (q.x < b.x - 2.0 || q.x > b.z + 2.0 || q.y < b.y - 2.0 || q.y > b.w + 2.0) continue;
     int n = uSpotHN[i];
@@ -473,9 +475,9 @@ function pointMaterial(sizeMetres) {
       vec2 a = uSpotHull[i * 12 + j], c = uSpotHull[i * 12 + (j + 1 == n ? 0 : j + 1)], e = c - a;
       if ((e.x * (q.y - a.y) - e.y * (q.x - a.x)) / max(length(e), 0.001) < -2.0) { inside = false; break; }
     }
-    if (inside) lit = w;
+    if (inside) { lit = max(lit, w); if (uSpotSite[i] > 0.5) site = max(site, w); }
   }
-  return lit;
+  return vec2(lit, site);
 }
 void main() {`);
     shader.vertexShader = shader.vertexShader.replace(
@@ -2273,44 +2275,6 @@ let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1,
 let tlOcc = [];       // every building's box, for the labels' line of sight: { box, year (0 = undated), ent }
 // the Y-1 parcel (population.json y1: [x east, y north]), for the Angels Knoll label and shot
 let y1Ring = null;
-// the Y-1 parcel's outline on the ground (user, 2026-10-17: a faint line, so the empty site is easier to see), Guided and
-// Free: the parcel ring every 2 m, each point at the mean height of the ground points within 3 m (the knoll slopes),
-// lifted liftM; config.json y1Outline
-let y1Line = null;
-function buildY1Outline() {
-  const O = cfg.y1Outline || {}, ring = y1Ring.map(([x, n]) => [x, -n]), P = [];
-  for (let a = 0; a < ring.length; a++) {
-    const [x0, z0] = ring[a], [x1, z1] = ring[(a + 1) % ring.length], n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, z1 - z0) / 2));
-    for (let k = 0; k < n; k++) P.push([x0 + ((x1 - x0) * k) / n, z0 + ((z1 - z0) * k) / n]);
-  }
-  let bx0 = 1e9, bz0 = 1e9, bx1 = -1e9, bz1 = -1e9;
-  for (const [x, z] of P) { bx0 = Math.min(bx0, x - 4); bx1 = Math.max(bx1, x + 4); bz0 = Math.min(bz0, z - 4); bz1 = Math.max(bz1, z + 4); }
-  const cells = new Map(), C = 3, key = (x, z) => `${Math.floor(x / C)},${Math.floor(z / C)}`;
-  const terrain = lidar.objLayers[lidar.objNames.indexOf("Terrain")];
-  for (const q of lidar.parts) {
-    if (q.name !== "Terrain" && q.name !== terrain) continue;
-    for (let i = 0; i < q.n; i++) {
-      const x = q.pos[3 * i], z = q.pos[3 * i + 2]; if (x < bx0 || x > bx1 || z < bz0 || z > bz1) continue;
-      const k = key(x, z); let c = cells.get(k); if (!c) cells.set(k, (c = [])); c.push(x, q.pos[3 * i + 1], z);
-    }
-  }
-  const pos = new Float32Array((P.length + 1) * 3);
-  let last = TOUR.target[1];
-  P.concat([P[0]]).forEach(([x, z], j) => {
-    let sum = 0, cnt = 0;
-    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
-      const c = cells.get(`${Math.floor(x / C) + dx},${Math.floor(z / C) + dz}`); if (!c) continue;
-      for (let i = 0; i < c.length; i += 3) if (Math.hypot(c[i] - x, c[i + 2] - z) < 3) { sum += c[i + 1]; cnt++; }
-    }
-    if (cnt) last = sum / cnt;
-    pos.set([x, last + (O.liftM ?? 0.6), z], 3 * j);
-  });
-  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  // (user, 2026-10-17: not dashed) drawn over the cloud, as a drawing's line (the ground's points hid it)
-  const mat = fishPatch(new THREE.LineBasicMaterial({ color: O.color ?? "#ffffff", transparent: true, opacity: O.opacity ?? 0.5, depthWrite: false, depthTest: false }));
-  y1Line = new THREE.Line(geo, mat); y1Line.renderOrder = 2; y1Line.frustumCulled = false;
-  scene.add(y1Line); invalidate();
-}
 if (cfg.population?.meta) fetch(cfg.population.meta).then((r) => r.json()).then((m) => { y1Ring = m.y1?.[0] ?? null; }).catch(() => {});
 const tlShown = new Map();   // key -> { el }
 const tlEver = new Set();    // labelled once: kept while the year is past its start
@@ -2415,13 +2379,13 @@ function tlSees(x, y, z, own, Y) {
 let spotA = "", spotEase = (x) => { x = Math.min(Math.max(x, 0), 1); return x * x * (3 - 2 * x); };
 function spotFill(g, keys) {
   const set = new Set(keys); let i = 0;
-  for (let j = 0; j < SPOT_N; j++) SPOT.hn.value[g * SPOT_N + j] = 0;
+  for (let j = 0; j < SPOT_N; j++) { SPOT.hn.value[g * SPOT_N + j] = 0; SPOT.site.value[g * SPOT_N + j] = 0; }
   for (const it of tlItems || []) {
     if (!set.has(it.key) || i >= SPOT_N) continue;
     const [x0, , z0, x1, , z1] = it.box, H = it.hull || [[x0, z0], [x1, z0], [x1, z1], [x0, z1]], o = g * SPOT_N + i;
     SPOT.box.value[o].set(x0, z0, x1, z1);
     H.slice(0, 12).forEach(([x, z], j) => SPOT.hull.value[o * 12 + j].set(x, z));
-    SPOT.hn.value[o] = Math.min(H.length, 12); i++;
+    SPOT.hn.value[o] = Math.min(H.length, 12); SPOT.site.value[o] = it.kind === "site" ? 1 : 0; i++;
   }
 }
 function spotUpdate() {
@@ -2429,7 +2393,7 @@ function spotUpdate() {
   const c = cine, keys = c ? (c.shots[c.i].keys || []) : [], key = keys.join();
   if (c && key !== spotA) {   // a new group to light: the lit one becomes the one going dark
     for (let j = 0; j < SPOT_N; j++) {
-      SPOT.box.value[SPOT_N + j].copy(SPOT.box.value[j]); SPOT.hn.value[SPOT_N + j] = SPOT.hn.value[j];
+      SPOT.box.value[SPOT_N + j].copy(SPOT.box.value[j]); SPOT.hn.value[SPOT_N + j] = SPOT.hn.value[j]; SPOT.site.value[SPOT_N + j] = SPOT.site.value[j];
       for (let q = 0; q < 12; q++) SPOT.hull.value[(SPOT_N + j) * 12 + q].copy(SPOT.hull.value[j * 12 + q]);
     }
     SPOT.wB0 = SPOT.w.value[0]; SPOT.keyB = spotA; spotA = key; spotFill(0, keys);
@@ -2906,7 +2870,6 @@ function logFrame(now) {
   lfLast = now; lfRender = lfTags = 0;
 }
 renderer.setAnimationLoop((now) => {
-  if (!y1Line && y1Ring && lidar && cfg.y1Outline?.on !== false) buildY1Outline();
   // the going-up colour eases out while the film plays and back in for the opening (about 1 s)
   { const h = cine ? 0 : 1; if (Math.abs(TIME.hot.value - h) > 0.001) { TIME.hot.value += (h - TIME.hot.value) * (1 / 60); dirty = true; } }
   logFrame(now);
