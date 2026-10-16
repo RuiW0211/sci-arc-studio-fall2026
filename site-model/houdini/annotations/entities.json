@@ -265,10 +265,6 @@
     "year_built": "1926",
     "units": 277,
     "floor_area_sqft": 212090
-   },
-   "ground": {
-    "plazaMaxHagM": 0,
-    "note": "no plaza cells (user, 2026-10-16): its low wing's roof, 9-13 m above the ground, is building, not a plaza; the plazas rule (10 m) had drawn ~4,700 of its points as ground"
    }
   },
   {

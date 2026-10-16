@@ -287,6 +287,7 @@
         "BLD_486079842670"
       ],
       "name": "Walt Disney Concert Hall",
+      "ground": { "plazaMaxHagM": 0 },
       "rename": false,
       "basis": "Public cultural building named in Wikipedia: Bunker Hill, Los Angeles; Grand Avenue (Los Angeles)",
       "built": "2003",
@@ -353,6 +354,7 @@
         "BLD_485597840707"
       ],
       "name": "Subway Terminal Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #177; National Register",
       "built": "1925",
       "builtSource": "HCM list (Wikipedia)",
@@ -364,6 +366,7 @@
         "BLD_486339840977"
       ],
       "name": "Grand Central Market",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #1183",
       "built": "1896",
       "builtSource": "HCM list (Wikipedia)",
@@ -374,6 +377,7 @@
         "BLD_486434841045"
       ],
       "name": "Million Dollar Theatre",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #1184; National Register",
       "built": "1917",
       "builtSource": "HCM list (Wikipedia)",
@@ -451,6 +455,7 @@
         "BLD_484755840982"
       ],
       "name": "One Bunker Hill Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #347",
       "built": "1930–1934",
       "builtSource": "HCM list (Wikipedia)",
@@ -484,6 +489,7 @@
         "BLD_484830840428"
       ],
       "name": "Biltmore Hotel",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #60",
       "built": "1923",
       "builtSource": "Wikipedia",
@@ -550,6 +556,7 @@
         "BLD_485864839658"
       ],
       "name": "Alexandria Hotel",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #80",
       "built": "1906",
       "builtSource": "Wikipedia (addition with the Palm Court 1911)",
@@ -601,6 +608,7 @@
         "BLD_484322840870"
       ],
       "name": "Los Angeles Central Library",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #46; National Register",
       "built": "1926",
       "builtSource": "Wikipedia (Goodhue building)",
@@ -622,6 +630,7 @@
         "BLD_484539840236"
       ],
       "name": "Pacific Mutual Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #398",
       "built": "1908",
       "builtSource": "HCM list (Wikipedia)",
@@ -743,6 +752,7 @@
         "BLD_483949840832"
       ],
       "name": "California Club Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #43; National Register",
       "built": "1930",
       "builtSource": "HCM list (Wikipedia)",
@@ -1067,6 +1077,7 @@
         "BLD_202000039464"
       ],
       "name": "Fine Arts Building",
+      "ground": { "plazaMaxHagM": 0 },
       "basis": "LA Historic-Cultural Monument #125",
       "built": "1925",
       "builtSource": "HCM list (Wikipedia)",
@@ -1292,5 +1303,5 @@
       "builtSource": "HCM list (Wikipedia)"
     }
   ],
-  "_landmarks": "The Landmarks layer by landmarkRule (user, 2026-10-10, option A, 1 km). One entry per monument; parts: one object name of each entity it covers (a monument outline that covers at least half of an entity's footprint takes that entity), which does not change when auto_entities.py renumbers the automatic entities. name is shown for automatic entities (named by their address) and where rename is set. built / builtSource: the building's own year, looked up 2026-10-10 (the assessor's year built is often a later remodel: Bradbury 1922 for 1893); a landmark without one shows no year. use replaces a wrong assessor use (Central Library: a parking-lot parcel). Every other entity draws as Buildings, also the Pershing Square Metro canopy (a hand-modelled part, not a landmark)."
+  "_landmarks": "The Landmarks layer by landmarkRule (user, 2026-10-10, option A, 1 km). One entry per monument; parts: one object name of each entity it covers (a monument outline that covers at least half of an entity's footprint takes that entity), which does not change when auto_entities.py renumbers the automatic entities. name is shown for automatic entities (named by their address) and where rename is set. built / builtSource: the building's own year, looked up 2026-10-10 (the assessor's year built is often a later remodel: Bradbury 1922 for 1893); a landmark without one shows no year. use replaces a wrong assessor use (Central Library: a parking-lot parcel). Every other entity draws as Buildings, also the Pershing Square Metro canopy (a hand-modelled part, not a landmark). ground (user, 2026-10-16): { plazaMaxHagM } in place of plazas.maxHagM for the landmark's objects; 0 = none of it is drawn as a plaza (low wings and market halls whose roofs sit under 10 m above the ground)."
 }

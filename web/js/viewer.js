@@ -529,6 +529,7 @@ async function loadLidar() {
         if (first && L.built) e.built = [L.built, L.builtSource];
         if (L.builtAs) { e.builtAs = L.builtAs; e.builtAsSource = L.builtAsSource; }
         if (L.now) e.nowFixed = L.now;
+        if (L.ground) e.ground = { ...e.ground, ...L.ground };   // e.g. no plaza cells (the plazas rule, below)
       }
     }
     objNames.forEach((nm, k) => {
