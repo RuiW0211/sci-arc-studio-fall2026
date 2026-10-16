@@ -1441,6 +1441,7 @@ function buildOpening() {
   const pts = tlOcc.filter((o) => o.year > 0).map((o) => ({ x: (o.box[0] + o.box[3]) / 2, z: (o.box[2] + o.box[5]) / 2, y0: o.box[1], h: o.box[4] - o.box[1], year: o.year }));
   const Y1 = TOUR.target, Rc = OPEN.clusterM, wide = { target: TOUR.target, r: CINE.wideR, phi: CINE.wideTilt * D2R, lens: CINE.wideLens ?? 0.3 };
   const frame = (sh) => {
+    if (sh.wide) return wide;   // (2026-10-17: the opening's last shot is the whole site, the film's first shot goes on from it)
     const ps = pts.filter((p) => p.year >= sh.from && p.year < sh.to);
     if (!ps.length) return wide;
     let best = ps[0], bw = -1;   // the densest spot: most height within clusterM
@@ -1466,8 +1467,40 @@ function buildOpening() {
     return { hs: i === 0 ? 0 : t0 + q, he: i === OPEN.shots.length - 1 ? t0 + 2 * q : t1 - q, pose: frame(sh) };
   });
   openAnchors.push({ hs: end, he: end, pose: wide });   // and out to the whole site at the end
+  // the opening's own headings (user, 2026-10-17: every shot is planned with the others, once round from Default and
+  // back): az [at the start of its hold, at its end] per shot, in degrees counted on (they only go forward). From
+  // Default's heading at the start, through every shot's, to the film's first heading at the end, on a smooth curve
+  // that never turns back (a monotone cubic). Without az on every shot: the even turn (tour.turn) as before
+  openHeading = null;
+  if (OPEN.shots.every((sh) => sh.az)) {
+    const v = cfg.views[0], keys = [[0, sphOf(new THREE.Vector3().fromArray(v.position), new THREE.Vector3().fromArray(v.target)).th]];
+    const add = (t, deg) => { let a = deg * D2R; while (a < keys[keys.length - 1][1] - 1e-6) a += 2 * Math.PI; if (t > keys[keys.length - 1][0] + 1e-3) keys.push([t, a]); };
+    OPEN.shots.forEach((sh, i) => { add(openAnchors[i].hs, sh.az[0]); add(openAnchors[i].he, sh.az[1]); });
+    if ((CINE.shots || [])[0]?.az != null) add(end, CINE.shots[0].az);
+    openHeading = monotoneCubic(keys);
+  }
   ldur("opening shots (with tags data), ms", tB);
 }
+// a smooth curve through [t, value] keys that never overshoots them (Fritsch-Carlson): rising keys, a curve that only rises
+function monotoneCubic(K) {
+  const n = K.length, h = [], d = [], m = [];
+  for (let i = 0; i < n - 1; i++) { h[i] = K[i + 1][0] - K[i][0]; d[i] = (K[i + 1][1] - K[i][1]) / h[i]; }
+  m[0] = d[0]; m[n - 1] = d[n - 2];
+  for (let i = 1; i < n - 1; i++) {
+    if (d[i - 1] * d[i] <= 0) { m[i] = 0; continue; }
+    const w1 = 2 * h[i] + h[i - 1], w2 = h[i] + 2 * h[i - 1];
+    m[i] = (w1 + w2) / (w1 / d[i - 1] + w2 / d[i]);
+  }
+  return (t) => {
+    if (n < 2) return K[0][1];
+    if (t <= K[0][0]) return K[0][1];
+    if (t >= K[n - 1][0]) return K[n - 1][1] + m[n - 1] * (t - K[n - 1][0]);
+    let i = 0; while (t > K[i + 1][0]) i++;
+    const s = (t - K[i][0]) / h[i], s2 = s * s, s3 = s2 * s;
+    return (2 * s3 - 3 * s2 + 1) * K[i][1] + (s3 - 2 * s2 + s) * h[i] * m[i] + (-2 * s3 + 3 * s2) * K[i + 1][1] + (s3 - s2) * h[i] * m[i + 1];
+  };
+}
+let openHeading = null;
 function openingPose(frac) {
   const t = frac * playDur, A = openAnchors;
   let P = A[A.length - 1].pose;
@@ -1480,7 +1513,7 @@ function openingPose(frac) {
       break;
     }
   }
-  return { ...P, th: tour.th + (tour.turn ?? OPEN.turnDeg * D2R) * frac };
+  return { ...P, th: openHeading ? openHeading(t) : tour.th + (tour.turn ?? OPEN.turnDeg * D2R) * frac };
 }
 function startTour(frac0 = 0) {
   const th = sphOf(camera.position, controls.target).th;
@@ -2672,7 +2705,7 @@ const shotStudy = {
       now += 1000 / fps; stepCine(now);
       const P = sphOf(camera.position, controls.target), pos = camera.position.clone();
       const w = last == null ? 0 : wrapA(P.th - last) * fps / D2R, v = lastPos ? pos.distanceTo(lastPos) * fps : 0;
-      rows.push({ t: f / fps, i: cine.i, ph: cine.phase, w, v }); last = P.th; lastPos = pos;
+      rows.push({ t: f / fps, i: cine.i, ph: cine.phase, w, v, x: pos.x, z: pos.z, th: P.th, tx: controls.target.x, tz: controls.target.z }); last = P.th; lastPos = pos;
       const sh = cine.shots[cine.i], len = shotLen(sh) * 1000, el = now - cine.t0;
       const share = () => { let ok = 0, tot = 0;
         for (const k of sh.keys) { const it = tlItems.find((q) => q.key === k), [x0, y0, z0, x1, y1, z1] = it.box, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
@@ -2724,7 +2757,7 @@ const shotStudy = {
 window.__viewer = {
   shotStudy,
   layers, get mode() { return mode; }, setMode, get lidar() { return lidar; }, get population() { return pop; },
-  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
+  camera, controls, renderer, lidarGroup, invalidate, get densityMatch() { return lidarDensityMatch; }, get plazaPoints() { return lidarPlazaPoints; }, get groundFill() { return lidarGroundFill; }, get timeLabels() { return tlItems; }, loadTimes, get openAnchors() { return openAnchors; }, get openHeading() { return openHeading; }, updateTimeTags, startCine, get cine() { return cine; },   // debugging / performance checks
   // debugging / screenshots: select entities by id, e.g. selectEntities(["E001", "E005"])
   selectEntities(ids) {
     clearSelection();
