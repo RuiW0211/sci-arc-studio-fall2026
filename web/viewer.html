@@ -309,13 +309,15 @@
   #viewMode { margin: 8px 0 2px; }
   body.v-free #timeSec { display: none; }   /* Free view: no History module */
   body:not(.v-free) #monoRow { display: none; }   /* Black and white: Free only (Guided is always so) */
+  body.v-free #shotsSec { display: none; }   /* ?shots: the film's shots, Guided only */
   /* time section (user, 2026-10-13): a module like Population; the unbuilt schemes live here, shown only with it */
   #timeSec label.layer:has(input:checked) i.sw { background: var(--c); box-shadow: none; }
   #timeBox[hidden] { display: none; }
   #timeBox .clock { display: flex; align-items: center; gap: 6px; margin: 4px 0 2px; }
   #timeYear { font-size: 20px; font-variant-numeric: tabular-nums; margin-right: auto; }
   #timeBox input[type=range] { width: 100%; margin: 0 0 4px; }
-  #timeBox .tstate { font-size: 11px; color: var(--muted); }
+  #timeBox .tstate, #shotsNote { font-size: 11px; color: var(--muted); }
+  #shotsNote { margin-top: 4px; }
   #timeCounts { font-size: 11px; margin-top: 4px; }
   /* the Color choice is kept but set aside while the point cloud is drawn white */
 </style>
@@ -346,6 +348,11 @@
         <div id="timeCounts"></div>
         <label class="layer" title="The frames and names on the buildings"><input type="checkbox" id="timeTags" checked><i class="sw" style="--c:#FFFFFF"></i><span class="nm">Tags</span><span class="n">names, years</span></label>
       </div>
+    </details>
+    <!-- viewer.html?shots (user, 2026-10-16, for tuning the film): each shot played on its own; Guided only -->
+    <details class="sec" id="shotsSec" open hidden><summary>Shots</summary>
+      <div class="row" id="shots"></div>
+      <div id="shotsNote"></div>
     </details>
     <details class="sec" id="popSec" open><summary>A Day</summary>
       <label class="layer" title="A modeled typical day: one point per person, from Census, survey and Assessor data"><input type="checkbox" id="popOn"><i class="sw" style="--c:#FFD166"></i><span class="nm">People</span> <span class="n" title="A modeled typical day, one point per person. Every person within 250 m of Y-1; farther out fewer and fainter, like the point cloud. The counts include everyone.">modeled typical day</span></label>

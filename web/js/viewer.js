@@ -1601,13 +1601,14 @@ addEventListener("keydown", (e) => {
   if (e.code !== "Space" || texty || !($("#timeOn").checked || cine)) return;
   t?.blur?.();
   e.preventDefault();   // not a click on the focused checkbox, not a page scroll
-  if (playing || cine) setPaused(!paused);
+  if (cine?.phase === "done") goOnFilm();
+  else if (playing || cine) setPaused(!paused);
   else if (scrubbed && viewMode === "history") goOnGuided();
   else if ($("#timeOn").checked) startPlay(false);   // stopped (the slider was moved, or the end): play
 });
 // a drag or scroll while the camera plays pauses it (user, 2026-10-13: it used to hand the camera back for good and the
 // orbit never came back): a look around, after which it goes on by itself (autoResumeS) or with Space
-for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused && (tour || cine)) setPaused(true); }, { passive: true });
+for (const ev of ["pointerdown", "wheel"]) renderer.domElement.addEventListener(ev, () => { if (!paused && (tour || (cine && cine.phase !== "done"))) setPaused(true); }, { passive: true });
 // years a second (user, 2026-10-15: the opening in about 53 s, the time where the building is): see RATE_TABLE below;
 // 0.9 while an unbuilt scheme is on the site; config.json time.rates
 const ghostSpans = [...ghostYears.values()].flat();
@@ -1627,7 +1628,7 @@ function stopPlay() { if (playing) cancelAnimationFrame(playing); playing = null
 // no Play button (user, 2026-10-13): Space plays, pauses and goes on; the panel only says which
 function timeState() {
   const el = $("#timePlay"); if (!el) return;
-  el.textContent = paused || scrubbed ? "Paused · Space" : playing || cine ? "Playing · Space to pause" : "Space to play";
+  el.textContent = cine?.phase === "done" ? "Shot ended · Space to go on" : paused || scrubbed ? "Paused · Space" : playing || cine ? "Playing · Space to pause" : "Space to play";
 }
 function startPlay(withTour) {
   if (playing) stopPlay();
@@ -1692,10 +1693,11 @@ function cineShots() {
   const out = [];
   for (const def of CINE.shots || []) {
     const az = def.az == null ? null : def.az * D2R;   // the shot's heading at its start (0 = from the south, 90 = east)
-    if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold, lens: def.lens ?? wide.lens }); continue; }
+    const no = CINE.shots.indexOf(def), name = def.name ?? def.type;   // (its place and name in config: the ?shots list)
+    if (def.type === "wide") { out.push({ ...wide, s: def.s, az, hold: def.hold, lens: def.lens ?? wide.lens, no, name }); continue; }
     const items = (def.members || []).map(find).filter(Boolean);
     if (!items.length) continue;
-    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold, lens: def.lens ?? 1 };
+    const g = boxOf(items), keys = items.map((it) => it.key), base = { keys, cut: Boolean(def.cut), s: def.s, az, hold: def.hold, lens: def.lens ?? 1, no, name };
     const n0 = out.length;   // (overrides below apply to the shot pushed now)
     // a crane with a dolly zoom (dolly: [fov from, fov to]): it lowers (tilt) and backs away as the view narrows
     if (def.type === "crane" && def.dolly) out.push({ ...base, turn: 30, tilt: def.tilt ?? [40, 70], target: [g.cx, g.y0 + 0.3 * g.h, g.cz],
@@ -1777,7 +1779,7 @@ function startCine() {
 function endCine() {
   if (!cine) return;
   cine = null; cutEl.classList.remove("on"); controls.enableDamping = true; invalidate();
-  timeState();
+  timeState(); shotsUI();
 }
 function nextShot(now, P) {   // now: the exact time the last shot ended
   const c = cine;
@@ -1808,6 +1810,7 @@ function nextShot(now, P) {   // now: the exact time the last shot ended
     c.blendT = T; c.phase = "blend"; c.from = P;
     c.t0 = now;
   }
+  shotsUI();
 }
 // People comes on peopleDelayS into shot peopleAfter (user, 2026-10-15: 2 s into the first wide shot, once the camera
 // has settled after the opening), the film going on with them; its day starts before dawn (peopleStartH), most people
@@ -1819,7 +1822,7 @@ function peopleOnNow() {
 }
 function stepCine(now) {
   const c = cine, sh = c.shots[c.i];
-  if (paused) return;
+  if (paused || c.phase === "done") return;
   if (!c.peopleDone && CINE.thenPeople !== false && c.i === (CINE.peopleAfter ?? 0) && c.phase === "shot" && now - c.t0 > (CINE.peopleDelayS ?? 2) * 1000) {
     c.peopleDone = true; peopleOnNow();
   }
@@ -1834,12 +1837,51 @@ function stepCine(now) {
     const end = c.t0 + c.blendT * 1000; c.phase = "shot"; c.t0 = end; c.from = null; P = cineNow(now);   // the flight ended on th0
   } else if (c.phase === "shot" && P.k >= 1) {
     const end = c.t0 + shotLen(sh) * 1000, E = cinePose(sh, 1, c.th0, c.dir);
+    if (c.single) { cineApply(E); c.phase = "done"; controls.enableDamping = true; timeState(); shotsUI(); return; }   // ?shots
     nextShot(end, E);
     if (c.phase !== "cut") P = cineNow(now);
   }
   cineApply(P);
 }
 function handBack() { endTour(); endCine(); }
+// viewer.html?shots (user, 2026-10-16: to tune the film, not for visitors): the shots in a row, as the Views are. A
+// click stops the opening or the film and cuts to that shot (a dip to black: a flight there could take 12 s, the film's
+// headings only going forward), plays it alone from its first frame and stops on its last (look round freely there);
+// Space then goes on with the film from the next shot. People come on, for scale
+const SHOTS_UI = urlq.has("shots");
+function playShot(no) {
+  const shots = cineShots(), i = shots.findIndex((sh) => sh.no === no);
+  if (i < 0) return;   // its members are not loaded (yet)
+  stopPlay(); scrubbed = false; setYear(2026);
+  if (CINE.thenPeople !== false) peopleOnNow();
+  const now = performance.now();
+  cine = { shots, i, phase: "cut", t0: now, th0: shots[i].az ?? camPose().th, dir: 1, from: null, op0: now, peopleDone: true, single: true };
+  controls.enableDamping = false; cutEl.classList.add("on");
+  timeState(); shotsUI();
+}
+function goOnFilm() {   // Space after a shot played alone: the film from the next shot, from where the camera is
+  const c = cine; c.single = false; controls.enableDamping = false;
+  nextShot(performance.now(), camPose());
+  timeState();
+}
+function shotsUI() {
+  if (!SHOTS_UI) return;
+  const sh = cine?.shots[cine.i];
+  for (const b of $("#shots").children) b.classList.toggle("on", sh?.no != null && +b.dataset.no === sh.no);
+  $("#shotsNote").textContent = !sh || sh.no == null ? "A click plays one shot alone · Space then goes on with the film"
+    : `Shot ${sh.no + 1} of ${CINE.shots.length} · ${shotMove(sh)} + ${shotHold(sh)} s · lens ${sh.lens}` + (cine.phase === "done" ? " · ended, Space goes on" : "");
+}
+if (SHOTS_UI) {
+  $("#shotsSec").hidden = false;
+  (CINE.shots || []).forEach((d, k) => {
+    const b = document.createElement("button");
+    b.className = "view"; b.dataset.no = k; b.textContent = `${k + 1} · ${d.name ?? d.type}`;
+    b.title = `Play shot ${k + 1} (${d.type}) alone`;
+    b.onclick = () => { playShot(k); b.blur(); };   // blur: Space stays the film's
+    $("#shots").append(b);
+  });
+  shotsUI();
+}
 
 // its own controls (time, play, day, attendance ...) change the picture: draw again
 for (const ev of ["input", "change", "click"]) $("#popSec").addEventListener(ev, () => invalidate());
