@@ -484,7 +484,8 @@ void main() {`);
       + "    float c = -aYear, s = floor(c / 100.0 + 0.001), sp = c - 100.0 * s + 1.0; s += 1800.0;\n"
       + "    float up = min(uBuild, 0.6 * sp), dn = min(1.5, 0.3 * sp);\n"
       // (2026-10-17) uRest of its points (by a hash of their place) rise with it and stay after its years, the rest sink
-      // back; all of them breathe, dimming by uBreath over uBreathS seconds, each a little out of step
+      // back; all of them breathe together, dimming by uBreath over uBreathS seconds (out of step, the changes of their
+      // brightness cancelled out: user, "呼吸的效果很不明显"), and so does its tag
       + "    float hs = fract(sin(dot(position, vec3(12.9898, 78.233, 37.719))) * 43758.5453);\n"
       + "    float rise = clamp((uYear - s) / up, 0.0, 1.0);\n"
       + "    float p = hs < uRest ? rise : min(rise, clamp((s + sp - uYear) / dn, 0.0, 1.0)); p = p * p * (3.0 - 2.0 * p);\n"
@@ -492,7 +493,7 @@ void main() {`);
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
       // (what stays after its years dims to uRestDim over the years it would have sunk in)
       + "    vColor.rgb *= mix(1.0, uRestDim, clamp((uYear - s - sp + dn) / dn, 0.0, 1.0));\n"
-      + "    vColor.rgb *= 1.0 - uBreath * (0.5 + 0.5 * sin(6.2832 * uClock / uBreathS + 1.5 * hs));\n"
+      + "    vColor.rgb *= 1.0 - uBreath * (0.5 + 0.5 * sin(6.2832 * uClock / uBreathS));\n"
       + "    vGhost = 1.0;\n"
       + "  } else if (aYear > 0.5) {\n"
       + "    float p = uTimeOn > 0.5 ? clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0) : 1.0; p = p * p * (3.0 - 2.0 * p);\n"
@@ -2400,9 +2401,12 @@ function updateTimeTags() {
       if (Y < 2025) continue;
       p = 1; a = (TL.doneOpacity ?? 0.7) * Math.min(1, Y - 2025); kept.push({ it, p, a, txt, rising: false }); continue;
     } else if (it.kind === "unbuilt") {
-      const sp = it.end - it.year + 1, up = Math.min(Bd, 0.6 * sp), dn = Math.min(1.5, 0.3 * sp);
-      if (Y < it.year || Y >= it.year + sp) continue;
-      p = tlEase(Math.min((Y - it.year) / up, (it.year + sp - Y) / dn)); a = Math.min(1, (Y - it.year) / 0.4, (it.year + sp - Y) / dn);
+      const sp = it.end - it.year + 1, up = Math.min(Bd, 0.6 * sp), dn = Math.min(1.5, 0.3 * sp), stays = TIME.rest.value > 0;
+      if (Y < it.year || (!stays && Y >= it.year + sp)) continue;
+      if (stays) {   // (user, 2026-10-17: its tag should not go while its shadow stays) to doneOpacity over its last years
+        p = tlEase(Math.min((Y - it.year) / up, 1));
+        a = Math.min(1, (Y - it.year) / 0.4) * (1 + ((TL.doneOpacity ?? 0.7) - 1) * Math.min(Math.max((Y - (it.year + sp - dn)) / dn, 0), 1));
+      } else { p = tlEase(Math.min((Y - it.year) / up, (it.year + sp - Y) / dn)); a = Math.min(1, (Y - it.year) / 0.4, (it.year + sp - Y) / dn); }
     } else {
       if (Y < it.year - Bd) { tlEver.delete(it.key); continue; }
       // (user, 2026-10-17) every tag shown while its building went up stays once built, the others fainter (builtOpacity);
@@ -2467,7 +2471,7 @@ function updateTimeTags() {
     // while filming: every label at one opacity, the shot's hero full
     const hero = lit.has(it.key);
     // (user, 2026-10-17: only in its own shot) while filming a tag is full in its own shot, faint (builtOpacity) otherwise
-    let a = cine ? (hero ? 1 : Math.min(a0, TL.builtOpacity ?? 0.12)) : a0;
+    let a = cine && it.kind !== "unbuilt" ? (hero ? 1 : Math.min(a0, TL.builtOpacity ?? 0.12)) : a0;
     // depth (user, 2026-10-13: labels sat over the buildings, near and far alike): a label whose building is hidden
     // behind a standing building fades (lines of sight to its top and its middle against the other buildings' boxes,
     // drawn in a little); far ones are quieter; near ones are drawn over far ones
@@ -2501,6 +2505,8 @@ function updateTimeTags() {
     const faint = cine ? !hero && it.kind !== "unbuilt" : it.kind === "built" && !it.keep && Y > it.year + TL.holdYears;
     if (!faint) a = Math.max(a, TL.minOpacity ?? 0.25);
     if (hero) a = Math.max(a, 0.6);
+    // an unbuilt scheme's tag breathes with its points (the same clock and depth), after the floor so it always shows
+    if (it.kind === "unbuilt") a *= 1 - TIME.breath.value * (0.5 + 0.5 * Math.sin((2 * Math.PI * TIME.clock.value) / TIME.breathS.value));
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
     let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
@@ -2513,7 +2519,7 @@ function updateTimeTags() {
     // out of view: it fades out where it is (no display: none, which made it blink and replay its lock-on)
     const off = behind || sx1 < 0 || sx0 > W || sy1 < 0 || sy0 > H;
     if (off) a = 0;
-    s.op = s.op === undefined ? a : s.op + (a - s.op) * ease(0.3);
+    s.op = s.op === undefined || it.kind === "unbuilt" ? a : s.op + (a - s.op) * ease(0.3);   // (a breathing tag: no lag)
     if (Math.abs(a - s.op) > 0.004) invalidate();
     s.el.style.opacity = s.op.toFixed(3);
     // the highlight colour (user, 2026-10-17): going up, easing to white over hotYears once built; in the film, the shot's
