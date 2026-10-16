@@ -27,6 +27,15 @@
   dl.asm dt { font-weight: 700; margin-top: 12px; }
   dl.asm dt code { font-weight: 400; color: var(--muted); }
   dl.asm dd { margin-top: 2px; color: var(--muted); }
+  dl.asm .v { font-weight: 400; color: var(--text); font-variant-numeric: tabular-nums; }
+  dl.asm details { margin-top: 2px; }
+  dl.asm details summary { cursor: pointer; color: var(--muted); }
+  dl.asm details ul { list-style: none; margin: 2px 0 0 14px; color: var(--muted); }
+  details.more { margin: 6px 0 12px; font-size: 0.85rem; }
+  details.more > summary { cursor: pointer; color: var(--muted); }
+  /* on a phone the diagrams keep a readable size and scroll sideways (user, 2026-10-16: the text was ~7 px) */
+  .flow, .rec .scroll { overflow-x: auto; }
+  @media (max-width: 640px) { .flow svg, .rec .scroll svg { min-width: 640px; } }
   ul.src { padding-left: 18px; font-size: 0.85rem; margin-bottom: 12px; }
   ul.src li { margin-bottom: 4px; word-break: break-word; }
   .wrap { overflow-x: auto; }
@@ -66,7 +75,8 @@
   .flow .bx text.s { font: 400 11px var(--font); fill: var(--muted); }
   .flow .ln path { fill: none; stroke: var(--faint); stroke-width: 1; marker-end: url(#none); }
   /* 6 Working record (user, 2026-10-16): how long the work has taken, under the title, and the record day by day */
-  .worked { margin-top: 10px; font-size: 0.85rem; color: var(--muted); max-width: 520px; }
+  .worked { margin-top: 10px; font-size: 0.8rem; color: var(--faint); max-width: 520px; }
+  .worked a { color: inherit; }
   .rec { position: relative; margin: 10px 0 8px; }
   .rec svg { width: 100%; height: auto; display: block; overflow: visible; touch-action: pan-y; }
   .rec .tick { font: 10px var(--font); fill: var(--faint); font-variant-numeric: tabular-nums; }
@@ -186,14 +196,15 @@
       view grazes the walls. Points are added on the walls of each building's stepped volume, only where no measured
       return is near, mostly on the storey lines read from the building's own wall returns, and not in the lowest metres
       above the ground (arcades, entrances and plazas stay open). They thin with distance like the measured cloud.
-      <b>They are estimates, not measurements</b>; the viewer draws them with the measured points of their building.
+      <b>They are estimates, not measurements</b>; the viewer draws them with the measured points of their building, and
+      leaves them out where a structure is drawn as ground (2.6: a deck has no walls).
       <span class="note">(site-model/houdini/tools/synth_facades.py)</span></p>
     <h3 class="entry-title">2.5 Terrain</h3>
     <p>The ground is Houdini's ground model of the LiDAR: every point keeps its height above it. For the analysis
       layers it is written as a 2 m grid over 2.5 by 2.5 km around Y-1 (1,250 by 1,250 cells), each cell the mean
       ground height of the returns in it, under buildings too; 0.2% of the cells had no returns and take the nearest
       measured cell. Heights are NAVD88: the street at Y-1 is about 90 m. In the viewer the ground is the Terrain
-      points, thinned in irregular 60 m patches away from the site.
+      points, thinned by place as 2.1 says, with the ground under the buildings estimated.
       <span class="note">(site-model/houdini/tools/export_handoff.py → handoff/terrain.npy)</span></p>
     <p>The ground here is not the original hill: the CRA's clearance in the 1960s took some 30 feet off the top of
       Bunker Hill (<a href="../research/list/#bh-008">bh-008</a>).</p>
@@ -234,6 +245,7 @@
       most of the work is done together with Claude (Claude Code), in conversation. The record keeps, for each person,
       how long they worked with Claude each day, counted from their first session about the project, and what came of
       each day: the pull requests opened and merged. <span class="note">(docs/worklog.py, web/data/worklog.json)</span></p>
+    <p class="note" id="recWho"></p>
     <h3 class="entry-title">6.1 Hours per day</h3>
     <figure class="rec" id="rec" aria-label="Hours of work with Claude per person and pull requests, per day"><p class="note">Loading…</p></figure>
     <h3 class="entry-title">6.2 Daily log</h3>
@@ -278,7 +290,7 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
       the strips where flight lines overlapped. Under the buildings, where the LiDAR saw only roofs, the ground is
       estimated from the full scan (the density and height of the ground around) and thinned the same way, so it
       stays where a building is thinned out.` : ""}
-      <span class="note">(site-model/houdini/thinning.json, tools/pack_wide.py)</span>`;
+      <span class="note">(site-model/houdini/thinning.json, site-model/houdini/tools/pack_wide.py)</span>`;
   }
 
   // 2.3 buildings
@@ -295,6 +307,16 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
   if (cfg) {
     const lab = (k) => cfg.layers?.[k]?.label ?? k;
     const sp = Object.values(cfg.splitLayers || {})[0], pz = cfg.plazas, cl = (cfg.claims || [])[0];
+    // the exceptions written down by hand: a building's own plaza limit or parts drawn as ground (entities.json, the
+    // landmarks of config.json), and trees the labels missed (config.json treeSpots)
+    const E = ents ? (Array.isArray(ents) ? ents : Object.values(ents.entities || ents)) : [];
+    const noPlaza = (cfg.landmarks || []).filter((l) => l.ground?.plazaMaxHagM === 0).map((l) => esc(l.name));
+    const own = E.filter((e) => e.ground).map((e) => `${esc(e.name)} (${[e.ground.parts?.length ? `${e.ground.parts.length} low parts drawn as ground` : "",
+      e.ground.plazaMaxHagM ? `plaza cells under ${e.ground.plazaMaxHagM} m` : e.ground.plazaMaxHagM === 0 ? "no plaza cells" : ""].filter(Boolean).join(", ")})`);
+    const ts = cfg.treeSpots?.spots?.length;
+    const byHand = [own.length ? own.join("; ") : "",
+      noPlaza.length ? `${noPlaza.length} landmarks have no plaza cells, their low roofs being roofs (${noPlaza.join(", ")})` : "",
+      ts ? `${ts} tree crowns on the Watercourt, labelled as part of a building and drawn as ground with its plaza, are circled by hand (the ground points more than ${cfg.treeSpots.raiseM ?? 1} m above the plaza in each circle are a tree)` : ""].filter(Boolean).join("; ");
     const lm = (cfg.landmarks || []).map((l) => `<tr><td>${esc(l.name)}</td><td class="note">${esc(l.builtAs ?? "")}</td><td class="r">${esc(l.built ?? "")}</td><td class="note">${esc(l.basis)}</td></tr>`).join("");
     document.getElementById("layers").innerHTML = `
       <p>The labelled LiDAR objects are drawn in five layers: ${["Terrain", "Buildings", "Landmarks", "Trees", "Vehicles"].map(lab).join(", ")}.
@@ -302,16 +324,22 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
       ${sp ? `<p><b>Bridges and decks.</b> Structures the LiDAR sees but the LARIAC building outlines do not are building parts,
         except the thin ones held above the ground (less than ${sp.maxThickM} m between the 5th and 95th percentile of their
         heights, on average ${sp.minHagM}–${sp.maxHagM} m up) and those whose checked use is a street structure: bridges, raised
-        walkways, street and plaza decks, canopies. These are drawn with the ground, and as densely as the ground around them
-        (the LiDAR returns fewer points from a deck than from the street; only the drawing is changed).</p>` : ""}
+        walkways, street and plaza decks, canopies. ${sp.curved ? `A structure no one has checked by hand also goes when it is
+        thin about its own sloping or curving surface (under ${sp.curved.maxThickM} m from a surface fitted to it) and
+        ${sp.minHagM}–${sp.curved.maxHagM} m up: freeway ramps, a skybridge over a lower street. ` : ""}Only the measured
+        returns are judged (2.4's estimated walls would make a deck look thick). These are drawn with the ground, without
+        estimated walls, and as densely as the ground around them (the LiDAR returns fewer points from a deck than from the
+        street; only the drawing is changed).</p>` : ""}
       ${pz ? `<p><b>Plazas.</b> A LARIAC outline can take in a tower's plaza (Two California Plaza and its Watercourt). In a
         building at least ${pz.minBuildingM} m tall, every ${pz.cellM} m plan cell whose highest return is under ${pz.maxHagM} m
         above the ground, and the walls and steps next to it that rise no more than ${pz.edgeM} m above it, are drawn as ground.</p>` : ""}
+      ${byHand ? `<p><b>Checked by hand.</b> Where the rules above get a building wrong, the exception is written down for that
+        building, after looking at it: ${byHand}.</p>` : ""}
       ${cl ? `<p><b>Landmark parts.</b> Building points within ${cl.marginM} m of a landmark's own points belong to the landmark
         (the Angels Flight upper station inside the Two California Plaza outline).</p>` : ""}
       ${cfg.landmarkRule ? `<p><b>Landmarks.</b> ${esc(cfg.landmarkRule)} The year built and what it was built as are the building's
         own, looked up for each (the assessor's year is often that of a later remodel); the viewer adds what it is now.</p>
-        <div class="wrap"><table><tr><th>Landmark</th><th>Built as</th><th class="r">Built</th><th>Why</th></tr>${lm}</table></div>` : ""}
+        <details class="more"><summary>The ${(cfg.landmarks || []).length} landmarks</summary><div class="wrap"><table><tr><th>Landmark</th><th>Built as</th><th class="r">Built</th><th>Why</th></tr>${lm}</table></div></details>` : ""}
       <p class="note">(web/config.json; drawing only, the point cloud is unchanged)</p>`;
   }
 
@@ -331,11 +359,27 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
   const offModel = rules["building not modelled"] || 0;
 
   const src = Object.entries(pop.sources || {}).map(([k, v]) => `<li><b>${esc(k)}</b>: ${esc(v)}</li>`).join("");
+  // 3.4 (user, 2026-10-16: readable): the name in words, the value as text with the LODES sector codes named; a value
+  // with many entries is folded
+  const SECTOR = { CNS01: "agriculture", CNS02: "mining", CNS03: "utilities", CNS04: "construction", CNS05: "manufacturing",
+    CNS06: "wholesale", CNS07: "retail", CNS08: "transport and warehousing", CNS09: "information", CNS10: "finance and insurance",
+    CNS11: "real estate", CNS12: "professional services", CNS13: "management", CNS14: "administrative and support",
+    CNS15: "education", CNS16: "health care", CNS17: "arts and entertainment", CNS18: "accommodation and food",
+    CNS19: "other services", CNS20: "public administration" };
+  const words = (k) => { const w = k.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase(); return w[0].toUpperCase() + w.slice(1); };
+  const term = (k) => (SECTOR[k] ? `${SECTOR[k]} (${k})` : k);
+  const show = (v) => (v == null ? "" : typeof v === "object" ? (Array.isArray(v) ? v.map((x) => (typeof x === "object" ? JSON.stringify(x) : term(String(x)))).join(", ") : JSON.stringify(v)) : String(v));
   const asm = Object.entries(pop.assumptions || {}).map(([k, v]) => {
     const fitted = /CALIBRATED|Fitted|fitted/.test(v.note || "");
     const assumed = /ASSUMPTION/.test(v.note || "");
     const tag = fitted ? '<span class="tag fit">fitted</span>' : assumed ? '<span class="tag">assumption</span>' : "";
-    return `<dt>${esc(k)} ${tag} <code>${esc(JSON.stringify(v.value)).slice(0, 160)}${JSON.stringify(v.value).length > 160 ? "…" : ""}</code></dt><dd>${esc(v.note)}</dd>`;
+    const val = v.value, isObj = val && typeof val === "object" && !Array.isArray(val);
+    const entries = isObj ? Object.entries(val) : [];
+    const flat = isObj && entries.length <= 8 && entries.every(([, x]) => typeof x !== "object" || x === null || (Array.isArray(x) && x.length <= 3));
+    const head = !isObj ? show(val) : flat ? entries.map(([a, x]) => `${term(a)} ${show(x)}`).join(" · ") : `${entries.length} entries`;
+    const fold = isObj && !flat ? `<details><summary>The values</summary><ul>${entries.map(([a, x]) => `<li>${esc(term(a))}: ${esc(show(x))}</li>`).join("")}</ul></details>` : "";
+    const note = (v.note || "").replace(/\bCNS\d\d\b/g, (c) => (SECTOR[c] ? `${c} (${SECTOR[c]})` : c));
+    return `<dt>${esc(words(k))} ${tag} <span class="v">${esc(head)}</span> <code>${esc(k)}</code></dt><dd>${esc(note)}${fold}</dd>`;
   }).join("");
 
   const metro = pop.calibration?.metro || {};
@@ -344,6 +388,7 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
   const ms = Object.values(metro).filter((v) => !v.transfer_hub);
   const mtot = ms.reduce((s, v) => s + v.model_boardings, 0) / ms.reduce((s, v) => s + v.metro_boardings, 0);
 
+  let weekendHigh = "";
   let wtable = '<p class="todo">walk_check.json not found (run site-model/population/check_walk_counts.py).</p>', af = "";
   if (walk) {
     const r = (x) => (x == null ? "–" : x.toFixed(2));
@@ -356,6 +401,7 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
     wtable = `<div class="wrap"><table><tr><th>Counted block</th><th class="r">Weekday model</th><th class="r">LADOT</th><th class="r">Ratio</th>
       <th class="r">Weekend model</th><th class="r">LADOT</th><th class="r">Ratio</th></tr>${wrows}
       ${line("All blocks", () => true)}${line("Held-out blocks", (b) => b.held_out)}</table></div>`;
+    weekendHigh = walk.blocks.filter((b) => b.weekend.ratio > 1.5).map((b) => `${esc(b.name)} (${b.weekend.ratio.toFixed(1)} times)`).join(" and ");
     if (walk.angels_flight) af = `about ${fmt(walk.angels_flight.weekday)} trips on a weekday and ${fmt(walk.angels_flight.weekend)} on a weekend day,
       against ${esc(walk.angels_flight.published)}`;
   }
@@ -412,6 +458,8 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
       <li>Blocks at the site edge get too many passers-by, because they all enter and leave there.</li>
       <li>1st St in Little Tokyo comes out high on weekdays (riders from the Little Tokyo station).</li>
       <li>Grand Ave between 7th and 8th St comes out at about 0.4 of the count, for reasons not found.</li>
+      ${weekendHigh ? `<li>On weekends ${weekendHigh} come out well above the count. Both run past El Pueblo and Olvera Street, whose
+        visitor number is an estimate (1.5 million a year, a weekend day counting twice a weekday): a likely cause, not checked.</li>` : ""}
       <li>LODES counts jobs where employers report them; office floor area is from the Assessor, not listings.</li>
       <li>Arrival-time bins are City of Los Angeles averages within each tract's periods.</li>
       <li>The daily walks of people without shelter are assumed; raw tract tallies do not add up to LAHSA's published estimates.</li>
@@ -451,8 +499,9 @@ function renderRecord(W) {
   const dayN = (since) => Math.round((Date.parse(today) - Date.parse(since)) / 864e5) + 1;
   const lines = people.map((p) => `${esc(p.name)}: day ${dayN(p.since)} since the first session (${nice(p.since, true)}) · about ${Math.round(Object.entries(p.days || {}).filter(([d]) => d >= p.since).reduce((a, [, m]) => a + m, 0) / 60)} hours of work with Claude`);
   const unrecorded = [...new Set([...W.commits.map((c) => c.by), ...prs.map((p) => p.by)])].filter((l) => l && !people.some((p) => p.login === l));
-  document.getElementById("worked").innerHTML = lines.join("<br>") + (unrecorded.length ? `<br>${unrecorded.map((l) => esc(nameOf(l))).join(", ")}: time not recorded yet` : "")
-    + `<br>Together: ${fmt(W.commits.length)} commits · ${prs.length} pull requests`;
+  const totalH = Math.round(dayMin.reduce((a, b) => a + b, 0) / 60);
+  document.getElementById("worked").innerHTML = `<a href="#record">Working record</a>: day ${days.length} · about ${totalH} hours of work with Claude${people.length === 1 ? ` (${esc(people[0].name)})` : ""} · ${fmt(W.commits.length)} commits · ${prs.length} pull requests`;
+  document.getElementById("recWho").innerHTML = lines.join("<br>") + (unrecorded.length ? `<br>${unrecorded.map((l) => esc(nameOf(l))).join(", ")}: time not recorded yet` : "");
 
   // the chart (user, 2026-10-16: simpler): one bar a day, its hours with Claude (stacked by person), and under it
   // the pull requests merged that day; dates by the week
@@ -480,7 +529,7 @@ function renderRecord(W) {
   // the bars' colours, person by person (p0.. -> --p1..); a legend once more than one person has time
   const style = people.map((_, j) => `.rec .p${j} { fill: var(--p${j + 1}, var(--muted)); }`).join(" ");
   const legend = people.length > 1 ? `<div class="legend">${people.map((p, j) => `<span><i class="sw" style="background: var(--p${j + 1}, var(--muted))"></i>${esc(p.name)}</span>`).join("")}</div>` : "";
-  fig.innerHTML = `<style>${style}</style>${legend}<svg viewBox="0 0 720 ${HT}" role="img" aria-label="Hours of work with Claude per day, and the pull requests merged each day">${g}</svg>`
+  fig.innerHTML = `<style>${style}</style>${legend}<div class="scroll"><svg viewBox="0 0 720 ${HT}" role="img" aria-label="Hours of work with Claude per day, and the pull requests merged each day">${g}</svg></div>`
     + `<p class="key">Bars: hours of work with Claude${people.length === 1 ? ` (${esc(people[0].name)})` : ""}. Under a bar: the pull requests merged that day (#n; B: the Blender repository). Hover a day for a summary; everything is in the daily log below.</p><div class="tip" role="status"></div>`;
   // hover: a short summary of the day (its details are in 6.2, the daily log)
   const svg = fig.querySelector("svg"), tip = fig.querySelector(".tip"); let on = null;
@@ -498,12 +547,22 @@ function renderRecord(W) {
   svg.addEventListener("pointermove", (ev) => { const b = ev.target.closest?.(".band"); if (b) show(+b.dataset.i); });
   svg.addEventListener("pointerleave", () => { tip.classList.remove("on"); on?.classList.remove("on"); on = null; });
 
-  // 6.2 each day, the newest first: who worked how long, what came of it, the commits
-  document.getElementById("dayList").innerHTML = days.map((d, i) => i).reverse().filter((i) => dayMin[i] || commits[i].length || mergedOn[i].length || openedOn[i].length).map((i) => {
-    const who = people.map((p, j) => (mins[j][i] ? `<span class="who"><i class="sw" style="background: var(--p${j + 1}, var(--muted))"></i>${esc(p.name)} ${hrs(mins[j][i])}</span>` : "")).join("");
-    const res = [...mergedOn[i].map((p) => `Merged ${prLink(p)} ${esc(p.title)}`), ...openedOn[i].map((p) => `Opened ${prLink(p)} ${esc(p.title)}`)];
-    const cs = commits[i];
-    return `<li><span class="d">${nice(days[i], true)}</span>${who}${res.length ? `<div class="res">${res.join("<br>")}</div>` : ""}`
+  // 6.2 the daily log, the newest first: who worked how long, what came of it, the commits. Before the first commit
+  // (the research weeks, user 2026-10-16: "9 月按周合并") a row is a week, Monday to Sunday; from it, a day.
+  const firstDay = W.commits.length ? dayOf(W.commits[0].t) : today;
+  const monday = (d) => { const t = new Date(d + "T12:00:00Z"); t.setUTCDate(t.getUTCDate() - ((t.getUTCDay() + 6) % 7)); return t.toISOString().slice(0, 10); };
+  const groups = [];
+  days.forEach((d, i) => { const key = d < firstDay ? "w" + monday(d) : d, g0 = groups[groups.length - 1];
+    if (g0 && g0.key === key) g0.ix.push(i); else groups.push({ key, ix: [i], week: d < firstDay }); });
+  const sumOf = (ix, f) => ix.reduce((a, i) => a + f(i), 0);
+  document.getElementById("dayList").innerHTML = groups.reverse().filter((G) => G.ix.some((i) => dayMin[i] || commits[i].length || mergedOn[i].length || openedOn[i].length)).map((G) => {
+    const a = days[G.ix[0]], b = days[G.ix[G.ix.length - 1]];
+    const label = G.week ? `Week of ${nice(monday(a))}${a.slice(0, 7) === b.slice(0, 7) && a !== b ? `–${+b.slice(8)}` : a !== b ? `–${nice(b)}` : ""}, ${a.slice(0, 4)}` : nice(a, true);
+    const who = people.map((p, j) => { const m = sumOf(G.ix, (i) => mins[j][i]); return m >= 6 ? `<span class="who"><i class="sw" style="background: var(--p${j + 1}, var(--muted))"></i>${esc(p.name)} ${hrs(m)}${G.week ? `, ${G.ix.filter((i) => mins[j][i] >= 6).length} days` : ""}</span>` : ""; }).join("");
+    const res = G.ix.flatMap((i) => [...mergedOn[i].map((p) => `Merged ${prLink(p)} ${esc(p.title)}`), ...openedOn[i].map((p) => `Opened ${prLink(p)} ${esc(p.title)}`)]);
+    const cs = G.ix.flatMap((i) => commits[i]);
+    if (!who && !res.length && !cs.length) return "";
+    return `<li><span class="d">${label}</span>${who}${res.length ? `<div class="res">${res.join("<br>")}</div>` : ""}`
       + (cs.length ? `<details><summary>${cs.length} commit${cs.length === 1 ? "" : "s"}</summary><ul>${cs.map((c) => `<li>${esc(c.s)}${people.length > 1 || c.by !== people[0]?.login ? ` <span class="note">(${esc(nameOf(c.by))})</span>` : ""}</li>`).join("")}</ul></details>` : "")
       + `</li>`;
   }).join("");
@@ -522,7 +581,7 @@ function renderRecord(W) {
     of what was said. It is the time spent working with Claude, not all the time spent on the project: modelling in
     Houdini, reading and site visits without a conversation open are not in it. Days are Los Angeles days.
     <b>Commits</b>: every commit of this repository and of the earlier Blender one except merge commits (a pull request
-    is shown by its merge). <span class="note">(updated ${esc((W.generated || "").slice(0, 10))})</span></p>`;
+    is shown by its merge). <span class="note">(updated ${W.generated ? nice(dayOf(W.generated), true) : ""})</span></p>`;
 }
 
 // the contents: every section and subsection, the one being read marked

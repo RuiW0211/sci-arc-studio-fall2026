@@ -69,7 +69,7 @@ def num(v):
 
 
 def site_tracts():
-    blocks = json.loads((DATA / "blocks.geojson").read_text())
+    blocks = json.loads((DATA / "blocks.geojson").read_text(encoding="utf-8"))
     return sorted({f["properties"]["GEOID"][:11] for f in blocks["features"]})
 
 
