@@ -800,7 +800,8 @@ async function loadLidar() {
   // ground). They draw as ground, always (user, 2026-10-13: the holes show in the other modes too, e.g. under Highlight
   // people); per-point year code 10000 + the building's year (ptYear), kept for the Time module.
   let ptYear = null;
-  const GF = cfg.time?.groundFill;
+  // (a cloud packed with the ground under the buildings already in it, thinning.ground_fill, 2026-10-16: none here)
+  const GF = meta.thinning?.ground_fill ? null : cfg.time?.groundFill;
   if (GF && HG && terrainObj >= 0) {
     const CM = GF.cellM ?? 2, groundL = objLayers[terrainObj];
     let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
