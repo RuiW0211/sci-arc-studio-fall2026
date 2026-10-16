@@ -1830,7 +1830,8 @@ function cineNow(now) {
     const oA = off(A.r, A.phi, A.th), oB = off(B.r, B.phi, c.th0), oN = off(r, phi, th);
     // its place: a cubic from where it was to where the shot starts, leaving and arriving at their speeds (vA, vB)
     const vA = c.vA || [0, 0, 0], vB = c.vB || [0, 0, 0];
-    const target = A.target.map((v, j) => h00 * (v + oA[j]) + h10 * T * vA[j] + h01 * (B.target[j] + oB[j]) + h11 * T * vB[j] - oN[j]);
+    const target = !c.straight ? A.target.map((v, j) => v + (B.target[j] - v) * e)   // round its target, which moves across
+      : A.target.map((v, j) => h00 * (v + oA[j]) + h10 * T * vA[j] + h01 * (B.target[j] + oB[j]) + h11 * T * vB[j] - oN[j]);
     return { target, r, phi, th, fov: (A.fov ?? FOV0) + ((B.fov ?? FOV0) - (A.fov ?? FOV0)) * e, lens: (A.lens ?? 1) + ((B.lens ?? 1) - (A.lens ?? 1)) * e, k };
   }
   const len = shotLen(sh) * 1000;
@@ -1893,6 +1894,12 @@ function nextShot(now, P, toI, w0, vA) {   // now: the exact time the last shot 
     c.vA = prev ? shotVel(prev, 1, th0prev, c.dir) : vA || [0, 0, 0];
     c.vB = shotVel(sh, 0, c.th0, c.dir);
     c.blendT = T; c.phase = "blend"; c.from = P;
+    // which way it flies (user, 2026-10-17): round its target, turning as it moves and rises (the way a shot moves), unless
+    // that way is much longer than straight across (Y-1 -> Broadway: about 600 m round, 255 m straight)
+    c.straight = false;
+    const lenOf = () => { let L = 0, q = null; for (let k = 0; k <= 24; k++) { const p = camAt(cineNow(c.t0 + (T * 1000 * k) / 24)); if (q) L += Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]); q = p; } return L; };
+    const round = lenOf(); c.straight = true; const across = lenOf();
+    c.straight = round > 1.5 * across;
     c.t0 = now;
   }
   shotsUI();
