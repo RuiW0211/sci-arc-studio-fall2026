@@ -2481,8 +2481,6 @@ const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.ta
     addEventListener("pointerdown", first, true); addEventListener("keydown", first, true);
   }
 }
-// on arrival the panels are hidden (user, 2026-10-16: the model alone until the mouse moves); any input brings them
-function sleepNow() { clearTimeout(idleTimer); document.body.classList.add("idle"); invalidate(); }
 function wake(ms = IDLE_MS) {
   if (typeof ms !== "number") ms = IDLE_MS;    // called as an event listener
   if (document.body.classList.contains("idle")) invalidate();   // the Time tags under the panel fade again
@@ -2497,7 +2495,7 @@ function wake(ms = IDLE_MS) {
 for (const ev of ["pointermove", "pointerdown", "wheel", "keydown", "touchstart", "focusin"]) addEventListener(ev, wake, { passive: true });
 // prepared in the background from the home page (prerender): when the reader arrives, start the idle wait afresh (it
 // may have run out while hidden) and fit the canvas to the window as it is now
-if (document.prerendering) document.addEventListener("prerenderingchange", () => { sleepNow(); dispatchEvent(new Event("resize")); invalidate(); }, { once: true });
+if (document.prerendering) document.addEventListener("prerenderingchange", () => { wake(); dispatchEvent(new Event("resize")); invalidate(); }, { once: true });
 // "home" steps back in history when the home page is the previous entry, so this page stays in the browser's
 // back/forward cache and the home page's Model link can step forward to it, open at once (user, 2026-10-12)
 document.querySelector('.sub a[href="./"]')?.addEventListener("click", (e) => {
@@ -2505,7 +2503,7 @@ document.querySelector('.sub a[href="./"]')?.addEventListener("click", (e) => {
   const prev = navigation.entries()[navigation.currentEntry.index - 1];
   if (prev && new URL(prev.url).pathname === new URL(e.currentTarget.href).pathname) { e.preventDefault(); navigation.back(); }
 });
-addEventListener("pageshow", (e) => { if (e.persisted) { sleepNow(); dispatchEvent(new Event("resize")); invalidate(); } });
+addEventListener("pageshow", (e) => { if (e.persisted) { wake(); dispatchEvent(new Event("resize")); invalidate(); } });
 // the floating tags fade after 10 s without input (user, 2026-10-08), like the panels
 let tagTimer = 0;
 function wakeTags() {
@@ -2517,7 +2515,7 @@ function wakeTags() {
 }
 for (const ev of ["pointermove", "pointerdown", "wheel", "keydown", "touchstart", "focusin"]) addEventListener(ev, wakeTags, { passive: true });
 wakeTags();
-sleepNow();
+wake();
 
 await setMode("cloud");
 // the opening (user, 2026-10-13): the viewer opens in the Time module, playing from 1867 with the camera tour;
