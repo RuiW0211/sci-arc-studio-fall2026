@@ -186,16 +186,18 @@ const focusMats = [];
 function withFocus(shader) {
   shader.uniforms.uFocus = FOCUS; shader.uniforms.uFocusGrey = FOCUS_GREY; shader.uniforms.uFocusAlpha = FOCUS_ALPHA;
   shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uTimeGrey = TIME.grey; shader.uniforms.uTimeAlpha = TIME.alpha;
-  shader.uniforms.uMono = MONO;
+  shader.uniforms.uMono = MONO; shader.uniforms.uSpotGround = SPOT.ground;
   // vSel (from pointMaterial's vertex shader): a selected object keeps its highlight under Highlight people
   // vBuild, vGhost (Time module): buildings (white, set in the vertex shader) and the unbuilt towers are not greyed,
   // and the rest goes a darker, fainter grey than for Highlight people, so the buildings stand out
-  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha, uTimeOn, uTimeGrey, uTimeAlpha, uMono;\nvarying float vSel, vBuild, vGhost;\n" + shader.fragmentShader.replace("#include <color_fragment>",
+  shader.fragmentShader = "uniform float uFocus, uFocusGrey, uFocusAlpha, uTimeOn, uTimeGrey, uTimeAlpha, uMono, uSpotGround;\nvarying float vSel, vBuild, vGhost, vLit;\n" + shader.fragmentShader.replace("#include <color_fragment>",
     `#include <color_fragment>
   float fk = uFocus * (1.0 - vSel) * (1.0 - vBuild) * (1.0 - vGhost);
   float th = max(uTimeOn, uMono);
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(mix(uFocusGrey, uTimeGrey, th)), fk);
-  diffuseColor.a *= mix(1.0, mix(uFocusAlpha, uTimeAlpha, th), fk);`);
+  // (user, 2026-10-17: in Y-1's shot Angels Knoll did not light up, its points being ground and trees) the ground and
+  // trees inside the film's light come up to uSpotGround, opaque, as a lit building does
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(mix(mix(uFocusGrey, uTimeGrey, th), uSpotGround, vLit)), fk);
+  diffuseColor.a *= mix(1.0, mix(mix(uFocusAlpha, uTimeAlpha, th), 1.0, vLit), fk);`);
 }
 let focusAnim = 0;
 function setWhiteCloud(on) {
@@ -388,7 +390,7 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
 const SPOT_N = 5, SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.12 },
   box: { value: Array.from({ length: 2 * SPOT_N }, () => new THREE.Vector4()) },
   hull: { value: Array.from({ length: 2 * SPOT_N * 12 }, () => new THREE.Vector2()) }, hn: { value: new Array(2 * SPOT_N).fill(0) },
-  w: { value: [0, 0] }, ghostLit: { value: 0 } };
+  w: { value: [0, 0] }, ghostLit: { value: 0 }, ground: { value: cfg.time?.cinema?.spotGround ?? 0.9 } };
 const ghostShown = (name) => TIME.on.value > 0.5 && (ghostYears.get(name) || []).some(([a, b]) => TIME.year.value >= a && (TIME.rest.value > 0 || TIME.year.value < b + 1));
 function applyVisibility() {
   for (const L of ordered) {
@@ -448,12 +450,13 @@ function pointMaterial(sizeMetres) {
     shader.uniforms.uSpot = SPOT.k; shader.uniforms.uSpotDim = SPOT.dim; shader.uniforms.uSpotW = SPOT.w;
     shader.uniforms.uSpotBox = SPOT.box; shader.uniforms.uSpotHull = SPOT.hull; shader.uniforms.uSpotHN = SPOT.hn;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim, uRest, uRestDim, uRestFade, uLitDim, uTopFade, uGhostLit;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim, uRest, uRestDim, uRestFade, uLitDim, uTopFade, uGhostLit;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost, vLit;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
   vColor.rgb = mix(vColor.rgb, uHi, sw);
-  vSel = sw; vBuild = 0.0; vGhost = 0.0;`).replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
+  vSel = sw; vBuild = 0.0; vGhost = 0.0;
+  float litK = spotLit(position.xz); vLit = litK * uSpot;   // in the film's light (a lit group's footprint)`).replace("#include <project_vertex>", "#include <project_vertex>\n  gl_Position = fishPos(gl_Position);");
     // inside one of the lit footprints (a quick box test, then the convex corners, 2 m to spare)
     shader.vertexShader = shader.vertexShader.replace("void main() {", `float spotLit(vec2 q) {
   if (uSpot < 0.001) return 0.0;
@@ -509,9 +512,9 @@ void main() {`);
       // going up: the highlight colour, back to white over uHotY years once built (2026-10-17)
       + "    float g = uTimeOn > 0.5 ? clamp((aYear + uHotY - uYear) / uHotY, 0.0, 1.0) * uHot : 0.0; g = g * g * (3.0 - 2.0 * g);\n"
       // the film's light: buildings outside the shot's group a little darker
-      + "    float lit = spotLit(position.xz);\n"
+      + "    float lit = litK;\n"
       + "    vColor.rgb = mix(vColor.rgb, mix(mix(vec3(1.0), uHi, g) * mix(1.0, uSpotDim, uSpot * (1.0 - lit)), vColor.rgb, vSel), uFocus); vBuild = 1.0;\n"
-      + "  } else if (aYear < -0.5) { vColor.rgb = mix(vColor.rgb, mix(vec3(uDim) * mix(1.0, uSpotDim, uSpot * (1.0 - spotLit(position.xz))), vColor.rgb, vSel), uFocus); vBuild = 1.0; }\n"
+      + "  } else if (aYear < -0.5) { vColor.rgb = mix(vColor.rgb, mix(vec3(uDim) * mix(1.0, uSpotDim, uSpot * (1.0 - litK)), vColor.rgb, vSel), uFocus); vBuild = 1.0; }\n"
       + "}\n#include <fog_vertex>");
     // round points instead of squares
     shader.fragmentShader = shader.fragmentShader.replace(
@@ -2303,10 +2306,9 @@ function buildY1Outline() {
     pos.set([x, last + (O.liftM ?? 0.6), z], 3 * j);
   });
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  // dashed, as a property line is drawn (a solid faint line was lost among the people's trails)
-  const mat = fishPatch(new THREE.LineDashedMaterial({ color: O.color ?? "#ffffff", transparent: true, opacity: O.opacity ?? 0.5, depthWrite: false,
-    depthTest: false, dashSize: O.dashM ?? 4, gapSize: O.gapM ?? 2 }));   // (drawn over the cloud, as a drawing's line: the ground's points hid it)
-  y1Line = new THREE.Line(geo, mat); y1Line.computeLineDistances(); y1Line.renderOrder = 2; y1Line.frustumCulled = false;
+  // (user, 2026-10-17: not dashed) drawn over the cloud, as a drawing's line (the ground's points hid it)
+  const mat = fishPatch(new THREE.LineBasicMaterial({ color: O.color ?? "#ffffff", transparent: true, opacity: O.opacity ?? 0.5, depthWrite: false, depthTest: false }));
+  y1Line = new THREE.Line(geo, mat); y1Line.renderOrder = 2; y1Line.frustumCulled = false;
   scene.add(y1Line); invalidate();
 }
 if (cfg.population?.meta) fetch(cfg.population.meta).then((r) => r.json()).then((m) => { y1Ring = m.y1?.[0] ?? null; }).catch(() => {});
