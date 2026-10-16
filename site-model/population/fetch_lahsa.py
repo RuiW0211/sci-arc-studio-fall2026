@@ -22,7 +22,7 @@ XLSX = RAW / "2025-Street-Count-by-Census-Tract.xlsx"
 if not XLSX.exists():
     XLSX.write_bytes(requests.get(URL, headers={"User-Agent": "sci-arc-studio-fall2026 research"}, timeout=120).content)
 
-tracts = {f["properties"]["GEOID"][5:11] for f in json.loads((DATA / "blocks.geojson").read_text())["features"]}
+tracts = {f["properties"]["GEOID"][5:11] for f in json.loads((DATA / "blocks.geojson").read_text(encoding="utf-8"))["features"]}
 aland = {}
 for line in (HERE / "data" / "raw" / "2020_Gaz_tracts_06.txt").read_text(encoding="utf-8", errors="replace").splitlines()[1:]:
     c = line.split("\t")

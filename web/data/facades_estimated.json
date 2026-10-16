@@ -1,10 +1,9 @@
 {
  "file": "facades_estimated.bin",
- "count": 172017,
+ "count": 172155,
  "format": "float32 x, y, z (x east, y up, z -north) for every point, then uint16 object (index into objects), then int16 height above the building's base (0.1 m)",
  "objects": [
   "BLD_482951838625",
-  "BLD_2014092962720000",
   "BLD_202000039161",
   "BLD_482551838973",
   "BLD_202000039162",
@@ -17,7 +16,6 @@
   "BLD_202000039054",
   "BLD_483200839242",
   "BLD_201700093613",
-  "PC_-1013_671",
   "BLD_483346838781",
   "BLD_201700195147",
   "BLD_202000039452",
@@ -80,12 +78,10 @@
   "PC_-840_111",
   "BLD_483149840606",
   "PC_-873_59",
-  "PC_-834_-4",
-  "PC_-931_140",
   "PC_-839_43",
   "PC_-835_101",
-  "BLD_noid2230977",
-  "BLD_482388842442",
+  "PC_-834_-4",
+  "PC_-931_140",
   "BLD_483002842403",
   "BLD_482967842696",
   "BLD_483228842278",
@@ -93,6 +89,7 @@
   "BLD_483250843367",
   "BLD_noid1897488",
   "BLD_483079843461",
+  "BLD_482981843217",
   "BLD_483118843431",
   "BLD_noid1897032",
   "BLD_483169843421",
@@ -101,16 +98,14 @@
   "PC_-764_-674",
   "PC_-754_-654",
   "PC_-752_-671",
-  "BLD_482709843080",
   "BLD_482869842970",
   "BLD_483082842926",
   "PC_-808_-594",
   "PC_-828_-531",
-  "PC_-818_-615",
   "PC_-853_-277",
   "PC_-797_-648",
+  "PC_-818_-615",
   "PC_-856_-912",
-  "BLD_482716843665",
   "BLD_483116843541",
   "BLD_483224843544",
   "BLD_483173843577",
@@ -323,12 +318,12 @@
   "BLD_484429840516",
   "BLD_484772840606",
   "BLD_noid1897197",
-  "PC_-281_-223",
+  "PC_-645_-147",
   "PC_-351_-237",
   "BLD_noid1896917",
-  "PC_-283_-175",
-  "PC_-645_-147",
   "PC_-350_-225",
+  "PC_-281_-223",
+  "PC_-283_-175",
   "PC_-596_-429",
   "BLD_2014092961300000",
   "BLD_483336843324",
@@ -548,12 +543,12 @@
   "BLD_486460839879",
   "BLD_486195839506",
   "BLD_noid2230542",
-  "BLD_noid2230223",
   "BLD_noid2230410",
+  "BLD_noid1865871",
   "BLD_noid2230204",
+  "BLD_noid2230223",
   "BLD_noid2230384",
   "BLD_noid2230378",
-  "BLD_noid1865871",
   "BLD_485091841660",
   "BLD_485569841928",
   "BLD_485357841728",
@@ -623,10 +618,10 @@
   "BLD_485565840314",
   "BLD_486588840324",
   "PC_-156_163",
-  "BLD_noid2230862",
-  "PC_-154_-56",
-  "PC_133_-126",
   "PC_-159_-80",
+  "BLD_noid2230862",
+  "PC_133_-126",
+  "PC_-154_-56",
   "BLD_485216842179",
   "BLD_201700196443",
   "BLD_201700196586",
@@ -662,16 +657,16 @@
   "PC_-197_-582",
   "BLD_2014092852400000",
   "PC_-193_-569",
-  "PC_-54_-264",
-  "PC_122_-507",
-  "PC_128_-412",
-  "PC_-163_-379",
+  "PC_-190_-591",
   "PC_163_-458",
+  "PC_-54_-264",
+  "PC_128_-412",
   "BLD_noid1896177",
+  "PC_-163_-379",
+  "PC_122_-507",
+  "PC_-59_-565",
   "PC_151_-740",
   "PC_-23_-271",
-  "PC_-59_-565",
-  "PC_-190_-591",
   "BLD_202000040346",
   "BLD_201700198408",
   "BLD_485956844300",
@@ -682,6 +677,7 @@
   "BLD_201700197761",
   "PC_-82_-832",
   "BLD_485314843658",
+  "PC_160_-908",
   "BLD_2014092850730000",
   "BLD_487144838647",
   "BLD_487077838579",
@@ -692,6 +688,7 @@
   "BLD_486814838088",
   "BLD_486922838093",
   "BLD_487218838079",
+  "BLD_486996838070",
   "BLD_487057837883",
   "BLD_486785837972",
   "BLD_486731837873",
@@ -716,7 +713,6 @@
   "BLD_487426838298",
   "BLD_488008838299",
   "BLD_487390838000",
-  "BLD_487711838102",
   "PC_520_893",
   "BLD_486665839374",
   "BLD_486831839248",
@@ -891,8 +887,8 @@
   "PC_585_-554",
   "PC_431_-518",
   "BLD_noid1897577",
-  "BLD_noid1896966",
   "PC_598_-555",
+  "BLD_noid1896966",
   "PC_319_-1102",
   "PC_305_-1079",
   "BLD_2014092961410000",
@@ -918,7 +914,6 @@
   "BLD_488802840036",
   "BLD_489046840013",
   "BLD_488609839978",
-  "BLD_489357839995",
   "BLD_488960839945",
   "BLD_488669839888",
   "BLD_488436839855",
@@ -956,6 +951,7 @@
   "BLD_489432840621",
   "BLD_488892840520",
   "BLD_488680840550",
+  "BLD_489081840581",
   "BLD_489115840558",
   "BLD_488579840459",
   "BLD_488742840532",
@@ -970,9 +966,9 @@
   "BLD_noid1896763",
   "BLD_489121842142",
   "BLD_202000040140",
-  "PC_831_-293",
   "PC_794_-597",
   "PC_775_-353",
+  "PC_831_-293",
   "BLD_202000040201",
   "BLD_488316843806"
  ],
@@ -1509,7 +1505,7 @@
    "name": "John Ferraro Building (LADWP headquarters)",
    "id": "E069",
    "measured": 164926,
-   "estimated": 454,
+   "estimated": 455,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1525,7 +1521,7 @@
    "name": "Wilshire Grand Center",
    "id": "E071",
    "measured": 203859,
-   "estimated": 615,
+   "estimated": 642,
    "storey_m": 4.5,
    "storey_from": "measured walls"
   },
@@ -1533,7 +1529,7 @@
    "name": "Cathedral of Our Lady of the Angels",
    "id": "E072",
    "measured": 190014,
-   "estimated": 296,
+   "estimated": 313,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1541,7 +1537,7 @@
    "name": "Hall of Justice",
    "id": "E073",
    "measured": 125309,
-   "estimated": 174,
+   "estimated": 192,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1549,7 +1545,7 @@
    "name": "United States Courthouse (312 N Spring St)",
    "id": "E074",
    "measured": 108540,
-   "estimated": 66,
+   "estimated": 67,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1557,7 +1553,7 @@
    "name": "Ernst & Young Plaza",
    "id": "E075",
    "measured": 179731,
-   "estimated": 140,
+   "estimated": 155,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -1565,7 +1561,7 @@
    "name": "Edward R. Roybal Federal Building",
    "id": "E076",
    "measured": 37476,
-   "estimated": 45,
+   "estimated": 31,
    "storey_m": 4.75,
    "storey_from": "measured walls"
   },
@@ -1621,7 +1617,7 @@
    "name": "801 Tower",
    "id": "E083",
    "measured": 38946,
-   "estimated": 27,
+   "estimated": 31,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5389,7 +5385,7 @@
    "name": "230 E 6th St",
    "id": "A0512",
    "measured": 191954,
-   "estimated": 61,
+   "estimated": 62,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5717,7 +5713,7 @@
    "name": "Structure (no parcel)",
    "id": "A0557",
    "measured": 3216,
-   "estimated": 46,
+   "estimated": 47,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5725,7 +5721,7 @@
    "name": "656 S Los Angeles St",
    "id": "A0558",
    "measured": 9176,
-   "estimated": 2,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -5821,7 +5817,7 @@
    "name": "915 Wilshire Blvd",
    "id": "A0571",
    "measured": 60311,
-   "estimated": 56,
+   "estimated": 57,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -5917,7 +5913,7 @@
    "name": "Structure (no parcel)",
    "id": "A0583",
    "measured": 260,
-   "estimated": 11,
+   "estimated": 12,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6077,7 +6073,7 @@
    "name": "301 N Broadway",
    "id": "A0604",
    "measured": 48384,
-   "estimated": 94,
+   "estimated": 97,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6133,7 +6129,7 @@
    "name": "221 N Figueroa St",
    "id": "A0611",
    "measured": 65924,
-   "estimated": 31,
+   "estimated": 35,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -6229,7 +6225,7 @@
    "name": "1000 W 6th St",
    "id": "A0625",
    "measured": 26830,
-   "estimated": 22,
+   "estimated": 23,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6317,7 +6313,7 @@
    "name": "812 S Grand Ave",
    "id": "A0636",
    "measured": 30237,
-   "estimated": 5,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6357,7 +6353,7 @@
    "name": "220 E Market",
    "id": "A0642",
    "measured": 41770,
-   "estimated": 25,
+   "estimated": 27,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6365,7 +6361,7 @@
    "name": "Building (no parcel)",
    "id": "A0643",
    "measured": 3201,
-   "estimated": 37,
+   "estimated": 38,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6437,7 +6433,7 @@
    "name": "636 Maple Ave",
    "id": "A0652",
    "measured": 26468,
-   "estimated": 23,
+   "estimated": 26,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6525,7 +6521,7 @@
    "name": "710 S Los Angeles St",
    "id": "A0663",
    "measured": 62870,
-   "estimated": 37,
+   "estimated": 41,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6549,7 +6545,7 @@
    "name": "752 S Main St",
    "id": "A0666",
    "measured": 40240,
-   "estimated": 4,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6677,7 +6673,7 @@
    "name": "313 N Figueroa St",
    "id": "A0682",
    "measured": 88735,
-   "estimated": 7,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6709,7 +6705,7 @@
    "name": "350 E 2nd St",
    "id": "A0686",
    "measured": 28718,
-   "estimated": 21,
+   "estimated": 23,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6741,7 +6737,7 @@
    "name": "800 S Hope St",
    "id": "A0690",
    "measured": 48435,
-   "estimated": 33,
+   "estimated": 34,
    "storey_m": 4.75,
    "storey_from": "measured walls"
   },
@@ -6749,7 +6745,7 @@
    "name": "817 W 8th St",
    "id": "A0691",
    "measured": 66062,
-   "estimated": 137,
+   "estimated": 147,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -6829,7 +6825,7 @@
    "name": "505 S San Pedro St",
    "id": "A0701",
    "measured": 25513,
-   "estimated": 4,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6845,7 +6841,7 @@
    "name": "328 E 1st St",
    "id": "A0703",
    "measured": 17521,
-   "estimated": 10,
+   "estimated": 11,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -6869,7 +6865,7 @@
    "name": "825 S Hill St",
    "id": "A0708",
    "measured": 100362,
-   "estimated": 238,
+   "estimated": 247,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6877,7 +6873,7 @@
    "name": "461 S Boylston St",
    "id": "A0709",
    "measured": 116007,
-   "estimated": 33,
+   "estimated": 30,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6909,7 +6905,7 @@
    "name": "Structure (no parcel)",
    "id": "A0713",
    "measured": 24291,
-   "estimated": 3,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -6973,7 +6969,7 @@
    "name": "755 S Los Angeles St",
    "id": "A0721",
    "measured": 28287,
-   "estimated": 4,
+   "estimated": 6,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7029,7 +7025,7 @@
    "name": "830 1/2 S Olive St",
    "id": "A0728",
    "measured": 6608,
-   "estimated": 3,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7053,7 +7049,7 @@
    "name": "801 S Hope St A",
    "id": "A0731",
    "measured": 66230,
-   "estimated": 38,
+   "estimated": 39,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7061,7 +7057,7 @@
    "name": "Building on Commercial parcel",
    "id": "A0732",
    "measured": 101344,
-   "estimated": 46,
+   "estimated": 49,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7093,7 +7089,7 @@
    "name": "201 N Los Angeles St",
    "id": "A0736",
    "measured": 33368,
-   "estimated": 30,
+   "estimated": 27,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7101,7 +7097,7 @@
    "name": "324 E 6th St",
    "id": "A0737",
    "measured": 9141,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7165,7 +7161,7 @@
    "name": "545 S San Pedro St",
    "id": "A0745",
    "measured": 67651,
-   "estimated": 25,
+   "estimated": 27,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7181,7 +7177,7 @@
    "name": "1221 W 3rd St",
    "id": "A0747",
    "measured": 62959,
-   "estimated": 143,
+   "estimated": 154,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7189,7 +7185,7 @@
    "name": "746 S Los Angeles St 1",
    "id": "A0748",
    "measured": 61697,
-   "estimated": 11,
+   "estimated": 12,
    "storey_m": 3.75,
    "storey_from": "measured walls"
   },
@@ -7205,7 +7201,7 @@
    "name": "622 Wall St",
    "id": "A0750",
    "measured": 22649,
-   "estimated": 10,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7245,7 +7241,7 @@
    "name": "401 E 6th St",
    "id": "A0756",
    "measured": 14899,
-   "estimated": 16,
+   "estimated": 17,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7253,7 +7249,7 @@
    "name": "138 N Beaudry Ave",
    "id": "A0757",
    "measured": 112219,
-   "estimated": 13,
+   "estimated": 14,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7269,7 +7265,7 @@
    "name": "810 S Flower St",
    "id": "A0759",
    "measured": 69178,
-   "estimated": 52,
+   "estimated": 54,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7309,7 +7305,7 @@
    "name": "717 W Temple St",
    "id": "A0764",
    "measured": 25968,
-   "estimated": 15,
+   "estimated": 17,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7317,7 +7313,7 @@
    "name": "Structure (no parcel)",
    "id": "A0765",
    "measured": 429,
-   "estimated": 2,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7333,7 +7329,7 @@
    "name": "420 S San Pedro St",
    "id": "A0767",
    "measured": 93452,
-   "estimated": 29,
+   "estimated": 32,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7429,7 +7425,7 @@
    "name": "Structure (no parcel)",
    "id": "A0781",
    "measured": 1370,
-   "estimated": 12,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7445,7 +7441,7 @@
    "name": "300 N Los Angeles St",
    "id": "A0783",
    "measured": 75590,
-   "estimated": 27,
+   "estimated": 24,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7453,7 +7449,7 @@
    "name": "834 S Spring St",
    "id": "A0784",
    "measured": 8042,
-   "estimated": 9,
+   "estimated": 11,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7461,7 +7457,7 @@
    "name": "345 E 1st St",
    "id": "A0785",
    "measured": 4549,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7509,7 +7505,7 @@
    "name": "888 S Olive St",
    "id": "A0791",
    "measured": 78297,
-   "estimated": 43,
+   "estimated": 51,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7549,7 +7545,7 @@
    "name": "1230 W 3rd St",
    "id": "A0797",
    "measured": 9265,
-   "estimated": 44,
+   "estimated": 49,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7637,7 +7633,7 @@
    "name": "813 S Flower St",
    "id": "A0809",
    "measured": 16456,
-   "estimated": 6,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7757,7 +7753,7 @@
    "name": "360 E 2nd St",
    "id": "A0827",
    "measured": 54298,
-   "estimated": 37,
+   "estimated": 41,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7765,7 +7761,7 @@
    "name": "851 S Grand Ave",
    "id": "A0828",
    "measured": 39772,
-   "estimated": 35,
+   "estimated": 36,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7773,7 +7769,7 @@
    "name": "Building on Government Parcel parcel",
    "id": "A0829",
    "measured": 145124,
-   "estimated": 99,
+   "estimated": 104,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7789,7 +7785,7 @@
    "name": "830 S Flower St",
    "id": "A0831",
    "measured": 53582,
-   "estimated": 32,
+   "estimated": 35,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -7837,7 +7833,7 @@
    "name": "800 S Figueroa St",
    "id": "A0839",
    "measured": 29546,
-   "estimated": 49,
+   "estimated": 52,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7845,7 +7841,7 @@
    "name": "828 S Main St",
    "id": "A0840",
    "measured": 9080,
-   "estimated": 1,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7861,7 +7857,7 @@
    "name": "819 S Flower St",
    "id": "A0842",
    "measured": 9435,
-   "estimated": 5,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7893,7 +7889,7 @@
    "name": "300 N Los Angeles St",
    "id": "A0846",
    "measured": 58709,
-   "estimated": 5,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7933,7 +7929,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0851",
    "measured": 34108,
-   "estimated": 42,
+   "estimated": 47,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7965,7 +7961,7 @@
    "name": "Building on Parking Lots (Commercial Use Properties) parcel",
    "id": "A0855",
    "measured": 51863,
-   "estimated": 8,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -7981,7 +7977,7 @@
    "name": "888 S Hope St",
    "id": "A0857",
    "measured": 90299,
-   "estimated": 91,
+   "estimated": 104,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8013,7 +8009,7 @@
    "name": "1027 W Wilshire Blvd",
    "id": "A0861",
    "measured": 120390,
-   "estimated": 70,
+   "estimated": 47,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8053,7 +8049,7 @@
    "name": "350 S Bixel St",
    "id": "A0866",
    "measured": 35827,
-   "estimated": 0,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8077,7 +8073,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0869",
    "measured": 5062,
-   "estimated": 6,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8101,7 +8097,7 @@
    "name": "850 S Broadway",
    "id": "A0873",
    "measured": 29167,
-   "estimated": 4,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8109,7 +8105,7 @@
    "name": "816 S Figueroa St",
    "id": "A0875",
    "measured": 10064,
-   "estimated": 12,
+   "estimated": 13,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8125,7 +8121,7 @@
    "name": "309 E 8th St",
    "id": "A0877",
    "measured": 21413,
-   "estimated": 3,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8133,7 +8129,7 @@
    "name": "625 S San Pedro St",
    "id": "A0878",
    "measured": 13810,
-   "estimated": 2,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8149,7 +8145,7 @@
    "name": "540 S San Pedro St",
    "id": "A0880",
    "measured": 15611,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8181,7 +8177,7 @@
    "name": "833 S Flower St",
    "id": "A0884",
    "measured": 38220,
-   "estimated": 8,
+   "estimated": 9,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8293,7 +8289,7 @@
    "name": "1108 Mignonette St",
    "id": "A0898",
    "measured": 129323,
-   "estimated": 28,
+   "estimated": 29,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8309,7 +8305,7 @@
    "name": "632 Bixel St",
    "id": "A0900",
    "measured": 148799,
-   "estimated": 10,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8325,7 +8321,7 @@
    "name": "645 W 9th St",
    "id": "A0902",
    "measured": 114280,
-   "estimated": 30,
+   "estimated": 33,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8349,7 +8345,7 @@
    "name": "450 N Grand Ave",
    "id": "A0905",
    "measured": 139050,
-   "estimated": 51,
+   "estimated": 55,
    "storey_m": 4.5,
    "storey_from": "measured walls"
   },
@@ -8357,7 +8353,7 @@
    "name": "351 E Temple St",
    "id": "A0906",
    "measured": 59849,
-   "estimated": 23,
+   "estimated": 15,
    "storey_m": 4.75,
    "storey_from": "measured walls"
   },
@@ -8373,7 +8369,7 @@
    "name": "Building on Five or more apartments parcel",
    "id": "A0908",
    "measured": 4830,
-   "estimated": 7,
+   "estimated": 8,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8509,7 +8505,7 @@
    "name": "912 S Hill St",
    "id": "A0928",
    "measured": 36856,
-   "estimated": 2,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8589,7 +8585,7 @@
    "name": "369 E First St Los Angeles 90012",
    "id": "A0938",
    "measured": 54133,
-   "estimated": 11,
+   "estimated": 7,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8629,7 +8625,7 @@
    "name": "1300 W 4th St",
    "id": "A0945",
    "measured": 8714,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8645,7 +8641,7 @@
    "name": "725 S Figueroa St",
    "id": "A0947",
    "measured": 94387,
-   "estimated": 12,
+   "estimated": 6,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8653,7 +8649,7 @@
    "name": "501 S Bixel St",
    "id": "A0948",
    "measured": 15445,
-   "estimated": 2,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8765,7 +8761,7 @@
    "name": "888 S Figueroa St",
    "id": "A0964",
    "measured": 79463,
-   "estimated": 23,
+   "estimated": 24,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },
@@ -8797,7 +8793,7 @@
    "name": "Building on Department Stores parcel",
    "id": "A0968",
    "measured": 36710,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8901,7 +8897,7 @@
    "name": "Structure (no parcel)",
    "id": "A0984",
    "measured": 20669,
-   "estimated": 5,
+   "estimated": 3,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8909,7 +8905,7 @@
    "name": "919 S Grand Ave",
    "id": "A0985",
    "measured": 56692,
-   "estimated": 6,
+   "estimated": 5,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -8965,7 +8961,7 @@
    "name": "990 W 8th St",
    "id": "A0993",
    "measured": 58043,
-   "estimated": 6,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -8997,7 +8993,7 @@
    "name": "845 S Figueroa St",
    "id": "A0997",
    "measured": 39169,
-   "estimated": 3,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "measured walls"
   },
@@ -9085,7 +9081,7 @@
    "name": "600 W 9th St",
    "id": "A1008",
    "measured": 67489,
-   "estimated": 4,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9133,7 +9129,7 @@
    "name": "Building (no parcel)",
    "id": "A1014",
    "measured": 101686,
-   "estimated": 14,
+   "estimated": 4,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9165,7 +9161,7 @@
    "name": "700 W 9th St",
    "id": "A1018",
    "measured": 34597,
-   "estimated": 21,
+   "estimated": 19,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9197,7 +9193,7 @@
    "name": "1329 E 3rd St",
    "id": "A1022",
    "measured": 5334,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9229,7 +9225,7 @@
    "name": "100 S Alameda St",
    "id": "A1026",
    "measured": 101176,
-   "estimated": 4,
+   "estimated": 2,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9237,7 +9233,7 @@
    "name": "Structure (no parcel)",
    "id": "A1027",
    "measured": 7939,
-   "estimated": 3,
+   "estimated": 1,
    "storey_m": 4.0,
    "storey_from": "default"
   },
@@ -9261,7 +9257,7 @@
    "name": "901 S Flower St",
    "id": "A1030",
    "measured": 23665,
-   "estimated": 1,
+   "estimated": 0,
    "storey_m": 3.5,
    "storey_from": "measured walls"
   },

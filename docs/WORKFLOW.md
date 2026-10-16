@@ -71,6 +71,21 @@ Write the commit message as a short sentence saying *what changed*. Add files by
 - `.hipnc` files, the LiDAR tiles, or anything over about 50 MB;
 - passwords, tokens or API keys.
 
+**Record your working time** before you open the pull request (the working record, Methods §6):
+
+```bash
+python docs/worklog.py         # adds your time with Claude, day by day, to web/data/worklog.json
+git add web/data/worklog.json
+git commit -m "Working record: <your name>"
+```
+
+The rule: everyone's working time is counted from their **first Claude Code session about this project**, and
+recorded every day: how long you worked with Claude, and what came of the day (the pull requests you opened and
+merged, shown from GitHub). The script reads only the timestamps of your Claude Code sessions about the project on your
+own computer (`~/.claude/projects/`, the folders whose name contains `sci-arc-studio-fall2026`), nothing of what was
+said; it finds you by the GitHub account `gh` is logged in to. If you worked on the project in another folder before
+cloning it, add that folder for your login in `PEOPLE` in `docs/worklog.py`. Each run changes only your own entry.
+
 ## 5. Open a pull request
 
 ```bash
