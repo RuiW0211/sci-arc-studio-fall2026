@@ -374,6 +374,7 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
                // the unbuilt schemes (user, 2026-10-17): rest = the share of a scheme's points that stays, faint, after its
                // years (to 2026: Y-1 carries its other futures); breath = how far they dim as they breathe, over breathS
                rest: { value: cfg.ghosts?.rest ?? 0.05 }, restDim: { value: cfg.ghosts?.restDim ?? 1 }, breath: { value: cfg.ghosts?.breath ?? 0.3 },
+               restBreath: { value: cfg.ghosts?.restBreath ?? 0 },
                breathS: { value: cfg.ghosts?.breathS ?? 4 }, clock: { value: 0 } };
 // the film's light (user, 2026-10-17: the shot's group stays bright white, the other buildings a little darker, as under
 // a beam): up to SPOT_N groups' footprints (12 corners each, with their boxes for a quick test); spot eases 0..1 with
@@ -438,11 +439,11 @@ function pointMaterial(sizeMetres) {
     shader.uniforms.uTimeOn = TIME.on; shader.uniforms.uYear = TIME.year; shader.uniforms.uDim = TIME.dim;
     shader.uniforms.uBuild = TIME.build; shader.uniforms.uFront = TIME.front; shader.uniforms.uMono = MONO;
     shader.uniforms.uHotY = TIME.hotY; shader.uniforms.uHot = TIME.hot;
-    shader.uniforms.uRest = TIME.rest; shader.uniforms.uRestDim = TIME.restDim; shader.uniforms.uBreath = TIME.breath; shader.uniforms.uBreathS = TIME.breathS; shader.uniforms.uClock = TIME.clock;
+    shader.uniforms.uRest = TIME.rest; shader.uniforms.uRestDim = TIME.restDim; shader.uniforms.uRestBreath = TIME.restBreath; shader.uniforms.uBreath = TIME.breath; shader.uniforms.uBreathS = TIME.breathS; shader.uniforms.uClock = TIME.clock;
     shader.uniforms.uSpot = SPOT.k; shader.uniforms.uSpotDim = SPOT.dim; shader.uniforms.uSpotW = SPOT.w;
     shader.uniforms.uSpotBox = SPOT.box; shader.uniforms.uSpotHull = SPOT.hull; shader.uniforms.uSpotHN = SPOT.hn;
     // aSel: 0 not selected, 1 being deselected, 2 being selected, 3 selected
-    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim, uRest, uRestDim, uBreath, uBreathS, uClock;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
+    shader.vertexShader = FISH_GLSL + "attribute vec3 color0;\nattribute float aSel;\nattribute float aSize;\nattribute float aYear;\nattribute float aRise;\nuniform float uColorMix, uSelK, uTimeOn, uYear, uDim, uBuild, uFront, uFocus, uMono, uHotY, uHot, uSpot, uSpotDim, uRest, uRestDim, uRestBreath, uBreath, uBreathS, uClock;\nuniform float uSpotW[2];\nuniform vec4 uSpotBox[10];\nuniform vec2 uSpotHull[120];\nuniform int uSpotHN[10];\nuniform vec3 uHi;\nvarying float vSel, vBuild, vGhost;\n" +
       shader.vertexShader.replace("#include <color_vertex>", `#include <color_vertex>
   vColor.rgb = mix(color0, vColor.rgb, uColorMix);
   float sw = aSel > 2.5 ? 1.0 : aSel > 1.5 ? uSelK : aSel > 0.5 ? 1.0 - uSelK : 0.0;
@@ -492,8 +493,10 @@ void main() {`);
       + "    float tk = clamp((p * (1.0 + uFront) - aRise) / uFront, 0.0, 1.0); tk = tk * tk * (3.0 - 2.0 * tk);\n"
       + "    gl_PointSize *= tk; if (tk < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n"
       // (what stays after its years dims to uRestDim over the years it would have sunk in)
-      + "    vColor.rgb *= mix(1.0, uRestDim, clamp((uYear - s - sp + dn) / dn, 0.0, 1.0));\n"
-      + "    vColor.rgb *= 1.0 - uBreath * (0.5 + 0.5 * sin(6.2832 * uClock / uBreathS));\n"
+      // (user, 2026-10-17: only the shadow breathes deeper) on the site it dims by uBreath as it breathes; its shadow
+      // breathes about uRestDim, by uRestBreath of it either way
+      + "    float wv = sin(6.2832 * uClock / uBreathS), fs = clamp((uYear - s - sp + dn) / dn, 0.0, 1.0);\n"
+      + "    vColor.rgb *= mix(1.0 - uBreath * (0.5 + 0.5 * wv), uRestDim * (1.0 - uRestBreath * wv), fs);\n"
       + "    vGhost = 1.0;\n"
       + "  } else if (aYear > 0.5) {\n"
       + "    float p = uTimeOn > 0.5 ? clamp((uYear - aYear + uBuild) / uBuild, 0.0, 1.0) : 1.0; p = p * p * (3.0 - 2.0 * p);\n"
@@ -1523,6 +1526,18 @@ function buildOpening() {
     return { target: [cx, ty, cz], r, phi: (66 - 16 * k) * D2R };
   };
   const end = playDur;
+  // one shot centred on Y-1 (user, 2026-10-17: so the knoll stays empty in the middle while the city goes up round it):
+  // OPEN.center { r: [from, to] m, tilt: [from, to] degrees from straight down, az: [from, to] degrees }, the camera
+  // easing in from r[0] to r[1] over the whole opening and turning evenly; it overrides the shots
+  const C = OPEN.center;
+  if (C) {
+    const at = (k) => ({ target: TOUR.target.slice(), r: C.r[k], phi: C.tilt[k] * D2R });
+    openAnchors = [{ hs: 0, he: 0, pose: at(0) }, { hs: end, he: end, pose: at(1) }];
+    const a0 = C.az[0] * D2R; let a1 = C.az[1] * D2R; while (a1 < a0) a1 += 2 * Math.PI;
+    openHeading = monotoneCubic([[0, a0], [end, a1]]);
+    ldur("opening shots (with tags data), ms", tB);
+    return;
+  }
   openAnchors = OPEN.shots.map((sh, i) => {
     const t0 = yearTime(sh.from), t1 = yearTime(sh.to), q = 0.25 * (t1 - t0);
     return { hs: i === 0 ? 0 : t0 + q, he: i === OPEN.shots.length - 1 ? t0 + 2 * q : t1 - q, pose: frame(sh) };
@@ -2506,7 +2521,11 @@ function updateTimeTags() {
     if (!faint) a = Math.max(a, TL.minOpacity ?? 0.25);
     if (hero) a = Math.max(a, 0.6);
     // an unbuilt scheme's tag breathes with its points (the same clock and depth), after the floor so it always shows
-    if (it.kind === "unbuilt") a *= 1 - TIME.breath.value * (0.5 + 0.5 * Math.sin((2 * Math.PI * TIME.clock.value) / TIME.breathS.value));
+    if (it.kind === "unbuilt") {
+      const wv = Math.sin((2 * Math.PI * TIME.clock.value) / TIME.breathS.value), sp = it.end - it.year + 1, dn = Math.min(1.5, 0.3 * sp);
+      const fs = TIME.rest.value > 0 ? Math.min(Math.max((Y - (it.year + sp - dn)) / dn, 0), 1) : 0;   // its shadow: deeper
+      a = Math.min(1, a * ((1 - fs) * (1 - TIME.breath.value * (0.5 + 0.5 * wv)) + fs * (1 - TIME.restBreath.value * wv)));
+    }
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
     let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
