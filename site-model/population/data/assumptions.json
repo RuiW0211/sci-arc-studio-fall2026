@@ -623,7 +623,7 @@
   },
   "littleTokyo": {
     "value": {
-      "annual": 3605000,
+      "annual": 3697000,
       "latlon": [
         34.0493,
         -118.24
@@ -637,15 +637,15 @@
         21
       ]
     },
-    "note": "Little Tokyo visitors, one destination at Japanese Village Plaza (hand-typed position). No published visitor count exists (the Little Tokyo Business Association only estimated an extra 1.5 million in 2024): the annual number is CALIBRATED to the LADOT count on 1st St (Central Ave - San Pedro St) and spread like the other visitors (visitorWeekendFactor). Fitted again 2026-10-10 (after the open-data additions; was 3,448,000) on everyone before thinning."
+    "note": "Little Tokyo visitors, one destination at Japanese Village Plaza (hand-typed position). No published visitor count exists (the Little Tokyo Business Association only estimated an extra 1.5 million in 2024): the annual number is CALIBRATED to the LADOT count on 1st St (Central Ave - San Pedro St) and spread like the other visitors (visitorWeekendFactor). Fitted again 2026-10-10 (after the open-data additions; was 3,448,000) on everyone before thinning. Fitted again 2026-10-17 after the 2026-10-15 rerun (was 3,605,000)."
   },
   "passersBy": {
     "value": {
-      "weekday": 16500,
-      "weekend": 11900,
+      "weekday": 16200,
+      "weekend": 11800,
       "minCrossM": 800
     },
-    "note": "People who walk through the site from one edge to another (minCrossM apart): between Union Station, the Arts District, Chinatown, South Park and the rest of Downtown. No source counts them: the daily numbers are CALIBRATED to the LADOT walk counts on the blocks not held out (5th St, Grand Ave and Los Angeles St are kept as a check). Start times follow all NHTS trips of the day. Fitted again 2026-10-10 (after the open-data residents, shops and food places were added; was weekday 20,800 / weekend 25,000 passers-by, Little Tokyo 3,448,000 a year) on everyone before thinning (data/raw/population_full.npz)."
+    "note": "People who walk through the site from one edge to another (minCrossM apart): between Union Station, the Arts District, Chinatown, South Park and the rest of Downtown. No source counts them: the daily numbers are CALIBRATED to the LADOT walk counts on the blocks not held out (5th St, Grand Ave and Los Angeles St are kept as a check). Start times follow all NHTS trips of the day. Fitted again 2026-10-10 (after the open-data residents, shops and food places were added; was weekday 20,800 / weekend 25,000 passers-by, Little Tokyo 3,448,000 a year) on everyone before thinning (data/raw/population_full.npz). Fitted again 2026-10-17 (user) after the 2026-10-15 rerun on the fixed hand-off moved the other groups' flows a little (model / counted weekday 1.01, weekend 0.97): was weekday 16,500 / weekend 11,900 passers-by, Little Tokyo 3,605,000 a year."
   },
   "shops": {
     "value": {
