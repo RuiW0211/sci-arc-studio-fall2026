@@ -389,7 +389,7 @@ const TIME = { on: { value: 0 }, year: { value: 2026 }, dim: { value: cfg.time?.
 // their own points (aSpot, spotMark: a footprint took in the buildings next to them); a site (Angels Knoll) lights its
 // ground by its own outline, eased over 3 m either side (site*: the parcel's ring up to 64 corners, its box, how much
 // of the light is on it), and its trees whole by their marks
-const SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.12 },
+const SPOT = { k: { value: 0 }, dim: { value: cfg.time?.cinema?.spotDim ?? 0.16 },
   w: { value: [0, 0] }, ghostLit: { value: 0 }, ground: { value: cfg.time?.cinema?.spotGround ?? 1 },
   sitePoly: { value: Array.from({ length: 64 }, () => new THREE.Vector2()) }, siteN: { value: 0 },
   siteBox: { value: new THREE.Vector4() }, siteW: { value: 0 }, siteK: { value: 1 } };
@@ -2384,15 +2384,20 @@ function spotMark(g, ents, objs = [], kOf = () => 1, objK = 1) {   // kOf(ent), 
   const add = (k, b) => { on.set(k, Math.round(255 * b)); for (const j of lidar.objParts[k]) touched.add(j); };
   for (const e of ents) for (const k of lidar.entityObjs.get(e) || []) add(k, kOf(e));
   for (const k of objs) add(k, objK);
+  // (user, 2026-10-17: bright dots floated round Disney Hall, 20 % of its points stray, its steel giving few returns)
+  // a point alone in its spotIsoM cell of its object (at most spotIsoN there) is left dark
+  const C = CINE.spotIsoM ?? 3, N = CINE.spotIsoN ?? 3, cells = new Map(), cell = (q, i) => `${Math.floor(q.pos[3 * i] / C)},${Math.floor(q.pos[3 * i + 1] / C)},${Math.floor(q.pos[3 * i + 2] / C)}`;
+  for (const j of touched) { const q = lidarGroup.children[j]?.userData.part; if (!q) continue;
+    for (let i = 0; i < q.n; i++) if (on.has(q.ob[i])) { const c = q.ob[i] + "|" + cell(q, i); cells.set(c, (cells.get(c) || 0) + 1); } }
   (lidar.spotParts ||= [new Set(), new Set()])[g] = new Set();
   for (const j of touched) {
     const pts = lidarGroup.children[j], part = pts?.userData.part, a = pts?.geometry.attributes.aSpot;
     if (!part || !a) continue;
     const v = a.array, ob = part.ob, kA = pts.geometry.attributes.aLitK, kv = kA?.array; let changed = false, any = false, kc = false;
     for (let i = 0; i < part.n; i++) {
-      const b = on.get(ob[i]), nv = b !== undefined ? v[i] | bit : v[i] & ~bit;
+      const b = on.get(ob[i]), lit = b !== undefined && cells.get(ob[i] + "|" + cell(part, i)) > N, nv = lit ? v[i] | bit : v[i] & ~bit;
       if (nv !== v[i]) { v[i] = nv; changed = true; }
-      if (b !== undefined && kv && kv[i] !== b) { kv[i] = b; kc = true; }
+      if (lit && kv && kv[i] !== b) { kv[i] = b; kc = true; }
       if (nv & bit) any = true;
     }
     if (changed) a.needsUpdate = true;
