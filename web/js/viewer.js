@@ -2271,7 +2271,7 @@ function updateTags() {
 // the hero of a shot comes up (user, 2026-10-13). A text with no free place hides (it keeps its place while it can,
 // so labels do not hop about). No connecting curves. At most
 // time.labels.max new ones going up at once, the tallest first; unbuilt towers always. Screen space, after every render.
-const TL = { max: 8, holdYears: 2, minHeightM: 25, noHeight: ["Angels Flight"], ...(cfg.time?.labels || {}) };
+const TL = { max: 8, holdYears: 2, minHeightM: 25, ...(cfg.time?.labels || {}) };
 const tlLayer = document.createElement("div"); tlLayer.id = "tlabels"; document.body.append(tlLayer);
 let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1, z1], h, ent }
 let tlOcc = [];       // every building's box, for the labels' line of sight: { box, year (0 = undated), ent }
@@ -2298,6 +2298,14 @@ function tlHull(P, max) {
   }
   return H.length >= 3 ? H : null;
 }
+// what the building is, for its tag (user, 2026-10-17: the height said nothing; the use instead), as its label says it
+// (entityTag): a landmark what it was built as, a checked building our "use", an automatic one the assessor's class in
+// plain words (none when there is no plain word for it); up to any note in brackets, first letter up
+const tagUse = (e) => {
+  const raw = e.builtAs || (e.status === "auto" ? ASSESSOR_USE[String(e.parcel?.use || e.use || "").toLowerCase()] : e.use);
+  const t = (raw || "").replace(/\s*\(.*$/, "").trim();
+  return !t || /^unknown$/i.test(t) ? "" : t[0].toUpperCase() + t.slice(1);
+};
 function tlBuild() {
   const tT = performance.now();
   tlItems = [];
@@ -2336,7 +2344,7 @@ function tlBuild() {
     if (h < TL.minHeightM && !filmNames.has(e.name.toLowerCase())) return;   // a member of a film shot: tagged anyway
     // keep: a building the film is about (a member of time.cinema.shots) keeps its tag once built; the others show
     // theirs while they go up and fade out after (user, 2026-10-15: too many tags during the building)
-    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i, keep: filmNames.has(e.name.toLowerCase()), hull: hulls.get(i) });
+    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i, keep: filmNames.has(e.name.toLowerCase()), hull: hulls.get(i), use: tagUse(e) });
   });
   // Angels Knoll, the Y-1 parcel: a frame over its ground (the terrain points inside the parcel)
   if (y1Ring) {
@@ -2595,9 +2603,8 @@ function updateTimeTags() {
     let s = tlShown.get(it.key);
     if (!s) {
       const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
-      // no height for what is not a building (user, 2026-10-13: Angels Flight's is the rise of its track)
-      const noH = (TL.noHeight || []).some((n) => n.toLowerCase() === it.name.toLowerCase());
-      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : [it.kind === "unbuilt" ? `Unbuilt · ${it.fate || `${it.year}–${it.end}`}` : it.year ? `Built ${it.year}` : "", noH ? "" : len(it.h)].filter(Boolean).join(" · ")}</i>`;
+      // second line: built year and what the building is (user, 2026-10-17: was the height, which nobody cares about)
+      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : [it.kind === "unbuilt" ? `Unbuilt · ${it.fate || `${it.year}–${it.end}`}` : it.year ? `Built ${it.year}` : "", esc(it.use || "")].filter(Boolean).join(" · ")}</i>`;
       tlLayer.append(el);
       // the lock-on plays once: after it the frame is "locked", so showing it again does not replay it
       el.addEventListener("animationend", () => el.classList.add("locked"), { once: true });
@@ -2709,7 +2716,9 @@ function objectTag(node, point, objSet) {
 const ASSESSOR_USE = { "single": "condominiums", "five or more apartments": "apartments", "store combination": "shops with offices or apartments",
   "office buildings": "offices", "hotel & motels": "hotel", "department stores": "department store", "stores": "shops",
   "restaurants, cocktail lounges": "restaurant", "parking lots (commercial use properties)": "parking", "government parcel": "government",
-  "churches": "church", "professional buildings": "offices", "theaters": "theatre" };
+  "churches": "church", "professional buildings": "offices", "theaters": "theatre",
+  "clubs., lodge halls, fraternal organizations": "club", "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts": "light industry",
+  "parking lots": "parking", "commercial": "commercial" };
 function entityTag(e) {
   return (a) => {
     const pc = e.parcel;
