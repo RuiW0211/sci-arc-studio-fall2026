@@ -29,3 +29,6 @@ site-model/population/data/raw/
 
 # trial point clouds for comparing thinning rules (pack_wide.py pack --out ../../web/data/trial_<name>; viewer ?lidar=trial_<name>)
 web/data/trial_*/
+
+# trial hand-offs (export_handoff.py --outlines -> handoff/trial_outlines/)
+site-model/houdini/handoff/trial_*/
