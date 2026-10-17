@@ -2271,7 +2271,7 @@ function updateTags() {
 // the hero of a shot comes up (user, 2026-10-13). A text with no free place hides (it keeps its place while it can,
 // so labels do not hop about). No connecting curves. At most
 // time.labels.max new ones going up at once, the tallest first; unbuilt towers always. Screen space, after every render.
-const TL = { max: 8, holdYears: 2, minHeightM: 25, noHeight: ["Angels Flight"], ...(cfg.time?.labels || {}) };
+const TL = { max: 8, holdYears: 2, minHeightM: 25, ...(cfg.time?.labels || {}) };
 const tlLayer = document.createElement("div"); tlLayer.id = "tlabels"; document.body.append(tlLayer);
 let tlItems = null;   // { key, name, kind, year, end, box: [x0, y0, z0, x1, y1, z1], h, ent }
 let tlOcc = [];       // every building's box, for the labels' line of sight: { box, year (0 = undated), ent }
@@ -2298,6 +2298,30 @@ function tlHull(P, max) {
   }
   return H.length >= 3 ? H : null;
 }
+// what the building is, for its tag (user, 2026-10-17: the height said nothing; the use instead), as its label says it
+// (entityTag): a landmark what it was built as, a checked building our "use", an automatic one the assessor's class in
+// plain words (none when there is no plain word for it); up to any note in brackets, first letter up
+const tagUse = (e) => {
+  const raw = e.builtAs || (e.status === "auto" ? ASSESSOR_USE[String(e.parcel?.use || e.use || "").toLowerCase()] : e.use);
+  const t = (raw || "").replace(/\s*\(.*$/, "").trim();
+  return !t || /^unknown$/i.test(t) ? "" : t[0].toUpperCase() + t.slice(1);
+};
+// the points that can be corners of the convex hull: all but those strictly inside the octagon through the extreme
+// points (least / most x, z, x + z, x - z), in their order (Akl-Toussaint)
+function hullCandidates(P) {
+  if (P.length < 64) return P;
+  const ext = [0, 0, 0, 0, 0, 0, 0, 0], f = [(p) => p[0], (p) => p[0] + p[1], (p) => p[1], (p) => p[1] - p[0]];
+  for (let k = 0; k < P.length; k++) for (let j = 0; j < 4; j++) {
+    const v = f[j](P[k]); if (v < f[j](P[ext[j]])) ext[j] = k; if (v > f[j](P[ext[j + 4]])) ext[j + 4] = k;
+  }
+  // the octagon, counter-clockwise: min x, min x-z.. as angles round the centre
+  const C = [...new Set(ext)].map((k) => P[k]), cx = C.reduce((s, p) => s + p[0], 0) / C.length, cz = C.reduce((s, p) => s + p[1], 0) / C.length;
+  C.sort((a, b) => Math.atan2(a[1] - cz, a[0] - cx) - Math.atan2(b[1] - cz, b[0] - cx));
+  if (C.length < 3) return P;
+  const inside = (p) => { for (let i = 0; i < C.length; i++) { const a = C[i], b = C[(i + 1) % C.length];
+    if ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]) <= 0) return false; } return true; };
+  return P.filter((p) => !inside(p));
+}
 function tlBuild() {
   const tT = performance.now();
   tlItems = [];
@@ -2306,22 +2330,38 @@ function tlBuild() {
   for (let i = 0; i < nE; i++) B.set([1e9, 1e9, 1e9, -1e9, -1e9, -1e9], 6 * i);
   // each entity's box from the 1 % / 99 % of its points along x and z and 0.5 % / 99.5 % in height (2026-10-15: a few
   // stray points made low buildings look 30 m tall, their tags and line-of-sight boxes too large)
-  const acc = new Map();
+  // (2026-10-17, speed: the same samples in typed arrays, counted first; quantiles by selection, hulls from their
+  // candidates only - the boxes and hulls are the same to the bit) the first 8000 points of an entity and every 4th after
+  const skip = (o) => { const e = lidar.objEntity[o]; return e < 0 || lidar.objLayers[o] === "Terrain" ? -1 : e; };
+  const cnt = new Int32Array(nE);
+  for (const p of lidar.parts) for (let i = 0; i < p.n; i++) { const e = skip(p.ob[i]); if (e >= 0 && (cnt[e] < 8000 || (i & 3) === 0)) cnt[e]++; }
+  const acc = new Map(), fill = new Int32Array(nE);
+  for (let e = 0; e < nE; e++) if (cnt[e]) acc.set(e, [new Float32Array(cnt[e]), new Float32Array(cnt[e]), new Float32Array(cnt[e])]);
   for (const p of lidar.parts) for (let i = 0; i < p.n; i++) {
-    const e = lidar.objEntity[p.ob[i]]; if (e < 0 || lidar.objLayers[p.ob[i]] === "Terrain") continue;
-    let a = acc.get(e); if (!a) acc.set(e, (a = [[], [], []]));
-    if (a[0].length < 8000 || (i & 3) === 0) { a[0].push(p.pos[3 * i]); a[1].push(p.pos[3 * i + 1]); a[2].push(p.pos[3 * i + 2]); }
+    const e = skip(p.ob[i]); if (e < 0 || !(fill[e] < 8000 || (i & 3) === 0)) continue;
+    const a = acc.get(e), k = fill[e]++; a[0][k] = p.pos[3 * i]; a[1][k] = p.pos[3 * i + 1]; a[2][k] = p.pos[3 * i + 2];
   }
-  const pct = (v, q) => v[Math.min(v.length - 1, Math.max(0, Math.round(q * (v.length - 1))))];
+  // the value at quantile q, as a full sort would give it: the k-th smallest found by selection (Hoare), on a copy
+  const pct = (v, q) => {
+    const k = Math.min(v.length - 1, Math.max(0, Math.round(q * (v.length - 1)))), w = v.slice();
+    let lo = 0, hi = w.length - 1;
+    while (hi > lo) {
+      const piv = w[(lo + hi) >> 1]; let i = lo, j = hi;
+      while (i <= j) { while (w[i] < piv) i++; while (w[j] > piv) j--; if (i <= j) { const t = w[i]; w[i] = w[j]; w[j] = t; i++; j--; } }
+      if (k <= j) hi = j; else if (k >= i) lo = i; else break;
+    }
+    return w[k];
+  };
   const hulls = new Map();
   for (const [e, a] of acc) {
-    const xs = a[0], zs = a[2], pairs = xs.map((x, k) => [x, zs[k]]);
-    for (const v of a) v.sort((p, q) => p - q);
-    B.set([pct(a[0], 0.01), pct(a[1], 0.005), pct(a[2], 0.01), pct(a[0], 0.99), pct(a[1], 0.995), pct(a[2], 0.99)], 6 * e);
+    const xs = a[0], zs = a[2];
+    B.set([pct(xs, 0.01), pct(a[1], 0.005), pct(zs, 0.01), pct(xs, 0.99), pct(a[1], 0.995), pct(zs, 0.99)], 6 * e);
     // its footprint (user, 2026-10-17: the tags' frames did not fit the buildings): the convex hull of its points inside
-    // that box, cut down to 12 corners; the frame is drawn round it at the foot and at the top
-    const o = 6 * e, inBox = pairs.filter(([x, z]) => x >= B[o] && x <= B[o + 3] && z >= B[o + 2] && z <= B[o + 5]);
-    hulls.set(e, tlHull(inBox, 12));
+    // that box, cut down to 12 corners; the frame is drawn round it at the foot and at the top. Points strictly inside
+    // the octagon of the extreme points can be no corner of the hull, so they are left out before the sort (same hull)
+    const o = 6 * e, inBox = [];
+    for (let k = 0; k < xs.length; k++) { const x = xs[k], z = zs[k]; if (x >= B[o] && x <= B[o + 3] && z >= B[o + 2] && z <= B[o + 5]) inBox.push([x, z]); }
+    hulls.set(e, tlHull(hullCandidates(inBox), 12));
   }
   ents.forEach((e, i) => {
     const y = parseInt(e.built?.[0] ?? e.parcel?.year_built, 10), o = 6 * i;
@@ -2336,7 +2376,7 @@ function tlBuild() {
     if (h < TL.minHeightM && !filmNames.has(e.name.toLowerCase())) return;   // a member of a film shot: tagged anyway
     // keep: a building the film is about (a member of time.cinema.shots) keeps its tag once built; the others show
     // theirs while they go up and fade out after (user, 2026-10-15: too many tags during the building)
-    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i, keep: filmNames.has(e.name.toLowerCase()), hull: hulls.get(i) });
+    tlItems.push({ key: `e${i}`, name: e.name, kind: "built", year: y > 1000 ? y : 0, box, h, ent: i, keep: filmNames.has(e.name.toLowerCase()), hull: hulls.get(i), use: tagUse(e) });
   });
   // Angels Knoll, the Y-1 parcel: a frame over its ground (the terrain points inside the parcel)
   if (y1Ring) {
@@ -2588,30 +2628,6 @@ function updateTimeTags() {
     // share is eased (tag.seen) rather than flipping as a line grazes a corner (user, 2026-10-13: tags flickered)
     // (user, 2026-10-13: from above the tags were nearly invisible) a building whose top can be seen counts as seen:
     // lines to its lower parts cross the neighbours' boxes from above, though the roof is in plain view
-    const hy = ty - by0;
-    const seen = tlSees(cx, ty, cz, it.ent, Y) ? 1
-      : (tlSees(cx, by0 + 0.75 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.5 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.25 * hy, cz, it.ent, Y)) / 4;
-    const ref = camera.position.distanceTo(controls.target);
-    let s = tlShown.get(it.key);
-    if (!s) {
-      const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
-      // no height for what is not a building (user, 2026-10-13: Angels Flight's is the rise of its track)
-      const noH = (TL.noHeight || []).some((n) => n.toLowerCase() === it.name.toLowerCase());
-      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : [it.kind === "unbuilt" ? `Unbuilt · ${it.fate || `${it.year}–${it.end}`}` : it.year ? `Built ${it.year}` : "", noH ? "" : len(it.h)].filter(Boolean).join(" · ")}</i>`;
-      tlLayer.append(el);
-      // the lock-on plays once: after it the frame is "locked", so showing it again does not replay it
-      el.addEventListener("animationend", () => el.classList.add("locked"), { once: true });
-      tlShown.set(it.key, (s = { el, seen }));
-    }
-    const ease = (tau) => 1 - Math.exp(-dt / tau);   // exponential easing, tau seconds
-    s.seen += (seen - s.seen) * ease(0.35);
-    a *= (TL.hiddenOpacity ?? 0.15) + (1 - (TL.hiddenOpacity ?? 0.15)) * s.seen;
-    a *= Math.min(1, Math.max(TL.farOpacity ?? 0.75, 1 - 0.5 * (dist / ref - 1.2)));   // only past 1.2 x the view's distance
-    // (the usual floor, so a tag seen from high above is not lost; not for a built building's kept tag, which is only
-    // there for the sense of a lot going on: user, 2026-10-17)
-    const faint = cine ? !hero && !(it.kind === "unbuilt" && SPOT.ghostLit.value > 0.5) : it.kind === "built" && !it.keep && Y > it.year + TL.holdYears;
-    if (!faint) a = Math.max(a, TL.minOpacity ?? 0.25);
-    if (hero) a = Math.max(a, 0.6);
     // the frame: the building's box up to the height it has reached, projected
     const [x0, y0, z0, x1, y1, z1] = it.box, top = y0 + (y1 - y0) * Math.max(p, 0.02);
     let sx0 = 1e9, sy0 = 1e9, sx1 = -1e9, sy1 = -1e9, behind = false;
@@ -2623,6 +2639,32 @@ function updateTimeTags() {
     }
     // out of view: it fades out where it is (no display: none, which made it blink and replay its lock-on)
     const off = behind || sx1 < 0 || sx0 > W || sy1 < 0 || sy0 > H;
+    // (2026-10-17, speed) a tag out of view takes no lines of sight: it is fading out anyway; back in view its seen share
+    // is taken as it is, not eased from where it was left
+    const hy = ty - by0, s0 = tlShown.get(it.key);
+    const seen = off ? s0?.seen ?? 0 : tlSees(cx, ty, cz, it.ent, Y) ? 1
+      : (tlSees(cx, by0 + 0.75 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.5 * hy, cz, it.ent, Y) + tlSees(cx, by0 + 0.25 * hy, cz, it.ent, Y)) / 4;
+    const ref = camera.position.distanceTo(controls.target);
+    let s = s0;
+    if (!s) {
+      const el = document.createElement("div"); el.className = "tblob" + (it.kind === "unbuilt" ? " ghost" : "");
+      // second line: built year and what the building is (user, 2026-10-17: was the height, which nobody cares about)
+      el.innerHTML = `<i><b>${esc(it.name)}</b>${it.kind === "site" ? esc(it.sub) : [it.kind === "unbuilt" ? `Unbuilt · ${it.fate || `${it.year}–${it.end}`}` : it.year ? `Built ${it.year}` : "", esc(it.use || "")].filter(Boolean).join(" · ")}</i>`;
+      tlLayer.append(el);
+      // the lock-on plays once: after it the frame is "locked", so showing it again does not replay it
+      el.addEventListener("animationend", () => el.classList.add("locked"), { once: true });
+      tlShown.set(it.key, (s = { el, seen }));
+    }
+    const ease = (tau) => 1 - Math.exp(-dt / tau);   // exponential easing, tau seconds
+    if (!off && s.wasOff) s.seen = seen; else s.seen += (seen - s.seen) * ease(0.35);
+    s.wasOff = off;
+    a *= (TL.hiddenOpacity ?? 0.15) + (1 - (TL.hiddenOpacity ?? 0.15)) * s.seen;
+    a *= Math.min(1, Math.max(TL.farOpacity ?? 0.75, 1 - 0.5 * (dist / ref - 1.2)));   // only past 1.2 x the view's distance
+    // (the usual floor, so a tag seen from high above is not lost; not for a built building's kept tag, which is only
+    // there for the sense of a lot going on: user, 2026-10-17)
+    const faint = cine ? !hero && !(it.kind === "unbuilt" && SPOT.ghostLit.value > 0.5) : it.kind === "built" && !it.keep && Y > it.year + TL.holdYears;
+    if (!faint) a = Math.max(a, TL.minOpacity ?? 0.25);
+    if (hero) a = Math.max(a, 0.6);
     if (off) a = 0;
     s.op = s.op === undefined ? a : s.op + (a - s.op) * ease(0.3);
     if (Math.abs(a - s.op) > 0.004) invalidate();
@@ -2709,7 +2751,9 @@ function objectTag(node, point, objSet) {
 const ASSESSOR_USE = { "single": "condominiums", "five or more apartments": "apartments", "store combination": "shops with offices or apartments",
   "office buildings": "offices", "hotel & motels": "hotel", "department stores": "department store", "stores": "shops",
   "restaurants, cocktail lounges": "restaurant", "parking lots (commercial use properties)": "parking", "government parcel": "government",
-  "churches": "church", "professional buildings": "offices", "theaters": "theatre" };
+  "churches": "church", "professional buildings": "offices", "theaters": "theatre",
+  "clubs., lodge halls, fraternal organizations": "club", "lgt manf.sm. eqpt. manuf sm.shps instr.manuf. prnt plnts": "light industry",
+  "parking lots": "parking", "commercial": "commercial" };
 function entityTag(e) {
   return (a) => {
     const pc = e.parcel;

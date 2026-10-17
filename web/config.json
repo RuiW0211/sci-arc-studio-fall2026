@@ -44,7 +44,6 @@
       "hiddenOpacity": 0.15,
       "farOpacity": 0.75,
       "minOpacity": 0.25,
-      "noHeight": ["Angels Flight"],
       "holdYears": 2,
       "minHeightM": 25
     },
