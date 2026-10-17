@@ -129,7 +129,20 @@
 
   <section id="project">
     <h2 class="label"><span class="n">1</span>Project</h2>
-    <p class="todo">To be written.</p>
+    <p>Parcel Y-1 is the fenced park beside Angels Flight on Bunker Hill, Los Angeles, called Angels Knoll. Towers
+      have been planned for it more than once; none was built, while the blocks around it kept changing. This website is
+      the studio's working model of the site and of what is known about it, in three parts.</p>
+    <p><b>The site model</b> (2) is a laser scan of the city, not a drawn model: about ten million measured points
+        out to about 1.2 km from Y-1, each labelled with what it is and which building, tree or car it belongs to.</p>
+    <p><b>The people</b> (3) are a simulation of a typical weekday and weekend day, not real people tracked: how many
+        live, work and visit here comes from public counts, when and how they travel from public surveys, and they walk
+        on the real street network.</p>
+    <p><b>The research</b> (4) is what public records, the press and posts say about Y-1, each entry checked against
+        its sources.</p>
+    <p>Three kinds of information are kept apart throughout: what is <b>measured</b> (the scan, the counts), what is
+      <b>modeled</b> from it (the people's day, each building's volume), and what is <b>estimated</b> where nothing was
+      measured (the walls the scan missed, 2.4; the ground under buildings, 2.1). Each is marked as such where it is
+      used, with its source.</p>
     <h3 class="entry-title">1.1 How the parts fit</h3>
     <p>Where each part of the website comes from: the public sources on the left, what is made from them in the middle,
       and the page that shows it on the right.</p>
@@ -175,6 +188,15 @@
   <section id="site">
     <h2 class="label"><span class="n">2</span>Site model</h2>
     <h3 class="entry-title">2.1 LiDAR point cloud</h3>
+    <p>LiDAR is a laser scan made from an aircraft: the scanner sends laser pulses down as it flies over the city, and
+      every pulse that comes back is one point, placed where the laser hit. The US Geological Survey flew Los Angeles in
+      2023 and publishes the points. Looking down, the scan sees roofs, the ground and tree crowns well and walls
+      badly: glass reflects the laser away, so towers have many points on their roofs and few on their sides (2.4).</p>
+    <p>What every point carries in the website's file: its position (1 cm), how strongly it reflected the laser
+      (intensity) and the class USGS gave it (ground, building, vegetation, water and so on), and three things added
+      by us: the <b>segment</b> we labelled it (2.2), the <b>object</b> it belongs to (one building part, one tree, one
+      car) and its <b>height above the ground</b>. The colours, the building tags and the people's buildings all come
+      from these.</p>
     <p id="lidar">Loading…</p>
     <h3 class="entry-title">2.2 Labelling the points</h3>
     <p>Every point carries two labels: a <b>segment</b> (ground, low, building, tree, shrub, vehicle, wall, street
@@ -195,7 +217,8 @@
     <p id="ents">Loading…</p>
     <h3 class="entry-title">2.4 Estimated facades</h3>
     <p>Airborne LiDAR sees roofs well and walls badly: glass curtain walls reflect the laser away and the near-vertical
-      view grazes the walls. Points are added on the walls of each building's stepped volume, only where no measured
+      view grazes the walls. Points are added on the walls of each building's volume (its outline at every 3 m of
+      height, 2.3), only where no measured
       return is near, mostly on the storey lines read from the building's own wall returns, and not in the lowest metres
       above the ground (arcades, entrances and plazas stay open). They thin with distance like the measured cloud.
       <b>They are estimates, not measurements</b>; the viewer draws them with the measured points of their building, and
@@ -302,7 +325,14 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
     document.getElementById("ents").innerHTML = `${fmt(n)} building and landmark entities, each a set of LiDAR objects.
       ${fmt(checked)} were checked by hand against Google Earth and Google Maps (name, address, use, typed by hand);
       the other ${fmt(n - checked)} take their name, address and use from the LA County Assessor parcel they stand on,
-      automatically and not checked. <span class="note">(site-model/houdini/annotations/entities.json)</span>`;
+      automatically and not checked. <span class="note">(site-model/houdini/annotations/entities.json)</span></p>
+      <p>Each building also has a volume, made from its own points: one outline every 3 m of height, drawn round the
+      walls and roofs measured at that height and kept within the roofs that stand there, each outline at least as large
+      as the one above it, so a tower narrows at its setbacks and a podium keeps its own outline. Where the walls gave
+      too few returns, a height takes the outline above it; buildings with too few points keep a simpler volume of
+      their roofs extruded to the ground. The people (3) are placed in these volumes floor by floor, and the estimated
+      facades (2.4) are drawn on their walls.
+      <span class="note">(site-model/houdini/tools/export_handoff.py → handoff/buildings.json)</span>`;
   }
 
   // 2.6 layers (config.json: mergeLayers, splitLayers, plazas, claims, landmarks)
@@ -429,6 +459,17 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
       Angels Knoll's own paths are closed (the park is fenced). Metro riders choose a line by the direction of home and
       an entrance on it by distance and a weight per station. Shops are Assessor retail parcels, with the buildings
       checked by hand deciding first.</p>
+    <p>Where each person goes is set by who they are. A resident lives in a building of their Census block; a worker
+      has a workplace in a building of their job's block, chosen by floor area. Someone who comes from outside arrives
+      and leaves the way their mode allows, on the side of the site facing their home (the home tract in LODES): a Metro
+      entrance, a bus stop, a parking garage or their building's own garage, or the edge of the site for those who walk
+      or cycle. In the day, a third of the office workers who are in go out for lunch, at the times the 2022 NHTS gives
+      for lunch trips, to a place to eat within about a 650 m walk, nearer ones more likely; a few stop at a restaurant,
+      bar or shop after work. Residents make a number of outings a day drawn from the 2017 NHTS rates, to the shops and places on
+      the site (nearer and larger ones more likely) or off it; how many stay on the site is an assumption (3.4). Each walk then takes the shortest route on the
+      network as described above. No real person is followed: every schedule is drawn at random from these rules,
+      with a fixed seed (assumptions.json), so the same data give the same day.
+      <span class="note">(site-model/population/prep_population.py: schedules)</span></p>
 
     <h3 class="entry-title">3.3 Data sources</h3>
     <ul class="src">${src}
