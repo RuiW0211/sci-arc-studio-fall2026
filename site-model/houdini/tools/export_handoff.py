@@ -50,6 +50,7 @@ SIMPLIFY = 0.5        # m: outline simplification
 # SLICE_M the building's own points (walls and roofs, SLICE_PAD above and below) give a close hull; each slice also takes
 # the outline of the slice above (a building does not get smaller going down), so heights whose walls gave few returns
 # keep the outline above them, the roof's in the end
+OUTLINES = True       # the hand-off's tiers are outlines per height (False: roof tiers only, as before 2026-10-17)
 SLICE_M = 3.0
 SLICE_PAD = 1.5
 SLICE_MIN_PTS = 30    # fewer points in a slice: the slice above's outline only
@@ -360,8 +361,13 @@ def main():
             continue
         rec = {k: e[k] for k in keep_fields if k in e}
         rec["parts"] = parts
-        rec["height_m"] = round(max(t["top"] for t in tiers) - min(t["base"] for t in tiers), 1)
-        rec["footprint_m2"] = round(sum(t["area_m2"] for t in tiers), 1)   # tiers do not overlap
+        if OUTLINES:   # outlines per height, bounded by the roof tiers (item 12, user 2026-10-17); too few points: roof tiers
+            stacked = outlines_of(x[ii], y[ii], z[ii], z[ii] - hag[ii], tiers)
+            if stacked:
+                tiers = stacked
+                rec["outlines"] = "per height"
+        rec["height_m"] = round(max(t["top"] for t in tiers) - min(t.get("ground", t["base"]) for t in tiers), 1)
+        rec["footprint_m2"] = round(unary_union([shape_of(t) for t in tiers]).area, 1)
         rec["tiers"] = tiers
         blds.append(rec)
 
@@ -380,9 +386,12 @@ def main():
                   "names as web/data/lidar_points.laz); entities, names and Assessor data from site-model/houdini/annotations/entities.json",
         "origin_utm": [384580, 3768520], "crs": "EPSG:26911 (NAD83 / UTM 11N), metres, NAVD88 heights",
         "axes": "x = east, y = north, z = up (local, from the origin)", "extent_m": [-HALF, HALF, -HALF, HALF],
-        "tiers_note": f"Each tier is a prism from 'base' (ground, 10th percentile under it) to 'top' (90th percentile "
-                      f"of its {CELL:g} m roof cells); tiers are cut where roof heights jump more than {GAP:g} m and "
-                      f"do not overlap. Only the part of a building inside the extent is included.",
+        "tiers_note": f"Buildings with 'outlines': 'per height' have stacked tiers, one outline every {SLICE_M:g} m from the "
+                      f"building's own points (walls and roofs), each tier from 'base' to 'top' on the tier below, "
+                      f"'ground' = the building's ground; each outline stays within the roof tiers standing at its height. "
+                      f"The others (too few points) keep roof tiers: a prism from 'base' (ground, 10th percentile under it) "
+                      f"to 'top' (90th percentile of its {CELL:g} m roof cells), cut where roof heights jump more than "
+                      f"{GAP:g} m, not overlapping. Only the part of a building inside the extent is included.",
         "terrain": {**tinfo, "file": "terrain.npy"},
         "buildings": blds,
         "landmarks": lm,
