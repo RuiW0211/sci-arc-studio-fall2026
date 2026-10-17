@@ -24,6 +24,7 @@ with its own random draw.
   python site-model/houdini/tools/synth_facades.py --trial outlines "U.S. Bank Tower" "The Gas Company Tower"
          (item 12 trial: these buildings from handoff/trial_outlines/buildings.json, every other one's points kept from
          web/data/facades_estimated.bin, into web/data/trial_outlines/; viewer ?facades=trial_outlines)
+         --hand main|<trial> (whose prisms; default the --trial name), --density <per m2> (default DENSITY)
   -> web/data/facades_estimated.bin (float32 x, y, z in the viewer frame: x east, y up, z -north; then the object of
      each point and its height above the building's base) + .json. The viewer merges them into the building points.
 """
@@ -80,7 +81,9 @@ def walls(tiers):
                 if poly.contains(Point(*(mid + 0.3 * n))):
                     n = -n                                   # point the normal away from the tier
                 probe = Point(*(mid + 0.6 * n))
-                outside = [u for p, u in polys if u is not t and p.contains(probe) and u["top"] <= t["top"]]
+                # what stands just outside: another tier there (old roof tiers: a taller one means the edge is inside the
+                # building); stacked tiers (outlines per height, with "ground") only count the tiers under this one
+                outside = [u for p, u in polys if u is not t and p.contains(probe) and ("ground" not in t or u["base"] < t["top"] - 0.01)]
                 z_from = max(u["top"] for u in outside) if outside else t["base"]
                 if t["top"] - z_from > 1.0:   # (stacked tiers, outlines per height, carry the building's ground)
                     out.append((a, b, n, z_from, t["top"], t.get("ground", t["base"])))
@@ -104,8 +107,12 @@ def storeys(zw, base, top):
     return FLOOR_M, base
 
 
-def main(names, trial=None):
-    hand = json.loads((eh.OUT / (f"trial_{trial}/buildings.json" if trial else "buildings.json")).read_text(encoding="utf-8"))["buildings"]
+def main(names, trial=None, hand_from=None, density=None):
+    global DENSITY
+    if density is not None:
+        DENSITY = density
+    hand_from = hand_from or trial
+    hand = json.loads((eh.OUT / (f"trial_{hand_from}/buildings.json" if hand_from and hand_from != "main" else "buildings.json")).read_text(encoding="utf-8"))["buildings"]
     if trial:
         eh.only_chunks_near([b for b in hand if (b.get("name") or "") in names])
     x, y, z, obj, hag, objnames = eh.load_points()
@@ -237,15 +244,14 @@ def main(names, trial=None):
         "buildings": report,
         "source": "ESTIMATED, not measured: points on the walls of the building prisms of site-model/houdini/handoff/ "
                   "%.2f points / m2 where the 2023 LiDAR has no return within %.1f m (site-model/houdini/tools/synth_facades.py)" % (DENSITY, GAP_M)
-                  + (f"; TRIAL: {', '.join(names)} from handoff/trial_{trial}/" if trial else ""),
+                  + (f"; TRIAL: {', '.join(names)} from the prisms of {hand_from}, {DENSITY:g} / m2" if trial else ""),
         "settings": {"density_per_m2": DENSITY, "cell_fill": CELL_FILL, "inside_check": INSIDE_CHECK, "floor_m": FLOOR_M, "band_m": BAND_M, "in_bands": IN_BANDS, "gap_m": GAP_M, "snap_m": SNAP_M, "bottom_m": BOTTOM_M},
     }, indent=1))
     print(f"wrote {len(three)} points ({(out / 'facades_estimated.bin').stat().st_size / 1e6:.2f} MB) to {out}")
 
 
 if __name__ == "__main__":
-    a = sys.argv[1:]
-    if a[:1] == ["--trial"]:
-        main(a[2:], trial=a[1])
-    else:
-        main(a)
+    a, opt = sys.argv[1:], {}
+    while a[:1] and a[0] in ("--trial", "--hand", "--density"):
+        opt[a[0][2:]] = a[1]; a = a[2:]
+    main(a, trial=opt.get("trial"), hand_from=opt.get("hand"), density=float(opt["density"]) if "density" in opt else None)
