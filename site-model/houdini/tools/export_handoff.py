@@ -16,6 +16,8 @@ Sources: the staged, labelled points of work/stage/ at full density, named as to
 (USGS 3DEP 2023 points with the Houdini labels; ground = z - hag, i.e. Houdini's own ground model) and annotations/entities.json. Run after pack_wide.py pack and auto_entities.py:
 
   python tools/export_handoff.py
+  python tools/export_handoff.py --outlines "U.S. Bank Tower" "The Gas Company Tower"   (trial: outlines per height
+         for these, into handoff/trial_outlines/buildings.json; see SLICE_M)
 """
 import json
 from collections import defaultdict
@@ -25,7 +27,7 @@ import sys
 
 import numpy as np
 from scipy import ndimage
-from shapely.geometry import box, mapping
+from shapely.geometry import Polygon, box, mapping
 from shapely.ops import unary_union
 
 HERE = Path(__file__).resolve().parent.parent          # site-model/houdini
@@ -43,6 +45,26 @@ MIN_PIECE = 4.0       # m2: smaller footprint pieces are dropped
 MIN_RETURNS = 3       # returns a 1 m roof cell needs
 MIN_PATCH = 25.0      # m2: smaller connected groups of roof cells are dropped (as the earlier Blender tiers)
 SIMPLIFY = 0.5        # m: outline simplification
+# outlines per height (2026-10-17, user, item 12; trial on U.S. Bank + Gas Company: --outlines): the roof tiers are roof
+# outlines extruded down to the ground, so towers with setbacks got walls in the air or inside the tower. Instead, every
+# SLICE_M the building's own points (walls and roofs, SLICE_PAD above and below) give a close hull; each slice also takes
+# the outline of the slice above (a building does not get smaller going down), so heights whose walls gave few returns
+# keep the outline above them, the roof's in the end
+OUTLINES = True       # the hand-off's tiers are outlines per height (False: roof tiers only, as before 2026-10-17)
+SLICE_M = 3.0
+SLICE_PAD = 1.5
+SLICE_MIN_PTS = 30    # fewer points in a slice: the slice above's outline only
+HULL_RATIO = 0.12     # shapely concave_hull ratio (0 = tightest, 1 = convex)
+THIN_M = 1.5          # parts under 2 x this wide are dropped (a window-washing boom on U.S. Bank's roof, canopies)
+MIN_PART = 30.0       # m2: smaller loose pieces of a slice are dropped (the boom's end)
+MERGE = 0.03          # neighbouring slices whose outlines differ by less than this share of the area are one tier
+CLOSE_M = 1.5         # the roof plan at a slice's height: the roof tiers standing there (their ground under it, their top
+CLIP_M = 1.0          # over it), gaps under CLOSE_M closed (setback roofs with few returns); the slice (its points' hull
+                      # and the slice above) stays within that plan + CLIP_M. The plan only bounds it: one roof tier can hold
+                      # a crown and the roof round it (Gas Company), so it is not the outline itself. (The full site, 2026-10-17: the
+                      # hull alone joined the separate parts of one entity - Angelus Plaza's towers, Angels Flight's
+                      # stations - and the slice above carried uphill parts down into the hill; the roof tiers know the
+                      # gaps, the courtyards and where each part stands)
 
 
 KEEP = ("BLD_", "PC_", "MOCA", "AF_", "Metro_")   # objects whose points are kept (buildings, structures, landmarks)
@@ -60,6 +82,10 @@ def load_points(keep=KEEP):
     xs, ys, zs, hs, os_ = [], [], [], [], []
     names_out, index = [], {}
     for c in pw.chunks():
+        cc = (c["center"][0], -c["center"][1])   # chunks.json: centre [east, SOUTH] (c_0_-1 holds y -750..-250)
+        if NEAR is not None and not all(cc[k] - c["half"] - c["buffer"] < NEAR[1][k] and
+                                        cc[k] + c["half"] + c["buffer"] > NEAR[0][k] for k in (0, 1)):
+            continue
         nm = c["file"][:-4]
         z = pw.load_chunk(nm)
         x, y = z["X"] * 0.01 - pw.OX, z["Y"] * 0.01 - pw.OY
@@ -175,7 +201,134 @@ def tiers_of(px, py, pz, pg):
     return out
 
 
+def outlines_of(px, py, pz, pg, roof=None):
+    """Stacked prisms from an entity's points: one outline per SLICE_M of height (see SLICE_M above); each tier runs
+    from 'base' to 'top' (its own heights, not the ground: 'ground' is the building's) and sits on the tier below.
+    roof: the roof tiers; a slice stays within the plan of those that reach it (see CLIP_M)."""
+    import shapely
+    from shapely.geometry import MultiPoint
+    ground = float(np.percentile(pg, 10))
+    h = pz - ground
+    slices, above = [], None
+    for z0 in np.arange(np.floor(h.max() / SLICE_M) * SLICE_M, -SLICE_M / 2, -SLICE_M):
+        s = (h >= z0 - SLICE_PAD) & (h < z0 + SLICE_M + SLICE_PAD)
+        shp = None
+        if s.sum() >= SLICE_MIN_PTS:
+            shp = shapely.concave_hull(MultiPoint(np.c_[px[s], py[s]]), ratio=HULL_RATIO).buffer(-THIN_M).buffer(THIN_M)
+            shp = unary_union([p for p in getattr(shp, "geoms", [shp]) if p.geom_type == "Polygon" and p.area >= MIN_PART])
+            if shp.is_empty:
+                shp = None
+        cur = unary_union([g for g in (shp, above) if g is not None]) if (shp is not None or above is not None) else None
+        if roof:
+            zr = min(ground + z0 + SLICE_M / 2, max(t["top"] for t in roof))
+            core = unary_union([shape_of(t) for t in roof if t["top"] >= zr and t["base"] <= zr])
+            if core.is_empty:
+                cur = None
+            else:
+                core = core.buffer(CLOSE_M, join_style=2).buffer(-CLOSE_M, join_style=2)
+                # the margin only where the slice has points (its walls): a podium's ragged roof plan, with a long edge
+                # and no wall returns, does not grow (2026-10-17: Angelus Plaza +43 % below 21 m with the margin all round)
+                band = core.buffer(CLIP_M, join_style=2)
+                qx, qy = px[s], py[s]
+                out_ = shapely.contains_xy(band, qx, qy) & ~shapely.contains_xy(core, qx, qy)   # only points in the margin
+                if out_.any():
+                    cells = np.unique(np.floor(np.c_[qx[out_], qy[out_]] / 0.5).astype(np.int64), axis=0) * 0.5 + 0.25
+                    allowed = core.union(band.intersection(MultiPoint(cells).buffer(CLIP_M, quad_segs=2)))
+                else:
+                    allowed = core
+                cur = cur.intersection(allowed) if cur is not None else None
+                if cur is not None:
+                    cur = unary_union([p for p in getattr(cur, "geoms", [cur]) if p.geom_type == "Polygon" and p.area >= MIN_PIECE])
+                    cur = None if cur.is_empty else cur
+        if cur is not None:
+            above = cur.simplify(SIMPLIFY, preserve_topology=True)
+            slices.append([z0, z0 + SLICE_M, above])
+    slices.reverse()                                          # bottom up
+    tiers = []
+    for z0, z1, g in slices:                                  # a slice like the one under it joins its tier
+        if tiers and tiers[-1][2].symmetric_difference(g).area < MERGE * tiers[-1][2].area:
+            tiers[-1][1] = z1
+        else:
+            tiers.append([z0, z1, g])
+    out = []
+    r2 = lambda ring: [[round(a, 2), round(b, 2)] for a, b in ring[:-1]]
+    for z0, z1, g in tiers:
+        for p in getattr(g, "geoms", [g]):
+            if p.area < MIN_PIECE:
+                continue
+            c = mapping(p)["coordinates"]
+            out.append({"base": round(ground + z0, 2), "top": round(ground + min(z1, h.max()), 2), "ground": round(ground, 2),
+                        "area_m2": round(p.area, 1), "outer": r2(c[0]), "holes": [r2(q) for q in c[1:]]})
+    return out
+
+
+def trial_outlines(names):
+    """--outlines "Name" ...: the named buildings with outlines per height, every other building as in the hand-off,
+    into handoff/trial_outlines/buildings.json (the hand-off itself is not changed). Only the chunks round them are read.
+    --outlines all: every building, into handoff/trial_outlines_all/ (+ compare.json: old and new footprint, the old
+    tiers' holes - courtyards - and volume per building, to check before the hand-off is replaced)."""
+    doc = json.loads((OUT / "buildings.json").read_text(encoding="utf-8"))
+    every = names == ["all"]
+    todo = doc["buildings"] if every else [b for b in doc["buildings"] if b.get("name") in names]
+    if not every and len(todo) != len(names):
+        raise SystemExit(f"not in the hand-off: {sorted(set(names) - {b.get('name') for b in todo})}")
+    if not every:
+        only_chunks_near(todo)
+    x, y, z, obj, hag, onames = load_points()
+    index = {n: i for i, n in enumerate(onames)}
+    order = np.argsort(obj, kind="stable"); cuts = np.searchsorted(obj[order], np.arange(len(onames) + 1))
+    of = lambda k: order[cuts[k]:cuts[k + 1]]
+    vol = lambda T: sum(t["area_m2"] * (t["top"] - t["base"]) for t in T)
+    rows = []
+    for n, b in enumerate(todo):
+        ii = np.concatenate([of(index[p]) for p in b["parts"] if p in index] or [np.zeros(0, np.int64)])
+        ii = ii[(np.abs(x[ii]) <= HALF) & (np.abs(y[ii]) <= HALF) & (hag[ii] > 2.0)]
+        old = b["tiers"]
+        new = outlines_of(x[ii], y[ii], z[ii], z[ii] - hag[ii], old) if len(ii) >= 20 else []
+        if not new:
+            continue                                          # too few points: the roof tiers stay
+        b["tiers"] = new
+        b["outlines"] = "per height (export_handoff.py --outlines, trial)"
+        b["height_m"] = round(max(t["top"] for t in new) - min(t["ground"] for t in new), 1)
+        fo, fn = unary_union([shape_of(t) for t in old]), unary_union([shape_of(t) for t in new])
+        b["footprint_m2"] = round(fn.area, 1)
+        holes = sum(Polygon(r).area for t in old for r in t["holes"])
+        rows.append({"id": b["id"], "name": b.get("name"), "points": int(len(ii)), "foot_old": round(fo.area), "foot_new": round(fn.area),
+                     "foot_old_not_new": round(fo.difference(fn).area), "foot_new_not_old": round(fn.difference(fo).area),
+                     "old_holes": round(holes), "vol_old": round(vol(old)), "vol_new": round(vol(new)),
+                     "centre": [round(float(x[ii].mean()), 1), round(float(y[ii].mean()), 1)]})
+        if not every:
+            print(f"{b['name']}: {len(old)} roof tiers -> {len(new)} stacked tiers, volume {vol(old) / 1e3:.0f}k -> {vol(new) / 1e3:.0f}k m3")
+        elif n % 100 == 0:
+            print(f"  {n} / {len(todo)}", flush=True)
+    doc["tiers_note_trial"] = (f"Buildings with 'outlines' have stacked tiers: one outline per {SLICE_M:g} m of height from "
+                               f"the building's own points, each tier from 'base' to 'top' on the tier below; 'ground' is the building's ground.")
+    d = OUT / ("trial_outlines_all" if every else "trial_outlines")
+    d.mkdir(exist_ok=True)
+    (d / "buildings.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    (d / "compare.json").write_text(json.dumps(rows, ensure_ascii=False, indent=0), encoding="utf-8")
+    print("wrote", d / "buildings.json", f"({len(rows)} of {len(todo)} buildings with outlines per height)")
+
+
+NEAR = None   # (lo, hi): load_points reads only the chunks overlapping this box (only_chunks_near)
+
+
+def only_chunks_near(blds, pad=60.0):
+    """From here on, load_points reads only the chunks within pad of these hand-off buildings (a trial on a few).
+    (2026-10-17: chunks.json's centre is [east, south]; read as north, buildings away from the middle row had no points.)"""
+    global NEAR
+    xy = np.array([q for b in blds for t in b["tiers"] for q in t["outer"]])
+    NEAR = (xy.min(0) - pad, xy.max(0) + pad)
+
+
+def shape_of(t):
+    from shapely.geometry import Polygon
+    return Polygon(t["outer"], t["holes"]).buffer(0)
+
+
 def main():
+    if sys.argv[1:2] == ["--outlines"]:
+        return trial_outlines(sys.argv[2:])
     x, y, z, obj, hag, names = load_points()
     grid, tinfo = terrain()
     OUT.mkdir(exist_ok=True)
@@ -208,8 +361,13 @@ def main():
             continue
         rec = {k: e[k] for k in keep_fields if k in e}
         rec["parts"] = parts
-        rec["height_m"] = round(max(t["top"] for t in tiers) - min(t["base"] for t in tiers), 1)
-        rec["footprint_m2"] = round(sum(t["area_m2"] for t in tiers), 1)   # tiers do not overlap
+        if OUTLINES:   # outlines per height, bounded by the roof tiers (item 12, user 2026-10-17); too few points: roof tiers
+            stacked = outlines_of(x[ii], y[ii], z[ii], z[ii] - hag[ii], tiers)
+            if stacked:
+                tiers = stacked
+                rec["outlines"] = "per height"
+        rec["height_m"] = round(max(t["top"] for t in tiers) - min(t.get("ground", t["base"]) for t in tiers), 1)
+        rec["footprint_m2"] = round(unary_union([shape_of(t) for t in tiers]).area, 1)
         rec["tiers"] = tiers
         blds.append(rec)
 
@@ -228,9 +386,12 @@ def main():
                   "names as web/data/lidar_points.laz); entities, names and Assessor data from site-model/houdini/annotations/entities.json",
         "origin_utm": [384580, 3768520], "crs": "EPSG:26911 (NAD83 / UTM 11N), metres, NAVD88 heights",
         "axes": "x = east, y = north, z = up (local, from the origin)", "extent_m": [-HALF, HALF, -HALF, HALF],
-        "tiers_note": f"Each tier is a prism from 'base' (ground, 10th percentile under it) to 'top' (90th percentile "
-                      f"of its {CELL:g} m roof cells); tiers are cut where roof heights jump more than {GAP:g} m and "
-                      f"do not overlap. Only the part of a building inside the extent is included.",
+        "tiers_note": f"Buildings with 'outlines': 'per height' have stacked tiers, one outline every {SLICE_M:g} m from the "
+                      f"building's own points (walls and roofs), each tier from 'base' to 'top' on the tier below, "
+                      f"'ground' = the building's ground; each outline stays within the roof tiers standing at its height. "
+                      f"The others (too few points) keep roof tiers: a prism from 'base' (ground, 10th percentile under it) "
+                      f"to 'top' (90th percentile of its {CELL:g} m roof cells), cut where roof heights jump more than "
+                      f"{GAP:g} m, not overlapping. Only the part of a building inside the extent is included.",
         "terrain": {**tinfo, "file": "terrain.npy"},
         "buildings": blds,
         "landmarks": lm,

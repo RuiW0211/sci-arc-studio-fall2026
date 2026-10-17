@@ -21,6 +21,10 @@ Like the measured cloud, the estimate thins with distance from Y-1 (pack_wide.ra
 with its own random draw.
 
   python site-model/houdini/tools/synth_facades.py ["The entity name" ...]   (default: every building of the hand-off)
+  python site-model/houdini/tools/synth_facades.py --trial outlines "U.S. Bank Tower" "The Gas Company Tower"
+         (item 12 trial: these buildings from handoff/trial_outlines/buildings.json, every other one's points kept from
+         web/data/facades_estimated.bin, into web/data/trial_outlines/; viewer ?facades=trial_outlines)
+         --hand main|<trial> (whose prisms; default the --trial name), --density <per m2> (default DENSITY)
   -> web/data/facades_estimated.bin (float32 x, y, z in the viewer frame: x east, y up, z -north; then the object of
      each point and its height above the building's base) + .json. The viewer merges them into the building points.
 """
@@ -77,10 +81,12 @@ def walls(tiers):
                 if poly.contains(Point(*(mid + 0.3 * n))):
                     n = -n                                   # point the normal away from the tier
                 probe = Point(*(mid + 0.6 * n))
-                outside = [u for p, u in polys if u is not t and p.contains(probe)]
+                # what stands just outside: another tier there (old roof tiers: a taller one means the edge is inside the
+                # building); stacked tiers (outlines per height, with "ground") only count the tiers under this one
+                outside = [u for p, u in polys if u is not t and p.contains(probe) and ("ground" not in t or u["base"] < t["top"] - 0.01)]
                 z_from = max(u["top"] for u in outside) if outside else t["base"]
-                if t["top"] - z_from > 1.0:
-                    out.append((a, b, n, z_from, t["top"], t["base"]))
+                if t["top"] - z_from > 1.0:   # (stacked tiers, outlines per height, carry the building's ground)
+                    out.append((a, b, n, z_from, t["top"], t.get("ground", t["base"])))
     return out
 
 
@@ -101,9 +107,15 @@ def storeys(zw, base, top):
     return FLOOR_M, base
 
 
-def main(names):
+def main(names, trial=None, hand_from=None, density=None):
+    global DENSITY
+    if density is not None:
+        DENSITY = density
+    hand_from = hand_from or trial
+    hand = json.loads((eh.OUT / (f"trial_{hand_from}/buildings.json" if hand_from and hand_from != "main" else "buildings.json")).read_text(encoding="utf-8"))["buildings"]
+    if trial:
+        eh.only_chunks_near([b for b in hand if (b.get("name") or "") in names])
     x, y, z, obj, hag, objnames = eh.load_points()
-    hand = json.loads((eh.OUT / "buildings.json").read_text(encoding="utf-8"))["buildings"]
     index = {n: i for i, n in enumerate(objnames)}
     rng = np.random.default_rng(2026)
     pts, objs, hags, report = [], [], [], []
@@ -205,24 +217,41 @@ def main(names):
     A = np.concatenate(pts) if pts else np.zeros((0, 3))
     three = np.c_[A[:, 0], A[:, 2], -A[:, 1]].astype(np.float32)          # viewer frame
     O = np.concatenate(objs) if objs else np.zeros(0, int)
-    used = sorted(set(O.tolist()))
-    oi = {o: k for k, o in enumerate(used)}
-    obj_idx = np.array([oi[o] for o in O], np.uint16)                       # index into "objects" (names)
+    names_pt = np.array(objnames, dtype=object)[O] if len(O) else np.zeros(0, dtype=object)   # object name per point
     H = np.concatenate(hags) if hags else np.zeros(0, np.int16)
-    OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "facades_estimated.bin").write_bytes(three.tobytes() + obj_idx.tobytes() + H.astype(np.int16).tobytes())
-    (OUT / "facades_estimated.json").write_text(json.dumps({
+    out = OUT / f"trial_{trial}" if trial else OUT
+    if trial:   # every other building's estimated points as they are in the website's file
+        meta = json.loads((OUT / "facades_estimated.json").read_text(encoding="utf-8"))
+        raw = (OUT / meta["file"]).read_bytes(); n = meta["count"]
+        P0 = np.frombuffer(raw, np.float32, 3 * n).reshape(n, 3)
+        O0 = np.frombuffer(raw, np.uint16, n, 12 * n)
+        H0 = np.frombuffer(raw, np.int16, n, 14 * n)
+        redone = {o for b in todo for o in b["parts"]}
+        n0 = np.array(meta["objects"], dtype=object)[O0]
+        keep = ~np.isin(n0, list(redone))
+        three = np.r_[P0[keep], three]; names_pt = np.r_[n0[keep], names_pt]; H = np.r_[H0[keep], H]
+        report = [r for r in meta["buildings"] if r["id"] not in {b["id"] for b in todo}] + report
+    used = sorted(set(names_pt.tolist()))
+    oi = {o: k for k, o in enumerate(used)}
+    obj_idx = np.array([oi[o] for o in names_pt], np.uint16)                # index into "objects" (names)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "facades_estimated.bin").write_bytes(three.tobytes() + obj_idx.tobytes() + H.astype(np.int16).tobytes())
+    (out / "facades_estimated.json").write_text(json.dumps({
         "file": "facades_estimated.bin", "count": int(len(three)),
         "format": "float32 x, y, z (x east, y up, z -north) for every point, then uint16 object (index into objects), "
                   "then int16 height above the building's base (0.1 m)",
-        "objects": [objnames[o] for o in used],
+        "objects": used,
         "buildings": report,
         "source": "ESTIMATED, not measured: points on the walls of the building prisms of site-model/houdini/handoff/ "
-                  "%.2f points / m2 where the 2023 LiDAR has no return within %.1f m (site-model/houdini/tools/synth_facades.py)" % (DENSITY, GAP_M),
+                  "%.2f points / m2 where the 2023 LiDAR has no return within %.1f m (site-model/houdini/tools/synth_facades.py)" % (DENSITY, GAP_M)
+                  + (f"; TRIAL: {', '.join(names)} from the prisms of {hand_from}, {DENSITY:g} / m2" if trial else ""),
         "settings": {"density_per_m2": DENSITY, "cell_fill": CELL_FILL, "inside_check": INSIDE_CHECK, "floor_m": FLOOR_M, "band_m": BAND_M, "in_bands": IN_BANDS, "gap_m": GAP_M, "snap_m": SNAP_M, "bottom_m": BOTTOM_M},
     }, indent=1))
-    print(f"wrote {len(three)} points ({(OUT / 'facades_estimated.bin').stat().st_size / 1e6:.2f} MB)")
+    print(f"wrote {len(three)} points ({(out / 'facades_estimated.bin').stat().st_size / 1e6:.2f} MB) to {out}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    a, opt = sys.argv[1:], {}
+    while a[:1] and a[0] in ("--trial", "--hand", "--density"):
+        opt[a[0][2:]] = a[1]; a = a[2:]
+    main(a, trial=opt.get("trial"), hand_from=opt.get("hand"), density=float(opt["density"]) if "density" in opt else None)

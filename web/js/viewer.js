@@ -15,6 +15,8 @@ const ask = (u) => (u ? fetch(u).catch(() => null) : Promise.resolve(null));
 // ?lidar=<folder> (for comparing trial clouds, 2026-10-16): the point cloud from web/data/<folder>/ instead (pack_wide.py
 // pack --out ../../web/data/<folder>); letters, digits, - and _ only
 { const f = new URLSearchParams(location.search).get("lidar"); if (f && /^[\w-]+$/.test(f)) cfg.lidar.meta = `data/${f}/lidar_points.json`; }
+// ?facades=<folder> (item 12 trial, 2026-10-17): the estimated facades from web/data/<folder>/ (synth_facades.py --trial)
+{ const f = new URLSearchParams(location.search).get("facades"); if (f && /^[\w-]+$/.test(f) && cfg.facades) cfg.facades.meta = `data/${f}/facades_estimated.json`; }
 const PRE = { entities: ask(cfg.entities), facades: ask(cfg.facades?.meta), designs: ask(cfg.designs), ghosts: ask(cfg.ghosts?.on === false ? null : cfg.ghosts?.data),
               lidarMeta: ask(cfg.lidar.meta) };
 // ---------- display units: every length goes through len() (user, 2026-10-08: m / ft switch in the panel; ft is the
