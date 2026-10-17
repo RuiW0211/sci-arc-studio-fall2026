@@ -173,6 +173,7 @@ for e in hand["buildings"]:
             p = p.buffer(0)
         if p.area > 1:
             prisms[e["id"]].append((p, t["base"], t["top"]))
+STACKED = {e["id"] for e in hand["buildings"] if any("ground" in t for t in e["tiers"])}   # outlines per height (export_handoff.py)
 BIDS = sorted(prisms)
 FOOT = {i: unary_union([p for p, _, _ in prisms[i]]) for i in BIDS}
 HEIGHT = {i: max(t for _, _, t in prisms[i]) - min(b for _, b, _ in prisms[i]) for i in BIDS}
@@ -245,7 +246,10 @@ def floors_of(bid, fh):
     out = []
     z = z0
     while z + 2.5 <= top:
-        idx = tuple(k for k, (_, b, t) in enumerate(pr) if b <= z + 1.0 and t >= z + 2.5)
+        if bid in STACKED:   # stacked tiers (one outline per 3 m, each on the one below): the tier at the storey's middle
+            idx = tuple(k for k, (_, b, t) in enumerate(pr) if b <= z + 1.25 < t)
+        else:                # roof tiers, each from the ground: every tier that reaches the storey
+            idx = tuple(k for k, (_, b, t) in enumerate(pr) if b <= z + 1.0 and t >= z + 2.5)
         if idx:
             key = (bid, idx)
             if key not in _union_cache:
