@@ -105,7 +105,7 @@
   {
    "id": "lit-004",
    "type": "entry",
-   "title": "Conditional settlement awaiting City approval (as of October 12, 2026)",
+   "title": "Conditional settlement awaiting City approval (as of October 17, 2026)",
    "topic": "Litigation",
    "status": "verified",
    "start": "2026-09-10",
@@ -125,7 +125,7 @@
   {
    "id": "lit-006",
    "type": "entry",
-   "title": "Remaining litigation questions (as of October 12, 2026)",
+   "title": "Remaining litigation questions (as of October 17, 2026)",
    "topic": "Litigation",
    "status": "open-question",
    "start": null,
@@ -1823,6 +1823,16 @@
    "nsrc": 1
   },
   {
+   "id": "media-p39",
+   "type": "entry",
+   "title": "Peebles says a court found the termination unlawful",
+   "topic": "Media",
+   "status": "verified",
+   "start": "2025-10-23",
+   "end": null,
+   "nsrc": 2
+  },
+  {
    "id": "hist-009",
    "type": "entry",
    "title": "Y-1 land acquired in 1961 for $2.7 million (per CRA reports, as reported)",
@@ -2437,7 +2447,7 @@
    "a": "lit-004",
    "b": "actor:city",
    "kind": "actor",
-   "why": "As of October 12, 2026, the City and Angels Landing Partners had a conditional settlement covering the state case (24STCV32173) and the federal case (2:26-cv-01524).",
+   "why": "As of October 17, 2026, the City and Angels Landing Partners had a conditional settlement covering the state case (24STCV32173) and the federal case (2:26-cv-01524).",
    "field": "summary",
    "match": "the City"
   },
@@ -2445,7 +2455,7 @@
    "a": "lit-004",
    "b": "actor:alp",
    "kind": "actor",
-   "why": "As of October 12, 2026, the City and Angels Landing Partners had a conditional settlement covering the state case (24STCV32173) and the federal case (2:26-cv-01524).",
+   "why": "As of October 17, 2026, the City and Angels Landing Partners had a conditional settlement covering the state case (24STCV32173) and the federal case (2:26-cv-01524).",
    "field": "summary",
    "match": "Angels Landing Partners"
   },
@@ -2499,9 +2509,24 @@
    "a": "lit-006",
    "b": "actor:alp",
    "kind": "actor",
-   "why": "…public Trellis view (refreshed Nov 19, 2025) shows the City's answer and cross-complaint, ALP's demurrer to the cross-complaint with a 'Ruling on Submitted Matter' minute order of Jul 18, 2025, and AL…",
+   "why": "…view (refreshed Nov 19, 2025) shows the City's answer and cross-complaint (Aug 19, 2025), ALP's answer to the cross-complaint (Aug 18, 2025) and ALP's demurrer to the cross-complaint, 'Result: Overrul…",
    "field": "details",
    "match": "ALP"
+  },
+  {
+   "a": "lit-006",
+   "b": "media-p39",
+   "kind": "mention",
+   "why": "…wfully terminated the contract and ordered it to pay the developers' out-of-pocket costs (media-p39).…",
+   "field": "details"
+  },
+  {
+   "a": "lit-006",
+   "b": "actor:peebles",
+   "kind": "actor",
+   "why": "Not supported by the court records: in Oct 2025 Don Peebles told Commercial Observer that a court had ruled 'late last year' that the City unlawfully terminated the contract and ordered it to pay the…",
+   "field": "details",
+   "match": "Peebles"
   },
   {
    "a": "lit-006",
@@ -5027,6 +5052,22 @@
    "field": "summary"
   },
   {
+   "a": "media-p39",
+   "b": "actor:peebles",
+   "kind": "actor",
+   "why": "Peebles says a court found the termination unlawful",
+   "field": "title",
+   "match": "Peebles"
+  },
+  {
+   "a": "media-p39",
+   "b": "actor:city",
+   "kind": "actor",
+   "why": "…ss, Commercial Observer reports Don Peebles as saying a court had ruled late in 2024 that the City unlawfully terminated the Angels Landing contract and ordered it to pay the developers' out-of-pocket…",
+   "field": "summary",
+   "match": "the City"
+  },
+  {
    "a": "hist-009",
    "b": "actor:cra",
    "kind": "actor",
@@ -5502,6 +5543,12 @@
    "b": "subject:Surplus land and housing",
    "kind": "subject",
    "why": "Grouped under 'Surplus land and housing' (our grouping)"
+  },
+  {
+   "a": "media-p39",
+   "b": "subject:Termination and lawsuits",
+   "kind": "subject",
+   "why": "Grouped under 'Termination and lawsuits' (our grouping)"
   },
   {
    "a": "af-001",
@@ -6411,6 +6458,15 @@
   },
   {
    "a": "des-006",
+   "b": "media-p39",
+   "kind": "source",
+   "why": [
+    "Commercial Observer (Nick Trombola, Oct 23, 2025): Two Major L.A. Developments Formally Nixed as State Prepares to Market Sites"
+   ],
+   "n": 1
+  },
+  {
+   "a": "des-006",
    "b": "moca-003",
    "kind": "source",
    "why": [
@@ -6556,6 +6612,15 @@
   },
   {
    "a": "disp-001",
+   "b": "media-p39",
+   "kind": "source",
+   "why": [
+    "Commercial Observer (Nick Trombola, Oct 23, 2025): Two Major L.A. Developments Formally Nixed as State Prepares to Market Sites"
+   ],
+   "n": 1
+  },
+  {
+   "a": "disp-001",
    "b": "sla-005",
    "kind": "source",
    "why": [
@@ -6635,6 +6700,15 @@
    "kind": "source",
    "why": [
     "Los Angeles City Council motion (de Leon - Park), Council File 14-0425-S4, Sept 2024"
+   ],
+   "n": 1
+  },
+  {
+   "a": "disp-002",
+   "b": "media-p39",
+   "kind": "source",
+   "why": [
+    "Commercial Observer (Nick Trombola, Oct 23, 2025): Two Major L.A. Developments Formally Nixed as State Prepares to Market Sites"
    ],
    "n": 1
   },
@@ -7504,6 +7578,15 @@
    "kind": "source",
    "why": [
     "Los Angeles City Council motion (de Leon - Park), Council File 14-0425-S4, Sept 2024"
+   ],
+   "n": 1
+  },
+  {
+   "a": "ent-007",
+   "b": "media-p39",
+   "kind": "source",
+   "why": [
+    "Commercial Observer (Nick Trombola, Oct 23, 2025): Two Major L.A. Developments Formally Nixed as State Prepares to Market Sites"
    ],
    "n": 1
   },
@@ -8662,6 +8745,15 @@
    "n": 1
   },
   {
+   "a": "lit-001",
+   "b": "media-p39",
+   "kind": "source",
+   "why": [
+    "Case 24STCV32173 - Trellis (docket aggregator; opened in browser, last refreshed there Nov 19, 2025)"
+   ],
+   "n": 1
+  },
+  {
    "a": "lit-002",
    "b": "lit-003",
    "kind": "source",
@@ -8699,6 +8791,15 @@
    "n": 1
   },
   {
+   "a": "lit-002",
+   "b": "media-p39",
+   "kind": "source",
+   "why": [
+    "Case 24STCV32173 - Trellis (docket aggregator; opened in browser, last refreshed there Nov 19, 2025)"
+   ],
+   "n": 1
+  },
+  {
    "a": "lit-003",
    "b": "lit-004",
    "kind": "source",
@@ -8710,6 +8811,15 @@
   {
    "a": "lit-003",
    "b": "lit-006",
+   "kind": "source",
+   "why": [
+    "Case 24STCV32173 - Trellis (docket aggregator; opened in browser, last refreshed there Nov 19, 2025)"
+   ],
+   "n": 1
+  },
+  {
+   "a": "lit-003",
+   "b": "media-p39",
    "kind": "source",
    "why": [
     "Case 24STCV32173 - Trellis (docket aggregator; opened in browser, last refreshed there Nov 19, 2025)"
@@ -8738,11 +8848,29 @@
    "n": 3
   },
   {
+   "a": "lit-004",
+   "b": "media-p39",
+   "kind": "source",
+   "why": [
+    "Case 24STCV32173 - Trellis (docket aggregator; opened in browser, last refreshed there Nov 19, 2025)"
+   ],
+   "n": 1
+  },
+  {
    "a": "lit-005",
    "b": "lit-006",
    "kind": "source",
    "why": [
     "CourtListener docket 2:26-cv-01524 (C.D. Cal.)"
+   ],
+   "n": 1
+  },
+  {
+   "a": "lit-006",
+   "b": "media-p39",
+   "kind": "source",
+   "why": [
+    "Case 24STCV32173 - Trellis (docket aggregator; opened in browser, last refreshed there Nov 19, 2025)"
    ],
    "n": 1
   },

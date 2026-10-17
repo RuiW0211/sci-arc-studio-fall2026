@@ -13,7 +13,7 @@
       },
       {
         "label": "Litigation",
-        "text": "Conditional settlement of both cases awaiting the City Council (Council File 26-1436, no vote recorded); terms not public.",
+        "text": "Conditional settlement of both cases awaiting the City Council (Council File 26-1436, set for the Budget and Finance Committee on Oct 20, 2026; no vote as of Oct 17); terms not public.",
         "ids": [
           "lit-004",
           "lit-005"
@@ -799,22 +799,23 @@
     },
     {
       "id": "lit-004",
-      "title": "Conditional settlement awaiting City approval (as of October 12, 2026)",
-      "summary": "As of October 12, 2026, the City and Angels Landing Partners had a conditional settlement covering the state case (24STCV32173) and the federal case (2:26-cv-01524). The City Attorney asked the City Council for a closed session on it, and Council File 26-1436 was pending in the Budget and Finance Committee with no vote recorded. The terms are not public.",
+      "title": "Conditional settlement awaiting City approval (as of October 17, 2026)",
+      "summary": "As of October 17, 2026, the City and Angels Landing Partners had a conditional settlement covering the state case (24STCV32173) and the federal case (2:26-cv-01524). Council File 26-1436 was pending in the Budget and Finance Committee, which scheduled it for its October 20, 2026 meeting; no vote was recorded. The terms are not public.",
       "details": [
         "Sep 10, 2026: in the federal case the parties filed a Notice of Conditional Settlement and Stipulation to Stay Action Pending Final Settlement Approval (Doc 38; proposed order Doc 38-1). Sep 12, 2026: Stipulation and Order entered (Doc 40).",
         "The proposed order stays the action, vacates deadlines, and requires a joint status report by Jan 15, 2027 if no dismissal with prejudice is filed by then. The text of the entered order (Doc 40) was not seen.",
         "Sep 18, 2026: City Attorney report R26-0534 requests a closed session under Gov. Code 54956.9(d)(1), 'SETTLEMENT DISCUSSION', naming both LASC 24STCV32173 and C.D. Cal. 2:26-cv-01524-WLH-AYP (Claim No. C24-09784).",
-        "Council File 26-1436: received Oct 8, 2026, referred to the Budget and Finance Committee Oct 9, 2026, 'No votes were found' (checked Oct 12, 2026).",
+        "Council File 26-1436: received Oct 8, 2026, referred to the Budget and Finance Committee Oct 9, 2026; on Oct 16, 2026 the committee 'scheduled item for committee meeting on October 20, 2026'. 'No votes were found' (checked Oct 17, 2026).",
         "State case: the last docket snapshot available (Trellis, refreshed Nov 19, 2025) shows a temporary stay pending a change in City counsel (Nov 2025) and a jury trial set for Aug 24, 2026. Later state-court events were not confirmed.",
-        "Settlement amount and terms, including anything about the land (Parcel Y-1), are not public."
+        "Settlement amount and terms, including anything about the land (Parcel Y-1), are not public.",
+        "Federal docket checked Oct 17, 2026: the last filing is still Doc 40 (Sep 12, 2026)."
       ],
       "topic": "Litigation",
       "date": "2026-10-09",
       "kind": "fact",
       "status": "verified",
       "confidence": "high",
-      "lastVerified": "2026-10-12",
+      "lastVerified": "2026-10-17",
       "place": [
         "parcel:Y-1"
       ],
@@ -827,8 +828,8 @@
           "type": "official",
           "title": "LA City Clerk, Council File 26-1436: Angels Landing Partners, LLC v. City of Los Angeles",
           "url": "https://cityclerk.lacity.org/lacityclerkconnect/index.cfm?fa=ccfi.viewrecord&cfnumber=26-1436",
-          "accessed": "2026-10-12",
-          "excerpt": "10/09/2026 City Attorney document(s) referred to Budget and Finance Committee."
+          "accessed": "2026-10-17",
+          "excerpt": "Budget and Finance Committee scheduled item for committee meeting on October 20, 2026."
         },
         {
           "type": "official",
@@ -848,7 +849,7 @@
           "type": "court",
           "title": "CourtListener docket 2:26-cv-01524 (C.D. Cal.)",
           "url": "https://www.courtlistener.com/docket/72274851/angels-landing-partners-llc-v-city-of-los-angeles/",
-          "accessed": "2026-10-12",
+          "accessed": "2026-10-17",
           "excerpt": "Date Filed: Feb. 12, 2026 Date of Last Known Filing: Sept. 12, 2026"
         },
         {
@@ -940,24 +941,25 @@
     },
     {
       "id": "lit-006",
-      "title": "Remaining litigation questions (as of October 12, 2026)",
+      "title": "Remaining litigation questions (as of October 17, 2026)",
       "summary": "Several earlier questions now have answers: a conditional settlement covering both cases is before the City Council, and the state court had set a jury trial for August 24, 2026. Still open: the settlement terms, whether the Council approves, whether the state trial date was vacated, and whether there was any discovery or ADR.",
       "details": [
         "Answered: settlement. A Notice of Conditional Settlement was filed in the federal case on Sep 10, 2026, and the City Attorney requested a closed session on Sep 18, 2026 covering both cases. CF 26-1436 is pending in the Budget and Finance Committee (see lit-004).",
-        "Answered: pleadings after the demurrer. The public Trellis view (refreshed Nov 19, 2025) shows the City's answer and cross-complaint, ALP's demurrer to the cross-complaint with a 'Ruling on Submitted Matter' minute order of Jul 18, 2025, and ALP's answer to the cross-complaint (Aug 2025). Earlier entries, including the date of the City's answer and the result of the demurrer, are behind Trellis's login and were not confirmed.",
+        "Answered: pleadings after the demurrer. The public Trellis view (refreshed Nov 19, 2025) shows the City's answer and cross-complaint (Aug 19, 2025), ALP's answer to the cross-complaint (Aug 18, 2025) and ALP's demurrer to the cross-complaint, 'Result: Overruled ; Result Date: 07/18/2025' (Final Ruling on Submitted Matter), with a Notice of Ruling filed by the City on Jul 24, 2025. The contents of the cross-complaint are not shown.",
         "Answered: trial date. A jury trial was set for Aug 24, 2026 (FSC Aug 14, 2026), Dept. 15. A temporary stay pending a change in City counsel was entered Nov 2025 (Trellis, last refreshed Nov 19, 2025).",
         "Open: was the Aug 2026 trial date vacated or continued? Has the stay been lifted?",
         "Open: the settlement terms (money, any land or ENA rights) and whether the Council and the federal court give final approval. The federal status report is due Jan 15, 2027 if there is no dismissal.",
         "Open: discovery activity, and whether ALP amended the 2nd and 3rd causes of action. The contents of the City's cross-complaint are unknown.",
         "Open: ADR. The federal Doc 6 is only the standard ADR program notice.",
+        "Not supported by the court records: in Oct 2025 Don Peebles told Commercial Observer that a court had ruled 'late last year' that the City unlawfully terminated the contract and ordered it to pay the developers' out-of-pocket costs (media-p39). The state case was only filed on Dec 6, 2024; its public docket (Trellis, refreshed Nov 19, 2025) shows no ruling on whether the termination was lawful and no award; the one later ruling (Jul 18, 2025) went against ALP; and a jury trial was still set for Aug 2026. The federal case was filed in Feb 2026. Looked in: Trellis public view, CourtListener 2:26-cv-01524, Council File 26-1436, news search (Oct 17, 2026). Rulings behind Trellis's login were not seen.",
         "Why it matters: the Y-1 NOA timeline depends on when this litigation finally ends (see disp-004)."
       ],
       "topic": "Litigation",
-      "date": "2026-10-12",
+      "date": "2026-10-17",
       "kind": "analysis",
       "status": "open-question",
       "confidence": "high",
-      "lastVerified": "2026-10-12",
+      "lastVerified": "2026-10-17",
       "place": [
         "parcel:Y-1"
       ],
@@ -967,14 +969,15 @@
           "type": "court",
           "title": "Trellis docket 24STCV32173 (last refreshed Nov 19, 2025)",
           "url": "https://trellis.law/case/24stcv32173/angels-landing-partners-llc-vs-city-los-angeles",
-          "accessed": "2026-10-12",
-          "excerpt": "Stipulation and Order for a Temporary Stay of Proceedings Pending a Change in Counsel: Filed By: City of Los Angeles (Defendant); Result: Granted"
+          "accessed": "2026-10-17",
+          "excerpt": "Notice of Demurrer and Demurrer of Plaintiff and Cross-Defendant Angels Landing Partners, LLC to Cross-Complaint"
         },
         {
           "type": "court",
           "title": "Trellis docket 24STCV32173 - cross-complaint demurrer",
           "url": "https://trellis.law/case/24stcv32173/angels-landing-partners-llc-vs-city-los-angeles",
-          "accessed": "2026-10-12"
+          "accessed": "2026-10-17",
+          "excerpt": "Notice of Demurrer and Demurrer of Plaintiff and Cross-Defendant Angels Landing Partners, LLC to Cross-Complaint"
         },
         {
           "type": "official",
@@ -11282,6 +11285,62 @@
           "url": "https://www.ladowntownnews.com/news/public-plaza-and-park-likely-to-remain-shuttered-for-years/article_ad7eb0c6-dc8a-11e4-b0cc-f75ab4ffac12.html",
           "accessed": "2026-10-12",
           "excerpt": "Hypothetically, a councilmember could suggest the site is best for affordable housing."
+        }
+      ]
+    },
+    {
+      "id": "media-p39",
+      "title": "Peebles says a court found the termination unlawful",
+      "summary": "In an October 2025 article on the site going to the surplus land process, Commercial Observer reports Don Peebles as saying a court had ruled late in 2024 that the City unlawfully terminated the Angels Landing contract and ordered it to pay the developers' out-of-pocket costs, with litigation over further damages ongoing. The public court records do not show such a ruling (see lit-006).",
+      "details": [
+        "The sentence is the reporter's paraphrase of Peebles, not a direct quotation.",
+        "Article: Nick Trombola, Commercial Observer, Oct 23, 2025."
+      ],
+      "topic": "Media",
+      "date": "2025-10-23",
+      "kind": "claim",
+      "status": "verified",
+      "confidence": "high",
+      "lastVerified": "2026-10-17",
+      "place": [
+        "parcel:Y-1"
+      ],
+      "timeline": {
+        "start": "2025-10-23",
+        "end": null
+      },
+      "conflicts": [
+        {
+          "note": "The court records do not support the claim: the state case (24STCV32173) was filed Dec 6, 2024; its public docket shows no ruling on whether the termination was lawful and no award of costs; the one later ruling (Jul 18, 2025) overruled ALP's demurrer to the City's cross-complaint; and a jury trial was still set for Aug 2026. The entry records what was said, not that it happened.",
+          "sources": [
+            0,
+            1
+          ]
+        }
+      ],
+      "media": {
+        "quote": "A court ruled late last year that the city had unlawfully terminated the contract, Peebles told Commercial Observer",
+        "translation": null,
+        "speaker": "Don Peebles",
+        "role": "CEO, Peebles Corporation (developer)",
+        "venue": "Commercial Observer, \"Two Major L.A. Developments Formally Nixed as State Prepares to Market Sites\"",
+        "said": "2025-10",
+        "subject": "Termination and lawsuits"
+      },
+      "sources": [
+        {
+          "type": "news",
+          "title": "Two Major L.A. Developments Formally Nixed as State Prepares to Market Sites (Commercial Observer, Oct 23, 2025)",
+          "url": "https://commercialobserver.com/2025/10/la-angels-landing-surplus-land-development/",
+          "accessed": "2026-10-17",
+          "excerpt": "A court ruled late last year that the city had unlawfully terminated the contract, Peebles told Commercial Observer"
+        },
+        {
+          "type": "court",
+          "title": "Trellis docket 24STCV32173 (last refreshed Nov 19, 2025)",
+          "url": "https://trellis.law/case/24stcv32173/angels-landing-partners-llc-vs-city-los-angeles",
+          "accessed": "2026-10-17",
+          "excerpt": "Demurrer of Plaintiff and Cross-Defendant Angels Landing Partners, LLC to Cross-Complaint"
         }
       ]
     },
