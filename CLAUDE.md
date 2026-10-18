@@ -23,7 +23,7 @@ Blender version is archived at `RuiW0211/sci-arc-studio-fall2026-blender`; don't
 - Never put credentials, tokens, or personal emails in the repo.
 - Everyone records their working time (Methods §6, the rule in `docs/WORKFLOW.md` §4): before opening a pull request, run
   `python docs/worklog.py` and commit `web/data/worklog.json`. A person's time counts from their first Claude Code session
-  about this project; only session timestamps are read.
+  about this project; only session timestamps and token counts are read.
 
 ## Layout
 

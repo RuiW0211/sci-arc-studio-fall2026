@@ -80,11 +80,14 @@ git commit -m "Working record: <your name>"
 ```
 
 The rule: everyone's working time is counted from their **first Claude Code session about this project**, and
-recorded every day: how long you worked with Claude, and what came of the day (the pull requests you opened and
-merged, shown from GitHub). The script reads only the timestamps of your Claude Code sessions about the project on your
-own computer (`~/.claude/projects/`, the folders whose name contains `sci-arc-studio-fall2026`), nothing of what was
-said; it finds you by the GitHub account `gh` is logged in to. If you worked on the project in another folder before
-cloning it, add that folder for your login in `PEOPLE` in `docs/worklog.py`. Each run changes only your own entry.
+recorded every day: how long you worked with Claude, the tokens that work used (with what they would cost on the API
+at the list prices), and what came of the day (the pull requests you opened and merged, shown from GitHub). The script
+reads only the timestamps and token counts of your Claude Code sessions about the project on your own computer
+(`~/.claude/projects/`, the folders whose name contains `sci-arc-studio-fall2026`), nothing of what was said; it finds
+you by the GitHub account `gh` is logged in to. If you worked on the project in another folder before cloning it, add
+that folder for your login in `PEOPLE` in `docs/worklog.py`. Each run changes only your own entry, and never lowers a
+day already recorded: Claude Code deletes session logs it has not used for 30 days (`cleanupPeriodDays` in
+`~/.claude/settings.json`; a larger value keeps them).
 
 ## 5. Open a pull request
 

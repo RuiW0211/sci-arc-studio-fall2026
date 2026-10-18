@@ -11,11 +11,16 @@ Two parts:
           <folder>/<session>/subagents/*.jsonl; nothing of what was said is read). All their sessions on one line: two
           messages less than GAP_MIN minutes apart count the time between them (sessions and subagents open at the same
           time count once), a longer gap is a break. A run updates only the person running it; the others are kept.
+          From the same logs, the tokens per day and model (each response once: base input, 5-minute and 1-hour cache
+          writes, cache reads, output) and their estimated cost at the API list prices (PRICES).
+          A run never loses a recorded day: Claude Code deletes old session logs (cleanupPeriodDays), so each day
+          keeps the larger of its recorded and its recounted value. After a change of the rule, --recount.
   github  every commit (merges left out) and pull request of this repository and of the archived Blender one, with
           who made it, from git and the GitHub CLI (gh). The Pages workflow reruns this part on every deploy.
 
   python docs/worklog.py               your own time (you = the GitHub user gh is logged in as) and the GitHub part
   python docs/worklog.py --me <login>  the same, for <login>
+  python docs/worklog.py --recount     your own record counted again from the logs only (days without logs drop out)
   python docs/worklog.py --github      the GitHub part only, everyone's time kept (the Pages workflow)
 """
 import json
@@ -43,6 +48,20 @@ PEOPLE = {
                  "folders": ["D--OneDrive---Syracuse-University-Rui-Wang-Syracuse-M-Arch-2026FALL-Visiting-Studio"]},
     "clarkamenudo": {"name": "Clark Amenudo", "folders": []},   # the population layer (Blender repository)
 }
+# What the work used (user, 2026-10-18: "我想记录消耗了多少"): the tokens, and what they would cost on the Claude API at
+# the list prices, USD per million tokens for base input, 5-minute cache writes, 1-hour cache writes, cache reads and
+# output (PRICES_SOURCE, read on PRICES_READ). An estimate, not what was paid: the project runs on a Claude plan.
+PRICES_SOURCE = "https://platform.claude.com/docs/en/about-claude/pricing"
+PRICES_READ = "2026-10-18"
+PRICES = {
+    "claude-opus-5-5": (4, 5, 8, 0.20, 20),
+    "claude-opus-5": (5, 6.25, 10, 0.50, 25),
+    "claude-haiku-5-5": (0.10, 0.125, 0.20, 0.01, 0.50),       # prompts up to 100,000 tokens
+    "claude-haiku-5-5 >100k": (0.50, 0.625, 1, 0.05, 2.50),    # longer prompts
+    "claude-haiku-4-5": (1, 1.25, 2, 0.10, 5),
+}
+FAST = 2        # fast mode (usage speed "fast", Claude Opus 5 / 5.5): twice the standard prices, the cache prices too
+US_ONLY = 1.1   # US-only inference (usage inference_geo "us"): 1.1 times every price
 
 
 def run(*cmd):
@@ -101,12 +120,35 @@ def github_part():
             "commits": commits, "prs": prs}
 
 
+def usage_row(u):
+    """A response's tokens: base input, 5-minute cache writes, 1-hour cache writes, cache reads, output."""
+    cc = u.get("cache_creation") or {}
+    w5, w1 = cc.get("ephemeral_5m_input_tokens"), cc.get("ephemeral_1h_input_tokens")
+    if w5 is None and w1 is None:   # a log without the split: all of it at the 5-minute rate
+        w5, w1 = u.get("cache_creation_input_tokens") or 0, 0
+    return [u.get("input_tokens") or 0, w5 or 0, w1 or 0, u.get("cache_read_input_tokens") or 0, u.get("output_tokens") or 0]
+
+
+def cost_of(model, row, u):
+    """A response's cost at the list prices, in USD, by the same five kinds as its tokens; None for a model with no
+    price in PRICES."""
+    m = re.sub(r"-\d{8}$", "", model)   # claude-haiku-4-5-20251001 -> claude-haiku-4-5
+    if m == "claude-haiku-5-5" and sum(row[:4]) > 100_000:
+        m += " >100k"
+    p = PRICES.get(m)
+    if p is None:
+        return None
+    k = (FAST if u.get("speed") == "fast" else 1) * (US_ONLY if u.get("inference_geo") == "us" else 1)
+    return [n * r / 1e6 * k for n, r in zip(row, p)]
+
+
 def my_time(login):
-    """This computer's Claude Code sessions about the project: minutes per day for login."""
+    """This computer's Claude Code sessions about the project, for login: minutes, tokens and estimated cost per day."""
     base = Path.home() / ".claude" / "projects"
     want = set(PEOPLE.get(login, {}).get("folders", []))
     folders = [d for d in base.iterdir() if d.is_dir() and (PROJECT_KEY in d.name or d.name in want)] if base.exists() else []
-    ts = []
+    day_of = lambda t: datetime.fromtimestamp(t, ZoneInfo(TZ)).strftime("%Y-%m-%d")
+    ts, seen, tokens, usd, unpriced = [], set(), {}, {}, {}
     for folder in folders:
         # subagents count too (user, 2026-10-18: "子任务的时间也算进去"): while a background agent works, the session
         # itself is quiet, and without its log that time read as a break
@@ -117,21 +159,62 @@ def my_time(login):
                         d = json.loads(line)
                     except ValueError:
                         continue
-                    if d.get("type") in ("user", "assistant") and d.get("timestamp"):
-                        ts.append(datetime.fromisoformat(d["timestamp"].replace("Z", "+00:00")).timestamp())
+                    if d.get("type") not in ("user", "assistant") or not d.get("timestamp"):
+                        continue
+                    t = datetime.fromisoformat(d["timestamp"].replace("Z", "+00:00")).timestamp()
+                    ts.append(t)
+                    msg = d.get("message") or {}
+                    u = msg.get("usage") if d["type"] == "assistant" else None
+                    if not u:
+                        continue
+                    # one response is logged as several lines (one per content block), all with its usage: once
+                    key = msg.get("id") or d.get("requestId") or d.get("uuid")
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    row, model = usage_row(u), msg.get("model") or "?"
+                    if not any(row):
+                        continue
+                    day = day_of(t)
+                    acc = tokens.setdefault(day, {}).setdefault(model, [0] * 5)
+                    for i, n in enumerate(row):
+                        acc[i] += n
+                    c = cost_of(model, row, u)
+                    if c is None:
+                        unpriced[model] = unpriced.get(model, 0) + sum(row)
+                    else:
+                        acc = usd.setdefault(day, {}).setdefault(model, [0] * 5)
+                        for i, v in enumerate(c):
+                            acc[i] += v
     if not ts:
         return None
+    for m, n in unpriced.items():
+        print(f"no price for {m} ({n:,} tokens): counted in the tokens, not in the cost; add it to PRICES", file=sys.stderr)
     ts.sort()
     days = {}
     for a, b in zip(ts, ts[1:]):
         if 0 < b - a <= GAP_MIN * 60:
-            day = datetime.fromtimestamp(a, ZoneInfo(TZ)).strftime("%Y-%m-%d")
-            days[day] = days.get(day, 0) + (b - a) / 60
+            days[day_of(a)] = days.get(day_of(a), 0) + (b - a) / 60
     return {"login": login, "name": PEOPLE.get(login, {}).get("name", login),
-            "since": datetime.fromtimestamp(ts[0], ZoneInfo(TZ)).strftime("%Y-%m-%d"),
+            "since": day_of(ts[0]),
             "days": {d: round(m) for d, m in sorted(days.items())},
+            "tokens": {d: dict(sorted(tokens[d].items())) for d in sorted(tokens)},
+            "usd": {d: {m: [round(v, 4) for v in r] for m, r in sorted(usd[d].items())} for d in sorted(usd)},
             "sessions": len({f.name for folder in folders for f in folder.glob("*.jsonl")}),
             "updated": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+
+
+def keep_history(old, new):
+    """The record never loses a day (user, 2026-10-18): Claude Code deletes session logs it has not used for a while,
+    and a day whose logs are gone would drop out of the recount; so each day keeps the larger of the two values."""
+    if not old:
+        return new
+    days = lambda a, b: {k: max(a.get(k, 0), b.get(k, 0)) for k in sorted(set(a) | set(b))}
+    rows = lambda a, b: {d: {m: [max(x, y) for x, y in zip(a.get(d, {}).get(m, [0] * 5), b.get(d, {}).get(m, [0] * 5))]
+                             for m in sorted(set(a.get(d, {})) | set(b.get(d, {})))} for d in sorted(set(a) | set(b))}
+    return dict(new, since=min(old.get("since", new["since"]), new["since"]),
+                sessions=max(old.get("sessions", 0), new["sessions"]), days=days(old.get("days", {}), new["days"]),
+                tokens=rows(old.get("tokens", {}), new["tokens"]), usd=rows(old.get("usd", {}), new["usd"]))
 
 
 def main():
@@ -140,9 +223,13 @@ def main():
     old = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
     out = {"_": "The working record on the Methods page (docs/worklog.py; the rule: docs/WORKFLOW.md). Per person, minutes of "
                 "work with Claude per day from the timestamps of their Claude Code sessions about this project, counted from "
-                f"their first one (two messages less than {GAP_MIN} min apart count the time between them); commits and pull "
+                f"their first one (two messages less than {GAP_MIN} min apart count the time between them); tokens per day "
+                "and model as [base input, 5-minute cache writes, 1-hour cache writes, cache reads, output] and, in the "
+                "same shape, their estimated cost in USD at the list prices (usd; not what was paid); commits and pull "
                 "requests from git and GitHub.",
-           "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "tz": TZ, "gap_min": GAP_MIN}
+           "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "tz": TZ, "gap_min": GAP_MIN,
+           "prices": {"source": PRICES_SOURCE, "read": PRICES_READ,
+                      "per_mtok": {m: list(p) for m, p in PRICES.items()}}}
     try:
         out.update(github_part())
     except (subprocess.CalledProcessError, FileNotFoundError, ValueError) as e:
@@ -153,7 +240,7 @@ def main():
         me = a[a.index("--me") + 1] if "--me" in a else run("gh", "api", "user", "-q", ".login").strip()
         mine = my_time(me)
         if mine:
-            people[me] = mine
+            people[me] = mine if "--recount" in a else keep_history(people.get(me), mine)
         else:
             print(f"no Claude Code sessions of this project found for {me} on this computer", file=sys.stderr)
     out["people"] = sorted(people.values(), key=lambda p: p["since"])
@@ -166,7 +253,10 @@ def main():
         return
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"{len(out.get('commits', []))} commits, {len(out.get('prs', []))} pull requests; "
-          + "; ".join(f"{p['name']} {sum(p['days'].values()) / 60:.1f} h since {p['since']}" for p in out["people"])
+          + "; ".join(f"{p['name']} {sum(p['days'].values()) / 60:.1f} h, "
+                      f"{sum(sum(r) for d in p.get('tokens', {}).values() for r in d.values()) / 1e6:,.0f} M tokens, "
+                      f"about ${sum(sum(r) for d in p.get('usd', {}).values() for r in d.values()):,.0f} at list prices, "
+                      f"since {p['since']}" for p in out["people"])
           + f" -> {OUT.relative_to(ROOT)}")
 
 
