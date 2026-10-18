@@ -7,8 +7,9 @@ time from their own computer, where their session logs are, by running this scri
 
 Two parts:
   people  per person: minutes of work with Claude per day, from the timestamps of their Claude Code session logs of
-          this project (~/.claude/projects/<folder>/*.jsonl; nothing of what was said is read). All their sessions on
-          one line: two messages less than GAP_MIN minutes apart count the time between them (sessions open at the same
+          this project (~/.claude/projects/<folder>/*.jsonl, and the logs of the subagents those sessions start,
+          <folder>/<session>/subagents/*.jsonl; nothing of what was said is read). All their sessions on one line: two
+          messages less than GAP_MIN minutes apart count the time between them (sessions and subagents open at the same
           time count once), a longer gap is a break. A run updates only the person running it; the others are kept.
   github  every commit (merges left out) and pull request of this repository and of the archived Blender one, with
           who made it, from git and the GitHub CLI (gh). The Pages workflow reruns this part on every deploy.
@@ -107,7 +108,9 @@ def my_time(login):
     folders = [d for d in base.iterdir() if d.is_dir() and (PROJECT_KEY in d.name or d.name in want)] if base.exists() else []
     ts = []
     for folder in folders:
-        for f in folder.glob("*.jsonl"):
+        # subagents count too (user, 2026-10-18: "子任务的时间也算进去"): while a background agent works, the session
+        # itself is quiet, and without its log that time read as a break
+        for f in [*folder.glob("*.jsonl"), *folder.glob("*/subagents/*.jsonl")]:
             with open(f, encoding="utf-8", errors="ignore") as fh:
                 for line in fh:
                     try:

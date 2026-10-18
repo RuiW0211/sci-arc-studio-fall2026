@@ -610,8 +610,9 @@ function renderRecord(W) {
     computer, where their sessions are, by running <code>python docs/worklog.py</code> before opening a pull request
     (docs/WORKFLOW.md); the commits and pull requests are read again from GitHub on every deploy of this site.</p>
     <p><b>How the time is counted</b>: the timestamps of the messages in the person's Claude Code sessions about this
-    project, all of them on one line; two messages less than ${W.gap_min ?? 10} minutes apart count the time between
-    them, a longer gap is a break, and sessions open at the same time count once. Only the timestamps are read, nothing
+    project, all of them on one line, with the subagents those sessions start (work Claude does in the background, such
+    as a long search); two messages less than ${W.gap_min ?? 10} minutes apart count the time between them, a longer
+    gap is a break, and sessions or subagents open at the same time count once. Only the timestamps are read, nothing
     of what was said. It is the time spent working with Claude, not all the time spent on the project: modelling in
     Houdini, reading and site visits without a conversation open are not in it. Days are Los Angeles days.
     <b>Commits</b>: every commit of this repository and of the earlier Blender one except merge commits (a pull request
