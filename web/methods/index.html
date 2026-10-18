@@ -255,8 +255,9 @@
     <h2 class="label"><span class="n">6</span>Working record</h2>
     <p>The project is made in a GitHub repository, one topic at a time: a branch, a pull request, merged by the owner;
       most of the work is done together with Claude (Claude Code), in conversation. The record keeps, for each person,
-      how long they worked with Claude each day, counted from their first session about the project, and what came of
-      each day: the pull requests opened and merged. <span class="note">(docs/worklog.py, web/data/worklog.json)</span></p>
+      how long they worked with Claude each day, counted from their first session about the project, the tokens that
+      work used and what they would cost on the API, and what came of each day: the pull requests opened and merged.
+      <span class="note">(docs/worklog.py, web/data/worklog.json)</span></p>
     <p class="note" id="recWho"></p>
     <h3 class="entry-title">6.1 Hours per day</h3>
     <figure class="rec" id="rec" aria-label="Hours of work with Claude per person and pull requests, per day"><p class="note">Loading…</p></figure>
@@ -266,6 +267,8 @@
     <div class="wrap" id="prTable"><p class="note">Loading…</p></div>
     <h3 class="entry-title">6.4 The rule</h3>
     <div id="recHow"><p>Loading…</p></div>
+    <h3 class="entry-title">6.5 Tokens</h3>
+    <div id="recTok"><p class="note">Loading…</p></div>
   </section>
 
   <section id="refs">
@@ -519,6 +522,15 @@ function renderRecord(W) {
   const ix = new Map(days.map((d, i) => [d, i]));
   const mins = people.map((p) => days.map((d) => (d >= p.since ? p.days?.[d] ?? 0 : 0)));
   const dayMin = days.map((_, i) => mins.reduce((a, m) => a + m[i], 0));
+  // what the work used (user, 2026-10-18: "我想记录消耗了多少"): the tokens per person and day, and their estimated cost
+  // at the API list prices; both are kept as {model: [base input, 5-min writes, 1-hour writes, cache reads, output]}
+  const sum5 = (o) => Object.values(o || {}).reduce((a, r) => a + r.reduce((x, y) => x + y, 0), 0);
+  const toks = people.map((p) => days.map((d) => sum5(p.tokens?.[d]))), usds = people.map((p) => days.map((d) => sum5(p.usd?.[d])));
+  const tk = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(1)} billion` : n >= 1e6 ? `${Math.round(n / 1e6)} million` : fmt(n));
+  const tkS = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(1)} B` : n >= 1e6 ? `${Math.round(n / 1e6)} M` : `${Math.round(n / 1e3)} k`);
+  const usd = (v) => (v >= 1 ? `$${fmt(v)}` : v > 0 ? "under $1" : "$0");
+  const used = (t, c) => (t ? ` · ${tkS(t)} tokens · ${usd(c)}` : "");
+  const allTok = toks.flat().reduce((a, b) => a + b, 0), allUsd = usds.flat().reduce((a, b) => a + b, 0);
   const commits = days.map(() => []); for (const c of W.commits) { const i = ix.get(dayOf(c.t)); if (i !== undefined) commits[i].push(c); }
   const prs = W.prs || [];
   const mergedOn = days.map(() => []), openedOn = days.map(() => []);
@@ -527,10 +539,12 @@ function renderRecord(W) {
 
   // under the title: each person's time since their first session; the people with commits but no recorded time
   const dayN = (since) => Math.round((Date.parse(today) - Date.parse(since)) / 864e5) + 1;
-  const lines = people.map((p) => `${esc(p.name)}: day ${dayN(p.since)} since the first session (${nice(p.since, true)}) · about ${Math.round(Object.entries(p.days || {}).filter(([d]) => d >= p.since).reduce((a, [, m]) => a + m, 0) / 60)} hours of work with Claude`);
+  const lines = people.map((p, j) => { const t = toks[j].reduce((a, b) => a + b, 0), c = usds[j].reduce((a, b) => a + b, 0);
+    return `${esc(p.name)}: day ${dayN(p.since)} since the first session (${nice(p.since, true)}) · about ${Math.round(Object.entries(p.days || {}).filter(([d]) => d >= p.since).reduce((a, [, m]) => a + m, 0) / 60)} hours of work with Claude`
+      + (t ? ` · ${tk(t)} tokens, about ${usd(c)} at API list prices` : ""); });
   const unrecorded = [...new Set([...W.commits.map((c) => c.by), ...prs.map((p) => p.by)])].filter((l) => l && !people.some((p) => p.login === l));
   const totalH = Math.round(dayMin.reduce((a, b) => a + b, 0) / 60);
-  document.getElementById("worked").innerHTML = `<a href="#record">Working record</a>: day ${days.length} · about ${totalH} hours of work with Claude${people.length === 1 ? ` (${esc(people[0].name)})` : ""} · ${fmt(W.commits.length)} commits · ${prs.length} pull requests`;
+  document.getElementById("worked").innerHTML = `<a href="#record">Working record</a>: day ${days.length} · about ${totalH} hours of work with Claude${people.length === 1 ? ` (${esc(people[0].name)})` : ""}${allTok ? ` · ${tk(allTok)} tokens (about ${usd(allUsd)})` : ""} · ${fmt(W.commits.length)} commits · ${prs.length} pull requests`;
   document.getElementById("recWho").innerHTML = lines.join("<br>") + (unrecorded.length ? `<br>${unrecorded.map((l) => esc(nameOf(l))).join(", ")}: time not recorded yet` : "");
 
   // the chart (user, 2026-10-16: simpler; the pull requests are in the daily log, not under the bars): one bar a day,
@@ -561,7 +575,7 @@ function renderRecord(W) {
   const show = (i) => {
     if (on) on.classList.remove("on");
     on = svg.querySelector(`.band[data-i="${i}"]`); on.classList.add("on");
-    const who = people.map((p, j) => (mins[j][i] ? `${esc(p.name)} ${hrs(mins[j][i])}` : "")).filter(Boolean).join(" · ") || "no time recorded";
+    const who = people.map((p, j) => (mins[j][i] || toks[j][i] ? `${esc(p.name)} ${hrs(mins[j][i])}${used(toks[j][i], usds[j][i])}` : "")).filter(Boolean).join("<br>") || "no time recorded";
     tip.innerHTML = `<div class="h">${nice(days[i])}</div><div class="m">${who}</div>`;
     tip.classList.add("on");
     const fr = fig.getBoundingClientRect(), br = on.getBoundingClientRect(), tw = tip.offsetWidth;
@@ -590,7 +604,7 @@ function renderRecord(W) {
   document.getElementById("dayList").innerHTML = groups.reverse().filter((G) => G.ix.some((i) => dayMin[i] || commits[i].length || mergedOn[i].length || openedOn[i].length)).map((G) => {
     const a = days[G.ix[0]], b = days[G.ix[G.ix.length - 1]];
     const label = G.week ? `Week of ${nice(monday(a))}${a.slice(0, 7) === b.slice(0, 7) && a !== b ? `–${+b.slice(8)}` : a !== b ? `–${nice(b)}` : ""}, ${a.slice(0, 4)}` : nice(a, true);
-    const who = people.map((p, j) => { const m = sumOf(G.ix, (i) => mins[j][i]); return m >= 6 ? `<span class="who"><i class="sw" style="background: var(--p${j + 1}, var(--muted))"></i>${esc(p.name)} ${hrs(m)}${G.week ? `, ${G.ix.filter((i) => mins[j][i] >= 6).length} days` : ""}</span>` : ""; }).join("");
+    const who = people.map((p, j) => { const m = sumOf(G.ix, (i) => mins[j][i]); return m >= 6 ? `<span class="who"><i class="sw" style="background: var(--p${j + 1}, var(--muted))"></i>${esc(p.name)} ${hrs(m)}${G.week ? `, ${G.ix.filter((i) => mins[j][i] >= 6).length} days` : ""}${used(sumOf(G.ix, (i) => toks[j][i]), sumOf(G.ix, (i) => usds[j][i]))}</span>` : ""; }).join("");
     const res = G.ix.flatMap((i) => [...mergedOn[i].map((p) => `Merged ${prLink(p)} ${esc(p.title)}`), ...openedOn[i].map((p) => `Opened ${prLink(p)} ${esc(p.title)}`)]);
     const cs = G.ix.flatMap((i) => commits[i]);
     if (!who && !res.length && !cs.length) return "";
@@ -615,8 +629,33 @@ function renderRecord(W) {
     gap is a break, and sessions or subagents open at the same time count once. Only the timestamps are read, nothing
     of what was said. It is the time spent working with Claude, not all the time spent on the project: modelling in
     Houdini, reading and site visits without a conversation open are not in it. Days are Los Angeles days.
-    <b>Commits</b>: every commit of this repository and of the earlier Blender one except merge commits (a pull request
-    is shown by its merge). <span class="note">(updated ${W.generated ? nice(dayOf(W.generated), true) : ""})</span></p>`;
+    <b>Tokens</b>: from the same logs, the usage each response reports, counted once per response, by model and kind
+    (6.5). <b>Commits</b>: every commit of this repository and of the earlier Blender one except merge commits (a pull
+    request is shown by its merge).</p>
+    <p><b>Nothing recorded is lost.</b> Claude Code deletes session logs it has not used for a while, so a run keeps, for
+    each day, the larger of its recorded value and what the logs still give; only a change of the rule recounts
+    everything (<code>--recount</code>). <span class="note">(updated ${W.generated ? nice(dayOf(W.generated), true) : ""})</span></p>`;
+  // 6.5 the tokens, by kind and by model (everyone together), and their estimated cost
+  const KIND = ["Base input", "Cache writes, 5 minutes", "Cache writes, 1 hour", "Cache reads", "Output, written by Claude"];
+  const kT = [0, 0, 0, 0, 0], kC = [0, 0, 0, 0, 0], byM = {};
+  for (const p of people) for (const [d, ms] of Object.entries(p.tokens || {})) for (const [m, r] of Object.entries(ms)) {
+    const c = p.usd?.[d]?.[m] || [0, 0, 0, 0, 0], b = (byM[m.replace(/-\d{8}$/, "")] ??= { t: 0, c: 0 });
+    r.forEach((n, k) => { kT[k] += n; kC[k] += c[k]; b.t += n; b.c += c[k]; });
+  }
+  const T = kT.reduce((a, b) => a + b, 0), C = kC.reduce((a, b) => a + b, 0);
+  const pct = (x, of) => (!of ? "" : x && x / of < 0.001 ? "<0.1%" : `${(100 * x / of).toFixed(x / of < 0.01 ? 1 : 0)}%`);
+  const modelName = (id) => { const m = id.match(/^claude-([a-z]+)-(\d+)(?:-(\d+))?$/); return m ? `Claude ${m[1][0].toUpperCase()}${m[1].slice(1)} ${m[2]}${m[3] ? "." + m[3] : ""}` : id; };
+  const row = (name, t, c, b) => `<tr><td>${b ? `<b>${name}</b>` : name}</td><td class="r">${tkS(t)}</td><td class="r">${pct(t, T)}</td><td class="r">${usd(c)}</td><td class="r">${pct(c, C)}</td></tr>`;
+  const head = (first) => `<tr><th>${first}</th><th class="r">Tokens</th><th class="r">Share</th><th class="r">Est. cost</th><th class="r">Share</th></tr>`;
+  const P = W.prices || {};
+  document.getElementById("recTok").innerHTML = !T ? `<p class="note">No tokens recorded yet.</p>` : `<p>Every response
+    Claude gives reads the whole conversation so far again, most of it from the prompt cache; so cache reads are almost
+    all of the tokens, and a smaller share of the cost. The cost is what the same tokens would cost on the Claude API at
+    the list prices (<a href="${esc(P.source)}">pricing</a>, read ${P.read ? nice(P.read, true) : ""}), not what was
+    paid: the project runs on a Claude plan. Searches billed per search, and work in Claude on the web or on another
+    computer, are not counted.</p>
+    <div class="wrap"><table>${head("Kind")}${KIND.map((k, i) => row(k, kT[i], kC[i])).join("")}${row("All", T, C, true)}</table></div>
+    <div class="wrap"><table>${head("Model")}${Object.entries(byM).sort((a, b) => b[1].t - a[1].t).map(([m, v]) => row(modelName(m), v.t, v.c)).join("")}${row("All", T, C, true)}</table></div>`;
 }
 
 // the contents: every section and subsection, the one being read marked
