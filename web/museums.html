@@ -1,266 +1,170 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LA Museum Economy</title>
+<title>Museum Economy</title>
 <style>
-  :root { --bg: #f4f4f2; --fg: #111; --muted: #777; --panel: rgba(255,255,255,.9); --line: #ddd; --accent: #111;
-    --s0:#2a78d6; --s1:#eb6834; --s2:#1baf7a; --s3:#eda100; --s4:#e87ba4; --s5:#008300; --s6:#6250d6; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-    --bg: #0d0d0d; --fg: #eee; --muted: #999; --panel: rgba(20,20,20,.86); --line: #333; --accent: #eee;
-    --s0:#3987e5; --s1:#d95926; --s2:#199e70; --s3:#c98500; --s4:#d55181; --s5:#008300; --s6:#9085e9; } }
-  :root[data-theme="dark"] {
-    --bg: #0d0d0d; --fg: #eee; --muted: #999; --panel: rgba(20,20,20,.86); --line: #333; --accent: #eee;
-    --s0:#3987e5; --s1:#d95926; --s2:#199e70; --s3:#c98500; --s4:#d55181; --s5:#008300; --s6:#9085e9; }
-
-  html, body { margin: 0; background: var(--bg); color: var(--fg);
+  /* committed to one dark world, like the site model it opens from */
+  :root { --bg:#0d0d0d; --fg:#eee; --muted:#8e8e8e; --faint:#5a5a5a; --line:#2a2a2a; --panel:rgba(20,20,20,.9);
+    /* one neon-blue family, seven steps. Shades are assigned so that wedges which
+       touch sit far apart on the ramp (worst adjacent dE 25.3); the ramp itself
+       steps by at least 0.062 OKLCH L and clears 2:1 on this ground. */
+    --s0:#10498C; --s1:#1E96F5; --s2:#B5E4FF; --s3:#45B3FF; --s4:#0F5BA8; --s5:#7FCDFF; --s6:#1479D6;
+    --t-in:.3s; --t-out:.5s; }
+  * { box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; background: var(--bg); color-scheme: dark; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
     font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
 
-  .head { display: flex; align-items: baseline; gap: 10px; }
-  h1 { font-size: 15px; margin: 0; font-weight: 650; }
-  a.back { text-decoration: none; color: var(--muted); font-size: 15px; line-height: 1; padding: 0 2px; }
+  .pane { min-height: 100svh; scroll-snap-align: start; display: flex; flex-direction: column;
+    padding: 0 16px; }
+  a.back { position: fixed; top: 16px; left: 16px; z-index: 5; text-decoration: none; color: var(--muted);
+    font-size: 15px; line-height: 1; padding: 4px 6px; }
   a.back:hover, a.back:focus-visible { color: var(--fg); }
-  .sub { color: var(--muted); margin: 2px 0 0; }
-  p.lede { max-width: 62ch; margin: 18px 0 0; }
-  p.lede b { font-weight: 650; }
-  .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; margin: 28px 0 8px; }
 
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 4px; }
-  .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  .note { color: var(--muted); font-size: 11px; margin: 8px 0 0; max-width: 72ch; }
+  /* 1 — the opening */
+  #intro { justify-content: center; align-items: flex-start; max-width: 720px; margin: 0 auto; }
+  h1 { font-size: clamp(30px, 6vw, 56px); font-weight: 600; letter-spacing: -.02em; margin: 0; }
+  #intro p { color: var(--muted); max-width: 54ch; margin: 22px 0 0; font-size: 14px; }
+  #intro p.dot { margin-top: 14px; }
+  #intro p b { color: var(--fg); font-weight: 500; }
+  .cue { color: var(--faint); font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    margin-top: 40px; animation: bob 2.6s ease-in-out infinite;
+    background: none; border: 1px solid var(--line); border-radius: 2px; padding: 8px 16px;
+    font-family: inherit; cursor: pointer; align-self: flex-start; }
+  .cue:hover, .cue:focus-visible { color: var(--fg); border-color: var(--muted); }
+  @keyframes bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(4px) } }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px 12px; margin-top: 14px; }
-  .card { text-align: center; }
-  .card svg { width: 100%; height: auto; display: block; overflow: visible; }
-  .card h2 { font-size: 13px; font-weight: 650; margin: 2px 0 0; }
-  .card .tot { font-variant-numeric: tabular-nums; }
-  .card .per { color: var(--muted); font-size: 11px; }
-  .lbl text { fill: var(--fg); stroke: var(--bg); stroke-width: 3; paint-order: stroke;
-    font-size: 11px; font-weight: 600; text-anchor: middle; dominant-baseline: middle;
-    pointer-events: none; }
+  /* 2 — the charts */
+  #pies { justify-content: center; }
+  .stage { position: relative; width: 100%; max-width: 1180px; margin: 0 auto;
+    height: min(86svh, 820px); will-change: transform, opacity; }
+  #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #caps { position: absolute; inset: 0; pointer-events: none; }
+  .cap { position: absolute; transform: translate(-50%, 0); text-align: center; width: 230px; }
+  .cap .nm { font-size: 13px; font-weight: 600; }
+  .cap .ct { color: var(--faint); font-size: 11px; }
+  .cap .tt { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums;
+    opacity: 0; transition: opacity var(--t-in) ease; }
+  .cap .st { font-size: 11px; font-variant-numeric: tabular-nums; min-height: 1.4em;
+    opacity: 0; transition: opacity var(--t-in) ease; }
+  .cap.on .tt, .cap.on .st { opacity: 1; }
 
-  table { border-collapse: collapse; width: 100%; margin-top: 10px; font-variant-numeric: tabular-nums; }
-  caption { text-align: left; color: var(--muted); font-size: 11px; padding-bottom: 6px; }
-  th, td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
-  th:first-child, td:first-child { text-align: left; }
-  thead th { color: var(--muted); font-weight: 500; font-size: 11px; }
-  tbody tr:hover { background: var(--panel); }
-  td.tot { font-weight: 650; }
+  /* 3 — MOCA on its own */
+  #mocaPane { justify-content: center; }
+  .mocaWrap { width: 100%; max-width: 1180px; margin: 0 auto; display: grid;
+    grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; }
+  .mocaStage { position: relative; height: min(70svh, 620px); }
+  #mcv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .mocaCap { position: absolute; left: 0; right: 0; bottom: 4px; text-align: center; pointer-events: none; }
+  .mocaCap .nm { font-size: 13px; font-weight: 600; }
+  .mocaCap .ct { color: var(--faint); font-size: 11px; }
+  .mocaCap .tt { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .mocaInfo { max-height: min(70svh, 620px); overflow-y: auto; padding-right: 6px; }
+  .mocaInfo .prompt { color: var(--faint); font-size: 12px; }
+  .mocaInfo h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .mocaInfo .amt { font-family: inherit; font-variant-numeric: tabular-nums; color: var(--muted);
+    font-size: 12px; margin: 2px 0 14px; }
+  .mocaInfo p { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 0 0 12px; max-width: 54ch; }
+  .mocaInfo p b, .mocaInfo li b { color: var(--fg); font-weight: 500; }
+  .mocaInfo h3 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint);
+    margin: 18px 0 8px; font-weight: 600; }
+  .mocaInfo ul { margin: 0 0 12px; padding-left: 0; list-style: none; max-width: 54ch; }
+  .mocaInfo li { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 0 0 10px;
+    padding-left: 14px; position: relative; }
+  .mocaInfo li::before { content: "\2014"; position: absolute; left: 0; color: var(--faint); }
+  @media (max-width: 760px) {
+    .mocaWrap { grid-template-columns: 1fr; gap: 16px; }
+    .mocaStage { height: 46svh; }
+    .mocaInfo { max-height: none; }
+  }
+
+  /* 4 — the figures */
+  #tablePane { justify-content: center; padding-top: 48px; padding-bottom: 48px; }
+  .tw { width: 100%; max-width: 1060px; margin: 0 auto; }
+  .eyebrow { color: var(--faint); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 14px; }
   .scroll { overflow-x: auto; }
-  th i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 12px; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  thead th { color: var(--muted); font-weight: 500; font-size: 11px; }
+  th i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  td.tot { font-weight: 600; }
+  .tw .note { color: var(--faint); font-size: 11px; margin-top: 14px; max-width: 76ch; }
 
-  details { margin-top: 26px; }
-  summary { cursor: pointer; color: var(--muted); font-size: 11px; }
-  details p, details li { max-width: 72ch; }
-  details ul { padding-left: 16px; }
-  a { color: inherit; }
-  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  /* drill-down */
+  #drill { position: fixed; inset: 0; z-index: 10; background: rgba(8,8,8,.94);
+    backdrop-filter: blur(7px); opacity: 0; transition: opacity .9s ease; }
+  #drill.show { opacity: 1; }
+  #drill[hidden] { display: none; }
+  #dcv { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #dinfo { position: absolute; left: 50%; transform: translateX(-50%); bottom: 7vh; text-align: center;
+    width: min(560px, 88vw); pointer-events: none; }
+  #dinfo .dh { font-size: 13px; font-weight: 600; }
+  #dinfo .dsub { color: var(--faint); font-size: 11px; margin-top: 2px; }
+  #dinfo .dval { font-size: 12px; font-variant-numeric: tabular-nums; margin-top: 10px; min-height: 1.5em; }
+  #dinfo .ddet { color: var(--muted); font-size: 11px; margin-top: 4px; min-height: 2.6em; line-height: 1.5; }
+  #dclose { position: absolute; top: 16px; right: 18px; color: var(--muted); font-size: 12px; }
+
+  @media (prefers-reduced-motion: reduce) { .cue { animation: none } html { scroll-behavior: auto } }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="head">
-    <a class="back" href="viewer.html" title="Back to the site model">&#8592;</a>
-    <h1>LA Museum Economy</h1>
+<a class="back" href="viewer.html" title="Back to the site model">&#8592;</a>
+
+<section class="pane" id="intro">
+  <h1>Museum Economy</h1>
+  <p>How six museums actually make their money. Figures are read from each museum&rsquo;s own accounts &mdash;
+  audited financial statements where they publish them, otherwise their IRS returns, line by line &mdash; and from the
+  most recent complete year each one reports.</p>
+  <p class="dot"><b>Each dot corresponds to $100,000.00.</b></p>
+  <button class="cue" id="toPies" type="button">Scroll</button>
+</section>
+
+<section class="pane" id="pies">
+  <div class="stage">
+    <canvas id="cv" role="img" aria-label="Revenue of six museums, drawn as proportional discs. The table further down carries the same figures."></canvas>
+    <div id="caps"></div>
   </div>
-  <p class="sub">Angel&rsquo;s Knoll / Y-1 &middot; MOCA and the Broad are the site&rsquo;s neighbours on Grand Avenue</p>
+</section>
 
-  <p class="lede">None of these museums lives on ticket sales. <b>MoMA</b> is the most self-funded and even there
-  admissions are about 15% of operating revenue, while its shops and publishing bring in twice as much. The LA
-  museums run on donors, plus county money at LACMA. The <b>Petersen</b> is the exception: admissions are its
-  single largest stream.</p>
+<section class="pane" id="mocaPane">
+  <div class="mocaWrap">
+    <div class="mocaStage">
+      <canvas id="mcv" role="img" aria-label="MOCA revenue by stream. Select a stream to read its detail."></canvas>
+      <div class="mocaCap">
+        <div class="nm">MOCA</div>
+        <div class="ct">Los Angeles &middot; the site&rsquo;s neighbour on Grand Avenue</div>
+        <div class="tt" id="mocaTot"></div>
+      </div>
+    </div>
+    <div class="mocaInfo" id="mocaInfo">
+      <p class="prompt">Select a stream.</p>
+    </div>
+  </div>
+</section>
 
-  <div class="label">Revenue stream</div>
-  <div class="legend" id="legend"></div>
-  <p class="note">One dot = $100,000. Each pie&rsquo;s <b>area</b> is proportional to its total revenue, because the dots
-  are the same size and packed at the same density throughout &mdash; so the discs are directly comparable.</p>
+<section class="pane" id="tablePane">
+  <div class="tw">
+    <p class="eyebrow">The same figures, $ millions</p>
+    <div class="scroll"><table id="tbl"></table></div>
+    <p class="note" id="tnote"></p>
+  </div>
+</section>
 
-  <div class="grid" id="grid"></div>
-
-  <div class="label">The same figures</div>
-  <div class="scroll"><table id="tbl"></table></div>
-
-  <details>
-    <summary>Method, basis and caveats</summary>
-    <p><b>Not one fiscal year.</b> These six do not share one. MoMA, LACMA, FAMSF and MOCA report years ending
-    30 June 2025; the Broad and the Petersen file on the calendar year and their latest complete year is 2024.
-    The two windows overlap from July to December 2024. Each pie is labelled with its own period.</p>
-    <p><b>Positive slices only.</b> Pies show the streams that brought money in. Negative lines are left out:
-    LACMA &minus;$2.0M interest-rate swap, MOCA &minus;$1.22M net fundraising events, the Broad &minus;$1.88M on asset
-    sales, the Petersen &minus;$0.40M events and &minus;$0.15M asset sales. Reported totals are therefore lower than the
-    sum of the slices, and both numbers are in the table.</p>
-    <p><b>Where the numbers come from.</b> MoMA, LACMA and FAMSF are audited statements and the FAMSF annual
-    report. MOCA, the Broad and the Petersen are read line by line from IRS filings &mdash; Form 990 Part VIII, and
-    Form 990-PF Parts I and XV-A for the Broad.</p>
-    <ul>
-      <li><b>The Broad</b> files as a private operating foundation, so its shape is unusual. Its largest line is
-      <b>$11.63M of GAAP discount on pledges</b> &mdash; an accounting entry, not cash from operating the museum. It sits
-      inside &ldquo;Other&rdquo; here. Its ticketed exhibitions ($1.02M) and shop ($1.55M gross profit) are reported, despite
-      the 990-PF not itemising them the way a 990 does.</li>
-      <li><b>MOCA</b> has had free general admission since January 2020; the $0.83M of admissions is ticketed
-      special exhibitions and programmes. Membership ($0.91M) and government grants ($0.15M) are broken out on
-      line 1 of its 990.</li>
-      <li><b>LACMA&rsquo;s</b> &ldquo;Other&rdquo; is large and mostly unexplained. $40.9M of it sits in &ldquo;all other program service
-      revenue&rdquo; with no itemisation on the 990 or in Schedule O. Its program service revenue rose from $45.3M to
-      $87.2M year over year, which is consistent with a one-off insurance settlement, but the filing does not say so.</li>
-      <li><b>MoMA&rsquo;s</b> shops line is retail and publishing, not dining. Gross inventory sales were $83.3M; the
-      restaurants line is $1.37M, filed under the <i>food service contractors</i> business code, and Schedule R lists
-      a retail entity but no restaurant entity.</li>
-      <li><b>Auxiliary</b> folds in parking where a museum reports it &mdash; $2.90M at the Petersen, $2.41M at the Broad.</li>
-    </ul>
-    <p class="note">Colours are the data-viz reference categorical palette. The wedge order around each pie is not
-    arbitrary: it was chosen by running every circular arrangement through the colour-vision validator and keeping
-    one that clears the separation floors on all seven seams in both light and dark mode (worst CVD &Delta;E 9.2,
-    worst normal-vision &Delta;E 19.3). Three of the light-mode hues sit under 3:1 contrast, so the table above carries
-    the same figures.</p>
-  </details>
-
+<div id="drill" hidden>
+  <canvas id="dcv"></canvas>
+  <div id="dclose">click anywhere to go back</div>
+  <div id="dinfo">
+    <div class="dh" id="dh"></div>
+    <div class="dsub" id="dsub"></div>
+    <div class="dval" id="dval"></div>
+    <div class="ddet" id="ddet"></div>
+  </div>
 </div>
 
-<script>
-/* ---------------------------------------------------------------------------
-   Revenue by stream, $ millions. Streams are in fixed palette-slot order and
-   never re-ordered; only the angular placement around the pie differs (see
-   WEDGE_ORDER), which was validated for colour-vision separation on all seams.
-   Sources: audited statements (MoMA, LACMA, FAMSF) and IRS filings read line by
-   line (MOCA + Petersen Form 990 Part VIII; the Broad Form 990-PF Parts I, XV-A).
---------------------------------------------------------------------------- */
-const STREAMS = [
-  { key:"gifts",   name:"Gifts and grants",          short:"Gifts",   v:"--s0" },
-  { key:"govt",    name:"Government",                short:"Gov\u2019t",  v:"--s1" },
-  { key:"invest",  name:"Investment and endowment",  short:"Invest",  v:"--s2" },
-  { key:"adm",     name:"Admissions",                short:"Tickets", v:"--s3" },
-  { key:"memb",    name:"Membership",                short:"Members", v:"--s4" },
-  { key:"shops",   name:"Shops, food and auxiliary", short:"Shops",   v:"--s5" },
-  { key:"other",   name:"Other",                     short:"Other",   v:"--s6" },
-];
-/* validated circular order: gifts > govt > investment > other > shops > membership > admissions */
-const WEDGE_ORDER = [0, 1, 2, 6, 5, 4, 3];
-
-const MUSEUMS = [
-  { name:"MoMA",     period:"FY2025 (Jun)", basis:"Audited, operating revenue",
-    reported:282.8, v:{gifts:66.9,  govt:0,    invest:64.1, adm:42.4,  memb:14.7,  shops:86.5,  other:8.2} },
-  { name:"LACMA",    period:"FY2025 (Jun)", basis:"Audited, revenue and support",
-    reported:266.5, v:{gifts:121.2, govt:36.7, invest:52.4, adm:4.3,   memb:3.4,   shops:1.5,   other:49.0} },
-  { name:"de Young + Legion", period:"FY2025 (Jun)", basis:"FAMSF annual report",
-    reported:84.1,  v:{gifts:33.8,  govt:21.4, invest:4.8,  adm:6.9,   memb:11.7,  shops:3.1,   other:2.4} },
-  { name:"MOCA",     period:"FY2025 (Jun)", basis:"Form 990 Part VIII",
-    reported:29.6,  v:{gifts:21.107,govt:0.150,invest:1.735,adm:0.834, memb:0.911, shops:0.448, other:5.594} },
-  { name:"The Broad",period:"CY2024",       basis:"Form 990-PF Parts I, XV-A",
-    reported:27.8,  v:{gifts:10.741,govt:0,    invest:1.242,adm:1.025, memb:0,     shops:3.952, other:12.725} },
-  { name:"Petersen", period:"CY2024",       basis:"Form 990 Part VIII",
-    reported:28.0,  v:{gifts:8.312, govt:0,    invest:1.638,adm:9.782, memb:2.202, shops:4.388, other:2.218} },
-];
-
-const PER_DOT   = 0.1;    /* $ millions represented by one dot = $100,000 */
-const DOT_AREA  = 24.5;   /* px^2 of disc per dot -> constant density -> area ∝ revenue */
-const DOT_R     = 1.75;
-const PAD       = 6;      /* viewBox margin in user units */
-const LABEL_MIN = 0.08;   /* wedges at or above this share get a direct label */
-let   D_MAX     = 0;      /* widest disc, filled in below; sets the shared scale */
-
-/* integer dots per stream, largest-remainder so the parts sum to the whole */
-function allocate(vals, total) {
-  const exact = vals.map(v => v / PER_DOT);
-  const base  = exact.map(Math.floor);
-  let left = Math.round(total / PER_DOT) - base.reduce((a, b) => a + b, 0);
-  const rank = exact.map((e, i) => [e - base[i], i]).sort((a, b) => b[0] - a[0]);
-  for (let k = 0; k < rank.length && left > 0; k++) { base[rank[k][1]]++; left--; }
-  return base;
-}
-
-/* deterministic jitter so the layout is identical on every load */
-function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
-
-function pie(m) {
-  const vals  = STREAMS.map(s => m.v[s.key] || 0);
-  const sum   = vals.reduce((a, b) => a + b, 0);
-  const dots  = allocate(vals, sum);
-  const N     = dots.reduce((a, b) => a + b, 0);
-  const R     = Math.sqrt(DOT_AREA * N / Math.PI);
-  const D     = 2 * R + 2 * PAD;
-  const rand  = rng(m.name.length * 7919 + N);
-
-  /* Vogel spiral fills the disc evenly; sorting by angle turns contiguous runs
-     into wedges with soft edges, which is the "loosely organised" look. */
-  const GA = Math.PI * (3 - Math.sqrt(5));
-  const pts = [];
-  for (let k = 0; k < N; k++) {
-    pts.push({ r: R * Math.sqrt((k + 0.5) / N), th: (k * GA) % (2 * Math.PI) });
-  }
-  pts.sort((a, b) => a.th - b.th);
-
-  const c = D / 2;
-  let cursor = 0, groups = "", labels = "";
-  for (const si of WEDGE_ORDER) {
-    const n = dots[si];
-    if (!n) continue;
-    const st = STREAMS[si];
-    const first = cursor;
-    let circles = "";
-    for (let i = 0; i < n; i++) {
-      const p = pts[cursor++];
-      const jr = (rand() - 0.5) * 2.2, jt = (rand() - 0.5) * 0.012;
-      const x = c + (p.r + jr) * Math.cos(p.th + jt);
-      const y = c + (p.r + jr) * Math.sin(p.th + jt);
-      circles += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${DOT_R}"/>`;
-    }
-    const share = vals[si] / sum;
-    groups += `<g fill="var(${st.v})"><title>${st.name}: $${vals[si].toFixed(1)}M, `
-            + `${(share * 100).toFixed(1)}% \u2014 ${n} dots</title>${circles}</g>`;
-
-    /* direct label: identity must not rest on colour alone, because seven
-       categorical hues cannot clear the all-pairs separation floors. */
-    if (share >= LABEL_MIN) {
-      const mid = pts[first + Math.floor(n / 2)].th;
-      const lx = c + R * 0.62 * Math.cos(mid), ly = c + R * 0.62 * Math.sin(mid);
-      labels += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}">${st.short}</text>`;
-    }
-  }
-
-  D_MAX = Math.max(D_MAX, D);
-  return { D, html: (scale) => `<div class="card">
-    <svg viewBox="0 0 ${D.toFixed(1)} ${D.toFixed(1)}" style="width:${(D / scale * 100).toFixed(2)}%" role="img"
-         aria-label="${m.name}, ${m.period}: $${sum.toFixed(1)} million across ${N} dots of $100,000 each">
-      ${groups}<g class="lbl">${labels}</g>
-    </svg>
-    <h2>${m.name}</h2>
-    <div class="tot">$${sum.toFixed(1)}M \u00b7 ${N.toLocaleString()} dots</div>
-    <div class="per">${m.period}</div>
-  </div>` };
-}
-
-/* sort largest first so the size ramp reads down the grid */
-const ordered = MUSEUMS.slice().sort(
-  (a, b) => STREAMS.reduce((s, k) => s + (b.v[k.key] || 0), 0) - STREAMS.reduce((s, k) => s + (a.v[k.key] || 0), 0));
-
-const built = ordered.map(pie);
-document.getElementById("grid").innerHTML = built.map(b => b.html(D_MAX)).join("");
-
-document.getElementById("legend").innerHTML = WEDGE_ORDER
-  .map(i => `<span><i style="background:var(${STREAMS[i].v})"></i>${STREAMS[i].name}</span>`).join("");
-
-const tbl = document.getElementById("tbl");
-tbl.innerHTML =
-  `<caption>Revenue by stream, $ millions. &ldquo;Slices&rdquo; is the sum of the positive streams shown in the pie;
-   &ldquo;reported&rdquo; is the total on the face of the document, after negative lines.</caption>
-   <thead><tr><th>Museum</th><th>Period</th>` +
-  WEDGE_ORDER.map(i => `<th><i style="background:var(${STREAMS[i].v})"></i>${STREAMS[i].name}</th>`).join("") +
-  `<th>Slices</th><th>Reported</th></tr></thead><tbody>` +
-  ordered.map(m => {
-    const sum = STREAMS.reduce((s, k) => s + (m.v[k.key] || 0), 0);
-    return `<tr><td>${m.name}</td><td>${m.period}</td>` +
-      WEDGE_ORDER.map(i => {
-        const x = m.v[STREAMS[i].key] || 0;
-        return `<td>${x ? x.toFixed(1) : "&mdash;"}</td>`;
-      }).join("") +
-      `<td class="tot">${sum.toFixed(1)}</td><td>${m.reported.toFixed(1)}</td></tr>`;
-  }).join("") +
-  `</tbody>`;
-</script>
+<script type="module" src="js/museums.js"></script>
 </body>
 </html>
