@@ -238,6 +238,9 @@ const readColours = () => { COL = STREAMS.map(s => css(s.v)); };
 
 let hoverPie = -1, hoverStream = -1;
 
+/* dim is the stream slot to keep lit, or -1 for none. It must not be 0-as-false:
+   slot 0 is gifts and grants, and testing it for truthiness left that one stream
+   unable to dim the others. */
 function drawDisc(c, L, p, t, dim, skipSi) {
   for (let w = 0; w < ORDER.length; w++) {
     const si = ORDER[w];
@@ -251,7 +254,7 @@ function drawDisc(c, L, p, t, dim, skipSi) {
       c.moveTo(x + DOT, y);
       c.arc(x, y, DOT, 0, TAU);
     }
-    c.globalAlpha = dim && dim !== si ? 0.28 : 1;
+    c.globalAlpha = (dim >= 0 && dim !== si) ? 0.28 : 1;
     c.fillStyle = COL[si];
     c.fill();
   }
@@ -263,7 +266,7 @@ function frame(now) {
   const t = (now - t0) / 1000;
   ctx.clearRect(0, 0, W, H);
   PIES.forEach((p, i) => {
-    const dim = (i === hoverPie && hoverStream >= 0) ? hoverStream : 0;
+    const dim = (i === hoverPie && hoverStream >= 0) ? hoverStream : -1;
     const flying = (drillOpen && !drillOpen.closing && drillOpen.pieIndex === i)
       ? drillOpen.si : undefined;
     drawDisc(ctx, layout[i], p, t, dim, flying);
@@ -640,7 +643,7 @@ if (mcv) {
     mctx.clearRect(0, 0, mL.w, mL.h);
     const keep = DOT; DOT = mDot;
     const focus = mPicked >= 0 ? mPicked : mHover;
-    drawDisc(mctx, mL, MP, t, focus >= 0 ? focus : 0);
+    drawDisc(mctx, mL, MP, t, focus);
     DOT = keep;
   }
 
