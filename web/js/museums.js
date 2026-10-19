@@ -127,6 +127,9 @@ const RAMP      = ["--s0", "--s4", "--s6", "--s1", "--s3", "--s5", "--s2"];
 const RAMP_PICK = [6, 2, 4, 0, 5, 1, 3];
 
 const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const hex2rgb = (h) => { h = h.trim().replace('#',''); return [0,2,4].map(i => parseInt(h.slice(i,i+2),16)); };
+const mixRGB = (a, b, k) => `rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*k)).join(',')})`;
+
 const fmt = (m) => m >= 1 ? "$" + m.toFixed(1) + "M" : "$" + Math.round(m * 1000) + "K";
 const total = (m) => STREAMS.reduce((s, k) => s + (m.v[k.key] || 0), 0);
 
@@ -235,10 +238,11 @@ const readColours = () => { COL = STREAMS.map(s => css(s.v)); };
 
 let hoverPie = -1, hoverStream = -1;
 
-function drawDisc(c, L, p, t, dim) {
+function drawDisc(c, L, p, t, dim, skipSi) {
   for (let w = 0; w < ORDER.length; w++) {
     const si = ORDER[w];
     if (!p.counts[si]) continue;
+    if (skipSi === si) continue;        /* these points are mid-flight on the overlay */
     c.beginPath();
     for (const d of p.cloud.pts) {
       if (d.w !== w) continue;
@@ -260,7 +264,9 @@ function frame(now) {
   ctx.clearRect(0, 0, W, H);
   PIES.forEach((p, i) => {
     const dim = (i === hoverPie && hoverStream >= 0) ? hoverStream : 0;
-    drawDisc(ctx, layout[i], p, t, dim);
+    const flying = (drillOpen && !drillOpen.closing && drillOpen.pieIndex === i)
+      ? drillOpen.si : undefined;
+    drawDisc(ctx, layout[i], p, t, dim, flying);
   });
   if (drillOpen) drillFrame(t);
   if (window.__mocaDraw) window.__mocaDraw(t);
@@ -327,10 +333,17 @@ function openDrill(i, si) {
   const counts = allocate(vals);
   const c = cloud(counts, m.name.length * 104729 + si);
   c.edges.forEach((e, k) => { e.si = e.w; });
-  drillOpen = { pie: PIES[i], si, spec, vals, counts, cloud: c,
-                baseR: Math.sqrt(UNIT_A * c.N / Math.PI), from: layout[i] };
+  const L0 = layout[i], P = PIES[i];
+  const wIdx = ORDER.indexOf(si);
+  /* the points that are already on screen for this wedge, in angle order */
+  const src = P.cloud.pts.filter(d => d.w === wIdx);
+  const rect = cv.getBoundingClientRect();
+
+  drillOpen = { pie: P, pieIndex: i, si, spec, vals, counts, cloud: c,
+                baseR: Math.sqrt(UNIT_A * c.N / Math.PI), from: L0,
+                src, srcL: L0, rect, srcDot: DOT,
+                fromRGB: hex2rgb(COL[si]) };
   dHover = -1; dAnim = 0; diveT0 = performance.now();
-  const L0 = layout[i];
   stage.style.transformOrigin = `${L0.x}px ${L0.y}px`;
 
   dh.textContent = m.name + " · " + STREAMS[si].name;
@@ -363,42 +376,71 @@ function sizeDrill() {
               dot: Math.max(2.2, Math.min(6.5, spacing * 0.33)) };
 }
 
-/* The dive: the field of discs rushes past the viewer while the chosen wedge
-   comes forward out of it. Two seconds, time-based so it holds at any framerate. */
+/* The regroup. The slice's own points are not thrown away and replaced - the same
+   points travel out of the wedge and settle into the breakdown, because the money
+   they stand for has not changed. Where a breakdown is on a different basis than
+   its parent the counts differ slightly; those few points fade in or out, so the
+   discrepancy is visible rather than hidden. Two seconds. */
 function drillFrame(t) {
   const d = drillOpen; if (!d || !dLayout) return;
   if (d.closing) { dctx.clearRect(0, 0, innerWidth, innerHeight); return; }
+
   const p = Math.min(1, (performance.now() - diveT0) / DIVE_MS);
-  const ease = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;  /* in-out cubic */
-  const rush = Math.pow(p, 1.7);                                           /* the field accelerates away */
+  const ease = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
 
+  /* the rest of the field eases back and dims, so the slice has the stage */
   stage.style.transition = "none";
-  stage.style.transform = `scale(${(1 + 5.5 * rush).toFixed(3)})`;
-  stage.style.opacity = String(Math.max(0, 1 - p * 1.7));
+  stage.style.transform = `scale(${(1 + 0.9 * ease).toFixed(3)})`;
+  stage.style.opacity = String(Math.max(0, 1 - ease * 1.25));
 
-  /* the sub-disc comes from the clicked wedge, far away and small, and arrives */
-  const z = 0.06 + 0.94 * ease;
-  const L = { x: d.from.x + (dLayout.x - d.from.x) * ease,
-              y: d.from.y + (dLayout.y - d.from.y) * ease,
-              r: dLayout.r * z };
+  const ox = d.rect.left, oy = d.rect.top;          /* canvas -> viewport */
+  const sL = d.srcL, tL = dLayout;
+  const srcDot = d.srcDot, tgtDot = dLayout.dot || 3.1;
+  const tgt = d.cloud.pts;
+  const n = Math.max(d.src.length, tgt.length);
 
   dctx.clearRect(0, 0, innerWidth, innerHeight);
-  const keep = DOT; DOT = Math.max(0.6, (dLayout.dot || 3.1) * z);
-  for (let w = 0; w < d.counts.length; w++) {
-    if (!d.counts[w]) continue;
-    dctx.beginPath();
-    for (const q of d.cloud.pts) {
-      if (q.w !== w) continue;
-      const x = L.x + q.ux * L.r + Math.sin(t * q.sp + q.p1) * q.am * 1.4;
-      const y = L.y + q.uy * L.r + Math.cos(t * q.sp * 1.13 + q.p2) * q.am * 1.4;
-      dctx.moveTo(x + DOT, y); dctx.arc(x, y, DOT, 0, TAU);
+  dctx.globalAlpha = 1;
+
+  for (let k = 0; k < n; k++) {
+    const a = d.src[k], b = tgt[k];
+    const drift = a || b;
+    const wob = Math.sin(t * drift.sp + drift.p1) * drift.am;
+    const wob2 = Math.cos(t * drift.sp * 1.13 + drift.p2) * drift.am;
+
+    /* where it started, in the six-disc field */
+    const ax = a ? ox + sL.x + a.ux * sL.r : null;
+    const ay = a ? oy + sL.y + a.uy * sL.r : null;
+    /* where it belongs in the breakdown */
+    const bx = b ? tL.x + b.ux * tL.r : null;
+    const by = b ? tL.y + b.uy * tL.r : null;
+
+    let x, y, r, alpha, col;
+    if (a && b) {                       /* the common case: it simply moves */
+      x = ax + (bx - ax) * ease; y = ay + (by - ay) * ease;
+      r = srcDot + (tgtDot - srcDot) * ease;
+      alpha = 1;
+      col = mixRGB(d.fromRGB, hex2rgb(css(RAMP[RAMP_PICK[b.w % RAMP_PICK.length]])), ease);
+    } else if (b) {                     /* the breakdown needs more than the wedge had */
+      x = bx; y = by; r = tgtDot * ease;
+      alpha = Math.max(0, (ease - 0.45) / 0.55);
+      col = css(RAMP[RAMP_PICK[b.w % RAMP_PICK.length]]);
+    } else {                            /* the wedge had more than the breakdown accounts for */
+      x = ax; y = ay; r = srcDot * (1 - ease);
+      alpha = Math.max(0, 1 - ease * 1.6);
+      col = COL[d.si];
     }
-    dctx.globalAlpha = (dHover >= 0 && dHover !== w ? 0.25 : 1) * Math.min(1, 0.25 + ease);
-    dctx.fillStyle = css(RAMP[RAMP_PICK[w % RAMP_PICK.length]]);
+    if (alpha <= 0 || r <= 0.05) continue;
+    if (b && dHover >= 0 && dHover !== b.w) alpha *= 0.25;
+
+    dctx.globalAlpha = alpha;
+    dctx.fillStyle = col;
+    dctx.beginPath();
+    dctx.arc(x + wob, y + wob2, r, 0, TAU);
     dctx.fill();
   }
-  dctx.globalAlpha = 1; DOT = keep;
-  d.screen = L;
+  dctx.globalAlpha = 1;
+  d.screen = { x: tL.x, y: tL.y, r: tL.r * ease };
   d.settled = p >= 1;
 }
 
