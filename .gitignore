@@ -6,6 +6,8 @@ site-model/checks/
 # USGS LiDAR tiles (9 x ~70 MB): site-model/houdini/tools/fetch_lidar_tiles.py downloads them
 site-model/data/lidar/
 # Houdini scenes are local work (binary, unmergeable): the pipeline scene and everyone's design scenes
+*.blend
+*.blend[0-9]*
 *.hip
 *.hipnc
 *.hiplc
@@ -26,6 +28,7 @@ desktop.ini
 
 # population: raw downloads (LODES, ACS, Gazetteer, Overpass), re-fetched by site-model/population/fetch_population.py
 site-model/population/data/raw/
+site-model/data/population/raw/
 
 # trial point clouds for comparing thinning rules (pack_wide.py pack --out ../../web/data/trial_<name>; viewer ?lidar=trial_<name>)
 web/data/trial_*/
