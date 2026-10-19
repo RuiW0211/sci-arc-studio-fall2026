@@ -32,3 +32,7 @@ web/data/trial_*/
 
 # trial hand-offs (export_handoff.py --outlines -> handoff/trial_outlines/)
 site-model/houdini/handoff/trial_*/
+
+# research: source documents fetched by research/*/tools/fetch990.py, re-fetchable
+research/*/tools/*.html
+research/*/tools/*.pdf
