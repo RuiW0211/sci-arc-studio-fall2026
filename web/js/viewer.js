@@ -1437,6 +1437,80 @@ for (const q of QUESTIONS) {
     };
   }
 }
+
+// ---------- question 2, "What keeps people out?" (user, 2026-10-18; site-model/questions/q_devices.py) ----------
+// Every device OpenStreetMap maps within 300 m of Y-1, by what it does (Latour: describe what the things do), drawn in
+// points: in the highlight colour what keeps someone out (fences, walls, private paths, locked gates; gates, turnstiles
+// and Angels Flight's fare that let some in; steps with no way round), in the switches' "on" colour (--tint) what lets
+// people in or up (entrances, lifts, escalators, bridges: white was lost in the white buildings). A key with the
+// layer rows' dots, one sentence for what keeps everyone out, one for what lets some in, one for the climb, and where
+// it comes from.
+{
+  const q = QUESTIONS.find((x) => x.id === "devices");
+  if (q) {
+    let data = null, marks = null;
+    const LET = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--tint").trim() || "#0a84ff");
+    const km = (m) => (m / 1000).toFixed(1);
+    const build = () => {   // the same scatter on every visit
+      const D = QUESTIONS.find((x) => x.id === "passing")?.fencePerM2 ?? 8.6, W = q.lineM ?? 1, H = q.pinM ?? 3;
+      const LIFT = 0.1;   // over the scanned ground, not in it
+      let seed = 29;
+      const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+      const hi = [], lo = [];
+      const strip = (P, pts, h) => {   // along a line: a strip W wide on the ground, or a screen h high where its height is known
+        for (let k = 0; k + 1 < pts.length; k++) {
+          const [ax, ay, az] = pts[k], [bx, by, bz] = pts[k + 1], L = Math.hypot(bx - ax, bz - az);
+          if (L < 1e-3) continue;
+          const nx = -(bz - az) / L, nz = (bx - ax) / L;
+          for (let n = Math.round(D * L * (h || W)); n > 0; n--) {
+            const s = rnd(), o = h ? 0 : (rnd() - 0.5) * W;
+            P.push(ax + (bx - ax) * s + nx * o, ay + (by - ay) * s + (h ? rnd() * h : LIFT), az + (bz - az) * s + nz * o);
+          }
+        }
+      };
+      const post = (P, [x, y, z]) => {
+        for (let n = Math.round(D * Math.PI * W * H); n > 0; n--) { const a = rnd() * 2 * Math.PI; P.push(x + (Math.cos(a) * W) / 2, y + rnd() * H, z + (Math.sin(a) * W) / 2); }
+      };
+      for (const l of data.lines) strip(l.does === "let" ? lo : hi, l.pts, l.height_m);
+      for (const s of data.stairs) if (s.does === "climb") for (const seg of s.pts) strip(hi, seg);
+      for (const p of data.pins) post(p.does === "let" ? lo : hi, p.at);
+      marks = new THREE.Group();
+      for (const [P, color] of [[hi, HILITE], [lo, LET]]) {
+        const g = new THREE.BufferGeometry();
+        g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3));
+        marks.add(new THREE.Points(g, fishPatch(new THREE.PointsMaterial({ color, size: cfg.lidar.size ?? 0.25, sizeAttenuation: true }))));
+      }
+      marks.visible = false;
+      scene.add(marks);
+      q.box.innerHTML = `<p class="note key"><i class="sw" style="--c:var(--tag)"></i> keeps someone out &nbsp; <i class="sw" style="--c:var(--tint)"></i> lets people in or up</p>`
+        + `<p class="qs"></p><p class="note some"></p><p class="qs up"></p><p class="note src"></p>`;
+    };
+    const text = () => {
+      const S = (does, kinds) => data.summary.filter((s) => s.does === does && kinds.includes(s.kind));
+      const sum = (a, k) => a.reduce((t, s) => t + (s[k] ?? 0), 0);
+      const walls = sum(S("keep", ["fence", "wall", "retaining wall", "hedge"]), "length_m");
+      const priv = sum(S("keep", ["private path", "private driveway"]), "length_m");
+      const locked = sum(S("keep", ["gate"]), "count"), gates = sum(S("sort", ["gate"]), "count"), turn = sum(S("sort", ["turnstile"]), "count");
+      const climb = data.stairs.filter((s) => s.does === "climb"), top = climb[0];
+      const lifts = data.pins.filter((p) => p.kind === "lift"), off = lifts.filter((p) => !p.on_path);
+      const at = [...new Set(off.map((p) => p.building).filter(Boolean))];
+      const af = data.angels_flight, fetched = data.source.match(/fetched (\d{4}-\d\d-\d\d)/)?.[1];
+      q.box.querySelector(".qs:not(.up)").textContent = `Within ${data.radius_m} m of Y-1, OpenStreetMap maps ${km(walls)} km of fences and walls, ${km(priv)} km of private paths and driveways and ${locked} locked or private gates: they keep everyone out.`;
+      q.box.querySelector(".some").textContent = `Others let some in: ${gates} gates it says nothing more about, ${turn} turnstiles, and Angels Flight (${af.fare}; ${af.hours}).`;
+      q.box.querySelector(".up").textContent = `For ${climb.length} flights of steps here the way without steps is over ${data.extra_m} m longer, or there is none. The highest, the ${top?.name ?? "steps"}, climbs ${Math.round(top?.rise_m ?? 0)} m; without steps the way up is ${Math.round(top?.way_round_m ?? 0)} m. ${off.length} of the ${lifts.length} lifts OSM maps${at.length ? `, at ${at.join(" and ")},` : ""} are on no mapped path.`;
+      q.box.querySelector(".src").textContent = `Drawn on the ground, as OpenStreetMap gives no heights (but Angels Knoll's fence: 6 ft). OpenStreetMap (ODbL)${fetched ? `, fetched ${fetched}` : ""}: what mappers drew, not a survey. Steps: the model's walking network with every step, escalator and Angels Flight taken out. Angels Flight: ${af.source}.`;
+    };
+    q.show = async (on) => {
+      if (on) {
+        try { data ??= await (await fetch(q.data)).json(); } catch { return; }
+        if (qOpen !== q.id) return;   // closed while it loaded
+        if (!marks) build();
+        marks.visible = true;
+        text(); invalidate();
+      } else if (marks) { marks.visible = false; invalidate(); }
+    };
+  }
+}
 $("#lensOn").onchange = (e) => setLens(e.target.checked);   // the fisheye lens (LENS)
 
 // ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------

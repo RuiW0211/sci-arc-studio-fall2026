@@ -4,7 +4,9 @@ The Free view asks the model questions instead of switching layers (user, 2026-1
 Angels Knoll's fence, "What keeps people out?" every fence, wall, gate and entrance round Y-1. The walking network
 the population model uses (site-model/population/data/osm.json) has the ways people walk on, steps, elevators,
 escalators, bridges and Angels Flight, but no barriers, so they come from here: every barrier (fence, wall, hedge,
-gate, turnstile, bollard ...), entrance and park within RADIUS_M of Y-1's centre, with their tags and geometry.
+gate, turnstile, bollard ...), entrance and park within RADIUS_M of Y-1's centre, with their tags and geometry, and the
+lifts and Metro entrances OSM maps as points (2026-10-18: eight lifts in the radius, six of them inside towers and
+on no mapped path, so the walking network does not have them).
 
 The point cloud has no fence class (airborne LiDAR returns almost nothing from a chain-link fence: 2026-10-18, about
 one point a metre along Angels Knoll's fence at fence height, most of them trees), so the fences are drawn from these
@@ -13,7 +15,7 @@ lines (q_passing.py).
   python fetch_barriers.py        -> data/barriers.json (OpenStreetMap, ODbL; small, committed)
 """
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 import requests
@@ -36,6 +38,8 @@ q = f"""[out:json][timeout:120];
 (
   nwr["barrier"]{bb};
   node["entrance"]{bb};
+  node["highway"="elevator"]{bb};
+  node["railway"="subway_entrance"]{bb};
   nwr["leisure"~"^(park|garden|playground|pitch)$"]{bb};
 );
 out body geom;"""
@@ -43,12 +47,12 @@ r = requests.post(OVERPASS, data={"data": q}, headers=UA, timeout=180)
 r.raise_for_status()
 osm = r.json()
 osm["source"] = "OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright), via Overpass API"
-osm["fetched"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+osm["fetched"] = datetime.now().astimezone().isoformat(timespec="seconds")   # local time, with its offset
 osm["query"] = {"centre_local_m": Y1, "radius_m": RADIUS_M, "bbox_lat_lon": [la0, lo0, la1, lo1]}
 (OUT / "barriers.json").write_text(json.dumps(osm, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 kinds = {}
 for e in osm["elements"]:
     t = e.get("tags", {})
-    k = t.get("barrier") or ("entrance" if "entrance" in t else t.get("leisure"))
+    k = t.get("barrier") or ("entrance" if "entrance" in t else t.get("leisure") or t.get("highway") or t.get("railway"))
     kinds[k] = kinds.get(k, 0) + 1
 print(f"{len(osm['elements'])} elements -> data/barriers.json:", dict(sorted(kinds.items(), key=lambda kv: -kv[1])))

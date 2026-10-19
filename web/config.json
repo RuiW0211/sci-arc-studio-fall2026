@@ -219,8 +219,12 @@
       {
         "id": "devices",
         "title": "What keeps people out?",
-        "about": "The fences, walls, locked gates and stairs-only entrances round Y-1, and the lifts, escalators and bridges that let people in",
-        "pending": "Not built yet: the fences, walls, locked gates and stairs-only entrances within about 300 m of Y-1, and the lifts, escalators and bridges that let people in.",
+        "about": "What keeps people out within 300 m of Y-1 (fences, walls, private paths, locked gates, gates and fares that let some in, steps with no way round) and what lets them in or up (entrances, lifts, escalators, bridges)",
+        "pending": "Loading: what keeps people out within 300 m of Y-1, and what lets them in.",
+        "data": "data/q_devices.json",
+        "_draw": "Every device OpenStreetMap maps (site-model/questions/q_devices.py) as points as dense as the scanned ground (the first question's fencePerM2): what keeps someone out in the highlight colour, what lets people in or up in white. OSM gives no heights (but Angels Knoll's fence, 6 ft, drawn at it), so lines lie on the ground in a strip lineM wide, about a sidewalk kerb's width doubled so they read from this view; points (gates, turnstiles, entrances, lifts) stand as posts pinM high, about a door's height and a half.",
+        "lineM": 1.0,
+        "pinM": 3.0,
         "view": { "position": [330, 430, 380], "target": [0, 95, 0] }
       }
     ]
