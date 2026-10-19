@@ -419,24 +419,9 @@ let dirty = true;
 function invalidate() { dirty = true; }
 controls.addEventListener("change", () => { dirty = true; });
 
-$("#layers").innerHTML = "";
-for (const L of ordered) {
-  const row = document.createElement("label");
-  row.className = "layer";
-  const n = "";   // filled by layerCounts(): objects in the point cloud
-  // the dot is the toggle: filled = shown, ring = hidden (the checkbox stays for keyboard / screen readers, visually hidden);
-  // it shows the layer colour when the point cloud is coloured by layer, a neutral dot otherwise
-  const sw = `<i class="sw" style="--c:${L.cfg.color || "var(--muted)"}"></i>`;
-  const ghost = ghostYears.has(L.name);
-  if (ghost) L.visible = true;   // shown whenever the Time module is on and the year is theirs
-  const yrs = ghost ? ghostYears.get(L.name).map(([a, b]) => `${a}–${b}`).join(", ") : n;
-  row.innerHTML = `<input type="checkbox" ${L.visible ? "checked" : ""}>${sw}<span class="nm">${L.cfg.label || L.name}</span><span class="n">${yrs}</span>`;
-  L.countEl = ghost ? null : row.querySelector(".n");
-  L.row = row;
-  row.querySelector("input").onchange = (e) => { L.visible = e.target.checked; applyVisibility(); };
-  // the unbuilt schemes have no row (user, 2026-10-13): they always show with the Time module, in their years
-  if (!ghost) $("#layers").append(row);
-}
+// no layer rows (user, 2026-10-18: "楼、树、地面这些开关是彻底去掉"; the Questions took their place): every layer keeps
+// the visibility config.json gives it, and the unbuilt schemes show whenever the Time module is on and the year is theirs
+for (const L of ordered) if (ghostYears.has(L.name)) L.visible = true;
 
 // ---------- point material: size in metres (perspective), never smaller than 1 px ----------
 function pointMaterial(sizeMetres) {
@@ -1362,6 +1347,7 @@ function renderViews() {
   $("#views").append(s);
 }
 renderViews();
+
 $("#lensOn").onchange = (e) => setLens(e.target.checked);   // the fisheye lens (LENS)
 
 // ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------
@@ -1433,8 +1419,8 @@ function updateWhite() {
   const want = $("#timeOn").checked || monoWanted();
   if (want !== whiteNow) { whiteNow = want; setWhiteCloud(want); }
 }
-function monoWanted() { try { return viewMode === "free" && $("#monoOn").checked; } catch { return false; } }   // (viewMode is declared further down)
-$("#monoOn").onchange = () => updateWhite();
+// Free is always black and white (user, 2026-10-18: "Free view: Guided's black and white"; its switch is gone with the layers)
+function monoWanted() { try { return viewMode === "free"; } catch { return false; } }   // (viewMode is declared further down)
 // the History module's Tags switch (user, 2026-10-14): the tags fade out and back in
 $("#timeTags").onchange = (e) => { tlLayer.classList.toggle("off", !e.target.checked); };
 // ---------- Time module ----------
@@ -2960,7 +2946,9 @@ if (cfg.population?.meta && cfg.population.preloadS !== false) setTimeout(() => 
   const go = () => { if (!pop) loadPop().then((p) => { p.prepare(); lonce("people: made ahead"); }).catch(() => {}); };
   window.requestIdleCallback ? requestIdleCallback(go, { timeout: 3000 }) : go();
 }, (cfg.population.preloadS ?? 20) * 1000);
-if (viewMode === "free") { document.querySelectorAll("#viewMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === "free")); document.body.classList.add("v-free"); }
+if (viewMode === "free") { document.querySelectorAll("#viewMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === "free")); document.body.classList.add("v-free");
+  // opening in Free (setView did nothing, Free being the start value): black and white at once, no fade from the colours
+  updateWhite(); cancelAnimationFrame(focusAnim); FOCUS.value = 1; pop?.highlight(1); invalidate(); }
 moveThumb(true, "#viewMode");
 if (urlq.get("earth")) setEarthView(urlq.get("earth"));   // ?earth=<Google Earth URL>: the same camera here
 status("");
