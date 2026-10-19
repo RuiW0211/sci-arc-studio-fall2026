@@ -24,6 +24,8 @@ from pyproj import Transformer
 from shapely.geometry import LineString, Polygon
 from shapely.ops import unary_union
 
+import network
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 POP = HERE.parent / "population"
@@ -95,10 +97,10 @@ def paths_in(b):
     return per_path > 0
 
 
-def count(b, P=None, extra=None):
-    """The trips whose path is in band b (or, given P, whose path index is marked in P), by day: total (people
-    weighted), by hour (at the middle of the trip), by kind of person. extra: a per-path value summed over them too."""
-    P = paths_in(b) if P is None else P
+def count(b):
+    """The trips whose path is in band b, by day: total (people weighted), by hour (at the middle of the trip), by
+    kind of person."""
+    P = paths_in(b)
     out = {}
     for d in ("weekday", "weekend"):
         off, path = Z[f"{d}.offsets"].astype(np.int64), Z[f"{d}.path"].astype(np.int64)
@@ -111,8 +113,6 @@ def count(b, P=None, extra=None):
         by_type = {TYPES[t]: round(float(w[TYPE[person[hit]] == t].sum())) for t in range(len(TYPES))}
         out[d] = {"total": round(float(w.sum())), "by_hour": np.bincount(hours, weights=w, minlength=24).round().astype(int).tolist(),
                   "by_type": {k: v for k, v in by_type.items() if v}, "people": int(len(np.unique(person[hit])))}
-        if extra is not None:
-            out[d]["extra_sum"] = float((w * extra[path[hit]]).sum())
     return out
 
 
@@ -121,98 +121,6 @@ today = widths[str(int(BAND_M))]
 wc = json.loads((ROOT / "web" / "data" / "walk_check.json").read_text(encoding="utf-8"))
 ratios = [b["weekday"]["ratio"] for b in wc["blocks"]]
 lo_r, hi_r = min(ratios), max(ratios)
-
-# ---------------------------------------------------------------- OPEN (T): the same trips, routed again
-# (user, 2026-10-18: "如果打开会怎样") Same people, same trips, same times, same ends; only the route between the two
-# ends is found again on a network where Angels Knoll's private paths are open. Not a new run of the model: one
-# that opened the knoll would also change where some people go and when, mixed in with the fence's own effect.
-# "one": the path across the knoll (OSM way 322957601, joined to the network at both ends as OSM draws it), its
-# gates at Olive St / 4th St and by Angels Flight's upper end. "both": and the path inside the Hill Street fence
-# (322959879), which OSM draws joined to nothing: its gate is joined to the street (the Angels Flight stairs' foot,
-# 8 m) and its other end to the 4th Street sidewalk (5 m), an assumption of this scenario.
-import network
-from scipy.sparse.csgraph import dijkstra
-
-base = network.build()
-assert len(base["XYZ"]) == N and np.abs(base["XYZ"][:, :2] - NX).max() < 0.01, "the rebuilt network is not the model's"
-SCEN = {"one": {"label": "One gate: the path across the knoll", "open_ways": (322957601,), "link_ends": ()},
-        "both": {"label": "Both gates: and the path inside the Hill Street fence", "open_ways": (322957601, 322959879),
-                 "link_ends": (3297577617, 3297577582)}}
-WALK_MS = json.loads((POP / "data" / "assumptions.json").read_text(encoding="utf-8"))["walkSpeed"]["value"][0]   # m/s, mean
-PARK_B = PARK.buffer(1.0)
-
-
-def path_len(XY, seq):
-    return float(np.hypot(*np.diff(XY[seq, :2], axis=0).T).sum()) if len(seq) > 1 else 0.0
-
-
-def reroute(net, poff_, pn_):
-    """For every path (src = its first node, an anchor; dst = its last): its route on net if cheaper than on the
-    model's network. -> {path index: new node list (net indices)}, and the model's own cost check."""
-    by_osm = {int(o): k for k, o in enumerate(net["osm"])}
-    to_net = np.array([by_osm[int(o)] for o in base["osm"]])
-    src, dst = pn_[poff_[:-1]], pn_[poff_[1:] - 1]
-    out, check = {}, []
-    US = np.unique(src)
-    for s0 in range(0, len(US), 256):
-        S = US[s0:s0 + 256]
-        Db = dijkstra(base["G"], directed=False, indices=S)
-        Dn, Pn = dijkstra(net["G"], directed=False, indices=to_net[S], return_predecessors=True)
-        row = {int(s): k for k, s in enumerate(S)}
-        for p in np.flatnonzero(np.isin(src, S)):
-            r = row[int(src[p])]
-            old, new = Db[r, dst[p]], Dn[r, to_net[dst[p]]]
-            if len(check) < 3000:      # the model's own path is the shortest on the rebuilt network
-                seq = pn_[poff_[p]:poff_[p + 1]]
-                own = float(np.asarray(base["G"][seq[:-1], seq[1:]]).sum()) if len(seq) > 1 else 0.0
-                check.append(abs(own - old))
-            if new < old - 0.01:
-                seq, t = [int(to_net[dst[p]])], int(to_net[src[p]])
-                while seq[-1] != t:
-                    seq.append(int(Pn[r, seq[-1]]))
-                out[int(p)] = seq[::-1]
-    worst = max(check) if check else 0.0
-    assert worst < 0.05, f"a model path is not the shortest on the rebuilt network (cost off by {worst:.2f})"
-    return out
-
-
-open_out = {}
-for key, sc_ in SCEN.items():
-    net = network.build(open_ways=sc_["open_ways"], link_ends=sc_["link_ends"])
-    new = reroute(net, poff, pn)                                    # everyone's paths (counts)
-    P = np.zeros(len(poff) - 1, bool); P[list(new)] = True
-    saved = np.zeros(len(poff) - 1)
-    for p, seq in new.items():
-        saved[p] = path_len(NX, pn[poff[p]:poff[p + 1]]) - path_len(net["XYZ"], seq)
-    c = count(None, P=P, extra=saved / WALK_MS / 60)
-    for d in c:
-        c[d]["minutes_saved_mean"] = round(c[d].pop("extra_sum") / max(c[d]["total"], 1), 1)
-    # the viewer's own (thinned) paths, for the people it draws: the new routes in its node numbering, the network's
-    # new nodes (the opened paths) after the model's
-    vb = (ROOT / "web" / "data" / "population.bin").read_bytes()
-    vsec = lambda k: np.frombuffer(vb, {"uint32": np.uint32, "uint16": np.uint16}[meta["sections"][k]["type"]],
-                                   meta["sections"][k]["count"], meta["sections"][k]["offset"]).astype(np.int64)
-    vnew = reroute(net, vsec("pathOffsets"), vsec("pathNodes"))
-    by_osm_b = {int(o): k for k, o in enumerate(base["osm"])}
-    extra_nodes, to_view = [], {}
-    for k, o in enumerate(net["osm"]):
-        if int(o) in by_osm_b:
-            to_view[k] = by_osm_b[int(o)]
-        else:
-            to_view[k] = N + len(extra_nodes); extra_nodes.append(net["XYZ"][k])
-    pids = sorted(vnew)
-    flat = [to_view[n] for p in pids for n in vnew[p]]
-    offs = np.cumsum([0] + [len(vnew[p]) for p in pids]).tolist()
-    open_out[key] = {"label": sc_["label"], "open_ways": list(sc_["open_ways"]), "links": net["links"],
-                     "paths_changed": len(new), **c,
-                     "viewer": {"extra_nodes": [[round(float(x), 2), round(float(z), 2), round(float(-y), 2)] for x, y, z in extra_nodes],
-                                "paths": pids, "offsets": offs, "nodes": flat}}
-    print(f"open '{key}': {len(new):,} of {len(poff) - 1:,} paths change; the viewer's: {len(vnew):,}; links {net['links']}")
-    for d in ("weekday", "weekend"):
-        t = open_out[key][d]
-        peak = int(np.argmax(t["by_hour"]))
-        print(f"   {d}: {t['total']:,} trips would cross the knoll ({t['people']:,} people), each about "
-              f"{t['minutes_saved_mean']} min shorter; peak {peak}:00 ({t['by_hour'][peak]:,}); {t['by_type']}")
 
 # scene coordinates for the viewer: x east, z south (= -north)
 sc = lambda g: [[round(x, 2), round(-y, 2)] for x, y in g.coords]
@@ -236,8 +144,6 @@ OUT.write_text(json.dumps({
     "range": {"ratios": [lo_r, hi_r], "note": "model / LADOT count on the nine blocks counted in 2023 and 2025 (walk_check.json); the nearest is about 450 m from Y-1",
               "weekday": [round(today["weekday"]["total"] / hi_r), round(today["weekday"]["total"] / lo_r)],
               "weekend": [round(today["weekend"]["total"] / hi_r), round(today["weekend"]["total"] / lo_r)]},
-    "open": open_out, "walk_speed_ms": WALK_MS,
-    "open_note": "The same trips (people, ends, times) routed again on a network with Angels Knoll's private paths open; trips counted as above; minutes_saved_mean = the shorter route at the model's mean walking speed. The model's people take the shortest route and do not stop in the park: these are people who would cross it, not people who would use it. viewer: the new routes of the paths the viewer draws (its own path numbering; nodes after the model's are extra_nodes, [x east, y up, z south]).",
 }, separators=(",", ":")), encoding="utf-8")
 
 for d in ("weekday", "weekend"):

@@ -1378,13 +1378,13 @@ for (const q of QUESTIONS) {
 
 // ---------- question 1, "Who walks past here?" (user, 2026-10-18; site-model/questions/q_passing.py) ----------
 // Angels Knoll's fence, drawn from OpenStreetMap at its height (the LiDAR has almost none of it), in the highlight
-// colour; A Day's people outdoors along it in the highlight colour, everyone else grey. Closed, today / Opened: the same
-// trips found again on a network with the fence's two paths open (q_passing.json open.both). One sentence from the
-// model for A Day's day, and where its numbers come from.
+// colour; A Day's people outdoors along it in the highlight colour, everyone else grey. One sentence from the model for
+// A Day's day, who they are, and where the numbers come from. (user, 2026-10-18: no "if it opened": the same trips
+// routed again with the fence open changed little, about 230 of 11,000 a weekday, and showed no difference)
 {
   const q = QUESTIONS.find((x) => x.id === "passing");
   if (q) {
-    let data = null, fence = null, mode = "today", peopleWere = null;
+    let data = null, fence = null, peopleWere = null;
     const N = (n) => { const s = n >= 1000 ? 100 : 10; return (Math.round(n / s) * s).toLocaleString("en-US"); };
     const at = (k) => (k % 24 === 0 ? "midnight" : k === 12 ? "noon" : `${((k + 11) % 12) + 1} ${k < 12 ? "am" : "pm"}`);
     const dayNow = () => $("#popDay button.on")?.dataset.d ?? "weekday";
@@ -1401,28 +1401,19 @@ for (const q of QUESTIONS) {
       fence = new THREE.Points(g, fishPatch(new THREE.PointsMaterial({ color: HILITE, size: cfg.lidar.size ?? 0.25, sizeAttenuation: true })));
       fence.visible = false;
       scene.add(fence);
-      q.box.innerHTML = `<div class="seg pill" id="qPassMode"><span class="thumb" aria-hidden="true"></span><button data-m="today" class="on">Closed, today</button><button data-m="open">Opened</button></div><p class="qs"></p><p class="note"></p>`;
-      q.box.querySelectorAll("#qPassMode button").forEach((b) => (b.onclick = () => setMode(b.dataset.m)));
+      q.box.innerHTML = `<p class="qs"></p><p class="note who"></p><p class="note"></p>`;
     };
     const text = () => {
       if (!data || !fence) return;
-      const day = dayNow(), t = data.today[day], o = data.open.both[day], r = data.range[day];
+      const day = dayNow(), t = data.today[day], r = data.range[day];
       const peak = t.by_hour.indexOf(Math.max(...t.by_hour));
-      q.box.querySelector(".qs").textContent = mode === "today"
-        ? `About ${N(t.total)} walking trips pass along Angels Knoll's fence on a modeled ${day} (likely ${N(r[0])} to ${N(r[1])}); the busiest hour is ${at(peak)} to ${at(peak + 1)}.`
-        : `Opened, about ${N(o.total)} of them would cut across the knoll instead, each some ${Math.round(o.minutes_saved_mean * 60)} seconds shorter: the fence closes a place more than a way.`;
-      q.box.querySelector(".note").textContent = mode === "today"
-        ? `A modeled typical day, not a count; the range is the model against nine LADOT street counts, the nearest about 450 m away. The fence: OpenStreetMap, ${data.fence.height_ft} ft (LA Downtown News, 2013).`
-        : "The same trips, routed again with the fence's two paths open (the Hill Street one joined to the street: an assumption). Modeled people take the shortest way and do not stop: these would cross the park, not use it.";
+      // who they are: the kinds of people the model has, the largest first (as A Day names them)
+      const KIND = { worker: "workers", resident: "residents", visitor: "visitors", hotel: "hotel guests", passerby: "passers-by", unsheltered: "people without shelter" };
+      const kinds = Object.entries(t.by_type).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => `${KIND[k] ?? k} ${N(n)}`);
+      q.box.querySelector(".qs").textContent = `About ${N(t.total)} walking trips pass along Angels Knoll's fence on a modeled ${day} (likely ${N(r[0])} to ${N(r[1])}); the busiest hour is ${at(peak)} to ${at(peak + 1)}.`;
+      q.box.querySelector(".who").textContent = `Mostly ${kinds.join(", ")}.`;
+      q.box.querySelector(".note:not(.who)").textContent = `A modeled typical day, not a count; the range is the model against nine LADOT street counts, the nearest about 450 m away. The fence: OpenStreetMap, ${data.fence.height_ft} ft (LA Downtown News, 2013).`;
     };
-    function setMode(m) {
-      mode = m;
-      q.box.querySelectorAll("#qPassMode button").forEach((b) => b.classList.toggle("on", b.dataset.m === m));
-      moveThumb(false, "#qPassMode");
-      pop?.setRoutes(m === "open" ? data.open.both.viewer : null);
-      pop?.setZone(m === "open" ? [...data.band.rings, data.park.ring] : data.band.rings);
-      text(); invalidate();
-    }
     document.querySelectorAll("#popDay button").forEach((b) => b.addEventListener("click", () => text()));   // A Day's day
     q.show = async (on) => {
       if (on) {
@@ -1432,11 +1423,11 @@ for (const q of QUESTIONS) {
         fence.visible = true;
         if (!$("#popOn").checked) { peopleWere = false; $("#popOn").checked = true; await $("#popOn").onchange({ target: $("#popOn") }); }
         else peopleWere ??= true;
-        setMode(mode);
-        requestAnimationFrame(() => moveThumb(true, "#qPassMode"));
+        pop?.setZone(data.band.rings);
+        text(); invalidate();
       } else {
         if (fence) fence.visible = false;
-        pop?.setZone(null); pop?.setRoutes(null);
+        pop?.setZone(null);
         if (peopleWere === false && $("#popOn").checked) { $("#popOn").checked = false; $("#popOn").onchange({ target: $("#popOn") }); }
         peopleWere = null;
         invalidate();

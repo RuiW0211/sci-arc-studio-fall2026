@@ -34,9 +34,7 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const T = { float32: Float32Array, uint32: Uint32Array, uint16: Uint16Array, int16: Int16Array, uint8: Uint8Array }[s.type];
     return new T(buf, s.offset, s.count);
   };
-  // the network and the paths: the model's own, or other routes for some paths (setRoutes, the Free view's "if it opened")
-  const nodes0 = sec("nodes"), pOff0 = sec("pathOffsets"), pNodes0 = sec("pathNodes");
-  let nodes = nodes0, pOff = pOff0, pNodes = pNodes0;
+  const nodes = sec("nodes"), pOff = sec("pathOffsets"), pNodes = sec("pathNodes");
   const type = sec("type"), mode = sec("mode"), sector = sec("sector"), rank = sec("rank");
   const homeBld = sec("homeBld"), workBld = sec("workBld"), homeSpot = sec("homeSpot"), workSpot = sec("workSpot");
   const distKm = sec("distKm"), bearing = sec("bearing"), tract = sec("tract");
@@ -49,19 +47,14 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   }
   const A = meta.count, TU = meta.time_unit_s;
   // cumulative length along every path
-  function cumOf(nodes, pOff, pNodes) {
-    const pCum = new Float32Array(pNodes.length);
-    for (let p = 0; p + 1 < pOff.length; p++) {
-      let acc = 0;
-      for (let k = pOff[p]; k < pOff[p + 1]; k++) {
-        if (k > pOff[p]) { const a = 3 * pNodes[k - 1], b = 3 * pNodes[k]; acc += Math.hypot(nodes[b] - nodes[a], nodes[b + 1] - nodes[a + 1], nodes[b + 2] - nodes[a + 2]); }
-        pCum[k] = acc;
-      }
+  const pCum = new Float32Array(pNodes.length);
+  for (let p = 0; p + 1 < pOff.length; p++) {
+    let acc = 0;
+    for (let k = pOff[p]; k < pOff[p + 1]; k++) {
+      if (k > pOff[p]) { const a = 3 * pNodes[k - 1], b = 3 * pNodes[k]; acc += Math.hypot(nodes[b] - nodes[a], nodes[b + 1] - nodes[a + 1], nodes[b + 2] - nodes[a + 2]); }
+      pCum[k] = acc;
     }
-    return pCum;
   }
-  const pCum0 = cumOf(nodes0, pOff0, pNodes0);
-  let pCum = pCum0;
   const lateral = new Float32Array(A);
   for (let i = 0; i < A; i++) lateral[i] = (hash(i, 7) - 0.5) * 3.6;  // spread across the sidewalk, m
   const eligible = new Set((meta.remoteEligible ?? []).map((s) => meta.sectors.indexOf(s)));
@@ -783,27 +776,6 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       st.dirty = true;
     },
     get zoneCount() { return counts.zone; },
-    // setRoutes(alt): other routes for some paths (q_passing.json open.*.viewer: the same trips found again on a network
-    // with Angels Knoll's paths open): { extra_nodes [[x, y, z]], paths [path index], offsets, nodes }; null: the model's.
-    // The trips keep their times: only where they walk changes
-    setRoutes(alt) {
-      if (!alt) { nodes = nodes0; pOff = pOff0; pNodes = pNodes0; pCum = pCum0; st.dirty = true; return; }
-      const at = new Map(alt.paths.map((p, k) => [p, k])), P = pOff0.length - 1, n0 = nodes0.length;
-      const n2 = new Float32Array(n0 + 3 * alt.extra_nodes.length);
-      n2.set(nodes0); alt.extra_nodes.forEach((v, k) => n2.set(v, n0 + 3 * k));
-      let len = 0;
-      for (let p = 0; p < P; p++) { const k = at.get(p); len += k === undefined ? pOff0[p + 1] - pOff0[p] : alt.offsets[k + 1] - alt.offsets[k]; }
-      const o2 = new Uint32Array(P + 1), q2 = new Uint16Array(len);
-      let w = 0;
-      for (let p = 0; p < P; p++) {
-        o2[p] = w; const k = at.get(p);
-        if (k === undefined) { q2.set(pNodes0.subarray(pOff0[p], pOff0[p + 1]), w); w += pOff0[p + 1] - pOff0[p]; }
-        else for (let j = alt.offsets[k]; j < alt.offsets[k + 1]; j++) q2[w++] = alt.nodes[j];
-      }
-      o2[P] = w;
-      nodes = n2; pOff = o2; pNodes = q2; pCum = cumOf(n2, o2, q2);
-      st.dirty = true;
-    },
     clearSelection() { if (sel.length) select(-1); },
     select,  // select(i): show person i's day (debugging / links)
   };

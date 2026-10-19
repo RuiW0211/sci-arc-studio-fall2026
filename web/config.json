@@ -209,8 +209,8 @@
       {
         "id": "passing",
         "title": "Who walks past here?",
-        "about": "The people walking past Angels Knoll's fence on a modeled typical day, and who would cross it if it opened",
-        "pending": "Not built yet: the people who walk past Angels Knoll's fence on a modeled typical day, and how many would cross it if it opened.",
+        "about": "The people walking past Angels Knoll's fence on a modeled typical day",
+        "pending": "Loading: the people who walk past Angels Knoll's fence on a modeled typical day.",
         "data": "data/q_passing.json",
         "_fence": "The fence, drawn from OpenStreetMap at its height (the LiDAR has almost none of it), points scattered at random as dense as the scanned ground beside it: fencePerM2 = 1,873 ground points within 0.5 m of the 218 m fence on Hill, 4th and Olive Streets (2026-10-18), 8.6 a square metre.",
         "fencePerM2": 8.6,

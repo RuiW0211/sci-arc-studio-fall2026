@@ -1,11 +1,10 @@
-"""The population model's walking network, rebuilt for the questions (what if a way opened?).
+"""The population model's walking network and ground, rebuilt for the Free view's questions.
 
-The same steps as site-model/population/prep_population.py's "walking network" stage, line for line (OSM ways a
-pedestrian may use, bridges and Angels Flight at a straight grade, gaps of up to snapM joined, Tobler's slope at
-slopeWeight strength, the largest connected part), with two additions: open_ways, OSM way ids walked although OSM
-marks them private (Angels Knoll's paths behind the fence, for "if it opened"), and what the model does not keep,
-each node's OSM id and each edge's OSM way, so two networks can be compared node by node. build() with no
-open_ways must give the model's own nodes (checked by q_passing.py against population_full.npz).
+build(): the same steps as site-model/population/prep_population.py's "walking network" stage, line for line (OSM
+ways a pedestrian may use, bridges and Angels Flight at a straight grade, gaps of up to snapM joined, Tobler's slope at
+slopeWeight strength, the largest connected part), keeping what the model drops: each node's OSM id and each edge's
+OSM way (which ways are steps, lifts, escalators). It gives the model's own nodes (2026-10-18: the same 14,539, within
+float rounding, as population_full.npz). ground_fn(): the model's ground height.
 """
 import json
 import math
@@ -41,11 +40,9 @@ def ground_fn():
     return ground
 
 
-def build(open_ways=(), link_ends=(), link_max_m=10.0):
-    """-> dict: XYZ (N x 3, east / north / up), G (csr, route costs), osm (N, OSM node id or -1), E (edge list
-    (a, b, length, cost, way)), funicular (node indices), links (what link_ends joined).
-    link_ends: OSM node ids of open ways' loose ends (OSM drew Angels Knoll's Hill Street path joined to nothing),
-    each joined, as a footway, to the nearest node of another way within link_max_m and 2 m of its height."""
+def build():
+    """-> dict: XYZ (N x 3, east / north / up), G (csr, route costs), osm (N, OSM node ids), E (edge list
+    (a, b, length, cost, OSM way id; -1 for a joined gap)), funicular (node indices)."""
     AS = {k: v["value"] for k, v in json.loads((POP / "data" / "assumptions.json").read_text(encoding="utf-8")).items()
           if isinstance(v, dict) and "value" in v}
     hand = json.loads((HANDOFF / "buildings.json").read_text(encoding="utf-8"))
@@ -59,7 +56,6 @@ def build(open_ways=(), link_ends=(), link_max_m=10.0):
         return x - OX, y - OY
 
     osm = json.loads((POP / "data" / "osm.json").read_text(encoding="utf-8"))
-    opened = set(open_ways)
     nid, NXY, NOSM, edges, cut, funicular_nodes = {}, [], [], {}, set(), []
 
     def node(osm_id, x, y):
@@ -74,7 +70,7 @@ def build(open_ways=(), link_ends=(), link_max_m=10.0):
         t = e.get("tags", {})
         hw = t.get("highway")
         fun = t.get("railway") == "funicular"
-        open_foot = t.get("foot") in ("yes", "designated", "permissive") or e["id"] in opened
+        open_foot = t.get("foot") in ("yes", "designated", "permissive")
         if not fun and (hw not in WALK or (t.get("access") in ("no", "private") and not open_foot) or t.get("foot") == "no"):
             continue
         if t.get("tunnel") in ("yes", "building_passage") and hw not in ("footway", "pedestrian", "corridor"):
@@ -122,19 +118,6 @@ def build(open_ways=(), link_ends=(), link_max_m=10.0):
                 edges[(min(i, j), max(i, j))] = (L, L, False, -1)
                 break
 
-    links = []
-    for osm_id in link_ends:
-        i = nid.get(osm_id)
-        if i is None:
-            continue
-        own = {j for key in edges for j in key if i in key}   # its own way's neighbours
-        for j in sorted(kd.query_ball_point(P2[i], link_max_m), key=lambda j: math.dist(P2[i], P2[j])):
-            if j != i and j not in own and (min(i, j), max(i, j)) not in edges and abs(NXY[i][2] - NXY[j][2]) < 2.0:
-                L = max(math.dist(P2[i], P2[j]), 0.1)
-                edges[(min(i, j), max(i, j))] = (L, L, False, -2)
-                links.append({"from_osm": osm_id, "to_osm": NOSM[j], "m": round(L, 1), "dz": round(NXY[j][2] - NXY[i][2], 1)})
-                break
-
     SL = AS["network"]["slopeWeight"]
     tob = lambda g: math.exp(-3.5 * (abs(g + 0.05) - 0.05))
     for key, (L, c, graded, way) in list(edges.items()):
@@ -158,4 +141,4 @@ def build(open_ways=(), link_ends=(), link_max_m=10.0):
     ec = np.array([c for _, _, _, c, _ in E])
     G = csr_matrix((np.r_[ec, ec], (np.r_[ea[:, 0], ea[:, 1]], np.r_[ea[:, 1], ea[:, 0]])), shape=(N, N))
     return {"XYZ": XYZ, "G": G, "osm": np.array([NOSM[i] for i in keep], np.int64), "E": E,
-            "funicular": sorted({int(remap[i]) for i in funicular_nodes if remap[i] >= 0}), "links": links}
+            "funicular": sorted({int(remap[i]) for i in funicular_nodes if remap[i] >= 0})}
