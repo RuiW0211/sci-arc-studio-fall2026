@@ -34,7 +34,9 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
     const T = { float32: Float32Array, uint32: Uint32Array, uint16: Uint16Array, int16: Int16Array, uint8: Uint8Array }[s.type];
     return new T(buf, s.offset, s.count);
   };
-  const nodes = sec("nodes"), pOff = sec("pathOffsets"), pNodes = sec("pathNodes");
+  // the network and the paths: the model's own, or other routes for some paths (setRoutes, the Free view's "if it opened")
+  const nodes0 = sec("nodes"), pOff0 = sec("pathOffsets"), pNodes0 = sec("pathNodes");
+  let nodes = nodes0, pOff = pOff0, pNodes = pNodes0;
   const type = sec("type"), mode = sec("mode"), sector = sec("sector"), rank = sec("rank");
   const homeBld = sec("homeBld"), workBld = sec("workBld"), homeSpot = sec("homeSpot"), workSpot = sec("workSpot");
   const distKm = sec("distKm"), bearing = sec("bearing"), tract = sec("tract");
@@ -47,14 +49,19 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   }
   const A = meta.count, TU = meta.time_unit_s;
   // cumulative length along every path
-  const pCum = new Float32Array(pNodes.length);
-  for (let p = 0; p + 1 < pOff.length; p++) {
-    let acc = 0;
-    for (let k = pOff[p]; k < pOff[p + 1]; k++) {
-      if (k > pOff[p]) { const a = 3 * pNodes[k - 1], b = 3 * pNodes[k]; acc += Math.hypot(nodes[b] - nodes[a], nodes[b + 1] - nodes[a + 1], nodes[b + 2] - nodes[a + 2]); }
-      pCum[k] = acc;
+  function cumOf(nodes, pOff, pNodes) {
+    const pCum = new Float32Array(pNodes.length);
+    for (let p = 0; p + 1 < pOff.length; p++) {
+      let acc = 0;
+      for (let k = pOff[p]; k < pOff[p + 1]; k++) {
+        if (k > pOff[p]) { const a = 3 * pNodes[k - 1], b = 3 * pNodes[k]; acc += Math.hypot(nodes[b] - nodes[a], nodes[b + 1] - nodes[a + 1], nodes[b + 2] - nodes[a + 2]); }
+        pCum[k] = acc;
+      }
     }
+    return pCum;
   }
+  const pCum0 = cumOf(nodes0, pOff0, pNodes0);
+  let pCum = pCum0;
   const lateral = new Float32Array(A);
   for (let i = 0; i < A; i++) lateral[i] = (hash(i, 7) - 0.5) * 3.6;  // spread across the sidewalk, m
   const eligible = new Set((meta.remoteEligible ?? []).map((s) => meta.sectors.indexOf(s)));
@@ -192,6 +199,14 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const SHOWN = [...new Set(GROUP)];
   const colors = meta.types.map((t, k) => new THREE.Color(pc.colors?.[meta.types[GROUP[k]]] ?? "#888"));
   for (let i = 0; i < A; i++) colors[type[i]].toArray(col, 3 * i);
+  const col0 = col.slice();   // the people's own colours, for when a question's zone lets go (setZone)
+  // a question's zone (setZone, the Free view, user 2026-10-18): the people in it in the highlight colour, everyone else
+  // the cloud's context grey (time.contextGrey, the History module's grey for all but the buildings)
+  const ZONE_HI = new THREE.Color(cfg.linked?.highlight ?? "#FF3EA5"), ZONE_LO = cfg.time?.contextGrey ?? 0.45;
+  let zone = null;   // { rings: [[x, z], ...][], box: [x0, z0, x1, z1] }
+  const zoneC = new THREE.Color(), zoneIn = new Uint8Array(A);   // who is in the zone now (update)
+  const inRing = (r, x, z) => { let c = false; for (let a = 0, b = r.length - 1; a < r.length; b = a++) { if ((r[a][1] > z) !== (r[b][1] > z) && x < ((r[b][0] - r[a][0]) * (z - r[a][1])) / (r[b][1] - r[a][1]) + r[a][0]) c = !c; } return c; };
+  const inZone = (x, z) => x >= zone.box[0] && x <= zone.box[2] && z >= zone.box[1] && z <= zone.box[3] && zone.rings.some((r) => inRing(r, x, z));
   // the two lattices as one 64 x 64 texture (r: seed 7, g: seed 23; texel (i, j))
   const latData = new Float32Array(64 * 64 * 2);
   for (let i = 0; i < 64; i++) for (let j = 0; j < 64; j++) { latData[(j * 64 + i) * 2] = TH.lat7?.[i * 64 + j] ?? 0; latData[(j * 64 + i) * 2 + 1] = TH.lat23?.[i * 64 + j] ?? 0; }
@@ -335,8 +350,10 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       const i = movers[m], k = movers[m + 1], T0 = D.t0[k] * TU, dur = Math.max((D.t1[k] - D.t0[k]) * TU, 1);
       // (user, 2026-10-17) a trail goes with its person: none for one not drawn, as faint as they are
       const sh = share(pos[3 * i], pos[3 * i + 2], i); if (!(sh > 0 && uKeep[i] < sh)) continue;
+      // a question's zone (setZone): only the people in it keep a trail, in their colour (the highlight); the grey rest none
+      if (zone && !zoneIn[i] && !selSet.has(i)) continue;
       const fade = 0.35 + 0.65 * Math.sqrt(sh);
-      const start = Math.max(T - tail, T0), c = colors[type[i]], self = selSet.has(i) ? 1 : 0;
+      const start = Math.max(T - tail, T0), c = zone ? zoneC.fromArray(col, 3 * i) : colors[type[i]], self = selSet.has(i) ? 1 : 0;
       along(D, i, k, (start - T0) / dur, ta);
       let tPrev = start;
       for (let s = 1; s <= TS; s++) {
@@ -361,10 +378,10 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const y1 = (meta.y1 || []).map((ring) => ring.map(([x, n]) => [x, -n]));   // Y-1 parcel, written by prep_population.py
   const inY1 = (x, z) => y1.some((r) => { let c = false; for (let a = 0, b = r.length - 1; a < r.length; b = a++) { if ((r[a][1] > z) !== (r[b][1] > z) && x < ((r[b][0] - r[a][0]) * (z - r[a][1])) / (r[b][1] - r[a][1]) + r[a][0]) c = !c; } return c; });
 
-  const counts = { total: 0, byType: meta.types.map(() => 0), indoors: 0, outdoors: 0, y1: 0 };
+  const counts = { total: 0, byType: meta.types.map(() => 0), indoors: 0, outdoors: 0, y1: 0, zone: 0 };
   function update() {
     const D = days[st.day], T = st.t;
-    counts.total = counts.indoors = counts.outdoors = counts.y1 = 0;
+    counts.total = counts.indoors = counts.outdoors = counts.y1 = counts.zone = 0;
     counts.byType.fill(0);
     // trails while playing, and while a person is selected (the day pauses then, select()): the last stretch stays put
     const wantTrails = (st.playing || sel.length > 0) && st.neon && points.visible, movers = [];
@@ -377,8 +394,14 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       counts.total += w; counts.byType[type[i]] += w;
       if (r === 1) counts.indoors += w;
       else { counts.outdoors += w; if (inY1(tmp.x, tmp.z)) counts.y1 += w; }
+      if (zone) {   // outdoors in the zone: the highlight colour; everyone else grey
+        const z = r !== 1 && inZone(tmp.x, tmp.z);
+        zoneIn[i] = z ? 1 : 0;
+        if (z) { counts.zone += w; ZONE_HI.toArray(col, 3 * i); } else col[3 * i] = col[3 * i + 1] = col[3 * i + 2] = ZONE_LO;
+      }
     }
     geo.attributes.position.needsUpdate = true;
+    if (zone) geo.attributes.color.needsUpdate = true;
     trails.visible = wantTrails;
     if (wantTrails) buildTrails(movers);
     if (sel.length) {
@@ -751,6 +774,36 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       return true;
     },
     deselectPerson(i) { if (selSet.has(i)) select(i, true); },   // a closed label (viewer.js)
+    // the Free view's questions (viewer.js, user 2026-10-18). setZone(rings): the people outdoors inside these rings
+    // ([x, z] scene metres) in the highlight colour, the others grey, counted in counts.zone; null: their own colours
+    setZone(rings) {
+      if (!rings?.length) { zone = null; col.set(col0); geo.attributes.color.needsUpdate = true; st.dirty = true; return; }
+      const xs = rings.flat().map((p) => p[0]), zs = rings.flat().map((p) => p[1]);
+      zone = { rings, box: [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)] };
+      st.dirty = true;
+    },
+    get zoneCount() { return counts.zone; },
+    // setRoutes(alt): other routes for some paths (q_passing.json open.*.viewer: the same trips found again on a network
+    // with Angels Knoll's paths open): { extra_nodes [[x, y, z]], paths [path index], offsets, nodes }; null: the model's.
+    // The trips keep their times: only where they walk changes
+    setRoutes(alt) {
+      if (!alt) { nodes = nodes0; pOff = pOff0; pNodes = pNodes0; pCum = pCum0; st.dirty = true; return; }
+      const at = new Map(alt.paths.map((p, k) => [p, k])), P = pOff0.length - 1, n0 = nodes0.length;
+      const n2 = new Float32Array(n0 + 3 * alt.extra_nodes.length);
+      n2.set(nodes0); alt.extra_nodes.forEach((v, k) => n2.set(v, n0 + 3 * k));
+      let len = 0;
+      for (let p = 0; p < P; p++) { const k = at.get(p); len += k === undefined ? pOff0[p + 1] - pOff0[p] : alt.offsets[k + 1] - alt.offsets[k]; }
+      const o2 = new Uint32Array(P + 1), q2 = new Uint16Array(len);
+      let w = 0;
+      for (let p = 0; p < P; p++) {
+        o2[p] = w; const k = at.get(p);
+        if (k === undefined) { q2.set(pNodes0.subarray(pOff0[p], pOff0[p + 1]), w); w += pOff0[p + 1] - pOff0[p]; }
+        else for (let j = alt.offsets[k]; j < alt.offsets[k + 1]; j++) q2[w++] = alt.nodes[j];
+      }
+      o2[P] = w;
+      nodes = n2; pOff = o2; pNodes = q2; pCum = cumOf(n2, o2, q2);
+      st.dirty = true;
+    },
     clearSelection() { if (sel.length) select(-1); },
     select,  // select(i): show person i's day (debugging / links)
   };

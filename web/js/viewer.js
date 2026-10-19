@@ -1375,6 +1375,75 @@ for (const q of QUESTIONS) {
   q.input.onchange = () => (q.input.checked ? openQuestion(q.id) : closeQuestion());
   $("#questions").append(row, box);
 }
+
+// ---------- question 1, "Who walks past here?" (user, 2026-10-18; site-model/questions/q_passing.py) ----------
+// Angels Knoll's fence, drawn from OpenStreetMap at its height (the LiDAR has almost none of it), in the highlight
+// colour; A Day's people outdoors along it in the highlight colour, everyone else grey. Closed, today / Opened: the same
+// trips found again on a network with the fence's two paths open (q_passing.json open.both). One sentence from the
+// model for A Day's day, and where its numbers come from.
+{
+  const q = QUESTIONS.find((x) => x.id === "passing");
+  if (q) {
+    let data = null, fence = null, mode = "today", peopleWere = null;
+    const N = (n) => { const s = n >= 1000 ? 100 : 10; return (Math.round(n / s) * s).toLocaleString("en-US"); };
+    const at = (k) => (k % 24 === 0 ? "midnight" : k === 12 ? "noon" : `${((k + 11) % 12) + 1} ${k < 12 ? "am" : "pm"}`);
+    const dayNow = () => $("#popDay button.on")?.dataset.d ?? "weekday";
+    const build = () => {   // the fence's points, scattered at random over it (the same scatter on every visit)
+      const pos = [], H = data.fence.height_m, D = q.fencePerM2 ?? 8.6;
+      let seed = 23;
+      const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+      for (const line of data.fence.lines) for (let k = 0; k + 1 < line.length; k++) {
+        const [ax, ay, az] = line[k], [bx, by, bz] = line[k + 1], L = Math.hypot(bx - ax, bz - az);
+        for (let n = Math.round(D * L * H); n > 0; n--) { const s = rnd(); pos.push(ax + (bx - ax) * s, ay + (by - ay) * s + rnd() * H, az + (bz - az) * s); }
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      fence = new THREE.Points(g, fishPatch(new THREE.PointsMaterial({ color: HILITE, size: cfg.lidar.size ?? 0.25, sizeAttenuation: true })));
+      fence.visible = false;
+      scene.add(fence);
+      q.box.innerHTML = `<div class="seg pill" id="qPassMode"><span class="thumb" aria-hidden="true"></span><button data-m="today" class="on">Closed, today</button><button data-m="open">Opened</button></div><p class="qs"></p><p class="note"></p>`;
+      q.box.querySelectorAll("#qPassMode button").forEach((b) => (b.onclick = () => setMode(b.dataset.m)));
+    };
+    const text = () => {
+      if (!data || !fence) return;
+      const day = dayNow(), t = data.today[day], o = data.open.both[day], r = data.range[day];
+      const peak = t.by_hour.indexOf(Math.max(...t.by_hour));
+      q.box.querySelector(".qs").textContent = mode === "today"
+        ? `About ${N(t.total)} walking trips pass along Angels Knoll's fence on a modeled ${day} (likely ${N(r[0])} to ${N(r[1])}); the busiest hour is ${at(peak)} to ${at(peak + 1)}.`
+        : `Opened, about ${N(o.total)} of them would cut across the knoll instead, each some ${Math.round(o.minutes_saved_mean * 60)} seconds shorter: the fence closes a place more than a way.`;
+      q.box.querySelector(".note").textContent = mode === "today"
+        ? `A modeled typical day, not a count; the range is the model against nine LADOT street counts, the nearest about 450 m away. The fence: OpenStreetMap, ${data.fence.height_ft} ft (LA Downtown News, 2013).`
+        : "The same trips, routed again with the fence's two paths open (the Hill Street one joined to the street: an assumption). Modeled people take the shortest way and do not stop: these would cross the park, not use it.";
+    };
+    function setMode(m) {
+      mode = m;
+      q.box.querySelectorAll("#qPassMode button").forEach((b) => b.classList.toggle("on", b.dataset.m === m));
+      moveThumb(false, "#qPassMode");
+      pop?.setRoutes(m === "open" ? data.open.both.viewer : null);
+      pop?.setZone(m === "open" ? [...data.band.rings, data.park.ring] : data.band.rings);
+      text(); invalidate();
+    }
+    document.querySelectorAll("#popDay button").forEach((b) => b.addEventListener("click", () => text()));   // A Day's day
+    q.show = async (on) => {
+      if (on) {
+        try { data ??= await (await fetch(q.data)).json(); } catch { return; }
+        if (qOpen !== q.id) return;   // closed while it loaded
+        if (!fence) build();
+        fence.visible = true;
+        if (!$("#popOn").checked) { peopleWere = false; $("#popOn").checked = true; await $("#popOn").onchange({ target: $("#popOn") }); }
+        else peopleWere ??= true;
+        setMode(mode);
+        requestAnimationFrame(() => moveThumb(true, "#qPassMode"));
+      } else {
+        if (fence) fence.visible = false;
+        pop?.setZone(null); pop?.setRoutes(null);
+        if (peopleWere === false && $("#popOn").checked) { $("#popOn").checked = false; $("#popOn").onchange({ target: $("#popOn") }); }
+        peopleWere = null;
+        invalidate();
+      }
+    };
+  }
+}
 $("#lensOn").onchange = (e) => setLens(e.target.checked);   // the fisheye lens (LENS)
 
 // ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------

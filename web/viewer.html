@@ -323,6 +323,10 @@
   #qSec label.layer:has(input:checked) i.sw { background: var(--c); box-shadow: none; }
   #qSec .qa { margin: 0 0 6px 18px; }
   #qSec .qa[hidden] { display: none; }
+  #qSec .qa .qs { margin: 6px 0 0; }
+  /* a question's own switch (Closed, today / Opened): as A Day's Weekday / Weekend */
+  #qPassMode.seg.pill { display: flex; margin-top: 4px; }
+  #qPassMode.seg.pill button, #qPassMode.seg.pill button:last-child { flex: 1; }
   body.v-free #shotsSec { display: none; }   /* ?shots: the film's shots, Guided only */
   /* time section (user, 2026-10-13): a module like Population; the unbuilt schemes live here, shown only with it */
   #timeSec label.layer:has(input:checked) i.sw { background: var(--c); box-shadow: none; }
