@@ -1348,34 +1348,6 @@ function renderViews() {
 }
 renderViews();
 
-// ---------- the questions (user, 2026-10-17/18): Free asks the model questions instead of switching layers ----------
-// One open at a time, like a layer row whose dot fills while it is open: the camera goes to the question's view, its
-// answer is to light in the city (the highlight colour, the rest dimmed) with one sentence from the model under it.
-// config.json questions.items: { id, title, about, pending, view }; a question built later adds show(on) to light its
-// answer and fills its box. Until then the box says what it will show (pending).
-const QUESTIONS = cfg.questions?.items ?? [];
-let qOpen = null;
-function openQuestion(id) {
-  qOpen = id;
-  for (const q of QUESTIONS) { q.input.checked = q.id === id; q.box.hidden = q.id !== id; q.show?.(q.id === id); }
-  const q = QUESTIONS.find((x) => x.id === id);
-  if (q?.view) goTo(q.view);
-  invalidate();
-}
-function closeQuestion() { if (qOpen) { const q = QUESTIONS.find((x) => x.id === qOpen); qOpen = null; q.input.checked = false; q.box.hidden = true; q.show?.(false); invalidate(); } }
-$("#questions").innerHTML = "";
-$("#qSec").hidden = !QUESTIONS.length;   // (2026-10-18: none for now, the first two removed: git tag questions-v1)
-for (const q of QUESTIONS) {
-  const row = document.createElement("label");
-  row.className = "layer"; row.title = q.about || "";
-  row.innerHTML = `<input type="checkbox"><i class="sw" style="--c:var(--tag)"></i><span class="nm">${q.title}</span>`;
-  const box = document.createElement("div");
-  box.className = "qa"; box.hidden = true;
-  box.innerHTML = `<p class="note">${q.pending || ""}</p>`;
-  q.input = row.querySelector("input"); q.box = box;
-  q.input.onchange = () => (q.input.checked ? openQuestion(q.id) : closeQuestion());
-  $("#questions").append(row, box);
-}
 $("#lensOn").onchange = (e) => setLens(e.target.checked);   // the fisheye lens (LENS)
 
 // ---------- population: a modeled day, one point per person (js/population.js), loaded on first use ----------
@@ -2943,7 +2915,6 @@ await setMode("cloud");
 let viewMode = "free", historyLeft = null;
 function setView(v) {
   if (v === viewMode) return;
-  if (v !== "free") closeQuestion();   // the questions are Free's
   viewMode = v;
   document.querySelectorAll("#viewMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === v));
   document.body.classList.toggle("v-free", v === "free");

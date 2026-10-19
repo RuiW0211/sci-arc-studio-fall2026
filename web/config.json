@@ -203,10 +203,6 @@
       "noLens": true
     }
   ],
-  "questions": {
-    "_comment": "Free asks questions instead of switching layers (user, 2026-10-18: the layer toggles removed). One open at a time: the camera goes to its view, its answer will light in the city (the highlight colour, the rest dimmed) with one sentence from the model. pending: shown until the question is built. view: as in views (scene x east, y up, z south; Y-1's centre is about [-2, 100, 4]). No items: the section is hidden. 2026-10-18 (user: \"没什么实质性的意义，都删掉\"): the first two, 'Who walks past here?' (Angels Knoll's fence: about 11,000 modeled trips a day pass along it; opened, about 230 would cut across) and 'What keeps people out?' (the fences, walls, gates, fares and stairs round Y-1 from OpenStreetMap), removed; they are at git tag questions-v1.",
-    "items": []
-  },
   "population": {
     "_comment": "Modeled day/night population (site-model/population/prep_population.py): one point per person, size in metres. start = clock at load (hours), speed = simulated seconds per real second. routeColor / neon / neonStrength: the selected person's light trail (neonStrength scales its opacity). whiteCloud: the 'Highlight people' option - grey level (1 = white) and opacity the point cloud fades to (0.5 s). highlightSize: people's size (m) under 'Highlight people'. colors: Okabe-Ito (colour-blind safe), workers #FFD166 and visitors #06D6A0 from Coolors 'Watermelon Sorbet' (user, 2026-10-09); passers-by #EDEDED, light enough to show on the concrete-grey streets (user, 2026-10-10). isolateAlpha: opacity of everyone else while one person is selected (user, 2026-10-12: 0.15 was too faint, now 0.3).",
     "isolateAlpha": 0.3,
