@@ -670,16 +670,31 @@ if (mcv) {
     mInfo.scrollTop = 0;
   }
 
+  /* with nothing chosen yet, the right half previews whatever is under the cursor;
+     once a stream has been clicked its detail stays put and hover leaves it alone */
+  function mIdle() {
+    if (mPicked >= 0) return;
+    if (mHover >= 0) {
+      mInfo.innerHTML = `<h2>${STREAMS[mHover].name}</h2>`
+        + `<p class="amt">${fmt(MP.m.v[STREAMS[mHover].key] || 0)}</p>`
+        + `<p class="prompt">Click to read the detail.</p>`;
+    } else {
+      mInfo.innerHTML = '<p class="prompt">Select a stream.</p>';
+    }
+  }
+
   mcv.addEventListener("pointermove", (e) => {
     const r = mcv.getBoundingClientRect();
+    const was = mHover;
     mHover = mHit(e.clientX - r.left, e.clientY - r.top);
     mcv.style.cursor = mHover >= 0 ? "pointer" : "default";
+    if (mHover !== was) mIdle();
   });
-  mcv.addEventListener("pointerleave", () => { mHover = -1; });
+  mcv.addEventListener("pointerleave", () => { mHover = -1; mIdle(); });
   mcv.addEventListener("click", (e) => {
     const r = mcv.getBoundingClientRect();
     const si = mHit(e.clientX - r.left, e.clientY - r.top);
-    if (si < 0) { mPicked = -1; mInfo.innerHTML = '<p class="prompt">Select a stream.</p>'; return; }
+    if (si < 0) { mPicked = -1; mIdle(); return; }
     mPicked = si; mShow(si);
   });
 
