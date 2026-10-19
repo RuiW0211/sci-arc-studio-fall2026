@@ -29,7 +29,7 @@
   .seg button { flex: 1; border: 0; border-right: 1px solid var(--line); }
   .seg button:last-child { border-right: 0; }
   .note { color: var(--muted); font-size: 11px; margin-top: 4px; }
-  .note[hidden], #layersBox[hidden] { display: none; }
+  .note[hidden] { display: none; }
   /* layer rows: the dot is the toggle (filled = shown, ring = hidden); layer colours only when the cloud is coloured by layer */
   i.sw { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); transition: background var(--t-feedback), box-shadow var(--t-feedback); }
   body.linked i.sw { background: var(--c); }
@@ -316,7 +316,13 @@
   #popDay.seg.pill button, #popDay.seg.pill button:last-child { flex: 1; }
   #viewMode { margin: 8px 0 2px; }
   body.v-free #timeSec { display: none; }   /* Free view: no History module */
-  body:not(.v-free) #monoRow { display: none; }   /* Black and white: Free only (Guided is always so) */
+  /* the questions (user, 2026-10-18): Free only, the Guided camera being the film's. A question's dot fills in the
+     highlight colour while it is open, as A Day's and History's dots do; its answer sits under it, level with its title
+     (the dot's 10 px + the row's 8 px gap) */
+  body:not(.v-free) #qSec { display: none; }
+  #qSec label.layer:has(input:checked) i.sw { background: var(--c); box-shadow: none; }
+  #qSec .qa { margin: 0 0 6px 18px; }
+  #qSec .qa[hidden] { display: none; }
   body.v-free #shotsSec { display: none; }   /* ?shots: the film's shots, Guided only */
   /* time section (user, 2026-10-13): a module like Population; the unbuilt schemes live here, shown only with it */
   #timeSec label.layer:has(input:checked) i.sw { background: var(--c); box-shadow: none; }
@@ -336,16 +342,16 @@
   <div class="body">
     <div class="sub">Site model · <a href="./" style="color:inherit">home</a></div>
     <!-- two cameras on the same model (user, 2026-10-15): Guided, the opening and film; Free, today's model to explore -->
-    <div class="seg pill" id="viewMode"><span class="thumb" aria-hidden="true"></span><button data-v="history" title="Guided camera: the site since 1867, the buildings going up, then a film of the places around Y-1 (Space: pause / go on)">Guided</button><button data-v="free" title="Free camera: today's model to explore yourself: layers, details, people">Free</button></div>
+    <div class="seg pill" id="viewMode"><span class="thumb" aria-hidden="true"></span><button data-v="history" title="Guided camera: the site since 1867, the buildings going up, then a film of the places around Y-1 (Space: pause / go on)">Guided</button><button data-v="free" title="Free camera: today's model to explore yourself: questions, details, people">Free</button></div>
     <details class="sec" open hidden><summary>Mode</summary>
     <!-- one mode for now (hidden): the 2023 LiDAR point cloud, coloured by layer -->
     <div id="modes"><div class="seg"><span class="thumb" aria-hidden="true"></span>
       <button data-mode="cloud" title="The 2023 USGS LiDAR point cloud, every point tied to a model object; layers and click apply">Point cloud</button>
     </div></div>
     </details>
-    <details class="sec" id="layersBox" open><summary>Layers</summary>
-      <label class="layer" id="monoRow" title="As in Guided: the buildings white, everything else a faint grey (Free only; Guided always looks like this)"><input type="checkbox" id="monoOn"><i class="sw" style="--c:#FFFFFF"></i><span class="nm">Black and white</span><span class="n">as in Guided</span></label>
-      <div id="layers"></div>
+    <!-- the questions (user, 2026-10-18): Free asks the model questions instead of switching layers (config.json questions) -->
+    <details class="sec" id="qSec" open><summary>Questions</summary>
+      <div id="questions"></div>
     </details>
     <!-- modeled population (js/population.js, after Clark Amenudo's layer): one point per person over a typical day -->
     <details class="sec" id="timeSec" open><summary>History</summary>

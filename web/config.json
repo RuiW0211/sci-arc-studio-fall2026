@@ -203,6 +203,25 @@
       "noLens": true
     }
   ],
+  "questions": {
+    "_comment": "Free asks questions instead of switching layers (user, 2026-10-18: the layer toggles removed; two questions first). One open at a time: the camera goes to its view, its answer will light in the city (the highlight colour, the rest dimmed) with one sentence from the model. pending: shown until the question is built. view: as in views (scene x east, y up, z south; Y-1's centre is about [-2, 100, 4]).",
+    "items": [
+      {
+        "id": "passing",
+        "title": "Who walks past here?",
+        "about": "The people walking past Angels Knoll's fence on a modeled typical day, and who would cross it if it opened",
+        "pending": "Not built yet: the people who walk past Angels Knoll's fence on a modeled typical day, and how many would cross it if it opened.",
+        "view": { "position": [110, 185, 135], "target": [-2, 100, 4] }
+      },
+      {
+        "id": "devices",
+        "title": "What keeps people out?",
+        "about": "The fences, walls, locked gates and stairs-only entrances round Y-1, and the lifts, escalators and bridges that let people in",
+        "pending": "Not built yet: the fences, walls, locked gates and stairs-only entrances within about 300 m of Y-1, and the lifts, escalators and bridges that let people in.",
+        "view": { "position": [330, 430, 380], "target": [0, 95, 0] }
+      }
+    ]
+  },
   "population": {
     "_comment": "Modeled day/night population (site-model/population/prep_population.py): one point per person, size in metres. start = clock at load (hours), speed = simulated seconds per real second. routeColor / neon / neonStrength: the selected person's light trail (neonStrength scales its opacity). whiteCloud: the 'Highlight people' option - grey level (1 = white) and opacity the point cloud fades to (0.5 s). highlightSize: people's size (m) under 'Highlight people'. colors: Okabe-Ito (colour-blind safe), workers #FFD166 and visitors #06D6A0 from Coolors 'Watermelon Sorbet' (user, 2026-10-09); passers-by #EDEDED, light enough to show on the concrete-grey streets (user, 2026-10-10). isolateAlpha: opacity of everyone else while one person is selected (user, 2026-10-12: 0.15 was too faint, now 0.3).",
     "isolateAlpha": 0.3,
