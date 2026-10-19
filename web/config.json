@@ -204,30 +204,8 @@
     }
   ],
   "questions": {
-    "_comment": "Free asks questions instead of switching layers (user, 2026-10-18: the layer toggles removed; two questions first). One open at a time: the camera goes to its view, its answer will light in the city (the highlight colour, the rest dimmed) with one sentence from the model. pending: shown until the question is built. view: as in views (scene x east, y up, z south; Y-1's centre is about [-2, 100, 4]).",
-    "items": [
-      {
-        "id": "passing",
-        "title": "Who walks past here?",
-        "about": "The people walking past Angels Knoll's fence on a modeled typical day",
-        "pending": "Loading: the people who walk past Angels Knoll's fence on a modeled typical day.",
-        "data": "data/q_passing.json",
-        "_fence": "The fence, drawn from OpenStreetMap at its height (the LiDAR has almost none of it), points scattered at random as dense as the scanned ground beside it: fencePerM2 = 1,873 ground points within 0.5 m of the 218 m fence on Hill, 4th and Olive Streets (2026-10-18), 8.6 a square metre.",
-        "fencePerM2": 8.6,
-        "view": { "position": [215, 320, 265], "target": [-8, 92, 4] }
-      },
-      {
-        "id": "devices",
-        "title": "What keeps people out?",
-        "about": "What keeps people out within 300 m of Y-1 (fences, walls, private paths, locked gates, gates and fares that let some in, steps with no way round) and what lets them in or up (entrances, lifts, escalators, bridges)",
-        "pending": "Loading: what keeps people out within 300 m of Y-1, and what lets them in.",
-        "data": "data/q_devices.json",
-        "_draw": "Every device OpenStreetMap maps (site-model/questions/q_devices.py) as points as dense as the scanned ground (the first question's fencePerM2): what keeps someone out in the highlight colour, what lets people in or up in white. OSM gives no heights (but Angels Knoll's fence, 6 ft, drawn at it), so lines lie on the ground in a strip lineM wide, about a sidewalk kerb's width doubled so they read from this view; points (gates, turnstiles, entrances, lifts) stand as posts pinM high, about a door's height and a half.",
-        "lineM": 1.0,
-        "pinM": 3.0,
-        "view": { "position": [330, 430, 380], "target": [0, 95, 0] }
-      }
-    ]
+    "_comment": "Free asks questions instead of switching layers (user, 2026-10-18: the layer toggles removed). One open at a time: the camera goes to its view, its answer will light in the city (the highlight colour, the rest dimmed) with one sentence from the model. pending: shown until the question is built. view: as in views (scene x east, y up, z south; Y-1's centre is about [-2, 100, 4]). No items: the section is hidden. 2026-10-18 (user: \"没什么实质性的意义，都删掉\"): the first two, 'Who walks past here?' (Angels Knoll's fence: about 11,000 modeled trips a day pass along it; opened, about 230 would cut across) and 'What keeps people out?' (the fences, walls, gates, fares and stairs round Y-1 from OpenStreetMap), removed; they are at git tag questions-v1.",
+    "items": []
   },
   "population": {
     "_comment": "Modeled day/night population (site-model/population/prep_population.py): one point per person, size in metres. start = clock at load (hours), speed = simulated seconds per real second. routeColor / neon / neonStrength: the selected person's light trail (neonStrength scales its opacity). whiteCloud: the 'Highlight people' option - grey level (1 = white) and opacity the point cloud fades to (0.5 s). highlightSize: people's size (m) under 'Highlight people'. colors: Okabe-Ito (colour-blind safe), workers #FFD166 and visitors #06D6A0 from Coolors 'Watermelon Sorbet' (user, 2026-10-09); passers-by #EDEDED, light enough to show on the concrete-grey streets (user, 2026-10-10). isolateAlpha: opacity of everyone else while one person is selected (user, 2026-10-12: 0.15 was too faint, now 0.3).",

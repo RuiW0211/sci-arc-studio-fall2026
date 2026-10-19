@@ -192,14 +192,6 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const SHOWN = [...new Set(GROUP)];
   const colors = meta.types.map((t, k) => new THREE.Color(pc.colors?.[meta.types[GROUP[k]]] ?? "#888"));
   for (let i = 0; i < A; i++) colors[type[i]].toArray(col, 3 * i);
-  const col0 = col.slice();   // the people's own colours, for when a question's zone lets go (setZone)
-  // a question's zone (setZone, the Free view, user 2026-10-18): the people in it in the highlight colour, everyone else
-  // the cloud's context grey (time.contextGrey, the History module's grey for all but the buildings)
-  const ZONE_HI = new THREE.Color(cfg.linked?.highlight ?? "#FF3EA5"), ZONE_LO = cfg.time?.contextGrey ?? 0.45;
-  let zone = null;   // { rings: [[x, z], ...][], box: [x0, z0, x1, z1] }
-  const zoneC = new THREE.Color(), zoneIn = new Uint8Array(A);   // who is in the zone now (update)
-  const inRing = (r, x, z) => { let c = false; for (let a = 0, b = r.length - 1; a < r.length; b = a++) { if ((r[a][1] > z) !== (r[b][1] > z) && x < ((r[b][0] - r[a][0]) * (z - r[a][1])) / (r[b][1] - r[a][1]) + r[a][0]) c = !c; } return c; };
-  const inZone = (x, z) => x >= zone.box[0] && x <= zone.box[2] && z >= zone.box[1] && z <= zone.box[3] && zone.rings.some((r) => inRing(r, x, z));
   // the two lattices as one 64 x 64 texture (r: seed 7, g: seed 23; texel (i, j))
   const latData = new Float32Array(64 * 64 * 2);
   for (let i = 0; i < 64; i++) for (let j = 0; j < 64; j++) { latData[(j * 64 + i) * 2] = TH.lat7?.[i * 64 + j] ?? 0; latData[(j * 64 + i) * 2 + 1] = TH.lat23?.[i * 64 + j] ?? 0; }
@@ -343,10 +335,8 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       const i = movers[m], k = movers[m + 1], T0 = D.t0[k] * TU, dur = Math.max((D.t1[k] - D.t0[k]) * TU, 1);
       // (user, 2026-10-17) a trail goes with its person: none for one not drawn, as faint as they are
       const sh = share(pos[3 * i], pos[3 * i + 2], i); if (!(sh > 0 && uKeep[i] < sh)) continue;
-      // a question's zone (setZone): only the people in it keep a trail, in their colour (the highlight); the grey rest none
-      if (zone && !zoneIn[i] && !selSet.has(i)) continue;
       const fade = 0.35 + 0.65 * Math.sqrt(sh);
-      const start = Math.max(T - tail, T0), c = zone ? zoneC.fromArray(col, 3 * i) : colors[type[i]], self = selSet.has(i) ? 1 : 0;
+      const start = Math.max(T - tail, T0), c = colors[type[i]], self = selSet.has(i) ? 1 : 0;
       along(D, i, k, (start - T0) / dur, ta);
       let tPrev = start;
       for (let s = 1; s <= TS; s++) {
@@ -371,10 +361,10 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
   const y1 = (meta.y1 || []).map((ring) => ring.map(([x, n]) => [x, -n]));   // Y-1 parcel, written by prep_population.py
   const inY1 = (x, z) => y1.some((r) => { let c = false; for (let a = 0, b = r.length - 1; a < r.length; b = a++) { if ((r[a][1] > z) !== (r[b][1] > z) && x < ((r[b][0] - r[a][0]) * (z - r[a][1])) / (r[b][1] - r[a][1]) + r[a][0]) c = !c; } return c; });
 
-  const counts = { total: 0, byType: meta.types.map(() => 0), indoors: 0, outdoors: 0, y1: 0, zone: 0 };
+  const counts = { total: 0, byType: meta.types.map(() => 0), indoors: 0, outdoors: 0, y1: 0 };
   function update() {
     const D = days[st.day], T = st.t;
-    counts.total = counts.indoors = counts.outdoors = counts.y1 = counts.zone = 0;
+    counts.total = counts.indoors = counts.outdoors = counts.y1 = 0;
     counts.byType.fill(0);
     // trails while playing, and while a person is selected (the day pauses then, select()): the last stretch stays put
     const wantTrails = (st.playing || sel.length > 0) && st.neon && points.visible, movers = [];
@@ -387,14 +377,8 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       counts.total += w; counts.byType[type[i]] += w;
       if (r === 1) counts.indoors += w;
       else { counts.outdoors += w; if (inY1(tmp.x, tmp.z)) counts.y1 += w; }
-      if (zone) {   // outdoors in the zone: the highlight colour; everyone else grey
-        const z = r !== 1 && inZone(tmp.x, tmp.z);
-        zoneIn[i] = z ? 1 : 0;
-        if (z) { counts.zone += w; ZONE_HI.toArray(col, 3 * i); } else col[3 * i] = col[3 * i + 1] = col[3 * i + 2] = ZONE_LO;
-      }
     }
     geo.attributes.position.needsUpdate = true;
-    if (zone) geo.attributes.color.needsUpdate = true;
     trails.visible = wantTrails;
     if (wantTrails) buildTrails(movers);
     if (sel.length) {
@@ -767,15 +751,6 @@ export async function createPopulation({ cfg, scene, camera, renderer, layers, t
       return true;
     },
     deselectPerson(i) { if (selSet.has(i)) select(i, true); },   // a closed label (viewer.js)
-    // the Free view's questions (viewer.js, user 2026-10-18). setZone(rings): the people outdoors inside these rings
-    // ([x, z] scene metres) in the highlight colour, the others grey, counted in counts.zone; null: their own colours
-    setZone(rings) {
-      if (!rings?.length) { zone = null; col.set(col0); geo.attributes.color.needsUpdate = true; st.dirty = true; return; }
-      const xs = rings.flat().map((p) => p[0]), zs = rings.flat().map((p) => p[1]);
-      zone = { rings, box: [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)] };
-      st.dirty = true;
-    },
-    get zoneCount() { return counts.zone; },
     clearSelection() { if (sel.length) select(-1); },
     select,  // select(i): show person i's day (debugging / links)
   };
