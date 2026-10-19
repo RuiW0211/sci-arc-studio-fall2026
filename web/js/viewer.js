@@ -1379,8 +1379,9 @@ for (const q of QUESTIONS) {
 // ---------- question 1, "Who walks past here?" (user, 2026-10-18; site-model/questions/q_passing.py) ----------
 // Angels Knoll's fence, drawn from OpenStreetMap at its height (the LiDAR has almost none of it), in the highlight
 // colour; A Day's people outdoors along it in the highlight colour, everyone else grey. One sentence from the model for
-// A Day's day, who they are, and where the numbers come from. (user, 2026-10-18: no "if it opened": the same trips
-// routed again with the fence open changed little, about 230 of 11,000 a weekday, and showed no difference)
+// A Day's day, who they are, what opening the fence would change, and where the numbers come from. (user, 2026-10-18:
+// no Opened / Closed switch, the same trips routed again with the fence open changed little and showed no difference;
+// "加上那句结论": the finding, in words)
 {
   const q = QUESTIONS.find((x) => x.id === "passing");
   if (q) {
@@ -1401,18 +1402,19 @@ for (const q of QUESTIONS) {
       fence = new THREE.Points(g, fishPatch(new THREE.PointsMaterial({ color: HILITE, size: cfg.lidar.size ?? 0.25, sizeAttenuation: true })));
       fence.visible = false;
       scene.add(fence);
-      q.box.innerHTML = `<p class="qs"></p><p class="note who"></p><p class="note"></p>`;
+      q.box.innerHTML = `<p class="qs"></p><p class="note who"></p><p class="qs if"></p><p class="note src"></p>`;
     };
     const text = () => {
       if (!data || !fence) return;
-      const day = dayNow(), t = data.today[day], r = data.range[day];
+      const day = dayNow(), t = data.today[day], r = data.range[day], o = data.opened[day];
       const peak = t.by_hour.indexOf(Math.max(...t.by_hour));
       // who they are: the kinds of people the model has, the largest first (as A Day names them)
       const KIND = { worker: "workers", resident: "residents", visitor: "visitors", hotel: "hotel guests", passerby: "passers-by", unsheltered: "people without shelter" };
       const kinds = Object.entries(t.by_type).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => `${KIND[k] ?? k} ${N(n)}`);
-      q.box.querySelector(".qs").textContent = `About ${N(t.total)} walking trips pass along Angels Knoll's fence on a modeled ${day} (likely ${N(r[0])} to ${N(r[1])}); the busiest hour is ${at(peak)} to ${at(peak + 1)}.`;
+      q.box.querySelector(".qs:not(.if)").textContent = `About ${N(t.total)} walking trips pass along Angels Knoll's fence on a modeled ${day} (likely ${N(r[0])} to ${N(r[1])}); the busiest hour is ${at(peak)} to ${at(peak + 1)}.`;
       q.box.querySelector(".who").textContent = `Mostly ${kinds.join(", ")}.`;
-      q.box.querySelector(".note:not(.who)").textContent = `A modeled typical day, not a count; the range is the model against nine LADOT street counts, the nearest about 450 m away. The fence: OpenStreetMap, ${data.fence.height_ft} ft (LA Downtown News, 2013).`;
+      q.box.querySelector(".if").textContent = `If the fence opened, only about ${N(o.total)} of them would cut across the knoll, each some ${Math.round(o.seconds_saved_mean)} seconds shorter: the fence closes a place more than a way.`;
+      q.box.querySelector(".src").textContent = `A modeled typical day, not a count; the range is the model against nine LADOT street counts, the nearest about 450 m away. The fence: OpenStreetMap, ${data.fence.height_ft} ft (LA Downtown News, 2013). If it opened: the same trips routed again with its two paths open; modeled people take the shortest way and do not stop.`;
     };
     document.querySelectorAll("#popDay button").forEach((b) => b.addEventListener("click", () => text()));   // A Day's day
     q.show = async (on) => {

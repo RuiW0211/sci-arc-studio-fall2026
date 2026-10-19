@@ -97,10 +97,10 @@ def paths_in(b):
     return per_path > 0
 
 
-def count(b):
-    """The trips whose path is in band b, by day: total (people weighted), by hour (at the middle of the trip), by
-    kind of person."""
-    P = paths_in(b)
+def count(b, P=None, extra=None):
+    """The trips whose path is in band b (or, given P, whose path index is marked in P), by day: total (people
+    weighted), by hour (at the middle of the trip), by kind of person; extra: a per-path value averaged over them."""
+    P = paths_in(b) if P is None else P
     out = {}
     for d in ("weekday", "weekend"):
         off, path = Z[f"{d}.offsets"].astype(np.int64), Z[f"{d}.path"].astype(np.int64)
@@ -113,6 +113,8 @@ def count(b):
         by_type = {TYPES[t]: round(float(w[TYPE[person[hit]] == t].sum())) for t in range(len(TYPES))}
         out[d] = {"total": round(float(w.sum())), "by_hour": np.bincount(hours, weights=w, minlength=24).round().astype(int).tolist(),
                   "by_type": {k: v for k, v in by_type.items() if v}, "people": int(len(np.unique(person[hit])))}
+        if extra is not None:
+            out[d]["extra_mean"] = round(float((w * extra[path[hit]]).sum() / max(w.sum(), 1)), 2)
     return out
 
 
@@ -121,6 +123,64 @@ today = widths[str(int(BAND_M))]
 wc = json.loads((ROOT / "web" / "data" / "walk_check.json").read_text(encoding="utf-8"))
 ratios = [b["weekday"]["ratio"] for b in wc["blocks"]]
 lo_r, hi_r = min(ratios), max(ratios)
+
+
+# ---------------------------------------------------------------- if the fence opened (one sentence on the page)
+# (user, 2026-10-18: no Opened / Closed switch, it showed no difference; "加上那句结论": the finding, in words) The
+# same trips (people, ends, times) with their routes found again on a network with Angels Knoll's two private paths
+# open: the path across the knoll (OSM way 322957601, joined at both ends as OSM draws it) and the one inside the Hill
+# Street fence (322959879, which OSM draws joined to nothing: its gate joined to the street at the Angels Flight
+# stairs' foot, 8 m, and its other end to the 4th Street sidewalk, 5 m; an assumption). Not a new run of the model,
+# which would also change where people go and when.
+from scipy.sparse.csgraph import dijkstra
+
+base = network.build()
+assert len(base["XYZ"]) == N and np.abs(base["XYZ"][:, :2] - NX).max() < 0.01, "the rebuilt network is not the model's"
+OPEN_WAYS, LINK_ENDS = (322957601, 322959879), (3297577617, 3297577582)
+WALK_MS = json.loads((POP / "data" / "assumptions.json").read_text(encoding="utf-8"))["walkSpeed"]["value"][0]   # m/s, mean
+
+
+def path_len(XY, seq):
+    return float(np.hypot(*np.diff(XY[seq, :2], axis=0).T).sum()) if len(seq) > 1 else 0.0
+
+
+def reroute(net):
+    """Every path (src = its first node, an anchor; dst = its last) whose route on net is cheaper than on the model's
+    network: {path index: new node list (net indices)}. Checks on the way that the model's own paths are the shortest
+    on the rebuilt network."""
+    by_osm = {int(o): k for k, o in enumerate(net["osm"])}
+    to_net = np.array([by_osm[int(o)] for o in base["osm"]])
+    src, dst = pn[poff[:-1]], pn[poff[1:] - 1]
+    out, check, US = {}, [], np.unique(src)
+    for s0 in range(0, len(US), 256):
+        S = US[s0:s0 + 256]
+        Db = dijkstra(base["G"], directed=False, indices=S)
+        Dn, Pn = dijkstra(net["G"], directed=False, indices=to_net[S], return_predecessors=True)
+        row = {int(s): k for k, s in enumerate(S)}
+        for p in np.flatnonzero(np.isin(src, S)):
+            r = row[int(src[p])]
+            old, new = Db[r, dst[p]], Dn[r, to_net[dst[p]]]
+            if len(check) < 3000:
+                seq = pn[poff[p]:poff[p + 1]]
+                check.append(abs((float(np.asarray(base["G"][seq[:-1], seq[1:]]).sum()) if len(seq) > 1 else 0.0) - old))
+            if new < old - 0.01:
+                seq, t = [int(to_net[dst[p]])], int(to_net[src[p]])
+                while seq[-1] != t:
+                    seq.append(int(Pn[r, seq[-1]]))
+                out[int(p)] = seq[::-1]
+    assert max(check) < 0.05, f"a model path is not the shortest on the rebuilt network (off by {max(check):.2f})"
+    return out
+
+
+net = network.build(open_ways=OPEN_WAYS, link_ends=LINK_ENDS)
+new = reroute(net)
+P_open = np.zeros(len(poff) - 1, bool); P_open[list(new)] = True
+saved_s = np.zeros(len(poff) - 1)
+for p, seq in new.items():
+    saved_s[p] = (path_len(NX, pn[poff[p]:poff[p + 1]]) - path_len(net["XYZ"], seq)) / WALK_MS
+opened = count(None, P=P_open, extra=saved_s)
+for d in opened:
+    opened[d]["seconds_saved_mean"] = opened[d].pop("extra_mean")
 
 # scene coordinates for the viewer: x east, z south (= -north)
 sc = lambda g: [[round(x, 2), round(-y, 2)] for x, y in g.coords]
@@ -144,6 +204,8 @@ OUT.write_text(json.dumps({
     "range": {"ratios": [lo_r, hi_r], "note": "model / LADOT count on the nine blocks counted in 2023 and 2025 (walk_check.json); the nearest is about 450 m from Y-1",
               "weekday": [round(today["weekday"]["total"] / hi_r), round(today["weekday"]["total"] / lo_r)],
               "weekend": [round(today["weekend"]["total"] / hi_r), round(today["weekend"]["total"] / lo_r)]},
+    "opened": {**opened, "paths_changed": len(new), "open_ways": list(OPEN_WAYS), "links": net["links"], "walk_speed_ms": WALK_MS,
+               "note": "The same trips routed again with Angels Knoll's two private paths open (the Hill Street one joined to the street: an assumption); counted as today. seconds_saved_mean: the shorter route at the model's mean walking speed. The model's people take the shortest way and do not stop: people who would cross the park, not use it."},
 }, separators=(",", ":")), encoding="utf-8")
 
 for d in ("weekday", "weekend"):
@@ -151,5 +213,7 @@ for d in ("weekday", "weekend"):
     peak = int(np.argmax(t["by_hour"]))
     print(f"{d}: {t['total']:,} trips past the fence ({t['people']:,} modeled people), range "
           f"{round(t['total'] / hi_r):,}-{round(t['total'] / lo_r):,}; peak {peak}:00-{peak + 1}:00 ({t['by_hour'][peak]:,}); by type {t['by_type']}")
+for d in ("weekday", "weekend"):
+    print(f"if it opened, {d}: {opened[d]['total']:,} of these would cut across, each {opened[d]['seconds_saved_mean']} s shorter")
 print("band width sensitivity:", {k: v for k, v in json.loads(OUT.read_text(encoding='utf-8'))["widths"].items()})
 print("->", OUT.relative_to(ROOT))
