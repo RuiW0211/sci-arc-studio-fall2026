@@ -181,11 +181,14 @@ Four scroll-snapped panes: **intro → pies → mocaPane → tablePane**.
 
 - **Intro** — title, sources, "each dot corresponds to $100,000.00", a Scroll button.
 - **Pies** — six discs on one canvas, drifting points, no legend and no labels. Hover gives the total and
-  the stream under the cursor. Clicking a stream with a breakdown dives into a sub-disc over **2 seconds**:
-  the field rushes to 6.5× and fades while the wedge comes forward. Click outside or press Escape.
+  the stream under the cursor, and dims the other wedges to 28%. Clicking a stream with a breakdown
+  **regroups its points** over 2 seconds: that wedge's own points detach and fly into the breakdown, each
+  travelling from where it sat to where it belongs, colour easing from the parent's shade to its part's,
+  while the rest of the field eases back to 1.9× and dims. Click outside or press Escape.
   Grid order is fixed by `GRID`: MOCA · LACMA · The Broad over MoMA · Petersen · de Young.
-- **mocaPane** — MOCA alone. Clicking a stream writes its detail into the right half as prose and bullets.
-  Shops carries the full "what it does not include" list.
+- **mocaPane** — MOCA alone. The right half previews the stream under the cursor (name and amount);
+  clicking writes its full detail there as prose and bullets, and hovering elsewhere then leaves that
+  detail alone. Shops carries the full "what it does not include" list.
 - **tablePane** — the same figures with the caveats.
 
 ### Design decisions worth not re-litigating
@@ -196,6 +199,12 @@ Four scroll-snapped panes: **intro → pies → mocaPane → tablePane**.
   far apart (worst adjacent ΔE 25.3). Reproduce with `tools/ramp.py`; validate with `tools/valpal.py`.
 - Points sit on a **Vogel spiral sorted by angle**, cut into contiguous runs — that is what gives the
   wedges soft edges. Seeded, so the layout is identical every load.
+- **The regroup is 1:1 where the counts allow it.** Nine of the thirteen breakdowns have exactly as many
+  points as their parent wedge; the four that differ (MoMA shops +4, LACMA government +14 and other −30,
+  MOCA other +1) are the ones drawn from a different basis than their parent, and those few points fade
+  in or out mid-flight so the discrepancy stays visible.
+- **`drawDisc`'s `dim` argument is a slot index, and −1 means none.** Never 0 — slot 0 is gifts and
+  grants, and testing it for truthiness is the bug that stopped that one stream dimming the others.
 
 ### Known issues
 1. **Gross vs net is inconsistent across the six.** MoMA's shops slice is **gross** ($83.3M before cost of
@@ -206,6 +215,13 @@ Four scroll-snapped panes: **intro → pies → mocaPane → tablePane**.
 3. LACMA and the de Young have **no drill-downs** — neither source itemises in a way that sums to its
    parent. Deliberate; do not invent splits.
 4. `museum_revenue.csv` is stale (§6).
+
+### Where it can be seen
+The repo is public, so the branch is readable by anyone. The **page is not live**: `.github/workflows/pages.yml`
+builds only on a push to `main`, and `web/museums.html` exists only on this branch, so
+`https://ruiw0211.github.io/sci-arc-studio-fall2026/museums.html` returns 404. A link someone can use needs
+the work merged to `main` (Rui), or a manual `workflow_dispatch` run. **No PR has been opened yet** — that
+decision was still open when this was written.
 
 ## 11. Open threads
 
