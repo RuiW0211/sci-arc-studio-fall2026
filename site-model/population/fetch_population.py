@@ -1,6 +1,6 @@
 """Download the inputs for the modeled day/night population layer, clipped to the site extent.
 
-Ported from Clark Amenudo's script (archived Blender project) 2026-10-08: the extent is now the whole point cloud
+Ported from the archived Blender version of the project 2026-10-08: the extent is now the whole point cloud
 (+-HALF_M around the site origin, the cloud fades out by ~1.23 km), the Assessor parcels come from the Houdini
 download (site-model/houdini/in/parcels_wide.geojson, tools/fetch_parcels.py), and the workplace tables (B08601,
 B08602) are no longer needed: workers' modes and arrival times come from CTPP (fetch_ctpp.py).

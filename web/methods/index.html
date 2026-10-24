@@ -253,9 +253,9 @@
 
   <section id="record">
     <h2 class="label"><span class="n">6</span>Working record</h2>
-    <p>The project is made in a GitHub repository, one topic at a time: a branch, a pull request, merged by the owner;
-      most of the work is done together with Claude (Claude Code), in conversation. The record keeps, for each person,
-      how long they worked with Claude each day, counted from their first session about the project, the tokens that
+    <p>The project is made in a GitHub repository, one topic at a time: a branch, a pull request, merged by Rui;
+      most of the work is done together with Claude (Claude Code), in conversation. The record keeps how long Rui
+      worked with Claude each day, counted from the first session about the project, the tokens that
       work used and what they would cost on the API, and what came of each day: the pull requests opened and merged.
       <span class="note">(docs/worklog.py, web/data/worklog.json)</span></p>
     <p class="note" id="recWho"></p>
@@ -499,9 +499,8 @@ const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => nu
     </ul>`;
   document.getElementById("stamp").textContent = "";
 })().finally(() => { buildToc(); requestAnimationFrame(() => document.body.classList.add("ready")); });
-// ---------- 6 Working record (docs/worklog.py writes web/data/worklog.json; the rule: docs/WORKFLOW.md)
-// Everyone's time is counted from their first Claude Code session about the project (user, 2026-10-16); the record
-// starts with the first of them.
+// ---------- 6 Working record (docs/worklog.py writes web/data/worklog.json)
+// The time is counted from the first Claude Code session about the project (user, 2026-10-16).
 function renderRecord(W) {
   const fig = document.getElementById("rec");
   if (!W?.commits) { fig.innerHTML = `<p class="note">The working record could not be read.</p>`; return; }
@@ -618,12 +617,11 @@ function renderRecord(W) {
   document.getElementById("prTable").innerHTML = `<table><tr><th>#</th><th>Pull request</th><th>By</th><th>Merged</th><th class="r">Commits</th></tr>`
     + [...prs].sort((a, b) => b.created.localeCompare(a.created)).map((p) => `<tr><td>${prLink(p)}</td><td>${esc(p.title)}<br><code class="note">${esc(p.branch)}</code></td><td>${esc(nameOf(p.by))}</td><td>${p.merged ? nice(dayOf(p.merged)) : esc(p.state)}</td><td class="r">${p.commits}</td></tr>`).join("") + `</table>`;
   // 6.4 the rule
-  document.getElementById("recHow").innerHTML = `<p><b>Everyone records their working time.</b> A person's time is counted
-    from their first Claude Code session about this project, and recorded day by day: how long they worked with Claude,
-    and what came of the day, the pull requests opened and merged. Each person adds their own time from their own
-    computer, where their sessions are, by running <code>python docs/worklog.py</code> before opening a pull request
-    (docs/WORKFLOW.md); the commits and pull requests are read again from GitHub on every deploy of this site.</p>
-    <p><b>How the time is counted</b>: the timestamps of the messages in the person's Claude Code sessions about this
+  document.getElementById("recHow").innerHTML = `<p><b>The working time is recorded day by day</b>, counted from the first Claude Code session about this project:
+    how long the work with Claude took, and what came of the day, the pull requests opened and merged. It is added by
+    running <code>python docs/worklog.py</code> before opening a pull request; the commits and pull requests are read
+    again from GitHub on every deploy of this site.</p>
+    <p><b>How the time is counted</b>: the timestamps of the messages in the Claude Code sessions about this
     project, all of them on one line, with the subagents those sessions start (work Claude does in the background, such
     as a long search); two messages less than ${W.gap_min ?? 10} minutes apart count the time between them, a longer
     gap is a break, and sessions or subagents open at the same time count once. Only the timestamps are read, nothing

@@ -1,9 +1,8 @@
 """Build web/data/worklog.json, the working record on the Methods page (user, 2026-10-16: "在网页method里加入已工作了多长
 时间 ... 把github里的工作流程记录可视化到我的网站method模块里"; "要注明是谁的工作时间 ... 我希望每个人都记录工作时间").
 
-The rule (docs/WORKFLOW.md): everyone's working time is counted from their first Claude Code session about this
-project, day by day, and each day shows what came of it (pull requests opened and merged). Each person adds their own
-time from their own computer, where their session logs are, by running this script before they open a pull request.
+The rule: the working time is counted from the first Claude Code session about this project (2026-09-17), day by day,
+and each day shows what came of it (pull requests opened and merged). Run this script before opening a pull request.
 
 Two parts:
   people  per person: minutes of work with Claude per day, from the timestamps of their Claude Code session logs of
@@ -15,13 +14,13 @@ Two parts:
           writes, cache reads, output) and their estimated cost at the API list prices (PRICES).
           A run never loses a recorded day: Claude Code deletes old session logs (cleanupPeriodDays), so each day
           keeps the larger of its recorded and its recounted value. After a change of the rule, --recount.
-  github  every commit (merges left out) and pull request of this repository and of the archived Blender one, with
-          who made it, from git and the GitHub CLI (gh). The Pages workflow reruns this part on every deploy.
+  github  every commit (merges left out) and pull request of this repository and of the archived Blender one, by the
+          people in PEOPLE, from git and the GitHub CLI (gh). The Pages workflow reruns this part on every deploy.
 
   python docs/worklog.py               your own time (you = the GitHub user gh is logged in as) and the GitHub part
   python docs/worklog.py --me <login>  the same, for <login>
   python docs/worklog.py --recount     your own record counted again from the logs only (days without logs drop out)
-  python docs/worklog.py --github      the GitHub part only, everyone's time kept (the Pages workflow)
+  python docs/worklog.py --github      the GitHub part only, the recorded time kept (the Pages workflow)
 """
 import json
 import re
@@ -40,13 +39,12 @@ TZ = "America/Los_Angeles"     # the days of the record (the page groups commits
 SUBJECT_MAX = 140
 # The people of the project, by GitHub login: the name shown, and which Claude Code project folders hold their
 # sessions about this project. Every folder whose name contains PROJECT_KEY (a session started in a clone of this
-# repository) counts for everyone; add a person's other folders here (e.g. where they worked before cloning).
+# repository) counts; add other folders here (e.g. where they worked before cloning).
 PROJECT_KEY = "sci-arc-studio-fall2026"
 PEOPLE = {
     "RuiW0211": {"name": "Rui Wang",
                  # the studio folder, where the work began on 2026-09-17 (research, then the site model)
                  "folders": ["D--OneDrive---Syracuse-University-Rui-Wang-Syracuse-M-Arch-2026FALL-Visiting-Studio"]},
-    "clarkamenudo": {"name": "Clark Amenudo", "folders": []},   # the population layer (Blender repository)
 }
 # What the work used (user, 2026-10-18: "我想记录消耗了多少"): the tokens, and what they would cost on the Claude API at
 # the list prices, USD per million tokens for base input, 5-minute cache writes, 1-hour cache writes, cache reads and
@@ -112,6 +110,8 @@ def github_part():
         commits.append({"repo": ARCHIVED, "sha": c["sha"][:9], "t": a["date"],
                         "by": (c.get("author") or {}).get("login") or login_of(a["name"], a["email"]),
                         "s": subject(c["commit"]["message"]), "pr": pr_of.get((ARCHIVED, c["sha"]))})
+    commits = [c for c in commits if c["by"] in PEOPLE]   # only the people of the project
+    prs = [p for p in prs if p["by"] in PEOPLE]
     commits.sort(key=lambda c: c["t"])
     for p in prs:
         p["commits"] = len(p.pop("shas"))
@@ -221,7 +221,7 @@ def main():
     a = sys.argv[1:]
     github_only = "--github" in a
     old = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
-    out = {"_": "The working record on the Methods page (docs/worklog.py; the rule: docs/WORKFLOW.md). Per person, minutes of "
+    out = {"_": "The working record on the Methods page (docs/worklog.py). Per person, minutes of "
                 "work with Claude per day from the timestamps of their Claude Code sessions about this project, counted from "
                 f"their first one (two messages less than {GAP_MIN} min apart count the time between them); tokens per day "
                 "and model as [base input, 5-minute cache writes, 1-hour cache writes, cache reads, output] and, in the "

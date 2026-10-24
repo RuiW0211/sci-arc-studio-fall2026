@@ -5,23 +5,18 @@ NW corner of 4th and Hill Streets, Downtown Los Angeles.
 
 Live site: https://ruiw0211.github.io/sci-arc-studio-fall2026/
 
-**Join the project:** [docs/SETUP.md](docs/SETUP.md) (install on macOS) and
-[docs/WORKFLOW.md](docs/WORKFLOW.md) (branch → pull request → discuss → merge).
-
-> **Already have a copy from before 2026-10-08?** This project was started again for the Houdini workflow. Delete your
-> old `sci-arc-studio-fall2026` folder and clone it again ([SETUP §3](docs/SETUP.md#3-get-the-project)). The earlier
-> Blender version is archived, read-only, at
-> [RuiW0211/sci-arc-studio-fall2026-blender](https://github.com/RuiW0211/sci-arc-studio-fall2026-blender).
+The earlier Blender version is archived, read-only, at
+[RuiW0211/sci-arc-studio-fall2026-blender](https://github.com/RuiW0211/sci-arc-studio-fall2026-blender).
 
 ## What is here
 
 | Folder | Contents |
 |---|---|
-| `web/` | The public website (GitHub Pages serves this folder). `viewer.html` is the site viewer: the 2023 LiDAR point cloud, every point labelled with its building, tree, shrub or vehicle, with everyone's designs on top. |
+| `web/` | The public website (GitHub Pages serves this folder). `viewer.html` is the site viewer: the 2023 LiDAR point cloud, every point labelled with its building, tree, shrub or vehicle, with design files on top. |
 | `web/data/` | The point cloud (`lidar_points.laz` + `.json`, written by the Houdini pipeline). |
 | `web/research/` | The Y-1 research database. `data.json` holds every finding (sources, status, confidence). Two views: `index.html` (Network: the entries in 3D, height for date, links from `connections.json`, built by `docs/connections_build.py`) and `list/index.html` (List: search, filters, sources). Link to one finding with `research/#<id>` (Network) or `research/list/#<id>` (List). `web/connections/` and `web/timeline/` only redirect here (Timeline was removed 2026-10-13; git tag `timeline-v1` keeps it). |
-| `site-model/houdini/` | The Houdini work: the LiDAR pipeline (`tools/`), building entities (`annotations/entities.json`), the design-scene script, hand-off files for analysis layers. See its [README](site-model/houdini/README.md). |
-| `site-model/exports/` | `design_<name>.glb`: one design file per person, shown on top of the point cloud. |
+| `site-model/houdini/` | The Houdini work: the LiDAR pipeline (`tools/`), building entities (`annotations/entities.json`), hand-off files for analysis layers. See its [README](site-model/houdini/README.md). |
+| `site-model/exports/` | `design_<name>.glb`: design files, shown on top of the point cloud. |
 | `site-model/BACKLOG.md` | To-do list and plans (in Chinese). |
 
 All geometry shares one frame: **EPSG:26911 (NAD83 / UTM 11N), metres, NAVD88 heights**, with local origin
@@ -40,7 +35,7 @@ deploy does, so the viewer loads the same files locally and online.
 
 The pipeline (Houdini plus Python scripts) and its order are in
 [site-model/houdini/README.md](site-model/houdini/README.md#site-pipeline-order). It needs about 7 GB of downloads and
-staging, so it runs on one machine (Rui's). Designers don't run it.
+staging.
 
 ## Data sources and licences
 
@@ -50,8 +45,3 @@ staging, so it runs on one machine (Rui's). Designers don't run it.
 - Building names were checked by eye against map labels; no map imagery or map data is stored here.
 - Reference drawings and photographs used while modelling (EIR appendices, press and archive images) are
   **not** in this repository and must not be added; see `.gitignore`.
-
-## Working together
-
-Branch, commit, open a pull request; the owner merges after discussion. See [CONTRIBUTING.md](CONTRIBUTING.md),
-[docs/WORKFLOW.md](docs/WORKFLOW.md) and `CLAUDE.md`.
