@@ -8,9 +8,6 @@
 <script src="../theme.js"></script>
 <style>
   /* Methods only; the header, colours and type scale come from site.css (as on Research) */
-  nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.85rem; margin-bottom: 8px; }
-  nav.toc a { color: var(--muted); text-decoration: none; }
-  nav.toc a:hover { color: var(--text); }
   section { margin-top: 40px; font-size: 0.95rem; }   /* running text: the size of a Research finding's body */
   section > h2 { margin-bottom: 4px; }            /* .label: small uppercase, hairline, like Research's topics */
   h2 .n { margin-right: 8px; }
@@ -44,27 +41,7 @@
   main { transition: opacity var(--t-in) ease; }
   body:not(.ready) main { opacity: 0; }   /* header and text together (user, 2026-10-13) */
 
-  /* two columns, as on Research, List (user, 2026-10-13): header and contents on the left, staying in place, the
-     text on the right; on very wide screens the file each part comes from moves into the margin beside it (side
-     notes; more to be added, see site-model/BACKLOG.md §13) */
-  .m2 { max-width: none; }
-  .m2 .content { max-width: 720px; }
-  nav.toc { flex-direction: column; gap: 2px; margin: 0; font-size: 0.85rem; }
-  nav.toc a { display: block; padding: 1px 0; transition: color var(--t-feedback); }
-  nav.toc a.sub { padding-left: 14px; font-size: 0.8rem; }
-  nav.toc a.on { color: var(--text); }
-  @media (max-width: 899px) { nav.toc { display: none; } }
-  @media (min-width: 900px) {
-    .m2 { display: grid; grid-template-columns: 300px minmax(0, 720px); gap: 0 48px; align-items: start; }
-    .m2 .side { position: sticky; top: 0; max-height: 100vh; overflow: auto; padding: 48px 4px 32px 0; margin-top: -48px; scrollbar-width: thin; }
-    .m2 .content section:first-child { margin-top: 0; }
-    .m2 .footer { grid-column: 2; }
-  }
-  @media (min-width: 1400px) {
-    .m2 { grid-template-columns: 300px 720px 280px; }
-    .m2 .content p > .note { float: right; clear: right; width: 240px; margin: 0.25em -280px 0 0; font-size: 0.75rem;
-      line-height: 1.45; color: var(--faint); word-break: break-word; }
-  }
+  /* the columns (contents, text, side notes) are shared with Proposal: see site.css */
   /* the diagram */
   .flow { margin: 10px 0 18px; }
   .flow svg { width: 100%; height: auto; display: block; overflow: visible; }
@@ -141,7 +118,7 @@
           <text x="12" y="72" class="s">LARIAC outlines, Assessor parcels</text><text x="12" y="87" class="s">OpenStreetMap</text>
           <rect x="262" y="32" width="220" height="62" /><text x="274" y="54">Houdini site pipeline</text>
           <text x="274" y="72" class="s">points labelled, buildings grouped,</text><text x="274" y="87" class="s">thinned for the web (2.1-2.6)</text>
-          <rect x="540" y="32" width="180" height="62" class="out" /><text x="552" y="54">Model</text>
+          <rect x="540" y="32" width="180" height="62" class="out" /><text x="552" y="54">Site model</text>
           <text x="552" y="72" class="s">point cloud, buildings, layers</text>
 
           <rect x="0" y="122" width="220" height="62" /><text x="12" y="144">Census, LADOT, LA Metro,</text>

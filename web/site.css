@@ -83,6 +83,33 @@ code { font: 0.8rem var(--mono); }
 
 .footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 0.8rem; color: var(--faint); }
 
+/* pages with columns (Methods, Proposal): header and contents on the left, staying in place, the text in the middle,
+   side notes in the right margin on very wide screens (moved here from Methods, 2026-10-29, unchanged) */
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.85rem; margin-bottom: 8px; }
+nav.toc a { color: var(--muted); text-decoration: none; }
+nav.toc a:hover { color: var(--text); }
+/* two columns, as on Research, List (user, 2026-10-13): header and contents on the left, staying in place, the
+   text on the right; on very wide screens the file each part comes from moves into the margin beside it (side
+   notes; more to be added, see site-model/BACKLOG.md §13) */
+.m2 { max-width: none; }
+.m2 .content { max-width: 720px; }
+nav.toc { flex-direction: column; gap: 2px; margin: 0; font-size: 0.85rem; }
+nav.toc a { display: block; padding: 1px 0; transition: color var(--t-feedback); }
+nav.toc a.sub { padding-left: 14px; font-size: 0.8rem; }
+nav.toc a.on { color: var(--text); }
+@media (max-width: 899px) { nav.toc { display: none; } }
+@media (min-width: 900px) {
+  .m2 { display: grid; grid-template-columns: 300px minmax(0, 720px); gap: 0 48px; align-items: start; }
+  .m2 .side { position: sticky; top: 0; max-height: 100vh; overflow: auto; padding: 48px 4px 32px 0; margin-top: -48px; scrollbar-width: thin; }
+  .m2 .content section:first-child { margin-top: 0; }
+  .m2 .footer { grid-column: 2; }
+}
+@media (min-width: 1400px) {
+  .m2 { grid-template-columns: 300px 720px 280px; }
+  .m2 .content :is(p, .blk) > .note { float: right; clear: right; width: 240px; margin: 0.25em -280px 0 0; font-size: 0.75rem;
+    line-height: 1.45; color: var(--faint); word-break: break-word; }
+}
+
 /* the scrollbar takes the page's colours, so it fades with them instead of jumping when color-scheme flips */
 html { scrollbar-color: var(--line) var(--bg); }
 /* switching light / dark eases the colour variables on the root only (theme.js sets .theme-anim for the length of the
