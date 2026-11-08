@@ -32,7 +32,6 @@ Blender version is archived at `RuiW0211/sci-arc-studio-fall2026-blender`; don't
 
 - `web/` is the GitHub Pages root. Plain HTML + ES modules; three.js comes from jsDelivr through an import map. There is no build step: run `python web/serve.py` and reload.
 - `web/data/`: the point cloud `lidar_points.laz` + `lidar_points.json` (written by `site-model/houdini/tools/pack_wide.py pack`).
-- `web/sections/` (Site sections: a north-up top view and four sections, drawn from the point cloud): its cuts, labels and the top view's hillshade are `web/data/sections.json` + `sections_top.png`, written by `site-model/sections/pack_sections.py`.
 - `site-model/houdini/`: `tools/` (the Python pipeline, `pythonrc.py`), `vex/`, `annotations/entities.json` (building entities; the hand-made part is checked by hand), `handoff/` (buildings + terrain for analysis layers), `thinning.json` + `TUNING.md`. `in/`, `work/`, `out/` and all scenes are git-ignored. Its README has the pipeline order.
 - `site-model/exports/design_<name>.glb`: design files, drawn over the point cloud.
 

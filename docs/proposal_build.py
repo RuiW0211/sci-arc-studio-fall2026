@@ -1,10 +1,13 @@
 """Build web/proposal/index.html from the English proposal (user, 2026-10-29: the proposal as a module of the site, laid out
 like Methods: contents on the left, the text in the middle, the references each paragraph cites in the right margin).
 
-The text is written in Markdown (docs/proposal/proposal_en.md, a copy of Angels_Knoll_Development_Proposal_en.md); only
-the parts that file uses are read: "## Page n Title" pages, paragraphs, lists (nested by indent), tables, **bold**,
-*italic*, `code`, links and [n] source numbers. Page 20 is the reference list: an entry starting with [n] becomes the
-target of every [n] in the text, and its first words (before the first link) are the short form shown in the margin.
+The text is written in Markdown (docs/proposal/proposal_en.md, a copy of Rui's English key-points draft, the original;
+on 2026-10-30 the stacked scheme replaced the 20-page woven one). Only the parts that file uses are read: "## n. Title"
+sections (and "## Executive summary"), paragraphs, lists (nested by indent), tables, one-line images with an italic
+caption line, **bold**, *italic*, `code`, links and [n] source numbers. "## Sources" is the reference list: an entry
+starting with [n] becomes the target of every [n] in the text, and its first words (before the first link) are the short
+form shown in the margin. "## Open items for Rui" is a note for Rui and is left out of the page. Images are copied next
+to the page as figure-1.svg, figure-2.svg ... so no local file names reach the published copy.
 
 The published text leaves out the names of files on Rui's computer (the research reports and the course syllabus the
 working copy points to; user, 2026-10-29); public() removes them, and the copy in docs/proposal/ is written without them.
@@ -15,6 +18,7 @@ Rerun after changing the proposal:
 """
 import html
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -150,7 +154,7 @@ def render_items(items, refs_page=False):
     return "".join(out)
 
 
-def render_block(b, refs_page=False, first=False):
+def render_block(b, refs_page=False):
     if b[0] == "table":
         head, *body = b[1]
         th = "".join(f"<th>{inline(c)}</th>" for c in head)
@@ -164,17 +168,61 @@ def render_block(b, refs_page=False, first=False):
         if m:
             return f'<p id="ref-{m.group(1)}"><span class="rn">[{m.group(1)}]</span> {inline(m.group(2), cites=False)}</p>'
         return f"<p>{inline(t, cites=False)}</p>"
+    img = re.match(r"^!\[([^\]]*)\]\(([^)\s]+)\)$", t)
+    if img:
+        svg = OUT.parent / img.group(2)
+        if svg.suffix == ".svg" and svg.exists():
+            return f'<figure class="fig" role="img" aria-label="{html.escape(img.group(1))}">{inline_svg(svg)}</figure>'
+        return f'<figure><img src="{html.escape(img.group(2))}" alt="{html.escape(img.group(1))}"></figure>'
+    if re.match(r"^\*[^*].*\*$", t):   # a line all in italics, under a figure: its caption
+        return f'<p class="caption">{inline(t)}</p>'
     lead = re.match(r"^\*\*(.+?)\*\*(.*)$", t)
     if lead and lead.group(2).strip():   # a paragraph opening with a bold phrase: a second-level entry in the contents
         label = re.sub(r"[.:]$", "", re.sub(r"\s*\(.*?\)\s*$", "", lead.group(1))).strip()
         if label not in SKIP_TOC:
             return f'<p class="lead" data-toc="{html.escape(label)}">{inline(t)}</p>'
     if lead and not lead.group(2).strip():
-        if first:   # the page's opening sentence, all in bold: its thesis
-            return f'<p class="thesis">{inline(t)}</p>'
         label = re.sub(r"[.:]$", "", lead.group(1)).strip()   # a bold line over a list: also a part in the contents
         return f'<p class="lead" data-toc="{html.escape(label)}">{inline(t)}</p>'
     return f"<p>{inline(t)}</p>"
+
+
+# the figures are drawn in fixed light colours (they also go into the md and Word copies); on the page each colour
+# follows the site's theme: the same ramp, its dark steps in dark mode (user, 2026-10-30: the drawing goes dark too)
+FIG_COLOURS = {   # drawn colour: (name, light, dark)
+    "#FFFFFF": ("bg", "var(--bg)", "var(--bg)"),
+    "#E1F5EE": ("teal-fill", "#E1F5EE", "#085041"),
+    "#0F6E56": ("teal-line", "#0F6E56", "#5DCAA5"),
+    "#085041": ("teal-text", "#085041", "#9FE1CB"),
+    "#EEEDFE": ("purple-fill", "#EEEDFE", "#3C3489"),
+    "#534AB7": ("purple-line", "#534AB7", "#AFA9EC"),
+    "#3C3489": ("purple-text", "#3C3489", "#CECBF6"),
+    "#5F5E5A": ("gray-line", "#5F5E5A", "#B4B2A9"),
+    "#2C2C2A": ("gray-ink", "#2C2C2A", "#F1EFE8"),
+    "#888780": ("gray-hatch", "#888780", "#5F5E5A"),
+}
+
+
+def fig_css():
+    light = "".join(f"--f-{n}: {l}; " for n, l, d in FIG_COLOURS.values())
+    dark = "".join(f"--f-{n}: {d}; " for n, l, d in FIG_COLOURS.values())
+    rules = "\n".join(f'  .fig [fill="{c}" i] {{ fill: var(--f-{n}); }} .fig [stroke="{c}" i] {{ stroke: var(--f-{n}); }}'
+                      for c, (n, l, d) in FIG_COLOURS.items())
+    return (f"  :root {{ {light}}}\n"
+            f"  @media (prefers-color-scheme: dark) {{ :root:not([data-theme=\"light\"]) {{ {dark}}} }}\n"
+            f"  :root[data-theme=\"dark\"] {{ {dark}}}\n{rules}\n")
+
+
+def inline_svg(path):
+    """The SVG's markup, sized by its viewBox, with ids made unique to this figure."""
+    svg = path.read_text(encoding="utf-8")
+    svg = re.sub(r"<\?xml[^>]*\?>\s*", "", svg)
+    svg = re.sub(r'(<svg\b[^>]*?)\s(?:width|height)="[^"]*"', r"\1", svg)
+    svg = re.sub(r'(<svg\b[^>]*?)\s(?:width|height)="[^"]*"', r"\1", svg)
+    pre = path.stem + "-"
+    svg = re.sub(r'\bid="([^"]+)"', lambda m: f'id="{pre}{m.group(1)}"', svg)
+    svg = re.sub(r"url\(#([^)]+)\)", lambda m: f"url(#{pre}{m.group(1)})", svg)
+    return svg.strip()
 
 
 def short_ref(text):
@@ -189,6 +237,18 @@ def short_ref(text):
 
 def main():
     md = public(SRC.read_text(encoding="utf-8"))
+    figs = []
+    def fig(m):
+        src = SRC.parent / m.group(2)
+        name = f"figure-{len(figs) + 1}{src.suffix}"
+        figs.append((src, name))
+        return f"![{m.group(1)}]({name})"
+    md = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)", fig, md)
+    for src, name in figs:
+        for d in (COPY.parent, OUT.parent):
+            d.mkdir(parents=True, exist_ok=True)
+            if src.exists() and src.resolve() != (d / name).resolve():
+                shutil.copyfile(src, d / name)
     if SRC.resolve() != COPY.resolve():
         COPY.parent.mkdir(parents=True, exist_ok=True)
         COPY.write_text(md, encoding="utf-8")
@@ -196,19 +256,21 @@ def main():
     if left:
         print("file names still in the text:", left)
     lines = md.split("\n")
-    date = re.search(r"Rui Wang, (\d+ \w+ \d{4})", md)
+    date = re.search(r"updated (\d+ \w+ \d{4})", md) or re.search(r"Rui Wang, (\d+ \w+ \d{4})", md)   # the latest update, else the first date
     pages, cur = [], None
     for ln in lines:
-        m = re.match(r"^## Pages? ([\d–-]+) (.+)$", ln)
+        m = re.match(r"^## (?:(\d+)\. )?(.+)$", ln)
         if m:
-            cur = [m.group(1), m.group(2), []]
+            cur = [m.group(1) or "", m.group(2).strip(), []]
             pages.append(cur)
         elif cur is not None:
             cur[2].append(ln)
+    pages = [pg for pg in pages if pg[1] != "Open items for Rui"]   # a note for Rui, not for readers
+    sources = next(pg for pg in pages if pg[1] == "Sources")
 
-    # the reference list (page 20)
+    # the reference list
     refs = {}
-    for b in parse(pages[-1][2]):
+    for b in parse(sources[2]):
         texts = [b[1]] if b[0] == "p" else []
         if b[0] == "list":
             def walk(items):
@@ -226,10 +288,12 @@ def main():
 
     body, missing = [], set()
     for n, title, pl in pages:
-        is_refs = pl is pages[-1][2]
-        sec = [f'<section id="page-{n.replace("–", "-")}">', f'<h2 class="label"><span class="n">{n}</span>{html.escape(title)}</h2>']
-        for k, b in enumerate(parse(pl)):
-            h = render_block(b, refs_page=is_refs, first=(k == 0))
+        is_refs = pl is sources[2]
+        sid = "sources" if is_refs else f"sec-{n}" if n else "summary"
+        num = f'<span class="n">{n}</span>' if n else ""
+        sec = [f'<section id="{sid}">', f'<h2 class="label">{num}{html.escape(title)}</h2>']
+        for b in parse(pl):
+            h = render_block(b, refs_page=is_refs)
             nums = [] if is_refs else list(dict.fromkeys(CITE.findall(block_text(b))))
             if nums:
                 side = []
@@ -244,10 +308,10 @@ def main():
         sec.append("</section>")
         body.append("\n".join(sec))
 
-    page = TEMPLATE.replace("{{DATE}}", date.group(1) if date else "").replace("{{BODY}}", "\n\n".join(body))
+    page = TEMPLATE.replace("{{FIGCSS}}", fig_css()).replace("{{DATE}}", date.group(1) if date else "").replace("{{BODY}}", "\n\n".join(body))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(page, encoding="utf-8")
-    print(f"wrote {OUT.relative_to(ROOT)}: {len(pages)} pages, {len(refs)} sources" + (f"; cited but not listed: {sorted(missing, key=int)}" if missing else ""))
+    print(f"wrote {OUT.relative_to(ROOT)}: {len(pages)} sections, {len(figs)} figures, {len(refs)} sources" + (f"; cited but not listed: {sorted(missing, key=int)}" if missing else ""))
 
 
 TEMPLATE = """<!doctype html>
@@ -267,22 +331,26 @@ TEMPLATE = """<!doctype html>
   .content ul, .content ol { padding-left: 18px; margin: 0 0 12px; }   /* the spacing of Methods' lists */
   .content li { margin-bottom: 4px; }
   .content li > ul, .content li > ol, .content li > p { margin-top: 4px; margin-bottom: 0; }
-  p.thesis { font-size: 1.05rem; line-height: 1.5; }
-  a.cite { color: var(--muted); text-decoration: none; font-variant-numeric: tabular-nums; }
+  figure { margin: 8px 0 4px; }
+  figure img { display: block; width: 100%; height: auto; background: #fff; border-radius: 4px; }
+  figure.fig svg { display: block; width: 100%; height: auto; }
+  p.caption { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  /* figure colours, light and dark (FIG_COLOURS in the builder) */
+{{FIGCSS}}  a.cite { color: var(--muted); text-decoration: none; font-variant-numeric: tabular-nums; }
   a.cite:hover { color: var(--text); }
   table { border-collapse: collapse; width: 100%; font-size: 0.85rem; margin: 6px 0 12px; }
   th, td { text-align: left; padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { color: var(--muted); font-weight: 600; }
   .wrap { overflow-x: auto; }
   /* the sources a paragraph cites, in the right margin on very wide screens (site.css); narrower, the [n] links lead
-     to the list on page 20 */
+     to the list under Sources */
   .blk > .note.ref span { display: block; margin-bottom: 4px; }
   .blk > .note.ref a { color: inherit; }
   @media (max-width: 1399px) { .blk > .note.ref { display: none; } }
-  #page-20 { font-size: 0.85rem; }
-  #page-20 p, #page-20 li { word-break: break-word; scroll-margin-top: 24px; }
-  #page-20 .rn { font-weight: 700; }
-  #page-20 :target { background: var(--hover); }
+  #sources { font-size: 0.85rem; }
+  #sources p, #sources li { word-break: break-word; scroll-margin-top: 24px; }
+  #sources .rn { font-weight: 700; }
+  #sources :target { background: var(--hover); }
   .worked { margin-top: 10px; font-size: 0.8rem; color: var(--faint); max-width: 520px; }
 </style>
 </head>
@@ -292,7 +360,7 @@ TEMPLATE = """<!doctype html>
     <header class="header">
       <p class="eyebrow">Angels Knoll · Proposal · <a href="../" class="home">home</a></p>
       <h1>Proposal</h1>
-      <p class="subtitle">Angels Knoll Development Proposal: 100% affordable homes and an extension of MOCA in one building.</p>
+      <p class="subtitle">Angels Knoll Development Proposal: one building on Parcel Y-1, with 100% affordable family homes over MOCA's gallery, workshops and a public plaza.</p>
       <p class="worked">Draft of {{DATE}}.</p>
     </header>
     <nav class="toc" id="toc" aria-label="Contents"></nav>
@@ -302,11 +370,11 @@ TEMPLATE = """<!doctype html>
 {{BODY}}
 
   </div>
-  <footer class="footer">Rui Wang. Draft; the numbers in square brackets are the sources on page 20.</footer>
+  <footer class="footer">Rui Wang. Draft; the numbers in square brackets are the sources at the end.</footer>
 </main>
 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">&#9680;</button>
 <script>
-// the contents: every page, and the parts of each page, the one being read marked (as on Methods)
+// the contents: every section, and the parts of each section, the one being read marked (as on Methods)
 (function () {
   const toc = document.getElementById("toc");
   const heads = [...document.querySelectorAll(".content h2, .content p.lead")];

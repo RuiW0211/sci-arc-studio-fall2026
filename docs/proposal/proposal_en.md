@@ -1,502 +1,253 @@
-# Angels Knoll Development Proposal
+# Angels Knoll Development Proposal: key points draft
 
-Rui Wang, 29 October 2026. English version, main text only (the working notes are not included). Numbers in square brackets refer to the sources on page 20.
+Rui Wang, 30 October 2026, updated 8 November 2026 with the Angels Landing draft. This draft has the key points only and is the basis for rewriting the stacked scheme in full. The 29 October version is kept as an archive. Numbers in brackets refer to the sources at the end.
 
-## Page 1 Executive summary
+## Executive summary
 
-We propose to build 100% affordable homes and an extension of MOCA as one building on Angels Knoll, Parcel Y-1, the last vacant site of the Bunker Hill redevelopment. Residents live and make work here, and the process of making is itself part of the exhibition; finished works stay on the site and slowly become the landscape of the slope. What enters MOCA's collection is not the houses but a work about them, an agreement work that makes giving artists stable conditions to live and work a long-term responsibility of the museum.
+Before 1959, Bunker Hill was a dense Victorian neighborhood. The Community Redevelopment Agency cleared it under the 1959 redevelopment plan, and superblocks were built in its place. The office towers of California Plaza were designed by Arthur Erickson, whose team won the agency's 1980 design competition with its master plan.
 
-The homes and the museum are neither stacked nor set side by side; they are woven together. The housing is the regular solid, and MOCA is a void that flows through it like water: between the homes, up the slope and under it. Beneath the slope lies MOCA's collection store, and above it a public park. Visitors look into the store through windows and can walk in with a guide. From there a route climbs the park from Hill Street to California Plaza, past studios that artists open as far as they choose, and past works that may stay exposed, or be covered or buried and uncovered again. About one in ten homes gives preference to artists, spread through the building; residents have their own entrance, and the public cannot reach their floors.
+The losing entry was a much denser and more varied project. Maguire Partners entered a scheme called "A Grand Avenue" that divided the site among a team of architects instead of giving it a single design: Frank Gehry on the plaza, Cesar Pelli on the office tower, Barton Myers on housing, Ricardo Legorreta on a hotel block, Charles Moore on pavilions, Hardy Holzman Pfeiffer on the museum and Lawrence Halprin on the landscape. The public and the architectural press praised it, and the agency's staff reportedly recommended it, but it was never built.
 
-It can be built because each part already has a basis in law and practice. The land stays public: CRA/LA leases it for 99 years to a tax-credit housing partnership, which owns the building and runs the homes, and MOCA holds its spaces under long-term leases, with its rights written into the ground lease. As 100% affordable housing on surplus public land, the project has priority under the Surplus Land Act [14] and can be approved under SB 35 without environmental review [11]. The slope opens first as a temporary public space; then the whole building is built at once; afterwards MOCA fits out its shells one by one and switches them among gallery, creative support space and storage. The site was meant for the third tower of the California Plaza deal that built MOCA's Grand Avenue building [34]; this proposal completes that deal's last piece in a different way.
+Dividing the site that way would have produced more buildings on smaller footprints and more breaks between them, which is to say more street frontage, more corners and more activity at ground level. In that scheme, density was the means of making the area walkable.
 
-It asks one thing of each party. CRA/LA leases the land instead of selling it. The affordable housing developer leads the team and owns and runs the homes. MOCA leases its spaces long-term, raises the money for their shell and a stewardship endowment, certifies artists and owns the agreement work. The City and County provide public capital for MOCA's shell and the park roof. The architect weaves the two into one building and builds MOCA's spaces for their strictest use from the start, so that later changes of use need no construction. The greatest risks are money, above all for MOCA's part, and the number of parties that must agree at once. Every plan for this site has been plausible, and every plan has failed; this one starts from the fact that no party can develop it alone.
+Of the three towers in Erickson's plan, only two were built. The third was to stand on the site of this proposal, still vacant more than forty years later (section 1). We propose to reintroduce the density with a new orientation.
 
-Site: Parcel Y-1, about 2.24 acres, rising about 70 ft from Hill Street to California Plaza [3]; Metro Pershing Square station entrance at the southeast corner [4]; surplus public land held by CRA/LA [7]; approval under SB 35 [11].
+The proposal in summary:
 
----
+1. The site is primarily affordable housing, with a museum space. Between the two are uses open to the public: workshops and an art classroom, a floor of food and drink, a childcare center and a public plaza on Hill Street.
+2. The homes are for families. Two thirds of poor families in the City of Los Angeles (the City) have children, and two thirds of those are single parents [32], yet only 14% of the City's rentals have three or more bedrooms [33]. So at least a quarter of the homes have three bedrooms [16], and the childcare center lets single parents work.
+3. MOCA needs to expand, in gallery space rather than storage, and to earn more of its own income while keeping its costs low. Sharing one structure with the homes keeps its building cost down. It earns rent from the workshops (kilns, a metal shop, a woodshop) and the classroom. The childcare center and the food-and-drink floor belong to the housing side.
+4. Funding is separate. MOCA raises the money for its own floors: the gallery, the workshops and the classroom. It pays its share of the shared structure, its own enclosure and systems, and the plaza's landscape, and it fits out its floors in stages as its money allows.
+5. The stack takes advantage of the site, which lies between California Plaza and the Historic Core, and keeps the building in use for more hours of the day. Each use meets the street or plaza at one of the site's three access levels: Hill Street, Olive Street and California Plaza.
+6. The homes are 100% affordable and use what the state offers such housing on public land: approval under SB 35 without environmental review [11], priority under the Surplus Land Act [12], 4% tax credits with tax-exempt bonds and a larger credit basis in a Qualified Census Tract [9][14]. The cost of the shared structure is split by built floor area. SB 35 requires at least two thirds of the floor area to be housing [11], so MOCA pays at most about a third.
+7. The land stays public. The City acquires Y-1 from CRA/LA and leases it as two airspace parcels: the lower one to MOCA, the upper one (homes, childcare and food and drink) to an affordable housing developer.
 
-## Page 2 The site and the question
+**Site.** Parcel Y-1, about 2.24 acres, falling about 70 ft from its northwest corner on Olive Street to the corner of Hill and 4th Streets [44], with Metro's Pershing Square entrance at the southeast corner [2]; census tract 2075.02, a Qualified Census Tract in 2026 and 2027 [9] and a "Moderate Resource" area on the 2026 opportunity map [10].
 
-Angels Knoll is the last vacant site of the Bunker Hill redevelopment: Parcel Y-1. Its boundaries are:
-- **north:** Angels Flight;
-- **south:** 4th Street [3];
-- **west:** Hill Street;
-- **up the slope:** California Plaza.
+## 1. Site
 
-The parcel is about 2.24 acres, and it rises about 70 ft from Hill Street to California Plaza [3]. The entrance to Metro's Pershing Square station is at its southeast corner [4]. Today the site is empty, fenced and closed to the public [3].
+Angels Knoll is the last vacant site of the Bunker Hill redevelopment: Parcel Y-1, "generally bounded by Angels Flight (a funicular) to the north, 4th Street to the south, Hill Street to the east, and Olive Street and California Plaza to the west" [1]. Today it is empty, fenced and closed to the public [1].
 
-The land belongs to CRA/LA, the successor to the former Community Redevelopment Agency of Los Angeles. In CRA/LA's approved property plan it is listed as a "future development property" [7]. The City's option to buy it reportedly expired in September 2025, and CRA/LA is preparing to dispose of it under the Surplus Land Act [8]. As of October 2026, no notice of availability for it appears on the state housing department's list [9]. The Bunker Hill Specific Plan was repealed in 2025; the site now falls under Los Angeles's new zoning code [5][6].
+The land belongs to CRA/LA, the successor to the former Community Redevelopment Agency of Los Angeles. CRA/LA lists it as a "future development property" [5]. The City's option to buy it reportedly expired in September 2025, and CRA/LA is preparing to dispose of it under the Surplus Land Act [6]. As of October 2026, no notice of availability for it appears on the state's list [7]. The Bunker Hill Specific Plan was repealed in 2025, and the site now falls under the City's new zoning code [3][4].
 
-**Why every earlier plan failed.** In 1959 the City took the Victorian houses and rooming houses on this hill, moved out several thousand working-class residents, many of them immigrants, and cleared the hill [34]. According to the course brief, Y-1 was meant for the third tower of the California Plaza deal, the same deal that paid for MOCA's building on Grand Avenue [34]. The third tower was never built. Since then the site has served as a temporary park and as a film location. Most recently, the Angels Landing project, about $2 billion, collapsed in litigation [34]. The settlement of that litigation was listed in the closed-session part of the City Council agenda on 28 October 2026; by that afternoon no result had been published [10]. The slope makes every scheme expensive. Every plan for this site has been plausible, and every plan has failed; neither the museum, nor a developer, nor the City can develop it alone [34].
+**How the site was left empty.** Before 1959 Bunker Hill was a dense district of old Victorian houses, many divided into rooming houses, with apartment hotels and small shops [48]. The City Council adopted the Bunker Hill Urban Renewal Project on 31 March 1959 [46], and from the early 1960s the hill was cleared, its streets were changed and it was regraded into large parcels [47]. In 1980 the redevelopment agency held a competition for 11.2 acres of them. It chose the developer Bunker Hill Associates and Arthur Erickson's master plan for California Plaza [49]. The losing entry, Maguire Partners' "A Grand Avenue", was planned by a team directed by Barton Myers. It split the site among Frank Gehry on the plaza, Barton Myers on a residential tower, Cesar Pelli on an office tower, Ricardo Legorreta on a hotel and condominium block, Charles Moore on pavilions, Hardy Holzman Pfeiffer on a museum and Lawrence Halprin on the landscape [48][50]. The public and the architectural press praised it, and the agency's staff reportedly recommended it [48][50]. Dividing a site this way gives more buildings on smaller footprints, and so more street frontage, more corners and more activity at ground level. Erickson's plan had three office towers, but only One and Two California Plaza were built. The third was shelved in the recession of the early 1990s [51], and its site is Parcel Y-1. This proposal brings back the density of the smaller, mixed scheme, in a new form.
 
-**Why it can work now.**
-- It is surplus public land: affordable housing has priority, and the land can be leased long-term below market value [14].
-- A 100% affordable project can be approved under the state law SB 35 against objective standards, without environmental review [11].
-- MOCA needs space: it can show only a small part of its collection, and its main building has not been able to expand in forty years [34]. In September 2026 it gained a new director [32].
-- 100% affordable housing on public land next to stations is already Metro's formal policy [1].
-- Los Angeles is in the largest museum-building wave in its history, most of it timed for the 2028 Olympic Games [34].
+The California Plaza deal also paid for MOCA's building on Grand Avenue [8]. The latest project on Y-1, Angels Landing, collapsed in litigation [8]. On 28 October 2026 the City Council voted 14–0 to settle that litigation for up to $7.86 M, subject to the Mayor's approval [29].
 
-**The question this proposal answers:** on this surplus public land, how can 100% affordable housing and MOCA's spaces be woven into one building, so that artists' living and working become a long-term responsibility of the museum?
+## 2. Program
 
----
+The site drops about 70 ft from its northwest corner on Olive Street down to the corner of Hill and 4th Streets [44], and the building can be reached at three levels: from Hill Street at the bottom, from Olive Street higher up and from California Plaza above that. California Plaza has two levels, at about 372 ft and 387 ft, which stand about 20 to 50 ft above Olive Street along the site [44][45]. That is what allows the program to be stacked. The developer's floors start at the Olive Street level and rise from there: the childcare center, a floor of food and drink and the homes above them. MOCA's floors fill the slope beneath them and open toward Hill Street. Because the homes and the museum stand on one structure, MOCA pays for only part of it, and the ground along Hill Street can stay open as a plaza.
 
-## Pages 3–4 The idea
+![Figure 1. Schematic section](figure-1.svg)
 
-**Residents live and make work here, and the process of making is itself part of the exhibition; finished works stay on the site and slowly become the landscape of the slope.**
+*Figure 1. Schematic section, from MOCA's floors on the slope up to the homes above the Olive Street level.*
 
-The project brings several things into one building at Angels Knoll:
-- 100% affordable rental housing, about one in ten homes with a preference for artists;
-- artists' studios and a few shared workshops;
-- MOCA's extension, with galleries, storage and creative support spaces;
-- a slope landscape formed slowly by the works that stay.
+Most of the floor area is family housing. In the City of Los Angeles, two thirds of poor families have children, and about two thirds of those are headed by a single parent, nearly always a mother [32]. Family-sized homes are hard to find. Only 14% of the City's rentals have three or more bedrooms, and about 92% of the affordable homes in the City's fast-track pipeline are studios or one-bedrooms [33]. The homes on Y-1 are planned around these households (section 4).
 
-They are not stacked in layers or split into blocks; they are woven together flexibly. Residents, artists and visitors share the same atmosphere, and no one is fixed in one zone.
+The childcare center takes the lowest floor of the housing, at the Olive Street level, so its rooms open straight onto the ground. Under the building code this lets it run as an ordinary Group E center for babies and toddlers (section 4). It is meant first for the families in the building. Subsidized care for young children is scarce in the county, where 8% of eligible infants and toddlers have a place [36], and the County recommends that new housing set aside room for this kind of care [39].
 
-**Three entrances.** The project has three kinds of entrance: the residential entrance is for residents only, while the museum entrance and the entrance to the slope landscape are open to the public.
-- **The residential entrance.** An ordinary entrance to the homes, for residents only and separate from the museum's operation. Residents do not walk through galleries to get home, and they decide for themselves whether and how much to take part in public activities (see pages 5–8).
-- **The museum entrance.** It leads into MOCA's spaces: galleries, storage and creative support spaces.
-  - The galleries and creative support spaces are spread through the building. MOCA's storage is underground, directly beneath the slope landscape.
-  - Through public visits and making, the underground exhibitions and stores connect with the studios, the landscape and daily life above ground.
-  - Part of the stored collection is open to the public: visitors see into the stores through viewing windows and can walk in with a guided group, so that the care and keeping of works also comes into public view (see pages 9–10).
-- **The entrance to the slope landscape.** The slope itself is a landscape open to the public; it can be understood as a park, with MOCA's underground store beneath it.
-  - A route that serves both as an exhibition route and as a public passage climbs the slope from Hill Street to California Plaza.
-  - The works that stay on the site are in this landscape, where the public can walk through, linger and take part in activities (see pages 13–16).
-  - The site was once a temporary park [34], and today people are campaigning to reopen it as a park [44].
+Above the childcare center, at the level of California Plaza, is a floor of food and drink, which the developer builds and lets to restaurant and café operators. It gives residents, MOCA's visitors and people using the plaza somewhere to eat, and the rent goes to the housing side. As commercial space it is paid for outside the tax credits (section 7).
 
-**Three principles that hold it together.**
-1. **Woven, not zoned.** The museum, the studios and the homes interweave in one building; no group is set apart.
-2. **The process is visible, and a home is still a home.** The public can see work being made, but the artist decides how much is seen; residents have full control over their homes.
-3. **It changes.** The building is built once. After that, what changes are MOCA's own spaces: galleries, creative support spaces and open storage can be fitted out one at a time and can swap uses among MOCA's spaces. Once a home is built, it stays a home. Works that stay can be covered, buried and uncovered again; as one cohort of residents follows another, the rules of the agreement work change with them.
+MOCA shows only a small part of its collection, and its Grand Avenue building has not expanded in forty years [8]. It also has little money that is not already tied to a purpose [24]. Building under the homes gives it a gallery at a much lower cost than a building of its own (sections 6 and 7). The gallery does not need daylight, so it can sit partly in the hill, and it is lifted over the plaza.
 
-| Space | Entered from | Used by | Run by | See |
+The workshop floor sits above the gallery. MOCA rents the kilns, the metal shop and the woodshop to artists and to the public, and the rent is part of its income. The building's artists use the art classroom to teach residents' children (section 4).
+
+The plaza along Hill Street is a public open space, which Los Angeles is short of. The city ranks 93rd of the 100 largest US cities for parks, and only 62% of its residents live within a ten-minute walk of one [40]. Downtown residents name the lack of green space as one of their main worries [41]. Angels Knoll itself was a temporary park for a time [8], and there is a campaign to reopen it [42]. The gallery shades the plaza, and the Metro entrance is at its southeast corner [2].
+
+## 3. The stack
+
+The site sits on the seam between two cities that do not meet. Above it, Bunker Hill: plazas lifted on podiums, towers that empty at six, and the cultural investment of the last twenty years strung along Grand Avenue. Below it, the Historic Core: Grand Central Market, the Bradbury Building, the Broadway theaters, and a street life that never stopped. Between them, more than two acres of vacancy, about 70 ft of elevational change, and a funicular [44]. That separation was the logic of the 1959 plan, which cut the hill down and turned its new buildings inward [47]. The radical proposition here is not a tower. It is that the seam itself can be inhabited rather than merely crossed.
+
+At Hill Street the building meets the Historic Core at its own grade and on its own terms: the plaza for gathering opens directly onto the sidewalk across from Grand Central Market, with the entrance to Metro's Pershing Square station at its southeast corner [2][59]. At the middle level the gallery and the workshops take the slope itself, beside Angels Flight, which has climbed it since 1996, about half a block south of its first site of 1901 [59]. Since the clearance this stretch has been only a passage, and they give it a reason to be occupied. At Olive Street the housing lobby and the childcare center meet the street. And the floor of food and drink meets California Plaza and, through it, Grand Avenue. All of it is within a short walk of MOCA's Grand Avenue building and the Regional Connector's Grand Av Arts/Bunker Hill station [52][60].
+
+This level of density has been a driver of economic activity around the world. Hong Kong's Central–Mid-Levels escalator, opened in 1993, climbs 443 ft (135 m) across roughly half a mile of covered walkway, and new shops, restaurants and entertainment venues grew along its length because the climb became a place rather than an obstacle [61]. Medellín's Northeastern Integral Urban Project, begun in 2004 by the city with Alejandro Echeverri and the Empresa de Desarrollo Urbano, hung libraries, schools and public space on a cable-car line up a hillside, and shared Harvard's Veronica Rudge Green Prize in Urban Design in 2013 for doing it [62]. In Rotterdam, MVRDV's Markthal arched 228 apartments over a public market hall in 2014, the section of this project, already built [63]. And the nearest evidence is directly across the street: Grand Central Market was a failing arcade, about 40% vacant after the 2008 recession, until it was treated as a public room again, with new food stalls from about 2012, and it draws crowds again [64].
+
+The density this project needs is not floor area alone but occupation: people present, across more hours of the day and more days of the week. The towers around it are full in working hours and empty at night. A building holding a restaurant, workshops open to the public, a gallery, the households above them and a public route through all of it is occupied at breakfast, at lunch, after work, on weekends and at night, by people with unrelated reasons to be there. That kind of density comes from stacking programs, not only stories.
+
+## 4. Housing
+
+All the homes are affordable, and they are let through the City's lotteries and referral systems, so residents can come from anywhere in Los Angeles. Few are likely to come from downtown itself, where 11% of renter households have children, against 22% citywide [32]. More will come from crowded neighborhoods close by, such as Boyle Heights, where 30% of homes are overcrowded [33]. Three new affordable projects at the edges of downtown, Alveare Parkview, Peak Plaza and First Street North B, are planned for families with almost the same mix of homes [34].
+
+The mix follows the state's large family type. At least 25% of the low-income homes have three or more bedrooms, and at least another 25% have two or more [16]. Sizing the homes is how the project reaches families, single parents included, without giving them a preference over other applicants. Federal law points the same way, since every state's allocation plan must count "tenant populations of individuals with children" among its selection criteria [14], and the same mix earns points in the bond competition (section 7).
+
+A small share of the homes gives preference to artists, which federal tax credit law allows [14]. MOCA certifies who counts as an artist, and a lottery picks the residents [26]. MOCA's extra support for these artists, such as paid teaching, studio time and shows, depends on what they give the building, for instance classes for residents' children and open studios. Their tenancy never depends on it. A fair housing analysis comes first [27].
+
+The childcare center is licensed and belongs to the housing parcel. It takes the floor at the Olive Street level and is meant first for the families who live upstairs. Near the site, the gap is for the youngest children. In the downtown ZIP codes, about 1,190 of the 1,650 children under three who qualify for subsidized care have no place [35].
+
+Under the building code, a center for more than six children under 36 months counts as an ordinary Group E occupancy only if its rooms are on a level of exit discharge, each with a door straight outside. Otherwise it is Group I-4, and Group E child care may sit above or below the first story only under added conditions [37]. The Olive Street floor meets these terms. The center's yard needs at least 75 sq ft for each licensed child, with a shaded place to rest that the children can reach safely [38]. Large family projects also need an outdoor play area of at least 600 sq ft for children aged 2 to 12, and the center's yard can count if residents' children may use it when the center is closed [16].
+
+Because the site is in a Qualified Census Tract, the cost of building the center can count toward the housing's credit basis as a community service facility, up to 25% of the first $15 M of the project's eligible basis and 10% of the rest [14]. Its fees then have to be affordable to people at or below 60% of area median income [15], and CTCAC asks for a tax attorney's opinion [16]. A licensed center open to residents at least 20 hours a week, Monday to Friday, also earns 5 service points [16].
+
+## 5. MOCA
+
+Under this proposal MOCA would receive additional gallery space, a public plaza, and workshops and a classroom for the community. The construction cost of the shared structure will be partially paid for by government financing for the affordable housing above, and the workshops and the classroom are each a way to generate revenue for MOCA, fitted out in stages as its money allows.
+
+MOCA's constraint is not reputation or collection, but room. The Grand Avenue building, finished in 1986, tucks its galleries below the plaza, around a sunken courtyard [52][53]. Against a collection of nearly 8,000 objects, the museum can show only a sliver at any one time, which means most of what MOCA owns sits in storage [52]. The Geffen Contemporary does not solve this. It is a converted warehouse in Little Tokyo, leased from the City since 1983 rather than owned [52], and its value lies precisely in what makes it unsuitable as a permanent home: vast, rough space for installations too large or too unruly for a conventional gallery.
+
+In terms of museum revenue, the case is a matter of shape rather than size. MOCA has a long history of relying on its donors for direction, and that may change with the appointment of Jonathan Abbott as its director in September 2026 [58]. In the year to June 2025, MOCA drew 75 percent of its revenue from gifts and grants, and admissions, membership and the shop together produced about $2.6 million [24]. The museum withdrew $8.6 million from its endowment that year, more than three times everything it earned from the public [24]. Across the continent, earned income from shops, publishing, restaurants, admissions and membership accounted for roughly half of MoMA's operating revenue [54]. Even across the street, The Broad's parking garage alone brought in $2.4 million in 2024, about as much as MOCA's admissions, membership and shop combined [55][24]. LACMA holds a county operating contract [56], for which MOCA has no equivalent, and the Norton Simon is underwritten by the foundations that own its pictures [57]. MOCA alone has neither a commercial floor beneath it nor a captive patron behind it.
+
+What changes the arithmetic is what surrounds them. New galleries alone would deepen that dependence rather than relieve it, since exhibition space costs money and earns none. A genuine restaurant and café will serve people who never buy a ticket, on a daily rather than episodic rhythm; in this scheme they belong to the housing side (section 6), and MOCA's visitors are their customers. Public fabrication facilities, kilns, a metal shop and a woodshop, give a reason for the city to come weekly instead of twice a year, and their rent goes to MOCA. And generous rooms for gathering, free to enter, convert the institution from a ticketed destination into something nearer to civic infrastructure, which is also, not incidentally, one of the strongest arguments a museum can make when it asks the city for land. These are all tools for its mission rather than amenities.
+
+The site is subdivided vertically into airspace lots: separate parcels with separate titles, separate assessments and separate debt. The museum, the housing and the commercial space are legally distinct from the outset (section 6). MOCA buys no land and contributes nothing to the housing. It pays its floor-area share of the shared structure, including the span over the plaza, financed by a capital campaign, possibly New Markets Tax Credits [20], and a City contribution toward the excavation and the public walkways the site owes (section 7). Beyond the shell, MOCA pays for everything inside its own walls: climate control to museum standard, lighting, security, gallery partitions. The ventilation and power of the kilns and metal shop, and the fit-out of the teaching rooms, are ineligible for the housing credits and need to be raised separately. The restaurant's fit-out is the developer's, also outside the credits.
+
+Two buildings already combine a museum or cultural space with homes in this way. At 53 West 53rd in New York, MoMA owns its gallery floors in Hines's residential tower as a condominium unit. It paid Hines fixed payments for the core and shell and paid for the whole fit-out itself [19]. At L10 in Brooklyn, a City cultural space sits in a tower with 76 affordable homes. The tower opened in 2017, and the cultural fit-out began in December 2019 [21].
+
+## 6. Ownership structure
+
+The land stays in public hands. The City of Los Angeles would first acquire Y-1 from CRA/LA, which holds it now, and then lease it as two airspace parcels, one above the other. MOCA leases the lower parcel, with the plaza, the gallery and the workshops. An affordable housing developer, through a tax-credit partnership, leases the upper parcel with the homes, the childcare center and the food-and-drink floor. One recorded agreement covers the structure they share. Each parcel has its own title, tax assessment and debt, so the museum, the housing and the commercial floor are legally separate from the start.
+
+| Part | Parcel | Held by | Built with | Run by |
 |---|---|---|---|---|
-| Homes (including artists' homes) | Residential entrance | Residents | Housing partnership | Pages 5–6 |
-| Artists' studios (in their homes) | Residential entrance | Artist residents | The residents themselves | Pages 7–8 |
-| Shared workshops | Residential entrance | All residents | Developer; MOCA runs programmes | Pages 7–8 |
-| Galleries and creative support spaces (spread through the building) | Museum entrance | Public, artists | MOCA | Pages 9–10 |
-| Underground store (beneath the slope landscape, partly open to the public) | Museum entrance, entrance to the slope landscape | Public, MOCA | MOCA | Pages 9–10 |
-| Agreement work (a work about the artists' homes) | — | — | MOCA; three-party board | Pages 11–12 |
-| Works that stay on the site | Entrance to the slope landscape | Public | Authors and the three-party board; MOCA keeps the record | Pages 13–14 |
-| The route up the slope and the adjoining plazas | Entrance to the slope landscape | Public, residents | MOCA, or the master owners' association | Pages 15–16 |
-
----
-
-## Pages 5–6 Housing
-
-**Every home here is affordable; artists live among the other residents, not beside them.**
-
-**All affordable.** All homes on Y-1 are affordable rental homes, owned and run by a tax-credit partnership led by an affordable housing developer, with income limits set by the tax credits and each funder's rules. This answer comes from the site's legal situation: surplus public land carries a priority for affordable housing, and a 100% affordable project can be approved under SB 35 against objective standards [11][14]. 100% affordable housing on public land next to stations is already Metro's formal policy [1]. It also answers the history of the hill: those cleared away in 1959 were the ordinary people who lived here [34].
-
-**One in ten for artists.** About one in ten homes gives preference to artists, under the same income limits. Federal tax-credit law allows a preference for tenants involved in artistic or literary activities, and the same applies to bond-financed projects [15]. Los Angeles already has a precedent: the Hollywood Arts Collective, on City land, used tax credits and a loan from the Los Angeles Housing Department (LAHD) and also gives artists preference [22][40]. This is a preference, not a reservation:
-- the homes are open to the public, not only to MOCA's members or staff;
-- artist status depends on practising art, not on the quality of the work; MOCA runs the certification, like San Francisco's artist housing certification, with a review every few years [19];
-- eligible applicants are chosen by lottery; when an artist's home falls vacant, it is held for an artist for a period, then offered to the general waiting list if no artist applies, and the preference returns at the next vacancy;
-- no resident is asked to leave for no longer practising art;
-- it ranks below the preferences for accessible homes and supportive housing;
-- it lasts as long as the 55-year affordability covenant.
-
-A fair housing analysis comes before lease-up. In 2017 City housing officials warned that a broad artist preference would raise fair housing issues [41]. LAHD decides on the preference when it reviews the tenant selection plan [39]; if federal HOME funds are used, the preference must also be written into the agreement with the City [40]. New York State's equivalent policy limits artist preference to 20% [19]; this proposal's 10% is within that range.
-
-**Spread through the whole building.** Like the other homes, the artists' homes are spread through the building, across income levels and unit types, and not grouped on one floor or in one corner. Artists' own studios are in their homes, built as live/work units; a few shared workshops are open to all residents (see pages 7–8).
-
-**A home is still a home.**
-- Every home has its own entrance, separate from the museum's operation.
-- The public route passes through the building, but stair doors lock from the stair side and unlock automatically in a fire alarm, so the public cannot enter residential floors.
-- Residents decide whether and how much to take part in public activities.
-- Accessible homes follow LAHD's and the tax credits' requirements and are spread across unit types, including live/work units [39].
-
-**Who runs it.**
-- The housing partnership: owns and runs the homes, and handles leasing, the lottery and property management;
-- MOCA: certifies artist status, as part of its stewardship role (see pages 11–12);
-- LAHD and other funders: review the tenant selection plan and the fair housing analysis;
-- Residents: decide how much to take part in public life.
-
----
-
-## Pages 7–8 Studios
-
-**Making happens throughout the building, not shut away on one floor: artists work in their homes, residents make things together in shared workshops, and the public sees work being made as it passes.**
-
-**Studios are woven through the building too.** Like MOCA's spaces, studios are spread flexibly through the building, not fixed on certain floors or in one block. Everyone takes part in the same atmosphere, and no group is set apart.
-
-**Two kinds of studio.**
-- **Artists' own studios, in their homes.** The homes with artist preference are live/work units: home and studio in one unit, so that living and making need not be separated. The code caps the size of such units and the share of the work area, and the work area must be on the entry level [20].
-- **Shared workshops, open to all residents.** A few shared workshops on the lower floors can be used by any resident, so that making is not only for artists and every household can take part. Because they serve all residents, they can be counted as housing costs and built with housing money [15]; as long as they mainly serve residents, LAHD will not treat them as commercial space [39].
-
-**Making shown in part.** Where studios meet MOCA's spaces or the route up the slope, they can be partly open, so that passers-by see work being made. The artist decides how much is seen: a studio can be opened or closed, and a home is always a home. This is what the thesis sentence means: the process of making is itself part of the exhibition.
-
-**How MOCA takes part.** MOCA runs programmes for the artists' studios and the shared workshops, as part of its stewardship role (see pages 11–12). The housing's resident services budget can pay MOCA to teach classes, but only free classes open to all residents, under a long-term service contract [16].
-
-**A safe arrangement.** Studios and workshops that use solvents, resins or kilns go on the lowest floors, lined up with one vertical exhaust shaft; studios on the upper floors are for work without these materials, such as painting, digital work and sound [20].
-
-**Who runs it.**
-- Artists: run the studios in their homes and decide how far to open them to the public;
-- The housing partnership: maintains the shared workshops and schedules their use;
-- MOCA: runs programmes for the studios and workshops, and classes open to all residents;
-- Residents: use the shared workshops freely.
-
----
-
-## Pages 9–10 MOCA's expansion and open storage
-
-**MOCA flows through the site like water: underground, above ground, between the homes, and sometimes reaching out beyond the building.**
-
-**Two systems.** The housing is the regular "solid": repeated units, floor after floor, quiet and stable. MOCA is the flowing "void": one connected figure moving between the homes, below the slope and above it. The two are neither stacked nor set side by side; they interweave.
-
-**MOCA's four states.**
-- **Underground.** MOCA's store lies beneath the slope landscape: the park above, the store below. Being underground keeps the store's temperature stable [45]. Part of the stored collection is open to the public, so that the care and keeping of works comes into public view: as at Depot Boijmans in Rotterdam, visitors see into the stores through large windows and can walk in with a guide [46]. Both the museum entrance and the park entrance lead here.
-- **Between the homes.** Galleries and creative support spaces sit between units and between floors, mostly small rooms, now and then a larger gallery. Residents, artists and visitors meet here, but each home's front door opens only for its residents.
-- **Surfacing.** The flowing figure rises out of the slope and joins the park and the public route. The route can be seen as the part of this figure that runs above ground: they are one form, continuing from underground up the slope (see pages 15–16).
-- **Reaching out.** Sometimes it breaks out of the building's outline, cantilevering over the slope landscape or reaching toward Hill Street.
-
-**What it includes.** Galleries, storage (partly open to the public) and creative support spaces. Through public visits and making, the underground exhibitions and stores connect with the studios, the landscape and daily life above ground.
-
-**It changes over time.**
-- The figure and the homes are built in the same step, all at once; after that, what changes are MOCA's own spaces.
-- MOCA's part can be built first as a shell and fitted out one space at a time as money is raised, each space usable once it is finished. L10 in Brooklyn worked this way: the tower opened in fall 2017, and the City-operated cultural space inside it began fit-out only at the end of 2019 [60].
-- Finished spaces can also change use within MOCA's own spaces: galleries, creative support spaces and open storage can swap. Each switch needs a change-of-use permit and a new certificate of occupancy [61]. So these spaces are built from the start to the stricter side of the uses they may hold, and a later switch needs only plan review and inspection, not construction (see page 18).
-- Once a home is built, it stays a home: if a tax-credit home were turned into a gallery, the investors would have to give back credits, and residents can be asked to leave only for good cause [54]. So MOCA's changes happen only in the spaces it leases and never touch the homes; the procedure and standards are written into the ground lease (see pages 17 and 18).
-
-**The edges of the flow.** In experience it is continuous; under the code it is divided into segments, each separated from the homes by fire-rated construction and with its own route to an exit [20]. The underground part must avoid the Metro entrance at the southeast corner, or be designed with Metro from the start [4].
-
-**Precedents.** The ETH master's thesis *Archive as a Public Square* puts the Swiss Federal Archives' automated store underground, with a folded roof that becomes a public landscape where the archive's staff, visitors and residents can walk [45]. Depot Boijmans Van Beuningen in Rotterdam is a store open to the public [46].
-
-**Who runs it.**
-- MOCA: holds these spaces under a set of long-term leases and runs them;
-- Money: building and fitting out the store and galleries is paid with money MOCA raises separately; housing money cannot subsidise them (see page 18);
-- The park and the route: run by MOCA or the master owners' association (see pages 15–16).
-
----
-
-## Pages 11–12 Artists' housing in MOCA's collection
-
-**What enters MOCA's collection is not the houses but a work about them; giving artists stable conditions to live and work becomes a long-term responsibility of the museum.**
-
-**Why not the houses themselves.** The artists' homes are owned by the housing partnership, earn rent, carry loans and are bound by the 55-year affordability covenant; they cannot meet the standards for a museum collection. But museums have long collected works made of rights and rules:
-- **Sol LeWitt:** a wall drawing in the Philadelphia Museum of Art is held as the idea together with the right to carry it out or erase it, set down in a certificate signed by the artist.
-- **Tino Sehgal:** Tate holds a work through an oral contract made before a notary, and owns only the right to stage it.
-- **Felix Gonzalez-Torres:** his certificates can be reissued by the foundation [29].
-
-Closest to this proposal is Cameron Rowland's *Depreciation*, made for MOCA's 2018 exhibition *D37* (named after the 1939 redlining grade given to Bunker Hill). The artist bought an acre of land and added a restrictive covenant. The land is held by the artist's nonprofit; the Dia Art Foundation neither owns nor leases it, but acts only as its steward and pays the property's costs [28].
-
-**Two ways at once.**
-- **The agreement work.** MOCA wholly owns a work made of a certificate, the rules of the artists' homes, and the record and archive of those homes. The homes are where the work happens, not the work itself. The rules are written into a recorded covenant and the ground lease, so whatever happens to the ownership of the homes, the rules run with the land.
-- **Stewardship.** MOCA takes on a long-term role:
-  - certifying artist status (see pages 5–6);
-  - running programmes for the studios and shared workshops;
-  - recording how the homes change;
-  - paying part of the costs.
-  
-  This role is also written into the recorded covenant and the ground lease, for 55 years or more.
-
-**Who the author is.** MOCA need not be the author: with the author's copyright assigned to MOCA, and the certificate, MOCA can own the work. Authorship grows over time:
-- a commissioned founding artist writes the fixed core of the work;
-- each later cohort of artist residents can amend the rules listed for amendment and sign the certificate;
-- the amendment procedure is run by a three-party board, with members from the artist residents, the wider community and MOCA, following the model of the Granby Four Streets Community Land Trust in Liverpool [30];
-- the work names a successor body, which continues it if neither the authors nor MOCA can.
-
-Every author signs a waiver of rights, or a written consent that the work will change, and signs only for their own part [18]. Taking part is voluntary and written into no one's lease. The authors are not MOCA's employees, so they keep the right of attribution.
-
-**Where the money comes from.**
-- **The base:** stewardship has to last 55 years or more, which only a dedicated endowment can carry; it is written as a condition of the partnership with MOCA. The precedent is on this hill: when the Grand Avenue building was built, the developer paid for the building and MOCA had to raise an operating endowment for the deal [42].
-- **Supplements:**
-  - the housing's resident services budget can pay MOCA to teach, but only free classes open to all residents;
-  - the owner pays the fee for artist certification;
-  - grants and programme income.
-- **The size** of the endowment will be estimated later.
-
-**What the work assumes.** The homes stay affordable for the long term; residents have full control over their homes and decide how much to take part; the rules of the work allow the homes to change with daily life.
-
-**Who runs it.**
-- MOCA: owns the agreement work and carries the stewardship;
-- The three-party board: amends the rules by the agreed procedure;
-- The housing partnership: owns the homes and keeps the recorded covenant;
-- The public lessor of the land: keeps the rules in force through the ground lease;
-- The successor body: continues the work when neither the authors nor MOCA can.
-
----
-
-## Pages 13–14 Works that stay on the site
-
-**Works are collected in another way: they can stay visible, or be covered or buried and later uncovered again; the site remembers every stage of their lives.**
-
-**How works stay.** Works completed on Y-1 can stay on the site. On terms agreed with the author in advance, a work can remain exposed, be covered, be buried, or be uncovered again by a later intervention. The site keeps the history of each work's continued existence, including the periods when it cannot be seen and its changing relation to daily use. The works build up, one by one, into a landscape that the public can walk through, linger in and use.
-
-**This holds up in law.**
-- **Integrity rights can be waived:** an artist's right of integrity cannot be transferred, but it can be waived in a document signed by the author that names the work and the treatment allowed [18].
-- **Time is not a violation:** changes from the passage of time and the nature of the materials are not a violation in the first place [18].
-- **Two laws apply:** California's equivalent right lasts until 50 years after the author's death, so both laws must be dealt with [18].
-- **The cases:** a court held that a museum covering a work with tarpaulins did not modify it, while painting over works without any signed document cost $6.75 million [36].
-- **Burial can be the work:** the Monument against Fascism in Harburg, Hamburg, was lowered into the ground in eight stages by decision of the district council, and part of it can still be seen through a window [38].
-- **A wish is not enough:** Robert Smithson asked that any weathering be treated as part of his work, yet the work was removed in 1984 [43]. Writing down a wish is not enough; the document must also say who decides.
-
-**One written document for each work, signed before it is made.**
-- It names the work and the stages it may go through: exposed, left to weather, covered, buried, dug up again, moved, recorded;
-- it waives the rights under both the federal and the California law;
-- if the work is built into the ground or a building, the author and the owner also sign an acknowledgement, recorded with the County [18][35];
-- the author keeps the right of attribution, and may refuse attribution if the work is changed beyond the agreed stages;
-- before each change the author is notified and may come to record the work, following the procedure of Los Angeles County's civic art programme [37].
-
-As with the agreement work, each author signs only for their own part; the authors are not MOCA's employees, so they keep these rights. Works that are planted or grown are not protected by these two laws and can be covered only by contract [36].
-
-**Who decides.** Each covering, burial or uncovering is decided by the three-party board, together with the housing owner and MOCA; where it touches the ground lease, CRA/LA must consent. After an author's death the same body decides. This body must truly be able to bind the owner: in a Chicago case, a park official's promise did not bind the park district [36].
-
-**The record of the site.** Each work has a record: when it was finished, the stages it went through, who decided each one, and what it looked like at the time. The record is kept by MOCA together with the archive of the agreement work on pages 11–12. So even when a work can no longer be seen, it remains in the collection.
-
-**Who runs it.**
-- Authors: agree in advance the stages their work may go through;
-- The three-party board: decides each change;
-- MOCA: keeps the record and runs programmes for the works that stay;
-- The housing owner and CRA/LA: sign the acknowledgements and carry out the board's decisions.
-
----
-
-## Pages 15–16 The route and the plazas
-
-**A route climbs the slope from Hill Street to California Plaza: it is both an exhibition route and a public passage, the part of MOCA's flowing figure that runs above ground; it starts at Angels Knoll and reaches step by step into the plazas around it.**
-
-**What the route is.** The route serves both as an exhibition route and as a public passage. It follows the slope, linking Hill Street with California Plaza, and threads together the homes, the studios, MOCA's spaces and the works on the site. Its lower end is on Hill Street, with the entrance to Metro's Pershing Square station at the southeast corner [4] and Angels Flight to the north [3]; its upper end meets California Plaza.
-
-**The route and MOCA are one figure.** The route can be seen as the part of MOCA's flowing figure that runs above ground (see pages 9–10). The building's volume can reach over the route and reshape the public path up the slope; at the least, the two are one in form: the same form continues from the underground store up to the park on the slope.
-
-**The slope the route climbs is a park.** The slope landscape is open to the public and can be understood as a park; the works that stay on the site are in it, and the public can walk through, linger and take part in activities there (see pages 13–14). The site was once a temporary park [34], and today people are campaigning to reopen it as a park [44].
-
-**How the route climbs.** The slope rises about 70 ft.
-- **Mostly outdoors:** the route runs mostly outdoors, on terraces and open stairs.
-- **Short indoor segments:** where it enters the building it is divided into segments of two or three floors, because a continuous indoor route through many floors counts as an atrium under the code [20].
-- **Public lifts:** ramps alone cannot climb that high, so public lifts along the way let everyone walk the whole route.
-- **Past the homes:** where the route passes the residential building, stair doors lock from the stair side and unlock automatically in a fire alarm, so the public cannot enter residential floors.
-
-**Reaching into the surrounding plazas.** Through access, use and maintenance agreements with the neighbouring managers, the route, the works and public activities can gradually extend into the nearby corporate plazas, making Angels Knoll part of Bunker Hill's network of public spaces.
-- Bunker Hill already has a system of pedestrian links. After the Specific Plan was repealed, the system was written into the Downtown community plan implementation overlay; in the 2022 draft, existing pedestrian walkway easements are kept and can be moved only by decision of the Director of Planning [47].
-- California Plaza's plazas are managed by the owners through a shared management company [48], and the owners once paid for the renovation of the Watercourt themselves [50]. One of the towers has been run by a court-appointed receiver since August 2025, so its consent must come from the receiver [49].
-- The Angels Flight Railway Foundation is the neighbour to the north. In 2021 it supported the then project, partly because the project improved public pedestrian links up and down Bunker Hill and between the project and the funicular [51].
-
-**Rules for the route.** Opening hours, maintenance and liability must be written into the ground lease and the agreements with the plaza owners. Grand Avenue's Parcel Q has already written free annual public events and reporting into a public ground lease [21]; Y-1 can follow the same approach.
-
-**Who runs it.**
-- MOCA, or a master owners' association of the housing partnership, MOCA and the public lessor: runs the route and the park;
-- The owners of the surrounding plazas: open their plazas under the agreements;
-- The three-party board: decides which stages the works on the route and in the park go through (see pages 13–14).
-
----
-
-## Page 17 Phasing
-
-**Every plan for this site waited and failed; in this proposal each stage is useful on its own, and each later part catches the one before.**
-
-**Waiting is a design condition.** This proposal does not assume everything will be built on time. If full development has to wait a long time, part of the site opens first as public space, designed from the start to join the homes and MOCA's spaces later. The wait may be short or long:
-- **open for one or two years:** what is easy to put up, move and take down?
-- **open for five to ten years:** which public spaces deserve investment and long use?
-- **during building and the later fit-outs:** what stays, and how does public space keep working during construction?
-
-**The building is built once; change is left to MOCA's spaces, the works and the residents.**
-- **Why at once:** a figure that weaves and flows like water usually means irregular floors, long spans and transfer structures; once built, it does not move by itself. Tax-credit homes also cannot become galleries without the investors giving back credits [54].
-- **What step 2 builds:** the whole building at once: all the homes, MOCA's flowing figure, the underground store and the park roof above it. After that, no new structure is built and no homes are added.
-- **What changes over time:** MOCA's own spaces, the works that stay, and the cohorts of residents. MOCA's spaces can be built first as shells and fitted out one at a time as money comes in; finished spaces can change use among gallery, creative support space and open storage.
-- **A precedent:** L10 in Brooklyn worked this way. The tower opened in fall 2017 with 76 affordable homes, and the City-operated cultural space inside it began fit-out only at the end of 2019 [60].
-
-**The sequence.**
-1. **Open the slope first.** Before construction, the slope opens as a temporary public space. The first part of the route up the slope opens now, and works start to accumulate on the site. Step 2 will dig up the slope, so what is placed now must be light, movable and removable, and how each work is treated when the slope is opened must be agreed in advance (see pages 13–14). The site is now maintained and guarded by DTLA Alliance under a CRA/LA contract; a temporary opening needs CRA/LA's consent and may need a change to that contract [52].
-2. **Build the whole building at once.** Built together in this step:
-   - all the homes (including the artists' homes);
-   - the shared workshops;
-   - MOCA's flowing figure;
-   - the underground store and the park roof above it, so the park need not be dug up again.
-   
-   All the homes are finished and open in this step. The first MOCA spaces are fitted out and open at the same time; the others can stay as shells. Los Angeles's Core and Shell certificate of occupancy fits this case: before residents move in, the whole building's frame, stairs, exits, fire separations, waterproofing and sprinklers must be complete, and the certificate names the future uses of the spaces not yet fitted out [55]. The route left by step 1 must be "caught" by the new building: the route is not diverted; the building grows along it.
-3. **MOCA fits out one space at a time.** As MOCA raises more money, it fits out more galleries, creative support spaces and open storage inside the shells already built, with no new structure and without touching the homes.
-4. **MOCA's spaces change use, and the works and residents keep changing.** Under the procedure in the ground lease, MOCA can switch uses among its own spaces. The works that stay keep going through stages of being covered, buried and uncovered again. As one cohort of residents follows another, the rules of the agreement work change with them (see pages 11–14).
-
-**Conditions for the phasing.**
-- **All homes are built in step 2,** so non-residential parts can never be built first with the homes left for later [14].
-- **Where MOCA's part is not stacked with the homes, the homes must be completed first or at the same time;** MOCA spaces stacked with the homes are not subject to this rule [11]. The store under the slope is not under the homes, so it is completed together with the homes.
-- **One approval.** The whole project is approved once under SB 35, and MOCA's later fit-outs follow the approved plans [11]. The two-thirds residential share is counted as if all of MOCA's shells were fitted out.
-- **The money must be in place at step 2.** The homes are paid with tax credits, tax-exempt bonds and loans. MOCA's shell, the store and the park roof are outside the tax-credit basis [54] and need MOCA's capital and public capital. The park and site work can apply for the state's Infill Infrastructure Grant, but that money does not pay for building structure [57]. In the precedents, the cultural part often opened later than the homes, or not at all [24]. So MOCA's fit-out can come in stages, each space usable once finished, but its shell must be paid for together with the homes.
-- **Every change of use needs a permit.**
-  - Each time a MOCA space switches between gallery, creative support space and storage, it needs a change-of-use permit and a new certificate of occupancy, even without construction.
-  - A simple switch with no change in parking can be checked at the counter the same day; otherwise it goes to regular plan check, about a month or more [61].
-  - So the spaces that may switch are built from the start to the stricter side (see the design rules on page 18) [20].
-  - The Core and Shell certificate names every MOCA use, so each space's first fit-out is only a tenant improvement [55].
-- **Work in an occupied building.** Every later MOCA fit-out happens in a building where people live: exits, sprinklers and alarms must keep working at all times, and work is allowed only in the permitted hours [20]. Each MOCA space has its own construction access and sprinkler zone; prefabricated fit-out kits can shorten the work [58].
-- **The park roof will be replaced.** The park is a top layer that can be lifted, over a separate waterproofing membrane that can be inspected; the membrane must be replaced about every 25–30 years, and the park closes temporarily while it is [59].
-
-**Every stage is useful.**
-- Step 1: Angels Knoll becomes a public slope again, linking Hill Street with California Plaza, and works begin to stay;
-- Step 2: the whole building is finished, people move in, making begins and the public can see it; MOCA's collection enters the hill, with the park on its roof;
-- After that: no more large construction; MOCA's spaces open one by one and change use, and the works and residents keep changing.
-
----
-
-## Page 18 Who owns, who runs, who pays
-
-**The land stays public; the building and the homes are owned by the housing partnership; MOCA's rights are written into the ground lease, and it holds its spaces under a set of long-term leases.**
-
-| Part | Owned by | Run by | Money to build | Money to run |
-|---|---|---|---|---|
-| Land | A public body: CRA/LA, or the City or County after acquiring it | — | Leased, not sold; a discounted lease needs the Oversight Board's and the Department of Finance's consent | Ground rent |
-| Homes (including the artists' homes spread through the building, and the studios in them) | Tax-credit partnership (ground lessee, owns the whole building) | Affordable housing developer | Tax credits, tax-exempt bonds, state and City loans | Rents, resident services budget |
-| Shared workshops | Same | Developer; MOCA runs programmes | Housing money (because they mainly serve residents) | Resident services budget |
-| MOCA's spaces (galleries and creative support spaces spread through the building; the store beneath the slope landscape) | MOCA, under a set of long-term leases | MOCA | MOCA's donors and public capital, raised separately, including the shell; fit-out can come in stages | MOCA's operating budget |
-| Public gallery route (up the slope) | Public access required by the ground lease | MOCA, or the master owners' association | Paid together with MOCA's spaces | Set by agreement |
-| Agreement work and stewardship | MOCA | MOCA; the three-party board amends the rules | — | Dedicated stewardship endowment |
-
-**The ground lease.** The land goes to the housing partnership under a 99-year ground lease, longer than the 55-year affordability covenant and longer than the housing loans [16][39]. Bunker Hill already has such a public ground lease: Grand Avenue's Parcel Q, with a term of nearly 99 years, requires free public events on its plaza each year and allows the project to be split into parts owned separately, overseen by a master owners' association [21]. Y-1's ground lease includes:
-- the minimum area of MOCA's spaces and MOCA's right to use them;
-- public access along the route up the slope, and free public events each year;
-- the fit-out and change of use of MOCA's spaces: MOCA may fit out its shells in stages and switch uses among its own spaces, provided written standards are met (area, ceiling height, the conditions artworks need, continuity of the route); these changes do not involve the homes;
-- a master owners' association of the housing partnership, MOCA and the public lessor, running the shared parts;
-- the three-party board's role: it advises and runs procedures, but has no veto over the homes or their loans.
-
-MOCA's rights rank behind the housing's regulatory agreements and financing; they cannot reduce the number of homes or harm the housing's feasibility [14][16].
-
-**Why MOCA is not cut out as a separate piece.** If it were cut out, MOCA's part would have its own title, but its boundary would be fixed, which conflicts with the design intent of weaving and of fixing no one in one zone. So permanence is carried by the public land and the ground lease, and the building stays flexible. If one part later turns out never to move, such as the underground store, or if New Markets Tax Credits are to be used, that part alone can be cut out.
-
-**Order of approvals.**
-1. **Land:** the CRA/LA board, the Oversight Board and the Department of Finance approve in turn. A notice of availability is issued under the Surplus Land Act, with MOCA's requirements written into it as reasonable conditions, reviewed by the state housing department (HCD) [13][14].
-2. **Project:** approved under the state law SB 35 against objective standards, without environmental review [11]; Los Angeles's own fast-track programme is the fallback [12].
-3. **Construction:** MOCA's unfinished spaces stay empty under the Core and Shell certificate of occupancy, which names every future use [55]; each later switch of use needs a change-of-use permit [61].
-4. **Money:** CTCAC (the state tax credit committee), LAHD, the investors and the lenders each review; MOCA's board approves its leases and the endowment [16][39].
-
----
-
-## Page 19 Alternatives and weak points
-
-**Every plan for this site has been plausible, and every plan has failed; this proposal states plainly where it is most likely to fail.**
-
-**Alternatives considered and not taken**
-- **A museum only, or housing only.** Surplus public land carries an affordable housing obligation; neither the museum, nor a developer, nor the City can develop the site alone [14][34].
-- **Mixed-income housing, with market-rate rents subsidising the museum.** 100% affordable housing has priority under the Surplus Land Act and can be approved directly under SB 35; and in a tax-credit project, housing income cannot subsidise the commercial part anyway [11][14][16].
-- **Selling the land.** This is what CRA/LA has done in recent years; but once the land is sold, MOCA's rights and the procedure for changing its spaces have no long-term public document to carry them. Grand Avenue's Parcel Q shows that a public ground lease can [21].
-- **Cutting MOCA out as a separate piece, or putting the museum and the homes on separate floors or in two buildings.** Most precedents do this [23][24], and it is the simplest under the code; but it zones people, feels like unequal treatment, and fixes the boundaries.
-- **Putting the homes themselves into the collection.** The homes are owned by a partnership, earn rent and carry loans, so they cannot meet collection standards; what is collected is a work about the homes (see pages 11–12).
-- **Swapping cells back and forth between homes and galleries.** If a tax-credit home were turned into a gallery, the investors would have to give back credits, and residents can be asked to leave only for good cause [54]; so a home stays a home once built, and what changes are MOCA's own spaces (see page 17).
-- **Building an empty skeleton first and adding homes inside it in phases.** No programme pays for cells kept empty for homes [54]; adding homes later means building work in an occupied building; a separate long-term owner of the skeleton would be needed, with each phase's homes made into their own condominium unit; and no built US precedent was found. So the whole building and all the homes are built at once, and only MOCA's spaces are fitted out in stages (see page 17).
-
-**Weak points, and responses**
-1. **Money.**
-   - **The problem:**
-     - MOCA has few unrestricted assets [31], and no public record shows where money for an expansion would come from; affordable high-rise housing on a slope is very expensive [27][34].
-     - In the precedents, the cultural part often opened late, or not at all, for lack of money: the Mexican Museum's space in San Francisco was still unfinished in 2024 [24].
-     - The whole building is built at once in step 2, so the money for the homes and for MOCA's shell must be in place at the same time; MOCA's shell, the store and the park roof are outside the tax-credit basis [54].
-   - **Response:**
-     - MOCA's funding is written as a condition of the partnership, with a precedent on this hill [42].
-     - MOCA's shell and the park roof are paid with MOCA's capital and public capital, and the park and site work apply for state grants [57].
-     - Once the shell is built, MOCA's spaces are fitted out one at a time, each usable when finished [60].
-     - The shared workshops use housing money.
-2. **Land.** CRA/LA's legal duty is to dispose of land quickly and for the highest value, and a discounted lease needs approval at several levels [13]; MOCA's spaces woven through the upper floors may not fit the Surplus Land Act's exemption for 100% affordable projects, so the normal disposition procedure applies [14]. **Response:** the argument rests on Metro's joint development policy and Grand Avenue's Parcel Q [1][21]; alternatively the City can first acquire the land and then lease it.
-3. **Approvals and zoning.** The current zoning sets requirements for building height and for the building line along Hill Street, so a low scheme following the slope needs waivers [5] (official text still to be checked); SB 35 requires prevailing wages, limits above-ground non-residential floor area to one third, and expires in 2036 [11]. **Response:** talk early with City Planning and the Fire Department, and secure approval for the whole project at once in the first phase.
-4. **The cost of weaving.**
-   - **The problem:**
-     - Every place where museum meets homes needs fire separation, and every space needs its own exit.
-     - A continuous indoor route up the slope must be treated as an atrium.
-     - Every switch of use in a MOCA space needs a permit and a new certificate of occupancy, about a month under regular plan check [61].
-     - Every later MOCA fit-out is building work in an occupied building.
-     - No precedent was found of a public exhibition route passing through residential floors.
-   - **Response:**
-     - MOCA spaces that may switch use are built from the start to the stricter side of their possible uses, so a later switch needs only plan review and inspection.
-     - Each MOCA space has its own construction access and sprinkler zone, and prefabricated fit-out kits shorten the work [58].
-     - Having no precedent is exactly what this proposal sets out to prove.
-5. **Residents.** The public route passes the residential building, so residents' safety and privacy depend on access control and rules; the artist preference needs a fair housing analysis first [41]. **Response:** the public cannot reach residential floors; taking part is entirely voluntary; the artists' homes are open to the public and allocated by lottery (see pages 5–6).
-6. **Long-term commitment.** The agreement work and stewardship must last 55 years or more, across many directors; MOCA changed directors in September 2026 [32]. **Response:** name a successor body; set up the three-party board by contract; write the stewardship endowment into the terms of the partnership.
-
-Finally, the proposal needs many parties to agree at once:
-- CRA/LA, the Oversight Board and the Department of Finance;
-- the state housing department and the tax credit committee;
-- LAHD;
-- the City or County, if it provides public capital;
-- the investors, the lenders and MOCA.
-
-The course brief says that no party alone can develop this site [34]. That is this proposal's starting point, and also its greatest risk.
-
----
-
-## Page 20 Precedents and sources
-
-Verified sources ready to cite (every excerpt has been checked word for word):
-
-[1] LA Metro Board of Directors, *Metro Joint Development Policy* (update adopted June 2021). https://libraryarchives.metro.net/DB_Attachments/BP-Links/policy-2021-06-joint-development-policy-update.pdf
-- Scope: "The Metro Joint Development (JD) Program is a real estate development program for properties owned by Metro."
-- 100% first: "Metro will pursue all new JD sites for housing developments with 100% of residential units as Income-Restricted"; where that is not possible, "at least 25% of units will be affordable to Lower Income households or below".
-- Discounted land: Metro may "subsidize JD projects by discounting ground leases below the fair market value" (Board approval required).
-- Long leases, no sale: "Metro will retain fee ownership of its land, relying on long-term ground leases to develop its property."
-
-[2] LA Metro, press release, 2024-10-03: Metro aims to deliver 10,000 homes through joint development by 2031, 5,000 of them at affordable rents (claim, Metro's own statement). https://www.metro.net/?p=96959
-
-**Site and current situation**
-- [3] City of Los Angeles, *Angels Landing Draft EIR, Executive Summary* (ENV-2018-3273-EIR), 2021-01. https://ceqanet.lci.ca.gov/2019039164/3/Attachment/wHUhWO (site boundaries, vacancy, 2021 zoning)
-- [4] *Angels Landing Draft EIR, Appendix F: Land Use Plan Consistency Analysis*, 2021-01. https://ceqanet.lci.ca.gov/2019039164/3/Attachment/Qiu1ec (Metro entrance at the southeast corner)
-- [5] City of Los Angeles, Department of City Planning, Zoning layer (GIS), 2026-10-22; County of Los Angeles parcel layer. https://services5.arcgis.com/7nsPwEMP38bSkCjy/arcgis/rest/services/Zoning/FeatureServer/15 (current zoning, APN)
-- [6] City of Los Angeles, Ordinance No. 188419 (repeal of the Bunker Hill Specific Plan), operative 2025-01-27. https://cityclerk.lacity.org/onlinedocs/2022/22-0617_ord_188419_1-20-25.pdf
-- [7] Los Angeles City Council, motion on Option Agreement C-125178, Bunker Hill Parcel Y-1 (CF 14-0425-S4), 2024-09-20. https://cityclerk.lacity.org/onlinedocs/2014/14-0425-s4_misc_9-23-24.pdf ("Future Development Property")
-- [8] Urbanize LA, "Bunker Hill and Exposition Park sites to be declared surplus", 2025-10-22. https://la.urbanize.city/node/27364 (claim)
-- [9] California HCD, Surplus Land Act Notices of Availability received (dataset), updated 2026-10-23. https://data.ca.gov/dataset/surplus-land-act-notices-of-availability-received
-- [10] Los Angeles City Clerk, Council File 26-1436 (Angels Landing settlement). https://cityclerk.lacity.org/lacityclerkconnect/index.cfm?fa=ccfi.viewrecord&cfnumber=26-1436
-
-**Law and regulations**
-- [11] California Government Code 65913.4 (SB 35, as amended through 2026). https://california.public.law/statutes/ca_gov't_code_section_65913.4 ; California HCD, *Updated Streamlined Ministerial Approval Process Guidelines*, 2021-03-30. https://www.hcd.ca.gov/policy-research/docs/SB-35-Guidelines-Update-Final.pdf
-- [12] City of Los Angeles, Ordinance No. 188788 (Affordable Housing Streamlining Program, LAMC 12.22 A.40), 2025-12. https://cityclerk.lacity.org/onlinedocs/2023/23-0623-S1_ord_188788_12-19-25.pdf
+| Land | — | The City, after acquiring it from CRA/LA | — | — |
+| Plaza, gallery, workshops, classroom | Lower airspace parcel | MOCA, under a ground lease | MOCA's capital, donors, public capital | MOCA; rooms rented to others |
+| Homes, childcare, residents' entrance | Upper airspace parcel | Tax-credit partnership, under a ground lease of 99 years | Tax credits, bonds, public loans | Developer; childcare by a licensed operator |
+| Food-and-drink floor | Upper airspace parcel | Developer, as commercial space | Developer's own capital or a commercial loan, outside the tax credits | Developer; let to restaurant and café operators |
+| Shared structure (including the span), cores, systems | Both, under one recorded agreement | Shared | Split by built floor area | Owners' association |
+
+The land is split in two so that MOCA holds its floors directly from the City, rather than as a tenant of the housing partnership. The split also suits the housing finance. A tax-credit owner should own the structure its homes stand on, and agency lenders expect one borrower to own all the homes in a building [30]. Each side owns its own part, and the costs they share, from the foundations to the span over the plaza, are divided by built floor area.
+
+Bunker Hill already has a project put together this way. Grand Avenue's Parcel Q sits on public land under a ground lease of nearly 99 years, its parts are owned separately, and a master owners' association runs what they share [18]. The housing parcel on Y-1 would also be leased for 99 years, longer than the 55-year affordability covenant and the housing loans [16][28].
+
+## 7. Financing and allocation scoring
+
+**Housing.**
+- **Sources:** 4% tax credits with tax-exempt bonds, plus loans from the City, County and State. This is how downtown's 100% affordable high-rises are built [23].
+- **Basis:** in a Qualified Census Tract the credit basis can be up to 130% [14].
+- **Cost of the shared structure, including the span:** the housing's share counts toward its basis only with a tax opinion [16].
+- **The food-and-drink floor:** commercial space stays outside the tax-credit basis, so the developer pays for it from its own capital or a commercial loan [43].
+
+**Bond allocation scoring.** Bond allocations are competitive. A new building in the City of Los Angeles competes for that region's 17% of the new construction pool [17]. CDLAC's scores for this scheme:
+
+| CDLAC category | Max | This scheme |
+|---|---|---|
+| Approved under SB 35 | 10 | 10 |
+| Housing type (large family) | 10 | 10 |
+| Access to opportunity | 10 | 9 (Moderate Resource area; needs 10% of homes at or below 30% of area median income and another 10% at or below 50%) |
+| Service amenities | 10 | childcare 5, art classes count, rest to be chosen |
+| Income and rent targeting, experience, readiness, cost, site amenities | 72 | depends on the numbers |
+
+In a tie, CDLAC ranks by public benefit per dollar. In that count, three-bedroom homes count 1.5 times, up to 30% of all homes [17].
+
+**MOCA.** MOCA pays for the items listed under its costs in section 5. The possible sources:
+- donors;
+- public capital;
+- a City contribution toward the excavation and the public route up the slope;
+- the state's Infill Infrastructure Grant, for the landscape and site work only [31];
+- New Markets Tax Credits for the non-residential part. This would need checking: they apply only to that part, and the tract's eligibility was not checked [20].
+
+**When MOCA's money is needed.** The homes and MOCA's floors are one structure, so both shares of it are needed when the housing closes its financing. MOCA's fit-out can follow later, in stages (section 5).
+
+## 8. Entitlements and approvals
+
+1. **Land.**
+   - CRA/LA transfers Y-1 to the City, with the Oversight Board and the Department of Finance approving [13].
+   - The City then disposes of it under the Surplus Land Act.
+   - MOCA's floors are more than the ancillary ground-floor commercial space allowed by the act's exemption for 100% affordable projects. So the exemption does not apply, and the normal procedure does, with affordable housing given priority [12].
+2. **Project.**
+   - It is approved under SB 35: at least two thirds of the floor area must be housing, prevailing wages are paid, and the law runs until 2036 [11].
+   - The airspace map stays on the same streamlined track [11].
+3. **Building.** LADBS permits. Each later change of use in MOCA's rooms needs a permit and a new certificate of occupancy [25].
+4. **Money.** CDLAC and CTCAC, LAHD, the investors, the lenders and MOCA's board each approve.
+
+## 9. Risks and mitigation
+
+1. **The span.**
+   - **Risk:**
+     - The gallery is lifted over the plaza and carries the homes. Its transfer structure is the most expensive part of the building.
+     - It is split by floor area like the rest of the structure, so the housing pays about two thirds of a structure that exists for the plaza.
+     - The developer and its investors must accept this. The higher cost also loses points: CDLAC gives one point for each full percent the basis stays below its limit [17].
+   - **Mitigation:** the split, including the span, is fixed in the terms on which the City offers the housing parcel, so developers know it before they bid.
+2. **Workshops and kitchens under the homes.**
+   - **Risk:** kilns, welding, wood dust and the kitchens on the food-and-drink floor need exhaust that rises through the homes, fire separation and sound insulation.
+   - **Mitigation:** exhaust routes and separations are designed from the start, with outlets kept away from the homes' windows and the childcare yard.
+3. **Land.**
+   - **Risk:** CRA/LA's legal duty is to dispose of land quickly and for value [13]. The City's option has expired [6].
+   - **Mitigation:** the City acquires the land first and then leases it. The argument rests on the Parcel Q precedent [18].
+4. **MOCA's money.**
+   - **Risk:**
+     - The homes and MOCA's floors are one structure, so MOCA's share must be in place when the housing closes its financing.
+     - The part of MOCA's floors set into the hill adds excavation and retaining walls, at MOCA's cost.
+     - Cultural parts of mixed projects have opened late before: Hollywood Arts Collective still had $16 M to raise in 2023 [22].
+   - **Mitigation:** MOCA's funding is a condition of the partnership. Fit-out comes later, in stages.
+5. **Points.**
+   - **Risk:**
+     - As a Moderate Resource area, the site gets 9 points, not 10, for access to opportunity, and none of the high-resource bonuses [10][17].
+     - Bonds are scarce.
+   - **Mitigation:** take full points where the design decides them: housing type, service amenities, SB 35.
+6. **Size.** **Risk:**
+   - SB 35 caps all non-residential space, MOCA's floors and the food-and-drink floor together, at about a third of the floor area [11].
+   - Every square foot of food and drink leaves less room for the gallery and the workshops.
+
+## Sources
+
+- [1] City of Los Angeles, *Angels Landing Draft EIR, Executive Summary* (ENV-2018-3273-EIR), 2021-01. https://ceqanet.lci.ca.gov/2019039164/3/Attachment/wHUhWO
+- [2] *Angels Landing Draft EIR, Appendix F: Land Use Plan Consistency Analysis*, 2021-01. https://ceqanet.lci.ca.gov/2019039164/3/Attachment/Qiu1ec
+- [3] City of Los Angeles, Department of City Planning, Zoning layer (GIS), 2026-10-22. https://services5.arcgis.com/7nsPwEMP38bSkCjy/arcgis/rest/services/Zoning/FeatureServer/15
+- [4] City of Los Angeles, Ordinance No. 188419 (repeal of the Bunker Hill Specific Plan), operative 2025-01-27. https://cityclerk.lacity.org/onlinedocs/2022/22-0617_ord_188419_1-20-25.pdf
+- [5] Los Angeles City Council, motion on Option Agreement C-125178, Bunker Hill Parcel Y-1 (CF 14-0425-S4), 2024-09-20. https://cityclerk.lacity.org/onlinedocs/2014/14-0425-s4_misc_9-23-24.pdf
+- [6] Urbanize LA, "Bunker Hill and Exposition Park sites to be declared surplus", 2025-10-22. https://la.urbanize.city/node/27364 (claim)
+- [7] California HCD, Surplus Land Act Notices of Availability received (dataset), updated 2026-10-23. https://data.ca.gov/dataset/surplus-land-act-notices-of-availability-received
+- [8] David Ruy, syllabus, Syracuse at SCI-Arc Visiting Studio, Fall 2026 (course brief).
+- [9] HUD, Qualified Census Tract data files for 2026 and 2027 (tract 06037207502: qct = 1). https://www.huduser.gov/portal/datasets/qct/qct_data_2026.xlsx ; https://www.huduser.gov/portal/datasets/qct/qct_data_2027.xlsx
+- [10] CTCAC/HCD Opportunity Maps, 2026 (adopted December 2025). https://www.treasurer.ca.gov/ctcac/opportunity.asp ; read through the copies published by the LA County Development Authority and LA City Planning (tract 06037207502: "Moderate Resource"). https://services.arcgis.com/RmCCgQtiZLDCtblq/arcgis/rest/services/2026_TCAC_HCD_Opportunity_Area_Maps/FeatureServer/0 ; https://services1.arcgis.com/tzwalEyxl2rpamKs/arcgis/rest/services/TCAC_2026/FeatureServer/0
+- [11] California Government Code 65913.4 (SB 35). https://california.public.law/statutes/ca_gov't_code_section_65913.4 ; California HCD, *Updated Streamlined Ministerial Approval Process Guidelines*, 2021-03-30. https://www.hcd.ca.gov/policy-research/docs/SB-35-Guidelines-Update-Final.pdf
+- [12] California Government Code 54221 (Surplus Land Act); California HCD, *Surplus Land Act Guidelines*, 2024-08-01. https://california.public.law/codes/ca_gov't_code_section_54221 ; https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/final-updated-surplus-land-act-guidelines-2024.pdf
 - [13] California Health and Safety Code 34181 and 34191.5 (successor agencies). https://california.public.law/codes/ca_health_and_safety_code_section_34181 ; https://california.public.law/codes/ca_health_and_safety_code_section_34191.5
-- [14] California Government Code 54221 (Surplus Land Act); California HCD, *Surplus Land Act Guidelines*, 2024-08-01. https://california.public.law/codes/ca_gov't_code_section_54221 ; https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/final-updated-surplus-land-act-guidelines-2024.pdf
-- [15] 26 U.S. Code § 42 (low-income housing tax credit: artist preference 42(g)(9); amenities for all units 42(d)(4)(B)). https://www.law.cornell.edu/uscode/text/26/42 ; IRS Rev. Proc. 2019-17. https://www.irs.gov/pub/irs-drop/rp-19-17.pdf
-- [16] CTCAC, *Ground Lease Project Requirements*; CTCAC Regulations (adopted 2025-12-10). https://www.treasurer.ca.gov/ctcac/ground-lease-project-requirements ; https://www.treasurer.ca.gov/sites/default/files/2026-03/regulations.pdf
-- [17] California Civil Code 1468 (covenants running with the land). https://california.public.law/codes/ca_civ_code_section_1468
-- [18] 17 U.S. Code § 106A (VARA); California Civil Code 987 (California Art Preservation Act). https://www.law.cornell.edu/uscode/text/17/106A ; https://california.public.law/codes/civil_code_section_987
-- [19] NY State Homes and Community Renewal, artist preference policy, 2022; San Francisco, Artist Housing Certification. https://hcr.ny.gov/system/files/documents/2022/02/20220122-artist-preference-policy_0.pdf ; https://sf.gov/artist-housing-certification
-- [20] 2025 California Building Code, Sections 302.1, 311.1.1, 508, 1004, 1016, 1019, 1607 (Table 1607.1), 3301, 3310; 2025 California Fire Code 3306 and Chapter 32 (high-piled storage); 2025 California Existing Building Code 1006 and 1011 (Tables 1011.5–1011.7) (not verified: read only on the unofficial copies UpCodes and GoCodebook; to be replaced with the official text before the final version); LAPD, *Noise Enforcement* training bulletin (LAMC 41.40 construction hours), 2021-06. https://lapdonlinestrgeacc.blob.core.usgovcloudapi.net/lapdonlinemedia/2021/10/Noise_Enforcement_Issue_L_Vol_5_June_2021.pdf
+- [14] 26 U.S. Code § 42: (d)(4)(C) community service facilities, (d)(5)(B) basis in Qualified Census Tracts, (g)(9) occupancy preferences including artists, (m)(1) allocation plans. https://www.law.cornell.edu/uscode/text/26/42
+- [15] IRS, Revenue Ruling 2004-82 (restating Rev. Rul. 2003-77 on community service facilities). https://www.irs.gov/pub/irs-drop/rr-04-82.pdf
+- [16] CTCAC Regulations, adopted 2025-12-10: §10322 (tax opinions), §10325(c)(4)(B) (service amenities), §10325(g)(1) (large family). https://www.treasurer.ca.gov/sites/default/files/2026-03/regulations.pdf ; CTCAC, *Ground Lease Project Requirements*. https://www.treasurer.ca.gov/ctcac/ground-lease-project-requirements
+- [17] CDLAC Regulations, approved 2025-12-10: §5101 (pools and regions), §5105 (points), §5106 (ranking and tie breaker). https://www.treasurer.ca.gov/cdlac/regulations/20251210/approved.pdf
+- [18] Grand Avenue Project, Phase I (Parcel Q): County board letter, Fifth Amendment to the DDA and First Amendment to the Phase I Ground Lease, 2016. https://file.lacounty.gov/SDSInter/bos/supdocs/109373.pdf
+- [19] MoMA, Annual Bond Disclosure FY2013 and 2015. https://www.moma.org/docs/about/AnnualBondDisclosureFY2013.pdf ; https://www.moma.org/docs/about/annual_bond_disclosure_2015.pdf
+- [20] Sugar Hill, Harlem: City & State, 2014; Tax Credit Advisor, 2013 (claim). https://www.cityandstateny.com/politics/2014/06/mayor-hails-development-that-intersects-pre-k-housing-goals/180076/ ; https://www.taxcreditadvisor.com/articles/celebrating-harlem-unique-new-markets-project-offer-housing-educational-cultural-opportunities/
+- [21] NYC Department of Cultural Affairs and NYCEDC, press release, L10 Arts and Cultural Center groundbreaking, 2019-12-04. https://www.nyc.gov/site/dcla/about/pressrelease/PR-2019-12-04-L10-Groundbreaking-NYCEDC-Brooklyn.page
+- [22] Hollywood Arts Collective: CTCAC staff report CA-20-553, 2020; Entertainment Community Fund, 2023. https://www.treasurer.ca.gov/ctcac/meeting/2020/20200414/staff/9/CA-20-553.pdf ; https://entertainmentcommunity.org/about-us/news/john-gore-foundation-donates-5-million-entertainment-community-fund-name-arts-building
+- [23] Weingart Tower 1B: CTCAC staff report CA-24-751, 2024. https://www.treasurer.ca.gov/ctcac/meeting/2024/1211/staff/CA-24-751.pdf
+- [24] MOCA, Form 990, fiscal year ending 2025-06-30. https://gt990datalake-rawdata.s3.amazonaws.com/EfileData/XmlFiles/202630989349301143_public.xml
+- [25] LADBS, Information Bulletin P/GI 2026-021, *Requirements for Changing the Use of Existing Buildings*, effective 2026-01-01. https://dbs.lacity.gov/sites/default/files/efs/forms/pc17/change-of-use-ib-p-gi2020-021.pdf
+- [26] NY State Homes and Community Renewal, artist preference policy, 2022; San Francisco, Artist Housing Certification. https://hcr.ny.gov/system/files/documents/2022/02/20220122-artist-preference-policy_0.pdf ; https://sf.gov/artist-housing-certification
+- [27] LAist (KPCC), "LA considers an affordable housing program for its disappearing artists", 2017-11-22. https://laist.com/news/kpcc-archive/la-considers-an-affordable-housing-program-for-its (claim)
+- [28] LAHD, Homes for LA 2025 NOFA Program Regulations and Term Sheets (draft, 2025-05-23), in CF 25-0690. https://cityclerk.lacity.org/onlinedocs/2025/25-0690_rpt_lahd_6-13-25.pdf
+- [29] Los Angeles City Clerk, Council File 26-1436 (Angels Landing settlement). https://cityclerk.lacity.org/lacityclerkconnect/index.cfm?fa=ccfi.viewrecord&cfnumber=26-1436 ; City Council meeting of 2026-10-28, Item 16 motion (Yaroslavsky – McOsker), adopted 14–0. https://d22tgksh1zpp6f.cloudfront.net/OnlineDocs/agendas/2026/2026-10-28-council-other-89fa1b33-26bc-41d0-af2c-cb028208cf92.pdf
+- [30] Cox Castle & Nicholson, Dubrasich, *Real Property Journal* 2016 (claim). https://www.coxcastle.com/assets/htmldocuments/pubs/RPJ%20Issue%203%202016%20Dubrasich%20%28003%29.pdf ; Fannie Mae Multifamily Guide, condominiums (effective 2026-10-26). https://mfguide.fanniemae.com/fnmf-pdf/download/19211
+- [31] California HCD, *Infill Infrastructure Grant Program, Qualifying Infill Projects, Final Guidelines*, 2025-02-13. https://www.hcd.ca.gov/sites/default/files/docs/grants-and-funding/supernofa/2025-mfsn-iig-guidelines.pdf
+- [32] US Census Bureau, American Community Survey 2020-2024 5-year estimates, tables B17010, B25115 and B25009, City of Los Angeles and ZIPs 90012, 90013, 90014, 90015, 90017, 90021 and 90071, read through Census Reporter. https://api.censusreporter.org/1.0/data/show/latest?table_ids=B25115,B17010,B09001,B25009,B01003&geo_ids=86000US90012,86000US90013,86000US90014,86000US90015,86000US90017,86000US90021,86000US90071,14000US06037207502,16000US0644000,05000US06037
+- [33] LAist, "LA's shortage of family-sized apartments", 2024-03-27 (claim; citing the City's Housing Element and ATC Research). https://laist.com/news/housing-homelessness/los-angeles-family-sized-housing-policy-three-two-bedroom-apartments-incentives-boyle-heights-rent-overcrowding
+- [34] CTCAC staff reports: Alveare Parkview (CA-24-654), Peak Plaza (CA-24-469), First Street North B (CA-22-094). https://www.treasurer.ca.gov/ctcac/meeting/2024/1211/staff/CA-24-654.pdf ; https://www.treasurer.ca.gov/ctcac/meeting/2024/0806/staff/CA-24-469.pdf ; https://www.treasurer.ca.gov/ctcac/meeting/2022/20220928/22-094.pdf
+- [35] Los Angeles County Child Care Planning Committee, *Local Funding Priorities, Child Care and Development Services, Fiscal Year 2025-2026*. https://childcare.lacounty.gov/wp-content/uploads/2026/03/LPC-Funding-Priorities-Packet.pdf
+- [36] LA County Office for the Advancement of Early Care and Education, *Early Care and Education Access Brief*, 2024-11. https://childcare.lacounty.gov/wp-content/uploads/2024/11/ECE-Needs-Assessement-Brief-Final-11.12.24.pdf
+- [37] 2025 California Building Code, Sections 308.5.1 and 452.1.4 (not verified: read on the unofficial copy UpCodes; to be replaced with the official text). https://up.codes/viewer/california/ca-building-code-2025/chapter/3/occupancy-classification-and-use ; https://up.codes/viewer/california/ca-building-code-2025/chapter/4/special-detailed-requirements-based-on-occupancy-and-use
+- [38] California Code of Regulations, Title 22, §101238.2 (child care centers, outdoor activity space). https://www.law.cornell.edu/regulations/california/22-CCR-101238.2
+- [39] LA County Office for the Advancement of Early Care and Education, *Blueprint Identifying Immediate and Long-Term Efforts to Fortify the Infant and Toddler Care System*, 2024-03. https://childcare.lacounty.gov/wp-content/uploads/2024/03/Blueprint-Identifying-Immediate-and-Long-Term-Efforts-to-Fortify-the-Infant-and-Toddler-Care-System-Item-36-Board-Agenda-of-September-12-2023.pdf
+- [40] Westside Current, "LA park rank slips again, near worst among major U.S. cities", 2026 (claim; reporting the Trust for Public Land's ParkScore 2026). https://www.westsidecurrent.com/lifestyle/la-park-rank-slips-again-near-worst-among-major-u-s-cities/article_e01adb2c-4bec-4fc6-98be-be1cf2e35cc1.html
+- [41] LA Downtown News, on the DTLA Residents Association's priorities, 2025 (claim). https://www.ladowntownnews.com/features/for-residents-by-residents-dtla-residents-association-aims-to-revitalize-its-neighborhood/article_2d11b333-b2ba-4997-9c69-061b9133ba8f.html
+- [42] Esotouric, Angels Knoll campaign page, 2024-09-19, updated to 2026-06 (claim: calls for Angels Knoll to be reopened as a park). https://esotouric.substack.com/p/angelsknoll
+- [43] IRS, *IRC §42 Audit Technique Guide, Part 3: Eligible Basis*, 2015 (commercial space is outside eligible basis). https://www.irs.gov/pub/irs-utl/IRC42%20Low%20Income%20Housing%20Credit%20ATG%20Part%203.pdf
+- [44] City of Los Angeles, *Angels Landing Draft EIR, Chapter II: Project Description* (ENV-2018-3273-EIR), 2021-01, p. II-2 and Figures II-14 and II-15. https://ceqanet.lci.ca.gov/2019039164/3 (the site slopes from about 355 ft on Olive Street at its northwest end to about 285 ft near Hill and 4th Streets; California Plaza has two main levels, the lower one at about 370–372 ft)
+- [45] USGS 3D Elevation Program, 1 m bare-earth elevation model, measured by the author on 2026-11-05 (California Plaza at about 372 ft and 387 ft; Olive Street along the site at about 339–354 ft). https://www.usgs.gov/3d-elevation-program
+- [46] Supreme Court of California, *In re Redevelopment Plan for Bunker Hill* (1964) 61 Cal.2d 21 (plan adopted by ordinance 113,231 on 31 March 1959). https://scocal.stanford.edu/opinion/re-redevelopment-plan-bunker-hill-27156
+- [47] Nathan Masters, "Rediscovering Downtown L.A.'s Lost Neighborhood of Bunker Hill", PBS SoCal, 2012-07-11 (claim). https://www.pbssocal.org/shows/lost-la/rediscovering-downtown-l-a-s-lost-neighborhood-of-bunker-hill
+- [48] Greg Goldin, "Looking and Building in All the Right Places", with the sidebar by Michael Webb, "Frank Gehry, King of the Hill", *The Architect's Newspaper*, 2006-06-07 (claim). https://www.archpaper.com/2006/06/looking-and-building-in-all-the-right-places/
+- [49] Canadian Centre for Architecture, Arthur Erickson fonds, "California Plaza Competition and Master Plan", 1979–1980; PCAD, "One California Plaza Office Building" (claim). https://www.cca.qc.ca/en/archives/108951/arthur-erickson-fonds/397577/architectural-projects/413109/california-plaza-competition-and-master-plan ; https://pcad.lib.washington.edu/building/6491
+- [50] Kansas State University APDesign, Ekdahl Lecture history, Barton Myers (claim); Greg Goldin, "Bunkum Hill", *LA Weekly*, 2004-04-15 (claim: recommended by CRA staff). https://apdesign.k-state.edu/about/news-and-events/ekdahl-lecture-history/1990-2000_Ekdahl.html ; https://www.laweekly.com/bunkum-hill/
+- [51] Christopher Hawthorne, "Arthur Erickson dies at 84; architect of California Plaza towers in L.A.", *Los Angeles Times*, 2009-05-22, read in the Spokesman-Review reprint (claim). https://www.spokesman.com/stories/2009/may/22/noted-canadian-architect-arthur-erickson-84-dies
+- [52] MOCA, "About" (nearly 8,000 objects; the Geffen leased from the City in 1983 for $1 a year) and "Visit" (Isozaki, 1986). https://www.moca.org/about ; https://moca.org/visit
+- [53] Los Angeles Conservancy, "Museum of Contemporary Art" (claim: four of seven levels above the street; galleries under and around the courtyard). https://www.laconservancy.org/locations/museum-contemporary-art
+- [54] The Museum of Modern Art, *Consolidated Financial Statements, Years Ended June 30, 2025 and 2024*, statement of activities. https://production-gcp.moma.org/docs/about/MoMAFY_25.pdf
+- [55] The Broad (EIN 27-3032164), Form 990-PF, tax year 2024 ("Museum parking" $2,406,170). https://gt990datalake-rawdata.s3.amazonaws.com/EfileData/XmlFiles/202533209349101003_public.xml
+- [56] California Infrastructure and Economic Development Bank, staff report on Museum Associates (LACMA) bonds, 2026-03-25. https://ibank.ca.gov/wp-content/uploads/2026/03/3a-Museum-Associates-dba-LACMA-Staff-Report.pdf
+- [57] Norton Simon Art Foundation, Form 990-PF, year to November 2024; Norton Simon Foundation, Form 990-PF, tax year 2024 (grant of $6,000,000 for the museum's operations). https://gt990datalake-rawdata.s3.amazonaws.com/EfileData/XmlFiles/202532879349100013_public.xml ; https://gt990datalake-rawdata.s3.amazonaws.com/EfileData/XmlFiles/202543219349108054_public.xml
+- [58] MOCA, press page, "MOCA Names Jonathan Abbott CEO & Maurice Marciano Director", 2026-09-24. https://www.moca.org/press
+- [59] Angels Flight Railway Foundation, "History" and home page (opened 31 December 1901; moved south; top station at California Plaza). https://www.angelsflight.org/history ; https://angelsflight.org/
+- [60] LA Metro, Regional Connector fact sheet; press release, 2023-05-23 (opening on 16 June 2023). https://www.metro.net/documents/2025/01/regionalconnector_factsheet_englishpdf/ ; https://www.metro.net/about/media-relations/l-a-metros-regional-connector-transit-project-set-to-open-june-16/
+- [61] Hong Kong Transport Department, "Central to Mid-Levels Escalator and Walkway System"; Guinness World Records, "Longest escalator system" (claim: 800 m, 135 m). https://www.td.gov.hk/en/transport_in_hong_kong/pedestrians/hillside_escalator ; https://www.guinnessworldrecords.com/world-records/69205-longest-escalators ; John Zacharias, "The Central-Mid-levels Escalator as Urban Regenerator in Hong Kong", *Journal of Urban Design* 18 (4), 2013, 583–593 (abstract: new leisure and entertainment venues clustered along it). https://ideas.repec.org/a/taf/cjudxx/v18y2013i4p583-593.html
+- [62] Harvard GSD, "Veronica Rudge Green Prize in Urban Design", list of winners (2013, joint recipient: City of Medellín, Alejandro Echeverri, Empresa de Desarrollo Urbano). https://www.gsd.harvard.edu/urban-planning-design/fellowships-prizes-and-travel-programs/veronica-rudge-green-prize-in-urban-design/
+- [63] MVRDV, "The Markthal is Five Years Old Today!", 2019-10-01 (228 apartments). https://www.mvrdv.com/news/1431/the-markthal-is-five-years-old-today
+- [64] Anthony Weiss (JTA), "In downtown LA, an old market becomes grand again", *Times of Israel*, 2014-10-11 (claim: about 40% vacant at its lowest); Grand Central Market, "History" (opened 1917). https://www.timesofisrael.com/in-downtown-la-an-old-market-becomes-grand-again/ ; https://www.grandcentralmarket.com/history
 
-**Precedents**
-- [21] Grand Avenue Project, Phase I (Parcel Q): County board letter, Fifth Amendment to the DDA and First Amendment to the Phase I Ground Lease, 2016. https://file.lacounty.gov/SDSInter/bos/supdocs/109373.pdf (public ground lease, free public events, separately owned parts, master owners' association)
-- [22] Hollywood Arts Collective: CTCAC staff report CA-20-553, 2020. https://www.treasurer.ca.gov/ctcac/meeting/2020/20200414/staff/9/CA-20-553.pdf
-- [23] Inwood Library and The Eliza: NYC HPD community report-back, 2017. https://www.nyc.gov/assets/hpd/downloads/pdfs/services/inwood-cb12-report-back.pdf
-- [24] The Mexican Museum, 706 Mission: OCII Resolution 24-2019; SF Controller, 2024-03-21. https://sfocii.org/sites/default/files/inline-files/2019024.pdf ; https://www.sf.gov/news/audit-reveals-mexican-museums-new-soma-site-may-not-open-public-next-year
-- [25] 730 Stanyan (SB 35 approval, then a City ground lease): SF Board of Supervisors Resolution 269-23, 2023. https://sfbos.archive.sf.gov/sites/default/files/r0269-23.pdf
-- [26] Metro, Cesar E. Chavez and Soto joint development (La Veranda), board report 2017-0630. https://datamade-metro-pdf-merger.s3.amazonaws.com/2017-0630.pdf
-- [27] Weingart Tower 1B: CTCAC staff report CA-24-751, 2024. https://www.treasurer.ca.gov/ctcac/meeting/2024/1211/staff/CA-24-751.pdf (cost per home)
-- [28] Cameron Rowland, *Depreciation* (2018), stewarded by Dia. https://www.theartnewspaper.com/2023/05/18/cameron-rowland-dia-art-foundation-depreciation ; https://brooklynrail.org/2019/02/artseen/Cameron-Rowland-D37
-- [29] Agreement works: Felix Gonzalez-Torres Foundation (re-issuing certificates); Tate on Tino Sehgal; a Sol LeWitt certificate (Philadelphia Museum of Art). https://www.felixgonzalez-torresfoundation.org/foundation-activities/practice-of-re-issuance-of-certificates ; https://www.tate.org.uk/research/publications/performance-at-tate/perspectives/tino-sehgal ; https://philamuseum.org/collection/object/75997
-- [30] Granby Four Streets Community Land Trust (board). https://www.granby4streetsclt.co.uk/membership-and-the-board
+## Open items for Rui
 
-**MOCA**
-- [31] MOCA, Form 990, fiscal year ending 2025-06-30. https://gt990datalake-rawdata.s3.amazonaws.com/EfileData/XmlFiles/202630989349301143_public.xml (net assets and the unrestricted part)
-- [32] MOCA, "MOCA Names Jonathan Abbott CEO & Maurice Marciano Director" (effective 2026-09-24). https://www.moca.org/moca-names-jonathan-abbott-ceo-maurice-marciano-director
-- [33] MOCA, About (the Geffen Contemporary leased from the City). https://www.moca.org/about (claim)
+Undecided:
+- which of California Plaza's two levels the food-and-drink floor meets, the lower one at about 372 ft or the upper one at about 387 ft; with the upper one, Figure 1 needs one more floor.
 
-**Moral rights and LAHD (added 2026-10-28)**
-- [35] 17 U.S. Code § 113(d) (works of visual art in buildings). https://www.law.cornell.edu/uscode/text/17/113
-- [36] *Massachusetts Museum of Contemporary Art Foundation v. Büchel*, 593 F.3d 38 (1st Cir. 2010). https://www.ca1.uscourts.gov/sites/ca1/files/opnfiles/08-2199P-01A.pdf ; *Castillo v. G&M Realty* (5Pointz), 950 F.3d 155 (2d Cir. 2020), cert petition appendix. https://www.supremecourt.gov/DocketPDF/20/20-66/148092/20200720111621324_Appendix%20-%20FILED.pdf ; *Kelley v. Chicago Park District*, 635 F.3d 290 (7th Cir. 2011). https://www.law.uh.edu/faculty/gvetter/classes/IntlIP.Spring2011/Kelley%20v.%20Chicago%20Park%20District%20(7th%202011).pdf
-- [37] Los Angeles County Department of Arts and Culture, *Civic Art Procedures*, 2020-09-10. https://www.lacountyarts.org/sites/default/files/civic_art_procedures_0.pdf
-- [38] Monument against Fascism, Harburg (lowered in eight stages). https://gedenkstaetten-in-hamburg.de/en/memorials/show/memorial-against-fascism-in-harburg
-- [39] LAHD, Homes for LA 2025 NOFA Program Regulations and Term Sheets (draft, 2025-05-23), in CF 25-0690. https://cityclerk.lacity.org/onlinedocs/2025/25-0690_rpt_lahd_6-13-25.pdf
-- [40] 24 CFR 92.253 (HOME tenant selection and preferences). https://www.law.cornell.edu/cfr/text/24/92.253 ; Hollywood Arts Collective HOME loan, CF 20-0097, 2020. https://cityclerk.lacity.org/onlinedocs/2020/20-0097_rpt_hsg_10-14-20.pdf
-- [41] LAist (KPCC), "LA considers an affordable housing program for its disappearing artists", 2017-11-22. https://laist.com/news/kpcc-archive/la-considers-an-affordable-housing-program-for-its (claim: City housing officials' fair housing warning about an artist preference)
-- [42] Suzanne Muchnic, "MOCA Director to Resign; Helped Transform Museum", *Los Angeles Times*, 1998-03-24. https://www.latimes.com/archives/la-xpm-1998-mar-24-me-32119-story.html (claim: the developer built the museum at no cost, and the redevelopment agency required MOCA's board to raise a $10 million operating endowment; project database hist-004)
-- [43] Kent State Magazine, "Buried Treasure" (Robert Smithson, *Partially Buried Woodshed*), Spring 2016. https://www.kent.edu/magazine/shed (claim: weathering was to count as part of the work, yet it was removed in 1984)
-- [44] Esotouric, Angels Knoll campaign page, 2024-09-19 (updated to 2026-06). https://esotouric.substack.com/p/angelsknoll (claim: calls for Angels Knoll to be reopened as a permanent park)
-- [45] ETH Zürich, master's theses on the new Swiss Federal Archives at Zollikofen (HS24, Christian Kerez studio): Philipp Burwinkel, *Archive as a Public Square*; Johanna Scherrer, *Symbiose*. https://works.arch.ethz.ch/thesis/neubau-bundesarchiv-zollikofen-archive-as-a-public-square-in-bern ; https://works.arch.ethz.ch/thesis/neubau-bundesarchiv-zollikofen-symbiose (an underground automated store with a walkable public roof; the soil keeps the store's temperature stable)
-- [46] Museum Boijmans Van Beuningen, annual report 2020 (Depot Boijmans Van Beuningen, a publicly accessible art depot). https://storage.boijmans.nl/uploads/2021/06/21/gwEoX0gulcV0R3bEqmQU84eXkpkIU3iuQuOQy7Oa.pdf ; Museum Boijmans Van Beuningen, *About the depot* (visitors look into the storage compartments through large windows and can enter one with a guide). https://boijmans.nl/en/depot/about-depot (claim)
-- [47] Downtown CPIO, City Planning Commission draft, Subarea B (Bunker Hill pedestrian walkway easements), 2022; City Attorney report on the Downtown Plan ordinances, 2024-11-07. https://cityclerk.lacity.org/onlinedocs/2022/22-0617_misc_12_10-18-22.pdf ; https://cityclerk.lacity.org/onlinedocs/2022/22-0617_rpt_atty_11-7-24.pdf
-- [48] The Yard at Cal Plaza, About (plazas run by the owners through Plaza Commons, Inc.). https://theyardatcalplaza.com/about
-- [49] Commercial Observer, One California Plaza receivership, 2025-08. https://commercialobserver.com/2025/08/la-office-receivership-distress-office-1-cal-plaza/ (claim)
-- [50] Urbanize LA, "Renderings Revealed for California Plaza Watercourt Renovation", 2020-01-02. https://la.urbanize.city/node/6459 (claim: renovation paid by the owners)
-- [51] *Angels Landing Final EIR*, Responses to Comments, Comment Letter No. 4 (Angels Flight Railway Foundation), 2021-05. https://files.ceqanet.lci.ca.gov/250151-4/attachment/UfTy7uTHYdp6qDItmQwqUux7-zYGEosw2v1Q8eU0HiLTRu6Ng5tZ-r3NiLMkzaaOxoFzbZvfaj9owRTn0 (claim)
-- [52] CRA/LA, Governing Board special meeting agenda, 2026-08-26 (DTLA Alliance maintains and guards the fenced site under a CRA/LA purchase order). https://crala.org/internet-site/Meetings/Board_Agenda_2026/A08-26-26_GB_Special_Meeting.pdf
-- [53] Molenvliet, Papendrecht (support and infill social rental housing, completed 1977): N. John Habraken, project page; Frans van der Werf, "Open Building and Sustainability in Practice", 2005; N. John Habraken, "Open Building as a condition for industrial construction". https://habraken.com/html/molenvliet.htm ; https://www.irbnet.de/daten/iconda/CIB4048.pdf ; https://www.irbnet.de/daten/iconda/CIB13469.pdf
-
-**Skeleton and infill (added 2026-10-28)** (since the change to building at once, [53] and [56] are no longer cited in the text; delete or renumber them in the final version)
-- [54] 26 U.S. Code § 42(e), (f)(3), (j) (later rehabilitation, added units at two-thirds credit, recapture when qualified basis falls). https://www.law.cornell.edu/uscode/text/26/42 ; IRS Rev. Proc. 2005-37 (no eviction of low-income tenants other than for good cause). https://www.irs.gov/pub/irs-drop/rp-05-37.pdf ; IRS, *IRC §42 Audit Technique Guide, Part 3: Eligible Basis*, 2015 (placed in service = first unit certified for occupancy; commercial space outside basis). https://www.irs.gov/pub/irs-utl/IRC42%20Low%20Income%20Housing%20Credit%20ATG%20Part%203.pdf
-- [55] LADBS, Information Bulletin P/BC 2017-122, *Guidelines for the Issuance of Core and Shell Certificates of Occupancy, Temporary Certificates of Occupancy, and Phased Occupancy*, 2017. https://dbs.lacity.gov/sites/default/files/efs/forms/pc17/ib-p-bc2014-122cofo4cmrclrescoreshell.pdf
-- [56] Urban Renaissance Agency (UR), proposal summary No. 2-28, Nouvelle Akabanedai (KSI skeleton-infill rental housing), Building Research Institute, 2008. https://www.kenken.go.jp/chouki/PDF/saitakuteian/20_2/20_2_28.pdf (claim: unit layouts can change because UR is the only owner); Carien Overdijk, "Kolossaal pand waar alles kan", *Binnenlands Bestuur*, 2011-04-29 (Solids, Amsterdam). https://www.binnenlandsbestuur.nl/ruimte-en-milieu/bestuursrecht/kolossaal-pand-waar-alles-kan (claim)
-- [57] California HCD, *Infill Infrastructure Grant Program, Qualifying Infill Projects, Final Guidelines*, 2025-02-13 (parks and site work eligible; housing or mixed-use structures not). https://www.hcd.ca.gov/sites/default/files/docs/grants-and-funding/supernofa/2025-mfsn-iig-guidelines.pdf
-- [58] European Commission, Culture and Creativity, *Living spaces* catalogue: Transformation of 530 dwellings, Grand Parc Bordeaux (12–16 days per apartment, residents stayed). https://culture.ec.europa.eu/cultural-and-creative-sectors/architecture/living-spaces/catalogue/bordeaux
-- [59] National Capital Planning Commission, Commission Action, Smithsonian South Mall Campus Master Plan (File 7630), 2018-04-05 (the 30-year-old membrane under the Haupt Garden at the end of its life). https://www.ncpc.gov/docs/actions/2018April/7630_South_Mall_Campus_Master_Plan_Commission_Action_Apr2018.pdf ; FOAMGLAS, reference project TU Delft library (sloping public grass roof fully renovated from 2006). https://www.foamglas.com/en/references/netherlands/tu-delft (claim)
-
-**Building at once (added 2026-10-28)**
-- [60] NYC Department of Cultural Affairs and NYCEDC, press release, L10 Arts and Cultural Center groundbreaking, 2019-12-04 (a City-operated cultural space inside a mixed-use tower at 300 Ashland Place, Brooklyn, that opened in fall 2017 with 76 affordable homes). https://www.nyc.gov/site/dcla/about/pressrelease/PR-2019-12-04-L10-Groundbreaking-NYCEDC-Brooklyn.page
-
-**Switching MOCA's spaces (added 2026-10-28)**
-- [61] LADBS, Information Bulletin P/GI 2026-021, *Requirements for Changing the Use of Existing Buildings*, effective 2026-01-01. https://dbs.lacity.gov/sites/default/files/efs/forms/pc17/change-of-use-ib-p-gi2020-021.pdf ; LADBS, Counter Plan Check (same-day check for a tenant improvement with change in use but no change in parking). https://dbs.lacity.gov/services/plan-review-permitting/plan-check-permit/counter-plan-check ; LADBS FAQ (regular plan check: 15–30 business days to assign). https://dbs.lacity.gov/faq/search?page=19 ; Los Angeles Municipal Code 91.8203 (a change of occupancy requires a new Certificate of Occupancy whether or not alterations are required) (not verified: read only on the unofficial copy GoCodebook). https://gocodebook.com/library/us/ca/los-angeles-rent/chapter-ix/sec.-91.8201.-general
-
-**Course**
-- [34] David Ruy, syllabus, Syracuse at SCI-Arc Visiting Studio, Fall 2026. Statements marked "brief" in the text come from here.
+Later, not now: the middle access level; the plaza's size; the size of the childcare center and its yard.
