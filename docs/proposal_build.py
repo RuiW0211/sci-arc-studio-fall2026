@@ -360,7 +360,7 @@ TEMPLATE = """<!doctype html>
     <header class="header">
       <p class="eyebrow">Angels Knoll · Proposal · <a href="../" class="home">home</a></p>
       <h1>Proposal</h1>
-      <p class="subtitle">Angels Knoll Development Proposal: one building on Parcel Y-1, with 100% affordable family homes over MOCA's gallery, workshops and a public plaza.</p>
+      <p class="subtitle">Angels Knoll Development Proposal. One building on Parcel Y-1: 100% affordable homes above, MOCA below, and a childcare center that connects the two.</p>
       <p class="worked">Draft of {{DATE}}.</p>
     </header>
     <nav class="toc" id="toc" aria-label="Contents"></nav>
